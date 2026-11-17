@@ -23,3 +23,11 @@ Kiroween 2026 entry, Resurrection category. Solo build, deadline
 ## Constraints
 - Must run on a free hosting tier. No GPU, no local-only dependencies.
 - No network calls during parsing.
+
+## Ambition
+- This is a flagship build, not an MVP. Prefer the thorough
+  implementation over the quick one.
+- Every feature must be demonstrable on screen in under 20 seconds.
+  If it cannot be shown, it does not get built.
+- Finish and polish beat breadth. A smaller number of deeply working
+  things wins over many shallow ones.
