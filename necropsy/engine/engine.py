@@ -86,7 +86,7 @@ class Engine:
             for h, v in winners:
                 cand = self._candidate(h, v, budget)
                 if isinstance(cand, str):
-                    return self._failure(cand, data, budget, rejections, winners)
+                    return self._failure(cand, data, budget, rejections, winners, candidates)
                 candidates.append(cand)
             return self._outcome(candidates, "probe", data, budget, rejections)
 
@@ -108,7 +108,7 @@ class Engine:
         for h, v in found:
             cand = self._candidate(h, v, budget)
             if isinstance(cand, str):
-                return self._failure(cand, data, budget, rejections, found)
+                return self._failure(cand, data, budget, rejections, found, candidates)
             candidates.append(cand)
         if not candidates:
             return FailureReport("exhausted", tuple(rejections), budget.checks, len(data))
@@ -149,7 +149,7 @@ class Engine:
                     cand = self._candidate(
                         c, v, budget, tuple(alternatives.get(hypothesis_key(c), ())))
                     if isinstance(cand, str):
-                        return self._failure(cand, data, budget, rejections, winners)
+                        return self._failure(cand, data, budget, rejections, winners, candidates)
                     candidates.append(cand)
                 return self._outcome(candidates, "revision", data, budget, rejections)
             frontier = next_frontier
@@ -194,10 +194,13 @@ class Engine:
 
     def _failure(self, stop: str, data: bytes, budget: Budget,
                  rejections: list[RejectionEntry],
-                 winners: list[tuple[Hypothesis, ClosureVerdict]]) -> FailureReport:
-        partial = tuple(
+                 winners: list[tuple[Hypothesis, ClosureVerdict]],
+                 computed: list[Candidate] = ()) -> FailureReport:
+        # `computed` is the prefix of winners whose coherence step already ran;
+        # those keep their score and status. The rest were never scored.
+        partial = tuple(computed) + tuple(
             self._build(h, v, row_stride(h.width, h.bit_depth, h.row_alignment),
                         None, "not_computed")
-            for h, v in winners
+            for h, v in winners[len(computed):]
         )
         return FailureReport(stop, tuple(rejections), budget.checks, len(data), partial)
