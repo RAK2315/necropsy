@@ -9,12 +9,14 @@ from dataclasses import dataclass
 class TrailerEntry:
     name: str
     length: int
-    marker: int
+    signature: bytes
+    signature_offset: int
     applies_to: frozenset
 
 
 TRAILER_REGISTRY = (
-    TrailerEntry("pcx_palette_256", 769, 0x0C, frozenset({"pcx", "generic"})),
+    TrailerEntry("pcx_palette_256", 769, b"\x0c", 0, frozenset({"pcx", "generic"})),
+    TrailerEntry("tga2_footer", 26, b"TRUEVISION-XFILE.\x00", 8, frozenset({"tga", "generic"})),
 )
 
 
@@ -29,7 +31,7 @@ def match_trailer(data, header_size, origin, registry=TRAILER_REGISTRY):
             if (
                 origin in e.applies_to
                 and n - e.length >= header_size
-                and data[n - e.length] == e.marker
+                and data[n - e.length + e.signature_offset : n - e.length + e.signature_offset + len(e.signature)] == e.signature
             ):
                 return n - e.length, e.name
     except Exception:

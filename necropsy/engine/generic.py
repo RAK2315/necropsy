@@ -63,7 +63,7 @@ def _search(data, budget, on_reject, found) -> GenericOutcome:
                 depths.setdefault(data[o], []).append(o)
         end, trailer = match_trailer(data, L, "generic")
         sizes = [("none", end - L)]
-        if trailer is not None:
+        if trailer == "pcx_palette_256":
             n = rle_pcx_output_length(data, L, end)
             if n:
                 sizes.append(("rle_pcx", n))
