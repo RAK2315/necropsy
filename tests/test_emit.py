@@ -5,6 +5,7 @@ Expected values come from requirements.md (Requirement 9, 11.7) and design.md
 """
 import ast
 import dataclasses
+import fnmatch
 import hashlib
 import json
 import re
@@ -18,7 +19,18 @@ from necropsy.engine import Engine, RejectionEntry
 from tests.conftest import CORPUS_NAMES, corpus_bytes
 from tests.support.reference_reader import extract_layout
 
-FILES = ("requirements.md", "design.md", "tests.py")
+PYTEST_CONFIG_FILES = ("pytest.ini", "setup.cfg", "tox.ini", "pyproject.toml", "conftest.py")
+
+
+def emitted_test_name(slug):
+    """Req 9.1: test_<module>.py, <module> being the slug with '-' replaced by '_'."""
+    return "test_" + slug.replace("-", "_") + ".py"
+
+
+def expected_files(slug):
+    return ("requirements.md", "design.md", emitted_test_name(slug))
+
+
 BLOCK_RE = re.compile(r"^```necropsy-layout[ \t]*\r?\n", re.M)
 
 
@@ -63,7 +75,7 @@ def test_exactly_three_files_one_layout_block(name):
     # Req 9.1, 9.6
     spec = _emit(name)[2]
     assert isinstance(spec, EmittedSpec)
-    assert sorted(n for n, _ in spec.files) == sorted(FILES)
+    assert tuple(n for n, _ in spec.files) == expected_files(spec.slug)
     assert len(spec.files) == 3
     req = _file(spec, "requirements.md")
     assert len(BLOCK_RE.findall(req)) == 1
@@ -176,14 +188,40 @@ def test_design_lists_at_most_500_rejections():
     assert len(listed) == 500
 
 
-# --- tests.py (Req 9.11) ------------------------------------------------------
+# --- test_<module>.py (Req 9.1, 9.11) -----------------------------------------
 
 @pytest.mark.parametrize("name", CORPUS_NAMES)
 def test_generated_tests_compile(name):
     # Req 9.11
     spec = _emit(name)[2]
     assert isinstance(spec, EmittedSpec)
-    compile(_file(spec, "tests.py"), "tests.py", "exec")
+    fname = emitted_test_name(spec.slug)
+    compile(_file(spec, fname), fname, "exec")
+
+
+@pytest.mark.parametrize("name,fname", [("mystery_e", "test_tiff.py"),
+                                        ("mystery_b", "test_pcx.py"),
+                                        ("mystery_a", "test_pbm.py")])
+def test_test_file_name_for_probe_slugs(name, fname):
+    # Req 9.1
+    assert [n for n, _ in _emit(name)[2].files][2] == fname
+
+
+def test_test_file_name_for_generic_slug():
+    # Req 9.1: test_unknown_<8 hex>.py
+    data, _, spec = _emit("mystery_d")
+    digest = hashlib.sha256(data).hexdigest()[:8]
+    assert [n for n, _ in spec.files][2] == "test_unknown_" + digest + ".py"
+
+
+@pytest.mark.parametrize("name", CORPUS_NAMES)
+def test_test_file_name_matches_pytest_default_and_no_config_file(name):
+    # Req 9.1: collected by default; no pytest configuration file emitted
+    spec = _emit(name)[2]
+    assert isinstance(spec, EmittedSpec)
+    names = [n for n, _ in spec.files]
+    assert fnmatch.fnmatch(names[2], "test_*.py")
+    assert not set(names) & set(PYTEST_CONFIG_FILES)
 
 
 # --- FailureReport (Req 9.13) -------------------------------------------------
@@ -208,7 +246,10 @@ def test_write_spec_writes_only_three_files_without_bom(tmp_path):
     folder = write_spec(spec, out)
     assert not isinstance(folder, EmitError)
     assert Path(folder) == out / "tiff"
-    assert sorted(p.name for p in Path(folder).iterdir()) == sorted(FILES)
+    assert sorted(p.name for p in Path(folder).iterdir()) == sorted(
+        ["requirements.md", "design.md", "test_tiff.py"])
+    assert not {p.name for p in Path(folder).iterdir()} & set(PYTEST_CONFIG_FILES)
+    assert not {p.name for p in tmp_path.rglob("*")} & set(PYTEST_CONFIG_FILES)
     assert [p.name for p in out.iterdir()] == ["tiff"]
     assert [p.name for p in tmp_path.iterdir()] == ["out"]
     for name, text in spec.files:
