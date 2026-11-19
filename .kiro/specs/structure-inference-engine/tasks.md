@@ -439,8 +439,8 @@ Rules for every task:
     - Use `@settings(max_examples=100, deadline=None)`.
     - Tag: `Property 8: Coherence cannot change the outcome`
 
-- [ ] 10. Pretty printer
-  - [ ] 10.1 Implement `necropsy/report/pretty.py`
+- [x] 10. Pretty printer
+  - [x] 10.1 Implement `necropsy/report/pretty.py`
     - `render(result) -> str` produces exactly the lines in Requirements 8.4–8.6:
       - `RESOLVED` field table with offset as `0x%04X`;
       - the two closure-line forms;
@@ -451,7 +451,7 @@ Rules for every task:
     - Nothing under `necropsy/engine/` imports this module.
     - _Requirements: 8.4, 8.5, 8.6, 8.7_
 
-  - [ ] 10.2 Write tests in `tests/test_pretty.py`
+  - [x] 10.2 Write tests in `tests/test_pretty.py`
     - mystery_e: assert the exact `none` closure line `closure: [86, 150) holds 64 bytes = 8 x 8`.
     - mystery_b: assert the exact `rle_pcx` closure line and `trailer: pcx_palette_256`.
     - mystery_d: assert the ambiguity header with the correct count, every candidate numbered, every coherence line labelled as heuristic, and no words like "best" or "preferred".
@@ -567,7 +567,7 @@ Rules for every task:
     - Use `@settings(max_examples=100, deadline=None)`.
     - Tags: `Property 11: Spec emitter is total` and `Property 12: Emitted layout reproduces the engine`
 
-- [~] 12. Final checkpoint
+- [x] 12. Final checkpoint
   - Run `python -m pytest tests -q`. All tests must pass.
   - Emit the specs for mystery_e and mystery_d into a temporary directory. Run Kiro's spec format validator on each emitted `requirements.md` and `design.md`, and report any issue. (Requirement 9.19)
   - Run `python tools/check_no_bom.py`.
