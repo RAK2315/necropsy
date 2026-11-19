@@ -329,6 +329,22 @@ def _error_document(message: str) -> str:
     return _document(intro, _GLOSSARY, req)
 
 
+def _acceptance_line(layout: dict, ambiguous: bool) -> str:
+    module = _safe_slug(layout.get("slug")).replace("-", "_")
+    entry = "parse_candidates(data)" if ambiguous else "parse(data)"
+    if ambiguous:
+        shape = "a list with one dict per candidate"
+    else:
+        shape = "a dict"
+    return ("THE file `test_%s.py` SHALL be the acceptance suite for a parser that the reader "
+            "implements from this document. It SHALL import a module named `parser_%s` exposing "
+            "`%s`, returning %s whose keys `ok`, `fields`, `width`, `height`, `bit_depth`, "
+            "`row_alignment` and `pixels` are the ones the tests read. THE module `parser_%s` "
+            "SHALL NOT be emitted, so `pytest` on the folder as emitted SHALL stop with "
+            "`ModuleNotFoundError` until the reader supplies it."
+            % (module, module, entry, shape, module))
+
+
 def _origin(lay: dict, cand) -> str:
     if cand is not None:
         return cand.hypothesis.probe_name
@@ -379,6 +395,7 @@ def _render(layout: dict, result) -> str:
             "THE heuristic SHALL be known to fail when a header can absorb whole rows.",
             "WHEN a consumer needs one layout, THE parser SHALL require the consumer to choose "
             "from outside the bytes, and SHALL return every candidate until it does.",
+            _acceptance_line(layout, True),
         ]
         body.append(_requirement(
             n + 1, "Candidates cannot be separated by the bytes",
@@ -413,7 +430,8 @@ def _render(layout: dict, result) -> str:
                      _data(layout, cand, origin)),
         _requirement(4, "Closure", story % "closure rule", _closure(layout, cand)),
         _requirement(5, "Observed values", "As a developer, I want the values observed in the "
-                     "source file, so that I can check my parser against it.", _observed(layout)),
+                     "source file, so that I can check my parser against it.",
+                     _observed(layout) + [_acceptance_line(layout, False)]),
     ]
     return _document(intro, _GLOSSARY, "\n".join(reqs))
 
@@ -585,7 +603,8 @@ def _render_design(layout: dict, result) -> str:
             "selected over another by coherence or order." % n,
             "1.1, %d.2" % (n + 1))
         testing = ("Tests target `parse_candidates`, which must return every candidate. "
-                   "Each candidate is checked for field round-trip and for the closure size.")
+                   "Each candidate is checked for field round-trip and for the closure size.\n\n"
+                   + _acceptance_line(layout, True))
         return _design_document(overview, architecture, components, "\n".join(blocks),
                                 prop, errors, testing)
 
@@ -618,7 +637,8 @@ def _render_design(layout: dict, result) -> str:
         "The data region decodes to exactly `row_stride` \u00d7 `height` bytes. %s." % _closure_line(cand),
         "4.1, 3.1")
     testing = ("Tests parse the embedded source and assert the observed values and closure, and "
-               "check that `parse` never raises on arbitrary bytes.")
+               "check that `parse` never raises on arbitrary bytes.\n\n"
+               + _acceptance_line(layout, False))
     return _design_document(overview, architecture, components, _structure_table(cand),
                             prop, errors, testing)
 
