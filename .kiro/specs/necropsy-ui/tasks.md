@@ -56,7 +56,7 @@ Rules for every task:
   - `public/js/logic.js` as in design.md. `node --test tests/ui/js/logic.test.mjs` (pass the file; `node --test <dir>` fails on Windows) tests for `fieldRange`, `regions`, `byteRoles` (overlap, `mystery_f` equivalent reads), `buildSteps` (payload order, nothing added), `batch` (10 s bound, exact ranges), `stageOf`, `revisionDiffs`, `declaredVsActual`.
   - _Requirements: 5.4 to 5.8, 7.2, 7.6, 7.7, 8.6 to 8.8, 15.8_
 
-- [ ] 8. Static hex pane and field table
+- [x] 8. Static hex pane and field table
   - Virtual-scrolled pane with offset, hex and ASCII columns, grey undecoded bytes, accent field bytes, region gutter labels, trailer marker, field labels on hover or focus, two-way highlight with the field table, keyboard access.
   - Must be visible: `mystery_e` shows header, data region and labelled fields; `mystery_b` shows the `pcx_palette_256` trailer; a 65,536-byte file scrolls smoothly.
   - _Requirements: 5, 6_

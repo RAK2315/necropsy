@@ -1,14 +1,15 @@
 // Dev tool: screenshot a page in headless Edge or Chrome at a fixed viewport, after running a script.
-// node tools/screenshot.mjs <url> <out.png> [--w 1280] [--h 720] [--run "js to evaluate"] [--wait 800] [--full]
+// node tools/screenshot.mjs <url> <out.png> [--w 1280] [--h 720] [--run "js"] [--runfile script.js] [--wait 800] [--full]
 import { spawn } from 'node:child_process';
-import { existsSync, mkdtempSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 const args = process.argv.slice(2);
 const [url, out] = args;
 const opt = (name, dflt) => { const i = args.indexOf('--' + name); return i >= 0 ? args[i + 1] : dflt; };
-const W = +opt('w', 1280), H = +opt('h', 720), WAIT = +opt('wait', 800), RUN = opt('run', '');
+const W = +opt('w', 1280), H = +opt('h', 720), WAIT = +opt('wait', 800);
+const RUN = opt('runfile', '') ? readFileSync(opt('runfile'), 'utf8') : opt('run', '');
 const FULL = args.includes('--full');
 const EXES = ['C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe', 'C:/Program Files/Google/Chrome/Application/chrome.exe'];
 const exe = EXES.find(existsSync);
