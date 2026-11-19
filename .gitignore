@@ -224,3 +224,6 @@ __marimo__/
 
 
 notes/
+
+.vercel
+.env*

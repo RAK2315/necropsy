@@ -6,7 +6,7 @@ A static hand-built frontend and one Python function, both on Vercel Hobby. The 
 
 ```mermaid
 flowchart LR
-    B[Browser: file bytes] -->|POST raw bytes| F[api/index.py FastAPI]
+    B[Browser: file bytes] -->|POST raw bytes| F[app.py FastAPI]
     F --> E[Engine.run]
     E --> S[web/serialise.py]
     S --> P[web/pixels.py]
@@ -19,7 +19,7 @@ flowchart LR
 ## Layout
 
 ```
-api/index.py              FastAPI app: POST /api/analyze, POST /api/spec.zip
+app.py                    FastAPI app at the repo root: POST /api/analyze, POST /api/spec.zip
 web/
   pixels.py               decode(...) -> PixelBuffer | RenderFailure
   serialise.py            to_payload(result, data, engine_ms) -> dict
@@ -31,7 +31,6 @@ public/                   served by the CDN
   js/screens.js           resolved / ambiguous / failed / spec panel
   js/app.js               drop zone, samples, fetch, replay controller
   samples/                copied from spike/samples/ and spike/samples/external/
-vercel.json
 tests/ui/                 pytest for web/ and api/
 tests/ui/js/              tests for logic.js
 ```
@@ -110,7 +109,7 @@ Payload shape:
 
 For RESOLVED, `candidates` has one entry. The frontend does not branch on shape beyond `status`.
 
-### Endpoints (`api/index.py`)
+### Endpoints (`app.py`)
 
 - `POST /api/analyze`: reads the body with a length check before parsing, returns 413 above 65,536, times `Engine.run` with `time.perf_counter()`, returns `to_payload`. A catch-all handler returns 500 with the exception class name only (Req 1.7).
 - `POST /api/spec.zip`: same cap, re-runs the engine and `emit_spec`, returns `build_zip`. The engine is deterministic apart from the deadline, so this yields the same files. Returns 404 JSON when the result is FAILED.
@@ -163,7 +162,7 @@ A single drop target with a file input fallback. Samples list below it. Clicking
 
 ## Hosting
 
-`vercel.json` routes `/api/*` to the Python function and serves `public/` statically. Dependencies: `fastapi` only (plus whatever it pulls in). The function bundles `necropsy/`, `web/` and `api/`. Nothing else is needed at runtime: no database, no secrets, no egress.
+The FastAPI `app` lives in a root `app.py`, a zero-configuration entrypoint, so the paths `/api/analyze` and `/api/spec.zip` reach the routes directly. There is no `vercel.json`: a rewrite to `/api/index` made FastAPI see the rewritten path and answer 404 (found on the first deploy). `public/` is served statically from the CDN. Dependencies: `fastapi` only (plus whatever it pulls in). The function bundles `necropsy/`, `web/` and `app.py`. Nothing else is needed at runtime: no database, no secrets, no egress.
 
 The first deploy is a walking skeleton (a page and an `/api/analyze` that runs the engine and returns minimal JSON), so the 24-hour idle test can start early. The cold-hit measurement script is a small PowerShell file, `tools/cold_hit.ps1`, which times the first-screen request and an analyse request and appends the result to `docs/KIRO-LOG.md` by hand.
 

@@ -209,3 +209,32 @@ file touched, and the git HEAD at that moment.
 | 2026-11-19 13:02:19Z | PostFileSave | `_verify_tmp.py` | `fd8ebc5` |
 | 2026-11-19 13:02:23Z | PostFileSave | `tests/test_corpus.py` | `fd8ebc5` |
 | 2026-11-19 13:02:23Z | PostFileSave | `tests/test_corpus.py` | `fd8ebc5` |
+| 2026-11-19 13:30:21Z | PostFileSave | `app.py` | `eaae9a3` |
+
+
+## NECROPSY UI: deployment and host gate (Requirement 14)
+
+| Item | Value |
+|---|---|
+| Account | Vercel `rehaans-projects-33eea979`, plan `hobby` (shown by `vercel teams ls`), personal scope |
+| Main project | `necropsy`, https://necropsy.vercel.app |
+| Cold-test project | `necropsy-coldtest`, https://necropsy-coldtest.vercel.app |
+| Skeleton commit deployed to both | `d661837` (root `app.py`, `public/index.html`, `requirements.txt`, `necropsy/`) |
+| `necropsy-coldtest` deployed | 2026-11-19 13:33Z (build ready in 19 s) |
+| Earliest cold test | 2026-11-20 13:33Z, which is 24 hours after the deploy |
+| Python on Vercel | 3.12 (default; the engine targets 3.10, no 3.11+ only features were checked) |
+
+**NOTHING MAY REQUEST https://necropsy-coldtest.vercel.app OR ITS DEPLOYMENT URL (`necropsy-coldtest-erzhp5eo9-rehaans-projects-33eea979.vercel.app`) UNTIL THE COLD TEST. Do not open it in a browser, do not run tools/cold_hit.ps1 against it early, do not redeploy it. Its idle timer is the measurement.**
+
+Verified on `necropsy` on 2026-11-19 (not on the canary, by design):
+- `GET /` returns 200 and the static page.
+- `POST /api/analyze` with `mystery_a` returns `{"status":"RESOLVED","total_checks":1,...}` and with `mystery_i` returns `RESOLVED` with 10 checks. The function imports `necropsy/` and runs the real engine.
+- The first deploy used a `vercel.json` rewrite of `/api/*` to `/api/index`. FastAPI then saw the rewritten path and returned 404 (`{"detail":"Not Found"}`). Fixed by moving the app to a root `app.py` and deleting `vercel.json`.
+- Deployment Protection (Vercel Authentication) was on by default and answered 302 to a login page, so the URL was not public. It was turned off with `vercel project protection disable <project> --sso` on both projects. `necropsy-coldtest` now reports `ssoProtection: null`, checked with `vercel project protection necropsy-coldtest --json`, which does not request the site.
+- The canary has not been requested since its deploy. Its build log reports Ready and an alias, nothing more.
+
+Side effect to clean up: `vercel curl` added a Protection Bypass for Automation secret to the `necropsy` project. It does nothing now that protection is off. Revoke it in Project Settings, Deployment Protection, before judging.
+
+Cold test procedure (on or after 2026-11-20 13:33Z): `powershell -File tools/cold_hit.ps1 -Url https://necropsy-coldtest.vercel.app`, run once, record the date, `first_screen` time and `analyse(sample)` time here. Pass: the analyse time is 5 seconds or less and the plan's terms still allow a public hobby project. On failure, stop UI work and ask the user to choose a new host.
+
+Note: commit `d661837` still contained the old `api/index.py` (its deletion landed in the next commit). The canary copy was built from that archive with `api/` and `vercel.json` removed, so it is identical to the deployed `necropsy` skeleton.
