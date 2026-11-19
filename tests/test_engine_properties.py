@@ -221,3 +221,47 @@ def test_strategy_permutations_on_revision_corpus():
         data = corpus_bytes(name)
         assert Engine().run(data).stage == "revision", name
         _check_permutations(data)
+
+
+# ---------------------------------------------------------------- Property 8
+from hypothesis import strategies as st
+
+_SPECIAL_SCORES = (0.0, 5e-324, 1e-300, 1.0, 1e300, 1.7976931348623157e308)
+
+
+def _outcome(result):
+    return result.status, _keys(result)
+
+
+import random as _random
+
+
+def _with_corpus_and_random_examples(test):
+    for i, name in enumerate(CORPUS_NAMES):
+        test = example(corpus_bytes(name), _random.Random(i))(test)
+    return test
+
+
+@_with_corpus_and_random_examples
+@settings(max_examples=100, deadline=None)
+@given(engine_inputs, st.randoms(use_true_random=False))
+def test_coherence_cannot_change_outcome(data, rnd):
+    """Feature: structure-inference-engine, Property 8: Coherence cannot change the outcome
+
+    **Validates: Requirements 10.5, 11.1, 11.8**
+    """
+    baseline = _outcome(Engine().run(data))
+
+    def random_score(*args, **kwargs):
+        if rnd.random() < 0.5:
+            score = rnd.choice(_SPECIAL_SCORES)
+        else:
+            score = rnd.uniform(0.0, 1e300) * rnd.choice((1e-300, 1e-10, 1.0, 1e5))
+        return score, "scored"
+
+    with patch.object(engine_module, "row_coherence", random_score):
+        assert _outcome(Engine().run(data)) == baseline
+
+    with patch.object(engine_module, "row_coherence",
+                      lambda *a, **k: (None, "unscorable")):
+        assert _outcome(Engine().run(data)) == baseline
