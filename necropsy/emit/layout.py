@@ -35,6 +35,7 @@ _TGA_FIELDS = (
     ("width", 0x0C, "<H"),
     ("height", 0x0E, "<H"),
     ("bit_depth", 0x10, "B"),
+    ("image_descriptor", 0x11, "B"),
 )
 
 _TIFF_ENTRIES = (
