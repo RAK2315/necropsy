@@ -61,7 +61,7 @@ Rules for every task:
   - Must be visible: `mystery_e` shows header, data region and labelled fields; `mystery_b` shows the `pcx_palette_256` trailer; a 65,536-byte file scrolls smoothly.
   - _Requirements: 5, 6_
 
-- [ ] 9. RESOLVED screen and image
+- [x] 9. RESOLVED screen and image
   - Canvas drawing at the largest integer scale in an accent-bordered frame, render note, dimensions, row-by-row reveal under 2 seconds, closure line, trailer, revision path, alternative paths, revision diffs, declared versus actual pair.
   - Must be visible: `mystery_b` in palette colours; `mystery_c` in correct colours; `mystery_h` 6×6 with no padding column; `mystery_i` shows `declared: none (byte 0x02 = 0x00)` and `actual: rle_pcx` without scrolling at 1280×720; the external samples render.
   - _Requirements: 4, 8_

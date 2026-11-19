@@ -83,5 +83,31 @@ table.fields .eq { color: var(--faint); font-family: var(--sans); font-size: 11p
 /* examination layout */
 .exam { display: grid; grid-template-columns: 760px 1fr; gap: 28px; padding: 20px 24px 40px; max-width: 1400px; margin: 0 auto; }
 .exam-left { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
-.exam-right { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.exam-right { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
 .status-line { margin: 0; color: var(--muted); font-size: 12px; }
+/* outcome panels */
+.result-head { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.chip { font-family: var(--mono); font-size: 12px; letter-spacing: .06em; padding: 3px 10px; border-radius: 3px; }
+.chip-ok { background: #1d2a26; color: #a9cfc0; border: 1px solid #2c4039; }
+.chip-failed { background: transparent; color: var(--muted); border: 1px solid var(--faint); }
+.source { color: var(--muted); font-size: 13px; }
+.frame { margin: 0; }
+.well { display: grid; place-items: center; background: #0d1014; border: 1px solid var(--accent); border-radius: 3px; }
+canvas.pixels { image-rendering: pixelated; image-rendering: crisp-edges; display: block; }
+.no-image { color: var(--muted); font-size: 13px; text-align: center; padding: 0 16px; }
+figcaption { display: flex; flex-direction: column; gap: 2px; margin-top: 6px; }
+figcaption .dims { color: var(--text); font-size: 13px; }
+figcaption .note { color: var(--faint); font-size: 12px; }
+.closure { margin: 0; color: var(--accent); font-size: 12.5px; }
+.contradiction { border: 1px solid var(--line); border-left: 2px solid var(--accent); border-radius: 3px; padding: 10px 14px; background: var(--panel); }
+.c-title { margin: 0 0 6px; font-size: 13px; color: var(--text); }
+.c-grid { display: grid; grid-template-columns: 70px 1fr; row-gap: 2px; font-size: 13px; }
+.c-grid .k { color: var(--faint); }
+.c-grid .declared { color: var(--muted); text-decoration: line-through; text-decoration-color: var(--faint); }
+.c-grid .actual { color: var(--accent); }
+.c-proof { margin: 8px 0 0; font-size: 12px; color: var(--accent); }
+.facts { display: flex; flex-direction: column; gap: 2px; }
+.kv { display: grid; grid-template-columns: 110px 1fr; gap: 8px; font-size: 13px; }
+.kv .k { color: var(--faint); }
+.kv .v { color: var(--text); font-size: 12.5px; }
+.kv .v.sub { color: var(--muted); }
