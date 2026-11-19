@@ -60,6 +60,7 @@ These decisions are final. Each is recorded with its reason so later work does n
 9. **Field width that the bytes cannot distinguish is reported, not decided.** `<H`, `<I` and `<i` over the same bytes with zero high bytes are the same read. The engine lists every equivalent read.
 10. **When two routes reach the same answer, both are reported.** With the revision loop order unpinned, hypotheses-outer gives `["inclusive_bounds", "row_padding_variants"]` for mystery_h and strategies-outer gives `["row_padding_variants", "inclusive_bounds"]`. Both reach the same hypothesis, deduplication kept whichever came first, and the corpus asserted one exact path, so list order was deciding the reported path. The loop order is now pinned and defines the canonical path and nothing else. Every other same-depth path to the same hypothesis is recorded in `alternative_paths`. Reporting only one of two routes to the same answer is the same failure as promoting one of two closing candidates: the engine states what it found.
 11. **The pretty printer stays in this spec.** Task 11.3 specifies that the emitted `design.md` contains the closure arithmetic line from Requirement 8.4, so moving Requirements 8.4 to 8.7 to another spec would break spec emission's reference. The pretty printer is a text renderer, not a web UI; the UI spec needs its own rendering either way.
+12. **The emitted test file is named for pytest's default collection.** The emitted folder is meant to drop into a real repository and drive a build. A reader who clones it and types `pytest` must see the tests run. A file named `tests.py` is not collected by default, and a `pytest.ini` that works around a filename is worse than the right filename. The file is therefore `test_<module>.py`.
 
 ## Requirements
 
@@ -328,7 +329,7 @@ These decisions are final. Each is recorded with its reason so later work does n
 
 #### Acceptance Criteria
 
-1. WHEN given a `VerifiedHypothesis` or an `AmbiguousResult` together with the source bytes, THE Spec Emitter SHALL produce a folder named `<slug>/` containing exactly `requirements.md`, `design.md` and `tests.py`.
+1. WHEN given a `VerifiedHypothesis` or an `AmbiguousResult` together with the source bytes, THE Spec Emitter SHALL produce a folder named `<slug>/` containing exactly `requirements.md`, `design.md` and `test_<module>.py`, where `<module>` is the slug with `-` replaced by `_` (for example `test_tiff.py` or `test_unknown_9b3b124b.py`). The test file name SHALL match pytest's default collection pattern `test_*.py`, so that running `pytest` in the folder collects it. THE Spec Emitter SHALL NOT emit a pytest configuration file.
 2. THE slug SHALL be the probe name (`pcx`, `tga`, `pbm` or `tiff`) when a probe produced the result, and `unknown-<first 8 hex digits of the SHA-256 of the source bytes>` when Generic Search produced it.
 3. THE emitted `requirements.md` SHALL use the Kiro requirements structure (Introduction, Glossary, Requirements with user stories and EARS acceptance criteria).
 4. THE emitted `requirements.md` SHALL state, for every field, one acceptance criterion giving its name, offset in hex, struct format, endianness and size.
@@ -353,12 +354,12 @@ These decisions are final. Each is recorded with its reason so later work does n
     - the closure arithmetic;
     - each candidate's coherence, labelled as a heuristic;
     - every rejected hypothesis with its reason. When there are more than 500 rejections, it shall list the first 500 and state how many were omitted.
-11. THE emitted `tests.py` SHALL contain Hypothesis property tests against the module `parser_<slug with "-" replaced by "_">`:
+11. THE emitted `test_<module>.py` SHALL contain Hypothesis property tests against the module `parser_<module>`:
     - `parse(data)` never raises on arbitrary bytes of up to 65,536 bytes;
     - every field record that `parse` reports round-trips through `struct.unpack_from`;
     - whenever `parse` succeeds, the decoded pixels contain exactly `row_stride × height` bytes.
     For an ambiguous result, the tests SHALL target `parse_candidates(data)` instead.
-12. THE emitted `tests.py` SHALL embed the source bytes in base64 as a fixture when the source is at most 65,536 bytes. Its fixture tests SHALL assert the observed field values and closure. When the source is larger, the fixture tests SHALL skip with a stated reason.
+12. THE emitted `test_<module>.py` SHALL embed the source bytes in base64 as a fixture when the source is at most 65,536 bytes. Its fixture tests SHALL assert the observed field values and closure. When the source is larger, the fixture tests SHALL skip with a stated reason.
 13. WHEN given a `FailureReport`, THE Spec Emitter SHALL write nothing and return an `EmitError` stating that nothing was recovered.
 14. THE Spec Emitter SHALL be pure until a separate write step.
 15. THE write step SHALL:
@@ -372,7 +373,7 @@ These decisions are final. Each is recorded with its reason so later work does n
     - data region `[86, 150)`;
     - pixel bytes identical to the engine's.
     The original file SHALL be used only to check the result.
-17. WHEN a parser module is built from the reference reader and the emitted `requirements.md`, THE emitted `tests.py` for `mystery_c` and `mystery_e` SHALL pass under pytest.
+17. WHEN a parser module is built from the reference reader and the emitted `requirements.md`, and placed in one folder with the emitted `test_<module>.py`, THEN running pytest on that folder, with no file argument and no configuration file, SHALL collect the emitted tests and pass, for `mystery_c` and `mystery_e`.
 18. WHEN the spec emitted for `mystery_d` is given to the reference reader, THE reference reader SHALL enumerate candidates that include the true layout.
 19. THE emitted `requirements.md` and `design.md` for `mystery_e` and `mystery_d` SHALL pass Kiro's spec format validation.
 
@@ -403,7 +404,7 @@ These decisions are final. Each is recorded with its reason so later work does n
    - `baseline` is the mean of `mad` over every distinct row pair `(i, j)` with `i < j`. When there are more than 1,024 such pairs, it uses the 1,024 pairs chosen by `random.Random(0).sample(range(P), 1024)`, where `P` is the pair count and index `k` maps to the `k`-th pair in lexicographic order.
    - `coherence_score = adjacent / baseline`. A lower score means more coherent.
 3. WHEN `height < 2`, or all rows are identical so that `baseline = 0`, THE candidate SHALL have `coherence_status = "unscorable"` and `coherence_score = None`.
-4. WHEN `expected_decoded_bytes > 262,144`, THE candidate SHALL have `coherence_status = "not_computed"` and `coherence_score = None`, so that computation time stays bounded.
+4. THE candidate SHALL have `coherence_status = "not_computed"` and `coherence_score = None` whenever its coherence was not computed, for either of two reasons: `expected_decoded_bytes > 262,144`, so that computation time stays bounded; or the run terminated (deadline or cap) before that candidate's coherence step. No other status SHALL be used for these cases.
 5. EVERY candidate SHALL report `coherence_score`, `coherence_status` (`scored`, `unscorable` or `not_computed`) and `coherence_method = "row_mad_ratio"`.
 6. AN `AmbiguousResult` SHALL report `coherence_gap = (second − first) / second` over the two lowest scores, for information only. The gap SHALL be `None` when fewer than two candidates are scored or the second-lowest score is 0.
 7. THE coherence function's docstring SHALL name its three known failure modes:

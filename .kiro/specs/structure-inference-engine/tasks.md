@@ -317,7 +317,7 @@ Rules for every task:
     - Use `@settings(max_examples=100, deadline=None)`.
     - Tag: `Feature: structure-inference-engine, Generic search never raises`
 
-- [ ] 7. Engine
+- [x] 7. Engine
   - [x] 7.1 Implement the probe phase and candidate assembly in `necropsy/engine/engine.py`
     - `Engine(deadline_seconds=5.0, clock=time.monotonic)`.
     - `run()` creates one `Budget` and one ordered rejection list.
@@ -352,7 +352,7 @@ Rules for every task:
       - every type in `types.py`
     - _Requirements: 4.1, 4.8, 5.2, 5.3, 5.10, 6.1, 6.2, 6.3_
 
-  - [~] 7.4 Write unit tests in `tests/test_engine.py`
+  - [x] 7.4 Write unit tests in `tests/test_engine.py`
     - `b""` and a 2-byte input give `FAILED / input_too_short` with one entry.
     - A probe monkeypatched to raise gives `FAILED / internal_error` with detail starting with the class name.
     - An injected clock past the deadline on mystery_c gives `FAILED / deadline_exceeded`.
@@ -364,7 +364,7 @@ Rules for every task:
     - `partial_candidates`: a winner found before a deadline stop appears in `partial_candidates`.
     - _Requirements: 2.9, 3.3–3.6, 5.1–5.10, 6.1, 6.2, 10.4_
 
-- [ ] 8. Corpus
+- [x] 8. Corpus
   - [x] 8.1 Expose pixel content in `spike/make_samples.py`
     - Refactor so the pixel content each builder writes is available as functions, without changing any output byte:
       - `pcx_rle_rows()` gives the 64 decoded bytes behind mystery_b and mystery_i;
@@ -372,7 +372,7 @@ Rules for every task:
     - Verify the change: after running `python spike/make_samples.py`, all nine files match the committed versions byte for byte (`git diff --quiet spike/samples`).
     - _Requirements: 7.10_
 
-  - [~] 8.2 Write corpus tests in `tests/test_corpus.py`
+  - [x] 8.2 Write corpus tests in `tests/test_corpus.py`
     - One test per corpus file asserting exactly Requirements 7.1–7.9: status, stage, probe or `"generic"`, width, height, bit depth, header size, row stride or alignment, encoding, data region, trailer and revision path.
     - For mystery_d, mystery_f and mystery_g, assert:
       - `UNRESOLVED_AMBIGUITY` with stage `generic`;
@@ -385,8 +385,8 @@ Rules for every task:
     - No corpus file is `FAILED`.
     - _Requirements: 7.1–7.11_
 
-- [ ] 9. Engine property tests in `tests/test_engine_properties.py`
-  - [~] 9.1 Write Properties 1 and 2
+- [x] 9. Engine property tests in `tests/test_engine_properties.py`
+  - [x] 9.1 Write Properties 1 and 2
     - **Property 1: Never raises**
     - **Validates: Requirements 6.2, 6.3, 6.5**
     - **Property 2: Deadline bound**
@@ -397,7 +397,7 @@ Rules for every task:
     - Use `@settings(max_examples=100, deadline=None)`.
     - Tags: `Feature: structure-inference-engine, Property 1: Never raises` and `Property 2: Deadline bound`
 
-  - [~] 9.2 Write Properties 3, 4 and 5
+  - [x] 9.2 Write Properties 3, 4 and 5
     - **Property 3: Closure soundness**
     - **Validates: Requirements 1.7, 1.8, 1.14, 10.2, 10.3**
     - **Property 4: Field round-trip**
@@ -411,7 +411,7 @@ Rules for every task:
     - Use `@settings(max_examples=100, deadline=None)`.
     - Tags: `Property 3: Closure soundness`, `Property 4: Field round-trip`, `Property 5: Equivalent reads agree`
 
-  - [~] 9.3 Write Properties 7, 9 and 10
+  - [x] 9.3 Write Properties 7, 9 and 10
     - **Property 7: Outcome well-formed**
     - **Validates: Requirements 5.6, 5.7, 10.1, 10.2, 10.3**
     - **Property 9: No duplicate hypotheses**
@@ -430,7 +430,7 @@ Rules for every task:
     - Use `@settings(max_examples=100, deadline=None)`.
     - Tags: `Property 7: Outcome well-formed`, `Property 9: No duplicate hypotheses`, `Property 10: Deterministic`, `Property 15: Alternative paths are well-formed`
 
-  - [~] 9.4 Write Property 8
+  - [x] 9.4 Write Property 8
     - **Property 8: Coherence cannot change the outcome**
     - **Validates: Requirements 10.5, 11.1, 11.8**
     - Over `engine_inputs` with the corpus examples, plus `st.randoms()`:
@@ -462,8 +462,8 @@ Rules for every task:
     - Over `engine_inputs`, `render(run(data))` returns a string whose first line starts with the status. Use `@settings(max_examples=100, deadline=None)`.
     - Tag: `Feature: structure-inference-engine, Property 13: Pretty printer is total`
 
-- [ ] 11. Spec emission
-  - [~] 11.1 Implement `necropsy/emit/layout.py`
+- [x] 11. Spec emission
+  - [x] 11.1 Implement `necropsy/emit/layout.py`
     - `build_layout(result, data) -> dict` in schema `necropsy-layout/1`, exactly as written in design.md "Layout schema":
       - kinds `format`, `file` and `ambiguous`;
       - the per-origin table for PCX, TGA, TIFF, PBM and generic;
@@ -471,7 +471,7 @@ Rules for every task:
     - Slug: the probe name, or `unknown-<sha256[:8]>`.
     - _Requirements: 9.2, 9.6, 9.7, 9.8, 9.9_
 
-  - [~] 11.2 Implement `render_requirements` in `necropsy/emit/render.py`
+  - [x] 11.2 Implement `render_requirements` in `necropsy/emit/render.py`
     - Use the Kiro requirements structure from design.md "Emitted requirements.md".
     - Include one EARS criterion per field and tag entry, with name, hex offset, format, endianness and size.
     - State the data region, trailer, encoding and closure rule.
@@ -483,20 +483,20 @@ Rules for every task:
     - For ambiguous results, write one `WHERE candidate k …` requirement per candidate, plus the cannot-separate requirement naming the three coherence failure modes. Assert no candidate.
     - _Requirements: 9.3, 9.4, 9.5, 9.6, 9.7, 9.8, 9.9_
 
-  - [~] 11.3 Implement `render_design` in `necropsy/emit/render.py`
+  - [x] 11.3 Implement `render_design` in `necropsy/emit/render.py`
     - Use the Kiro design headings.
     - Include: structure tables, stage, source, revision path, data region, trailer, closure line, heuristic-labelled coherence, and numbered rejections.
     - List at most 500 rejections, followed by `… and N more not listed`.
     - _Requirements: 9.10_
 
-  - [~] 11.4 Implement `render_tests` in `necropsy/emit/render.py`
-    - Generate `tests.py` from the template in design.md "Emitted tests.py", importing `parser_<slug with - replaced by _>`.
+  - [x] 11.4 Implement `render_tests` in `necropsy/emit/render.py`
+    - Generate `test_<module>.py` (`<module>` = slug with `-` replaced by `_`) from the template in design.md "Emitted test_<module>.py", importing `parser_<module>`. Emit no pytest configuration file.
     - Embed the source as base64 when it is at most 65,536 bytes; otherwise set `SOURCE = None` and skip the fixture test.
     - For ambiguous results, target `parse_candidates` and `EXPECTED_CANDIDATES`.
     - The generated source must compile with `compile()`.
     - _Requirements: 9.11, 9.12_
 
-  - [~] 11.5 Implement `necropsy/emit/emit.py` and exports
+  - [x] 11.5 Implement `necropsy/emit/emit.py` and exports
     - `EmittedSpec`, `EmitError`, `emit_spec(result, data)` (pure) and `write_spec(spec, out_dir, overwrite=False)`, exactly as written in design.md "Spec emission".
     - `write_spec` enforces:
       - the `^[a-z0-9-]+$` slug check;
@@ -518,7 +518,7 @@ Rules for every task:
     - It contains no knowledge of any specific format.
     - _Requirements: 9.16, 9.17, 9.18_
 
-  - [~] 11.7 Write unit tests in `tests/test_emit.py`
+  - [x] 11.7 Write unit tests in `tests/test_emit.py`
     - Slugs:
       - mystery_e gives `tiff`, mystery_b gives `pcx`, mystery_a gives `pbm`;
       - mystery_d gives `unknown-` followed by its SHA-256 prefix.
@@ -531,7 +531,7 @@ Rules for every task:
     - mystery_b's width rule is the inclusive-bounds expression.
     - mystery_i's spec states the encoding declaration was overridden.
     - mystery_d's requirements state every candidate and the cannot-separate statement, and assert no single candidate.
-    - The generated `tests.py` compiles for every successful corpus file.
+    - The generated `test_<module>.py` compiles for every successful corpus file, and the emitted file names are exactly `requirements.md`, `design.md` and `test_<module>.py`.
     - A `FailureReport` gives `EmitError` and nothing is written.
     - `write_spec`:
       - refuses an existing folder without `overwrite`;
@@ -541,20 +541,20 @@ Rules for every task:
     - The reference reader source contains no `necropsy` import.
     - _Requirements: 9.1–9.15_
 
-  - [~] 11.8 Write acceptance tests in `tests/test_emit_acceptance.py`
+  - [x] 11.8 Write acceptance tests in `tests/test_emit_acceptance.py`
     - mystery_e:
       - Emit the spec.
       - Pass only the emitted `requirements.md` text to the reference reader.
       - Parse mystery_e's bytes.
       - Assert width 8, height 8, bit depth 8, data region `[86, 150)`, and pixels equal to the engine's `candidate.decoded`.
     - Emitted tests under pytest, for mystery_c and mystery_e:
-      - Write `parser_<slug>.py` from `make_parser_module(requirements.md)` and the emitted `tests.py` into `tmp_path`.
-      - Run `python -m pytest <tmp_path> -q` in a subprocess with `PYTHONPATH=<tmp_path>`.
+      - Write `parser_<slug>.py` from `make_parser_module(requirements.md)` and the emitted `test_<module>.py` into `tmp_path`.
+      - Run `python -m pytest <tmp_path> -q` against the directory, not the file, in a subprocess with `PYTHONPATH=<tmp_path>`. This proves default collection works. Assert at least one test passed.
       - Assert exit code 0.
     - mystery_d: `parse_candidates` on the emitted layout includes the true layout (8×8, 8 bpp, start 40).
     - _Requirements: 9.16, 9.17, 9.18_
 
-  - [~] 11.9 Write emission property tests in `tests/test_emit.py`
+  - [x] 11.9 Write emission property tests in `tests/test_emit.py`
     - **Property 11: Spec emitter is total**
     - **Validates: Requirements 9.1, 9.6, 9.13, 6.4**
     - **Property 12: Emitted layout reproduces the engine**
