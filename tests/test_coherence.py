@@ -74,3 +74,26 @@ def test_docstring_states_failure_modes():
     assert "Identical bytes at an identical stride" in doc
     assert "different bit depths" in doc
     assert "A header can absorb whole rows" in doc
+
+
+# Feature: structure-inference-engine, Property 14: Coherence function is total
+# **Validates: Requirements 11.2, 11.3, 11.4, 6.4**
+from hypothesis import given, settings, strategies as st  # noqa: E402
+
+
+@settings(max_examples=100, deadline=None)
+@given(
+    decoded=st.binary(max_size=65_536),
+    height=st.integers(min_value=-5, max_value=70_000),
+    row_stride=st.integers(min_value=-5, max_value=70_000),
+)
+def test_row_coherence_is_total(decoded, height, row_stride):
+    import math
+
+    score, status = row_coherence(decoded, height, row_stride)
+    if status == "scored":
+        assert isinstance(score, float)
+        assert math.isfinite(score) and score >= 0
+    else:
+        assert status in ("unscorable", "not_computed")
+        assert score is None
