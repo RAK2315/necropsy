@@ -42,11 +42,9 @@ def test_external_a_pcx_resolves_with_exact_palette_pixels():
     assert "palette: pcx_palette_256" in c["render"]["note"]
 
 
-# FINDING (2026-11-19): the engine returns FAILED/exhausted for external_b with an arithmetic_mismatch of 26 bytes.
-# Pillow writes the TGA 2.0 footer (8 offset bytes + "TRUEVISION-XFILE.\0"), and the engine's trailer registry only
-# knows pcx_palette_256. Per Requirement 11.15 nothing is adjusted to make this pass. Strict xfail: when the engine
-# gains a TGA footer entry this test starts passing and the xfail must be removed.
-@pytest.mark.xfail(strict=True, reason="finding: engine does not know the TGA 2.0 footer (26-byte discrepancy)")
+# History: on 2026-11-19 the engine returned FAILED/exhausted for external_b with an arithmetic_mismatch of 26 bytes,
+# because Pillow writes the TGA 2.0 footer and the Trailer Registry knew only pcx_palette_256. This test was a strict
+# xfail until the engine added the tga2_footer entry (commit 53973dc); it then passed with no change here.
 def test_external_b_tga_resolves_upright_with_flip_note():
     p = payload("external_b")
     assert p["status"] == "RESOLVED"
@@ -57,10 +55,22 @@ def test_external_b_tga_resolves_upright_with_flip_note():
     assert "rows flipped: file declares bottom-left origin" in c["render"]["note"]
 
 
-def test_external_b_finding_is_exactly_the_26_byte_footer():
-    """Documents the finding so a change in the engine's behaviour is noticed."""
+def test_external_b_tga2_footer_is_excluded_from_the_data_region():
+    """Regression guard for the tga2_footer trailer entry, from the 2026-11-19 finding.
+
+    external_b is 18 header bytes + 64 x 48 x 3 pixel bytes + the 26-byte TGA 2.0 footer Pillow writes
+    (extension-area offset, developer-area offset, "TRUEVISION-XFILE." and a NUL). The engine must
+    recognise the footer and stop the data region exactly 26 bytes before the end of the file.
+    """
+    import base64
     data = (EXT / "external_b").read_bytes()
+    assert len(data) == 18 + 64 * 48 * 3 + 26 and data[-18:] == b"TRUEVISION-XFILE.\x00"
     r = Engine().run(data)
-    assert r.status == "FAILED" and r.termination == "exhausted"
-    assert r.rejections[0].reason == "arithmetic_mismatch" and r.rejections[0].discrepancy == 26
-    assert data[-18:] == b"TRUEVISION-XFILE.\x00" and len(data) == 18 + 64 * 48 * 3 + 26
+    assert r.status == "RESOLVED"
+    c = r.candidate
+    assert c.trailer == "tga2_footer"
+    assert (c.data_start, c.data_end) == (18, len(data) - 26)
+    assert c.data_end - c.data_start == 64 * 48 * 3
+    p = to_payload(r, data, 1.0)
+    _, _, body = read_ppm(EXT / "source.ppm")
+    assert base64.b64decode(p["candidates"][0]["render"]["data_b64"]) == body
