@@ -4,6 +4,7 @@ The reference reader is given only the emitted requirements.md text. The origina
 corpus bytes are the input being parsed, and the engine result is the check.
 """
 import os
+import re
 import subprocess
 import sys
 
@@ -52,22 +53,28 @@ def test_mystery_e_reference_reader_reproduces_layout():  # Req 9.16
 def test_emitted_tests_pass_under_pytest(name, tmp_path):  # Req 9.17
     _, files, slug = _emit(name)
     module_src = make_parser_module(files["requirements.md"])
-    tests_src = files["tests.py"]
+    test_name = "test_" + slug.replace("-", "_") + ".py"  # Req 9.1
+    assert test_name in files, sorted(files)
+    tests_src = files[test_name]
     assert "necropsy" not in module_src.replace("necropsy-layout", "")
     assert "import necropsy" not in tests_src and "from necropsy" not in tests_src
 
     module_name = "parser_" + slug.replace("-", "_")
     (tmp_path / (module_name + ".py")).write_bytes(module_src.encode("utf-8"))
-    (tmp_path / "tests.py").write_bytes(tests_src.encode("utf-8"))
+    (tmp_path / test_name).write_bytes(tests_src.encode("utf-8"))
+    for cfg in ("pytest.ini", "setup.cfg", "tox.ini", "pyproject.toml", "conftest.py"):
+        assert not (tmp_path / cfg).exists(), cfg
 
     env = dict(os.environ)
     env["PYTHONPATH"] = str(tmp_path)
     proc = subprocess.run(
-        [sys.executable, "-m", "pytest", str(tmp_path / "tests.py"), "-q", "-p", "no:cacheprovider"],
+        [sys.executable, "-m", "pytest", str(tmp_path), "-q", "-p", "no:cacheprovider"],
         cwd=str(tmp_path), env=env, capture_output=True, text=True, timeout=300,
     )
-    assert proc.returncode == 0, proc.stdout + proc.stderr
-
+    out = proc.stdout + proc.stderr
+    assert proc.returncode == 0, out
+    m = re.search(r"(\d+) passed", out)
+    assert m and int(m.group(1)) >= 1, out
 
 def test_mystery_d_candidates_include_true_layout():  # Req 9.18
     _, files, _ = _emit("mystery_d")
