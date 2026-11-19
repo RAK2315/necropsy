@@ -3,8 +3,10 @@
 emit_spec is pure. write_spec is the only function that writes files, only inside
 the given directory and only for a valid slug. Neither function raises.
 
-Newline choice: file text is encoded to UTF-8 and written as bytes, so "\\n" in the
-rendered text stays "\\n" on every platform (no CRLF translation) and no BOM is added.
+Newline choice: file text is encoded to UTF-8 and written as bytes, so "\
+" in the
+rendered text stays "\
+" on every platform (no CRLF translation) and no BOM is added.
 """
 
 from __future__ import annotations
@@ -17,13 +19,15 @@ from necropsy.emit.layout import build_layout
 from necropsy.emit.render import render_design, render_requirements, render_tests
 
 _SLUG_RE = re.compile(r"[a-z0-9-]+")
-_FILE_NAMES = ("requirements.md", "design.md", "tests.py")
+def _file_names(slug):
+    """Emitted file names: test_<module>.py where <module> is the slug with "-" as "_"."""
+    return ("requirements.md", "design.md", "test_" + slug.replace("-", "_") + ".py")
 
 
 @dataclass(frozen=True)
 class EmittedSpec:
     slug: str
-    files: tuple  # ((name, text), ...) for requirements.md, design.md, tests.py
+    files: tuple  # ((name, text), ...) for requirements.md, design.md, test_<module>.py
 
 
 @dataclass(frozen=True)
@@ -47,7 +51,7 @@ def emit_spec(result, data):
             render_design(layout, result, data),
             render_tests(layout, result, data),
         )
-        return EmittedSpec(slug, tuple(zip(_FILE_NAMES, texts)))
+        return EmittedSpec(slug, tuple(zip(_file_names(slug), texts)))
     except Exception as exc:
         return EmitError("emit error: " + type(exc).__name__)
 
@@ -59,7 +63,7 @@ def write_spec(spec, out_dir, overwrite=False):
         if not isinstance(slug, str) or not _SLUG_RE.fullmatch(slug):
             return EmitError("invalid slug")
         files = tuple(getattr(spec, "files", ()))
-        if tuple(n for n, _ in files) != _FILE_NAMES:
+        if tuple(n for n, _ in files) != _file_names(slug):
             return EmitError("invalid files")
         base = pathlib.Path(out_dir).resolve()
         target = (base / slug).resolve()
