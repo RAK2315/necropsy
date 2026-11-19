@@ -165,10 +165,16 @@ def _parse(layout, data):
     else:
         end = len(data)
         for tr in d.get("trailers") or []:
-            pos = len(data) - tr["length"]
-            if pos >= start and pos >= 0 and data[pos] == tr["marker"]:
-                end = pos
-                break
+            try:
+                pos = len(data) - tr["length"]
+                sig = bytes.fromhex(tr["signature"])
+                at = pos + tr["signature_offset"]
+                if (pos >= start and pos >= 0 and at >= 0
+                        and data[at:at + len(sig)] == sig and len(sig) > 0):
+                    end = pos
+                    break
+            except Exception:
+                continue
 
     enc = d["encoding"]
     if isinstance(enc, dict):

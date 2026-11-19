@@ -65,7 +65,8 @@ def _slug_for(probes: set, data: bytes) -> str:
 
 def _trailers(origin: str) -> list:
     return [
-        {"name": t.name, "length": t.length, "marker": t.marker}
+        {"name": t.name, "length": t.length, "signature": t.signature.hex(),
+         "signature_offset": t.signature_offset}
         for t in TRAILER_REGISTRY
         if origin in t.applies_to
     ]

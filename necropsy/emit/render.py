@@ -216,10 +216,11 @@ def _data(lay: dict, cand, origin: str) -> list:
     trailers = d.get("trailers") or []
     for t in trailers:
         out.append(
-            "WHEN the byte at offset (file length - %d) is at or after the data start and equals "
-            "0x%02X, THE parser SHALL treat the trailing %s as trailer `%s` and end the data "
-            "region at that position."
-            % (t["length"], t["marker"], _plural(t["length"], "byte"), t["name"])
+            "WHEN offset (file length - %d) is at or after the data start and the bytes starting "
+            "%d %s after that offset equal the signature 0x%s, THE parser SHALL treat the "
+            "trailing %s as trailer `%s` and end the data region at offset (file length - %d)."
+            % (t["length"], t["signature_offset"], _plural(t["signature_offset"], "byte"),
+               t["signature"].upper(), _plural(t["length"], "byte"), t["name"], t["length"])
         )
     if not trailers:
         out.append("THE parser SHALL NOT strip any trailer from the data region.")
