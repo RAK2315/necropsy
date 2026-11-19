@@ -98,6 +98,45 @@ def test_decoder_unconsumed_req_1_11():
     assert r.status == "unconsumed" and r.data is None
 
 
+@pytest.mark.parametrize(
+    "data, start, end, max_out, status, consumed_to",
+    [
+        # ok, stopped exactly at end (Req 1.11: ok -> data_end). Bytes at [1, 4):
+        # 1: 0x41 literal; 2: 0xC2 run marker; 3: 0x07 value (2 x 0x07). Out = 3.
+        # Byte 4 (0xEE) is beyond end and untouched. consumed_to = end = 4.
+        (b"\xEE\x41\xC2\x07\xEE", 1, 4, 3, "ok", 4),
+        # overrun, value byte followed by leftovers. Bytes: 0: 0xC5 marker (5 copies);
+        # 1: 0x09 value; 2: 0x07 leftover. max 4 < 5. Index after value byte = 1 + 1 = 2
+        # (not data_end 3).
+        (b"\xC5\x09\x07", 0, 3, 4, "overrun", 2),
+        # overrun after partial output, with start offset. 0: 0xEE junk; 1: 0x01 literal;
+        # 2: 0xC5 marker; 3: 0x09 value. 1 + 5 = 6 > 4. After value byte = 3 + 1 = 4.
+        (b"\xEE\x01\xC5\x09", 1, 4, 4, "overrun", 4),
+        # underrun, marker last. 0: 0x41 literal; 1: 0xC2 marker, no value byte;
+        # 2: 0xEE beyond end. consumed_to = end = 2.
+        (b"\x41\xC2\xEE", 0, 2, 3, "underrun", 2),
+        # underrun, region ended early. 0: 0x41; 1: 0x42 (2 bytes out, max 5);
+        # 2: 0xEE beyond end. consumed_to = end = 2.
+        (b"\x41\x42\xEE", 0, 2, 5, "underrun", 2),
+        # unconsumed, start offset. 0: 0xEE junk; 1: 0x41; 2: 0x42 (output full at max 2);
+        # 3: 0x43 first leftover; 4: 0x44 leftover. First leftover index = 1 + 2 = 3.
+        (b"\xEE\x41\x42\x43\x44", 1, 5, 2, "unconsumed", 3),
+        # out-of-range: start < 0 -> start = -1.
+        (b"\x01", -1, 1, 1, "underrun", -1),
+        # out-of-range: end 5 > len 1 -> start = 0.
+        (b"\x01", 0, 5, 1, "underrun", 0),
+        # out-of-range: start 2 > end 1 -> start = 2.
+        (b"\x01\x02", 2, 1, 1, "underrun", 2),
+        # negative max_output_bytes -> start = 1.
+        (b"\x01\x02", 1, 2, -1, "underrun", 1),
+    ],
+)
+def test_decoder_consumed_to_per_status_req_1_11(data, start, end, max_out, status, consumed_to):
+    r = rle_pcx_decode(data, start, end, max_out)
+    assert r.status == status
+    assert r.consumed_to == consumed_to
+
+
 def test_decoder_bad_range_is_underrun_not_raise():
     # design.md "Closure": start < 0, end > len(data), start > end, max < 0 -> underrun.
     assert rle_pcx_decode(b"\x01", -1, 1, 1).status == "underrun"
@@ -270,11 +309,16 @@ def test_mystery_b_7x7_rle_does_not_close_decision_4():
     data = corpus_bytes("mystery_b")
     v = check_closure(hyp(7, 7, header_size=128, encoding="rle_pcx", probe_name="pcx"), data)
     assert v.ok is False
-    assert v.reason in ("decoder_overrun", "decoder_underrun", "decoder_unconsumed")
+    # Req 7.2 / tasks.md 2.4: the stream decodes 49 bytes before the region ends.
+    assert v.reason == "decoder_unconsumed"
 
 
 def test_mystery_b_only_area_64_shapes_close_decision_4():
     data = corpus_bytes("mystery_b")
+    # Fixed per tasks.md 2.4: encoding "rle_pcx" and origin "pcx" (probe_name="pcx"),
+    # because the PCX palette trailer then applies and the RLE region [128, 186)
+    # decodes to 64 bytes. Under encoding "none" the region is 58 bytes, so the
+    # closing shapes would have area 58, not 64.
     closing = set()
     for w in range(1, 257):
         for h in range(1, 257):
