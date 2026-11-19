@@ -577,6 +577,31 @@ Rules for every task:
   - Ask the user if questions arise.
   - _Requirements: 5.4, 9.19_
 
+- [ ] 13. TGA 2.0 footer in the Trailer Registry
+  - [~] 13.1 Generalise `TrailerEntry` and add `tga2_footer` in `necropsy/engine/trailers.py`
+    - `TrailerEntry(name, length, signature: bytes, signature_offset: int, applies_to)` and `match_trailer`, exactly as in design.md "Trailer Registry".
+    - `pcx_palette_256` becomes signature `b"\x0c"` at offset 0, with unchanged behaviour.
+    - Add `tga2_footer`: length 26, signature `b"TRUEVISION-XFILE.\x00"` at offset 8, applies to `tga` and `generic`.
+    - In `necropsy/engine/generic.py`, try `rle_pcx` only when the matched trailer is `pcx_palette_256` (Requirement 4.5).
+    - The TGA probe and `check_closure` are unchanged.
+    - _Requirements: 1.3, 1.5, 1.6, 4.5_
+
+  - [~] 13.2 Update spec emission for signature trailers
+    - Layout trailers use `{"name", "length", "signature" (hex), "signature_offset"}` (design.md "Layout schema"). Update `necropsy/emit/layout.py`, `tests/support/reference_reader.py` and any trailer wording in `necropsy/emit/render.py`.
+    - TGA layouts list `tga2_footer`.
+    - _Requirements: 9.5, 9.6, 9.16_
+
+  - [~] 13.3 Write tests for the footer
+    - `tests/test_closure.py`: both registry entries in order; `tga2_footer` matches for origins `tga` and `generic` and not `pcx`; a one-byte change to the signature stops the match; the existing `pcx_palette_256` tests still pass unchanged.
+    - `tests/test_corpus.py`: `external_b` per Requirement 7.12, including the data region `[18, 9234)`, trailer `tga2_footer`, `image_descriptor` `(0x00,)`, and decoded bytes equal to `source.ppm` stored bottom row first in BGR order. The nine `mystery_*` results are unchanged.
+    - `tests/test_emit.py`: the emitted TGA layout lists `tga2_footer` with its signature, and the reference reader reproduces `external_b` from the emitted `requirements.md` alone.
+    - _Requirements: 1.5, 4.5, 7.12, 9.16_
+
+  - [~] 13.4 Update `tests/ui/test_external.py` for the resolved finding
+    - Its own comment says the strict xfail must be removed when the engine gains a TGA footer entry. Remove it, and replace the finding test with one asserting `external_b` resolves with trailer `tga2_footer`.
+    - If the UI-level assertions in the formerly xfailed test fail for a UI reason, report it; do not change UI code in this spec.
+    - _Requirements: 7.12_
+
 ## Notes
 
 - The expected corpus values and candidate counts (18, 8 and 8) come from a reference model of these exact rules, recorded in design.md. A mismatch means the implementation and the spec disagree; report it, do not tune either.
@@ -607,7 +632,11 @@ Rules for every task:
     { "id": 15, "tasks": ["11.9"] },
     { "id": 16, "tasks": ["10.1"] },
     { "id": 17, "tasks": ["10.2"] },
-    { "id": 18, "tasks": ["12"] }
+    { "id": 18, "tasks": ["13.1"] },
+    { "id": 19, "tasks": ["13.2"] },
+    { "id": 20, "tasks": ["13.3"] },
+    { "id": 21, "tasks": ["13.4"] },
+    { "id": 22, "tasks": ["12"] }
   ]
 }
 ```

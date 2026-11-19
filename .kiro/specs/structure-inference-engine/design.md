@@ -248,19 +248,21 @@ One `Budget` is created per `run()` call. It is passed to every phase, so the de
 ### Trailer Registry (`engine/trailers.py`)
 
 ```
-TrailerEntry(name: str, length: int, marker: int, applies_to: frozenset[str])
+TrailerEntry(name: str, length: int, signature: bytes, signature_offset: int, applies_to: frozenset[str])
 TRAILER_REGISTRY = (
-    TrailerEntry("pcx_palette_256", 769, 0x0C, frozenset({"pcx", "generic"})),
+    TrailerEntry("pcx_palette_256", 769, b"\x0c", 0, frozenset({"pcx", "generic"})),
+    TrailerEntry("tga2_footer", 26, b"TRUEVISION-XFILE.\x00", 8, frozenset({"tga", "generic"})),
 )
 def match_trailer(data, header_size, origin, registry=TRAILER_REGISTRY):
     n = len(data)
     for e in registry:
-        if origin in e.applies_to and n - e.length >= header_size and data[n - e.length] == e.marker:
+        s = n - e.length + e.signature_offset
+        if origin in e.applies_to and n - e.length >= header_size and data[s:s + len(e.signature)] == e.signature:
             return n - e.length, e.name
     return n, None
 ```
 
-The `applies_to` scope keeps a one-byte marker from cutting the tail off TGA, PBM or TIFF hypotheses. TIFF hypotheses declare their own `data_end`, so the registry never applies to them. A future TGA footer or GIF trailer is one new entry, with no change to `check_closure`.
+The `applies_to` scope keeps the one-byte PCX signature from cutting the tail off TGA, PBM or TIFF hypotheses. The 18-byte TGA footer signature is safe to apply to Generic Search too. TIFF hypotheses declare their own `data_end`, so the registry never applies to them. Adding `tga2_footer` needed no change to `check_closure`; a future GIF trailer is one more entry.
 
 ### Closure (`engine/closure.py`)
 
@@ -446,7 +448,7 @@ def generic_search(data, budget, on_reject):
             if data[o] in VALID_BIT_DEPTHS: depths.setdefault(data[o], []).append(o)
         end, trailer = match_trailer(data, L, "generic")
         sizes = [("none", end - L)]
-        if trailer is not None:
+        if trailer == "pcx_palette_256":
             n = rle_pcx_output_length(data, L, end)
             if n: sizes.append(("rle_pcx", n))
         for enc, S in sizes:
@@ -561,7 +563,7 @@ The emitted `requirements.md` contains exactly one fenced block whose info strin
   },
   "image": {"width": <expr>, "height": <expr>, "bit_depth": <expr>, "row_alignment": 1 | 2 | 4},
   "data": {"start": <expr>, "end": <expr> | null, "encoding": <encoding>,
-           "trailers": [ {"name": str, "length": int, "marker": int} ]},
+           "trailers": [ {"name": str, "length": int, "signature": "<hex>", "signature_offset": int} ]},
   "equivalent_reads": { "<field>": [[fmt, offset], ...] },
   "observed": { "<name>": int, ... },
   "candidates": [ <layout without "candidates">, ... ]
@@ -581,7 +583,7 @@ Kind and content by origin:
 | Origin | Kind | Notes |
 |---|---|---|
 | PCX | `format` | Width and height are `{"add": [{"sub": ["xmax", "xmin"]}, 1]}` when `inclusive_bounds` is in the path, otherwise `"xmax"` and `"ymax"`. Encoding is `{"field": "encoding", "values": {"0": "none", "1": "rle_pcx"}}`, or the literal `"rle_pcx"` when `rle_pcx` is in the path. Alignment is taken from the result. Trailers list `pcx_palette_256`. |
-| TGA | `format` | Start is `{"add": [18, "id_length", {"mul": ["color_map_type", "color_map_length", {"ceil_div": ["color_map_entry_size", 8]}]}]}`. Encoding is mapped from `image_type`. |
+| TGA | `format` | Start is `{"add": [18, "id_length", {"mul": ["color_map_type", "color_map_length", {"ceil_div": ["color_map_entry_size", 8]}]}]}`. Encoding is mapped from `image_type`. Trailers list `tga2_footer`. |
 | TIFF | `format` | `byte_order` is set, with the tag table as specified in Requirement 2.8. Start is `"strip_offset"`; end is `{"add": ["strip_offset", "strip_byte_count"]}`. Encoding is `{"field": "compression", "values": {"1": "none"}, "otherwise": "unsupported"}`. |
 | PBM | `file` | The token offsets are this file's. The prose states the text-header rules. |
 | Generic | `file` | The first equivalent read of each field is used as the field; all reads appear in `equivalent_reads`. The prose states that this is one file's layout, not a format. |
