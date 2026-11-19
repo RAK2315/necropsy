@@ -197,3 +197,7 @@ docs/KIRO-LOG.md       log of every file the Kiro agent wrote
 ## Licence
 
 MIT. See `LICENSE`.
+
+## External samples
+
+The nine files in `spike/samples/` are written by this project's own generator, so they cannot show the engine reading files it did not write. `spike/samples/external/` holds files written by Pillow's PCX and TGA encoders, with the source image and the exact calls. See [spike/samples/external/README.md](spike/samples/external/README.md).

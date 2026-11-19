@@ -238,3 +238,16 @@ Side effect to clean up: `vercel curl` added a Protection Bypass for Automation 
 Cold test procedure (on or after 2026-11-20 13:33Z): `powershell -File tools/cold_hit.ps1 -Url https://necropsy-coldtest.vercel.app`, run once, record the date, `first_screen` time and `analyse(sample)` time here. Pass: the analyse time is 5 seconds or less and the plan's terms still allow a public hobby project. On failure, stop UI work and ask the user to choose a new host.
 
 Note: commit `d661837` still contained the old `api/index.py` (its deletion landed in the next commit). The canary copy was built from that archive with `api/` and `vercel.json` removed, so it is identical to the deployed `necropsy` skeleton.
+| 2026-11-19 13:39:43Z | PostFileSave | `.kiro/specs/necropsy-ui/requirements.md` | `eeb10b0` |
+| 2026-11-19 13:40:20Z | PostFileSave | `.kiro/specs/necropsy-ui/requirements.md` | `eeb10b0` |
+
+
+## FINDING: external_b (Pillow TGA) does not resolve (task 5, 2026-11-19)
+
+`spike/samples/external/external_a` (Pillow PCX, 64 x 48, 8-bit palette) returns `RESOLVED` with `revision_path = ['inclusive_bounds']`, closure `rle_pcx decoded [128, 393) to 3072 bytes = 64 x 48`, trailer `pcx_palette_256`. Rendered pixels equal `source.ppm` exactly.
+
+`spike/samples/external/external_b` (Pillow TGA, 24-bit, uncompressed, descriptor `0x00`, bottom-left) returns **`FAILED / exhausted`** with three rejections, all `arithmetic_mismatch (discrepancy=26)`.
+
+Cause: the file is 9,260 bytes = 18 header + 9,216 pixel bytes + 26 trailing bytes. The 26 bytes are the TGA 2.0 footer Pillow always writes (4-byte extension offset, 4-byte developer-area offset, `TRUEVISION-XFILE.` and a NUL). The engine's trailer registry holds only `pcx_palette_256`, so the data region runs 26 bytes past `row_stride x height`. The engine's own design notes that a TGA footer is one new registry entry; none exists yet.
+
+Per Requirement 11.15 nothing was changed: not the engine, the sample, the 64 x 48 size, the `save` arguments or the expectations. The test that states the expected outcome (`RESOLVED`, upright, flip note) is committed as a strict xfail in `tests/ui/test_external.py`, plus a test that pins the finding. Decision needed from the user: add a TGA 2.0 footer entry to the engine's Trailer Registry (an engine change, which is a separate task and needs the engine spec updated), or accept that real TGA 2.0 files fail.

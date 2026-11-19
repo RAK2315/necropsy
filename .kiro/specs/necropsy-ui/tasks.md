@@ -39,7 +39,7 @@ Rules for every task:
   - Tests: status for all nine corpus files per the engine spec; `mystery_i` assertions from Requirement 15.5; candidate order equals discovery order for `d`, `f`, `g`; zip holds `<slug>/` with exactly three files equal to the `emit_spec` text; sample and renamed bytes give identical payloads; Hypothesis test on the endpoint (200 and valid JSON). Add a test that forces the size budget with a large rejection list.
   - _Requirements: 1, 2, 12.4 to 12.8, 15.3 to 15.6_
 
-- [ ] 5. External samples
+- [x] 5. (external_a resolves; external_b is a finding, see docs/KIRO-LOG.md) External samples
   - `pip install pillow` into the dev environment only (`requirements-dev.txt`, not `requirements.txt`). Never write the sample bytes by hand.
   - Write `tools/make_external_samples.py`: it generates a 64 × 48 source image with at most 256 colours, writes `spike/samples/external/source.ppm`, and calls Pillow to write `external_a` (mode `P`, PCX) and `external_b` (mode `RGB`, TGA, no compression, bottom-left origin). The size is fixed now and is not changed after the engine is run. Commit the outputs unmodified.
   - Write `spike/samples/external/README.md` with the Pillow version, Python version, the exact `save` calls, the source image and script, date, the TGA descriptor byte as written, and the statement that Pillow's encoders wrote the bytes, not this project's code. Link it from the top-level `README.md`.
