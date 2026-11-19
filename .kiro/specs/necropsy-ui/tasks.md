@@ -16,19 +16,19 @@ Rules for every task:
 
 ## Tasks
 
-- [ ] 1. Skeleton
+- [x] 1. Skeleton
   - Create `app.py` (repo root) with `POST /api/analyze` (65,536 cap, 413, engine call, `engine_ms`, minimal JSON of `status` and `total_checks`), a one-page `public/index.html`, `requirements.txt` with `fastapi`.
   - Test with `TestClient`: 413 over cap, 200 on empty body, 200 on `mystery_a`.
   - _Requirements: 1.1 to 1.9, 14.7_
 
-- [ ] 2. Deploy the skeleton and start the idle clock
+- [x] 2. Deploy the skeleton and start the idle clock
   - Deploy to Vercel Hobby as the project `necropsy` and as the canary `necropsy-coldtest`. Confirm the page loads and a sample returns a real engine result on `necropsy`. Write both URLs and the canary's deploy time into `docs/KIRO-LOG.md`.
   - Add `tools/cold_hit.ps1` that times the first-screen request and an analyse request.
   - **Host gate canary.** The Requirement 14 gate is measured against a second project, `necropsy-coldtest`, deployed once from this same skeleton and never requested or redeployed afterwards. The main project `necropsy` is hit constantly by tasks 3 to 14, so its idle timer never runs. Nothing may request the `necropsy-coldtest` URL until the cold test in task 15. If the two projects diverge enough that the canary stops being representative (for example the main project changes runtime, dependencies, region or plan), the gate SHALL be re-run on a fresh untouched copy deployed from the then-current code, and its 24-hour clock restarted.
   - Continue with tasks 3 onward meanwhile, deploying and testing against `necropsy` freely. Deploy by day 10 of the build.
   - _Requirements: 14.1, 14.2, 14.6, 14.7_
 
-- [ ] 3. Pixel decoder
+- [x] 3. Pixel decoder
   - Create `web/pixels.py` as in design.md, including the palette path.
   - Tests: golden pixels for `mystery_a`, `b`, `c`, `e`, `h`, `i` per Requirement 3.14 (palette for `b` and `i`, BGR for `c`, padding for `h`, PBM polarity for `a`), synthetic bottom-left buffer flips and says so, a record that is not a one-element integer tuple is ignored, synthetic 4-bit with odd width and padding, synthetic 32-bit, short palette gives greyscale, 16-bit gives the failure reason, inconsistent geometry gives its reason. Hypothesis test: never raises on arbitrary bytes and geometry.
   - _Requirements: 3.1 to 3.15_

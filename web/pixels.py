@@ -1,0 +1,96 @@
+"""Turn a candidate's decoded pixel bytes into a viewable pixel buffer.
+
+Requirement 3. The engine returns raw bytes plus geometry; this is the conversion.
+decode() never raises: it returns a PixelBuffer or a RenderFailure.
+"""
+from dataclasses import dataclass
+
+SUPPORTED_DEPTHS = (1, 4, 8, 24, 32)
+PALETTE_LENGTH = 768
+PALETTE_NAME = "pcx_palette_256"
+FLIP_NOTE = "rows flipped: file declares bottom-left origin"
+STORED_NOTE = "rows shown in stored order"
+
+
+@dataclass(frozen=True)
+class PixelBuffer:
+    width: int
+    height: int
+    channels: str          # "grey8" (1 byte per pixel) or "rgb8" (3 bytes per pixel, R G B)
+    data: bytes            # exactly width * height * bytes-per-pixel
+    note: str
+
+
+@dataclass(frozen=True)
+class RenderFailure:
+    reason: str
+
+
+def _is_int(v) -> bool:
+    return isinstance(v, int) and not isinstance(v, bool)
+
+
+def _bit_table_1(black_is_one: bool) -> list:
+    """For each byte value, the 8 grey bytes it expands to, most significant bit first."""
+    one, zero = (0, 255) if black_is_one else (255, 0)
+    return [bytes(one if (b >> (7 - k)) & 1 else zero for k in range(8)) for b in range(256)]
+
+
+_TABLE_1 = {True: _bit_table_1(True), False: _bit_table_1(False)}
+_TABLE_4 = [bytes(((b >> 4) * 17, (b & 0x0F) * 17)) for b in range(256)]
+
+
+def _interleave(r: bytes, g: bytes, b: bytes) -> bytes:
+    out = bytearray(3 * len(r))
+    out[0::3], out[1::3], out[2::3] = r, g, b
+    return bytes(out)
+
+
+def decode(decoded, width, height, bit_depth, row_stride, probe_name,
+           palette=None, bottom_left=False):
+    """Return a PixelBuffer, or a RenderFailure with a reason. Never raises."""
+    try:
+        return _decode(decoded, width, height, bit_depth, row_stride, probe_name, palette, bottom_left)
+    except Exception as exc:  # last line of defence; the checks below bound every read
+        return RenderFailure(f"internal error: {type(exc).__name__}")
+
+
+def _decode(decoded, width, height, bit_depth, row_stride, probe_name, palette, bottom_left):
+    if not isinstance(decoded, (bytes, bytearray)):
+        return RenderFailure("inconsistent geometry")
+    if not all(_is_int(v) and v > 0 for v in (width, height, bit_depth, row_stride)):
+        return RenderFailure("inconsistent geometry")
+    if bit_depth not in SUPPORTED_DEPTHS:
+        return RenderFailure(f"no renderer for {bit_depth}-bit pixels")
+    used = -(-(width * bit_depth) // 8)               # bytes of pixel data in one row
+    if row_stride < used or len(decoded) < row_stride * height:
+        return RenderFailure("inconsistent geometry")
+
+    d = bytes(decoded)
+    rows = [d[r * row_stride: r * row_stride + used] for r in range(height)]   # padding dropped
+    if bottom_left:
+        rows.reverse()
+    orientation = FLIP_NOTE if bottom_left else STORED_NOTE
+
+    if bit_depth == 1:
+        black_is_one = probe_name == "pbm"
+        t = _TABLE_1[black_is_one]
+        data = b"".join(b"".join(t[b] for b in row)[:width] for row in rows)
+        colour = "1 = black (PBM)" if black_is_one else "grey, 1 = white"
+        return PixelBuffer(width, height, "grey8", data, f"1-bit · {colour} · {orientation}")
+    if bit_depth == 4:
+        data = b"".join(b"".join(_TABLE_4[b] for b in row)[:width] for row in rows)
+        return PixelBuffer(width, height, "grey8", data, f"4-bit · grey · {orientation}")
+    if bit_depth == 8:
+        idx = b"".join(rows)
+        if isinstance(palette, (bytes, bytearray)) and len(palette) == PALETTE_LENGTH:
+            p = bytes(palette)
+            data = _interleave(idx.translate(p[0::3]), idx.translate(p[1::3]), idx.translate(p[2::3]))
+            return PixelBuffer(width, height, "rgb8", data, f"8-bit · palette: {PALETTE_NAME} · {orientation}")
+        return PixelBuffer(width, height, "grey8", idx, f"8-bit · greyscale; no palette · {orientation}")
+    # 24 and 32 bit: stored B, G, R (, unused); shown as R, G, B
+    step = bit_depth // 8
+    raw = b"".join(rows)
+    data = _interleave(raw[2::step], raw[1::step], raw[0::step])
+    extra = "; fourth byte ignored" if step == 4 else ""
+    return PixelBuffer(width, height, "rgb8", data, f"{bit_depth}-bit · BGR→RGB{extra} · {orientation}")
