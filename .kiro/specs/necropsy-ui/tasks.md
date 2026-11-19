@@ -46,7 +46,7 @@ Rules for every task:
   - Run the engine on both with no change. Add serialiser tests per Requirement 11.15 and 11.16 (exact pixels against the source PPM, no flip in the test, `external_b` note states the flip). If either does not return RESOLVED, stop and report the engine's output as a finding. Change nothing to make it pass: not the engine, the sample, the size, the `save` arguments or the expectations.
   - _Requirements: 11.13 to 11.16, 15.4_
 
-- [ ] 6. Frontend shell and samples
+- [x] 6. Frontend shell and samples
   - `tools/copy_samples.py` copies `spike/samples/` and `spike/samples/external/` into `public/samples/` and writes `samples/index.json`. A test asserts byte-identity.
   - Build the drop zone, file picker, size refusal, the `Analysing…` state, the sample list with name, size and download, provenance line on external samples, and the one-line scope statement.
   - Must be visible: near-empty first screen, one instruction, samples below, clicking `mystery_a` posts bytes and logs the status.

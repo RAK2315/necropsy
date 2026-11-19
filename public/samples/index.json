@@ -1,0 +1,48 @@
+[
+  {
+    "name": "mystery_a",
+    "size": 11
+  },
+  {
+    "name": "mystery_b",
+    "size": 955
+  },
+  {
+    "name": "mystery_c",
+    "size": 786
+  },
+  {
+    "name": "mystery_d",
+    "size": 104
+  },
+  {
+    "name": "mystery_e",
+    "size": 150
+  },
+  {
+    "name": "mystery_f",
+    "size": 132
+  },
+  {
+    "name": "mystery_g",
+    "size": 212
+  },
+  {
+    "name": "mystery_h",
+    "size": 176
+  },
+  {
+    "name": "mystery_i",
+    "size": 955
+  },
+  {
+    "name": "external_a",
+    "size": 1162,
+    "provenance": "written by Pillow 12.2.0"
+  },
+  {
+    "name": "external_b",
+    "size": 9260,
+    "provenance": "written by Pillow 12.2.0"
+  }
+]
