@@ -342,7 +342,7 @@ def test_winner_before_deadline_stop_is_partial_candidate(monkeypatch):
     def coherence(decoded, height, stride):
         scored_heights.append(height)
         state["expired"] = True  # the deadline passes once the first winner is scored
-        return None, "unscorable"
+        return 0.5, "scored"
 
     monkeypatch.setattr(engine_mod, "row_coherence", coherence)
     r = Engine(deadline_seconds=5.0, clock=clock).run(_BLOB)
@@ -352,6 +352,11 @@ def test_winner_before_deadline_stop_is_partial_candidate(monkeypatch):
     # before the stop; b may also have closed before the stop was observed).
     keys = [hypothesis_key(c.hypothesis) for c in r.partial_candidates]
     assert hypothesis_key(a) in keys
+    # Req 11.4 / Decision Record 13: a's coherence was computed before the stop,
+    # so it keeps the value the patch returned and is reported "scored".
+    (a_partial,) = [c for c in r.partial_candidates if hypothesis_key(c.hypothesis) == hypothesis_key(a)]
+    assert a_partial.coherence_status == "scored"
+    assert a_partial.coherence_score == 0.5
     # Req 11.4: b closed, but the run terminated before b's coherence step, so
     # coherence was not computed for it: status "not_computed", score None.
     # row_coherence ran only once (for a, height 4), never for b (height 8).
