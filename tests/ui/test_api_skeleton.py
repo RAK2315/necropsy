@@ -1,7 +1,7 @@
 """Skeleton endpoint: cap, empty body, a real sample."""
 from fastapi.testclient import TestClient
 
-from api.index import MAX_UPLOAD, app
+from app import MAX_UPLOAD, app
 from tests.conftest import corpus_bytes
 
 client = TestClient(app)
