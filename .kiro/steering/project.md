@@ -31,3 +31,8 @@ Kiroween 2026 entry, Resurrection category. Solo build, deadline
   If it cannot be shown, it does not get built.
 - Finish and polish beat breadth. A smaller number of deeply working
   things wins over many shallow ones.
+
+## Commits
+- Commit after every completed task, never in batches.
+- The git history is graded evidence of process. A repo with three
+  commits looks like code written elsewhere and pasted in.
