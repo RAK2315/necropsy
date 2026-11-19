@@ -283,3 +283,8 @@ Per Requirement 11.15 nothing was changed: not the engine, the sample, the 64 x 
 ## Deploy: UI tasks 1 to 11 (2026-11-19)
 
 Deployed `necropsy` (https://necropsy.vercel.app) from a clean clone of `5b9bd19`, not the working tree. Deployment URL `necropsy-4kp83mtbx-rehaans-projects-33eea979.vercel.app`, ready in 16 s. Checked on the live URL: page, CSS, JS and sample index 200; `mystery_i` RESOLVED with trailer `pcx_palette_256`; `mystery_d` UNRESOLVED_AMBIGUITY with 18 candidates; `external_b` RESOLVED with trailer `tga2_footer`; a text file FAILED with `no_hypothesis_checked`; `/api/spec.zip` for `mystery_e` returns `tiff/requirements.md`, `tiff/design.md`, `tiff/test_tiff.py`; a browser screenshot of `mystery_i` at 1280x720 shows the declared-versus-actual box. `necropsy-coldtest` was not touched.
+
+
+## Deploy: UI task 12 (2026-11-19)
+
+Deployed with `tools/deploy.ps1` from a clean clone of `9294826`. The script commits `docs/KIRO-LOG.md` first, refuses any other uncommitted change and only deploys to `necropsy`. Verified on https://necropsy.vercel.app with `tools/panel_probe.mjs` (headless Edge): for `mystery_e` (`tiff/`) and `mystery_d` (`unknown-9b3b124b/`) the three displayed files and the three zip entries are byte-identical to `emit_spec` (`mystery_d` requirements.md is 113,215 characters). A dropped text file shows `nothing recovered: FAILED/no_hypothesis_checked` and no download button. `necropsy-coldtest` was not touched.
