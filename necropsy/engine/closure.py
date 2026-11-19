@@ -71,3 +71,51 @@ def rle_pcx_output_length(data: bytes, start: int, end: int) -> Optional[int]:
         return n
     except Exception:
         return None
+
+
+@dataclass(frozen=True)
+class ClosureVerdict:
+    ok: bool
+    reason: str
+    discrepancy: Optional[int]
+    decoded: Optional[bytes]
+    data_start: Optional[int]
+    data_end: Optional[int]
+    trailer: Optional[str]
+
+
+def _reject(reason: str, discrepancy: Optional[int] = None) -> ClosureVerdict:
+    return ClosureVerdict(False, reason, discrepancy, None, None, None, None)
+
+
+def _accept(decoded: bytes, start: int, end: int, trailer: Optional[str]) -> ClosureVerdict:
+    return ClosureVerdict(True, "", None, decoded, start, end, trailer)
+
+
+def check_closure(h, data: bytes) -> ClosureVerdict:
+    """Closure gate: decode [header_size, data_end) and require exact length and full consumption."""
+    try:
+        if (h.width <= 0 or h.height <= 0 or h.bit_depth <= 0
+                or h.row_alignment not in (1, 2, 4)
+                or h.header_size < 0 or h.header_size > len(data)):
+            return _reject("degenerate_hypothesis")
+        expected = row_stride(h.width, h.bit_depth, h.row_alignment) * h.height
+        if h.data_end is not None:
+            if h.data_end > len(data) or h.data_end < h.header_size:
+                return _reject("field_out_of_bounds")
+            end, trailer = h.data_end, None
+        else:
+            from .trailers import match_trailer
+            end, trailer = match_trailer(data, h.header_size, h.probe_name)
+        if h.encoding == "none":
+            if end - h.header_size == expected:
+                return _accept(bytes(data[h.header_size:end]), h.header_size, end, trailer)
+            return _reject("arithmetic_mismatch", (end - h.header_size) - expected)
+        if h.encoding == "rle_pcx":
+            r = rle_pcx_decode(data, h.header_size, end, expected)
+            if r.status == "ok":
+                return _accept(r.data, h.header_size, end, trailer)
+            return _reject("decoder_" + r.status)
+        return _reject("unsupported_encoding")
+    except Exception:
+        return _reject("internal_error")
