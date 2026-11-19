@@ -337,7 +337,10 @@ def test_winner_before_deadline_stop_is_partial_candidate(monkeypatch):
     def clock():
         return 1000.0 if state["expired"] else 0.0
 
+    scored_heights = []
+
     def coherence(decoded, height, stride):
+        scored_heights.append(height)
         state["expired"] = True  # the deadline passes once the first winner is scored
         return None, "unscorable"
 
@@ -349,3 +352,10 @@ def test_winner_before_deadline_stop_is_partial_candidate(monkeypatch):
     # before the stop; b may also have closed before the stop was observed).
     keys = [hypothesis_key(c.hypothesis) for c in r.partial_candidates]
     assert hypothesis_key(a) in keys
+    # Req 11.4: b closed, but the run terminated before b's coherence step, so
+    # coherence was not computed for it: status "not_computed", score None.
+    # row_coherence ran only once (for a, height 4), never for b (height 8).
+    assert scored_heights == [4]
+    (b_partial,) = [c for c in r.partial_candidates if hypothesis_key(c.hypothesis) == hypothesis_key(b)]
+    assert b_partial.coherence_status == "not_computed"
+    assert b_partial.coherence_score is None
