@@ -103,10 +103,40 @@ def _observed(cand) -> dict:
     }
 
 
-def _candidate_layout(cand, slug: str) -> dict:
+_BROKE_RULES = ("probe_precondition_failed", "field_out_of_bounds")
+_BROKE_RULES_NOTE = ("This layout describes this one file only, not the format, because the file "
+                     "broke the format's own rules.")
+
+
+def _broke_rules(origin: str, rejections) -> bool:
+    return origin in ("pcx", "tga", "pbm", "tiff") and any(
+        r.source == origin and r.reason in _BROKE_RULES for r in rejections)
+
+
+def _rule_breaking_layout(cand, slug: str) -> dict:
+    # Requirement 9.20: this file's literal values; fields read with expect null.
+    h = cand.hypothesis
+    out = _base("file", slug)
+    first = {}
+    for f in h.fields:
+        first.setdefault(f.name, f)
+    out["fields"] = [{"name": n, "offset": f.offset, "fmt": f.fmt, "expect": None}
+                     for n, f in first.items()]
+    out["image"] = {"width": h.width, "height": h.height, "bit_depth": h.bit_depth,
+                    "row_alignment": h.row_alignment}
+    out["data"] = {"start": cand.data_start, "end": cand.data_end, "encoding": h.encoding,
+                   "trailers": _trailers(h.probe_name)}
+    out["note"] = _BROKE_RULES_NOTE
+    out["observed"] = _observed(cand)
+    return out
+
+
+def _candidate_layout(cand, slug: str, rejections=()) -> dict:
     h = cand.hypothesis
     origin = h.probe_name
     path = h.revision_path
+    if _broke_rules(origin, rejections):
+        return _rule_breaking_layout(cand, slug)
     if origin == "pcx":
         out = _base("format", slug)
         out["fields"] = _fixed_fields(_PCX_FIELDS)
@@ -203,7 +233,7 @@ def build_layout(result, data) -> dict:
         if status == "RESOLVED":
             cand = result.candidate
             slug = _slug_for({cand.hypothesis.probe_name}, data)
-            return _candidate_layout(cand, slug)
+            return _candidate_layout(cand, slug, getattr(result, "rejections", ()))
         if status == "UNRESOLVED_AMBIGUITY":
             probes = {c.hypothesis.probe_name for c in result.candidates}
             slug = _slug_for(probes, data)
@@ -211,7 +241,7 @@ def build_layout(result, data) -> dict:
                 "schema": SCHEMA,
                 "kind": "ambiguous",
                 "slug": slug,
-                "candidates": [_candidate_layout(c, slug) for c in result.candidates],
+                "candidates": [_candidate_layout(c, slug, getattr(result, "rejections", ())) for c in result.candidates],
             }
         if status == "FAILED":
             return _error("nothing recovered: FAILED/" + str(getattr(result, "termination", "")))

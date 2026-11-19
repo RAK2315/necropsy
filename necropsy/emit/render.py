@@ -131,7 +131,7 @@ def _signature(lay: dict, origin: str) -> list:
             )
     if not out:
         out.append("THE parser SHALL NOT require any fixed signature bytes: this layout declares none.")
-    if origin == "generic":
+    if origin == "generic" or lay.get("note"):
         out.append(
             "THE parser SHALL treat this layout as describing this one file's layout only. "
             "It does not describe a format, and no other file is implied to follow it."
@@ -393,6 +393,8 @@ def _render(layout: dict, result) -> str:
     if kind == "file" and origin == "generic":
         scope = (" This is the layout of this one file only. It is not a format, and no other "
                  "file is implied to follow it.")
+    elif layout.get("note"):
+        scope = " " + layout["note"]
     elif kind == "format":
         scope = " It states the rules of the format together with the values observed in the source file."
     else:
@@ -598,6 +600,8 @@ def _render_design(layout: dict, result) -> str:
         "%d x %d at %d bits per pixel, header size %d."
         % (status, slug, kind, h.width, h.height, h.bit_depth, h.header_size)
     )
+    if layout.get("note"):
+        overview += " " + layout["note"]
     architecture = "- stage: `%s`\n- source: `%s`\n- revision_path: %s" % (
         getattr(result, "stage", ""), h.probe_name, _path_text(h.revision_path))
     if cand.alternative_paths:

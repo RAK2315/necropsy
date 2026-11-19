@@ -364,3 +364,46 @@ def test_property_12_emitted_layout_reproduces_engine(data):
         got = [(p["width"], p["height"], p["bit_depth"], p["data_start"],
                 p["data_end"], p["pixels"]) for p in parsed]
         assert want in got, (want[:5], [g[:5] for g in got])
+
+
+# --- Rule-breaking probe results are file layouts (Req 9.20) ----------------
+
+def _craft_tiff_spp2():
+    import struct
+    n = 8 * 8  # 8 x 8, bits_per_sample 4 * samples_per_pixel 2 = 8 bits per pixel
+    entries = [(256, 4, 8), (257, 4, 8), (258, 3, 4), (259, 3, 1), (273, 4, 8),
+               (277, 3, 2), (279, 4, n)]
+    data = b"II*\x00" + struct.pack("<I", 8 + n) + bytes((i * 7 + 3) % 256 for i in range(n))
+    data += struct.pack("<H", len(entries))
+    for tag, typ, val in entries:
+        data += struct.pack("<HHII", tag, typ, 1, val)
+    return data + struct.pack("<I", 0)
+
+
+def test_rule_breaking_tiff_emits_file_layout_for_one_file_only():
+    data = _craft_tiff_spp2()
+    result = Engine().run(data)
+    assert result.status == "RESOLVED"
+    assert any(r.source == "tiff" and r.reason == "probe_precondition_failed"
+               for r in result.rejections)
+    spec = emit_spec(result, data)
+    assert isinstance(spec, EmittedSpec)
+    req = _file(spec, "requirements.md")
+    layout = extract_layout(req)
+    assert layout["kind"] == "file" and layout["slug"] == "tiff"
+    assert layout["image"] == {"width": 8, "height": 8, "bit_depth": 8, "row_alignment": 1}
+    assert layout["data"]["start"] == 8 and layout["data"]["end"] == 72
+    assert layout["data"]["encoding"] == "none"
+    assert all(f["expect"] is None for f in layout["fields"])
+    for doc in (req, _file(spec, "design.md")):
+        assert "describes this one file only, not the format" in doc
+    got = [p for p in parse_candidates(layout, data) if p.get("ok")]
+    assert len(got) == 1
+    p = got[0]
+    assert (p["width"], p["height"], p["bit_depth"], p["data_start"], p["data_end"]) == (
+        8, 8, 8, 8, 72)
+    assert p["pixels"] == bytes(result.candidate.decoded) == data[8:72]
+
+
+def test_mystery_e_still_emits_format_layout():
+    assert _layout("mystery_e")["kind"] == "format"
