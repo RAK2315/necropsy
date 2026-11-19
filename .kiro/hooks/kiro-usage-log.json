@@ -1,0 +1,25 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "Kiro usage log (file save)",
+      "description": "After the agent saves a file, append timestamp, file and git HEAD to docs/KIRO-LOG.md.",
+      "trigger": "PostFileSave",
+      "action": {
+        "type": "command",
+        "command": "python tools/kiro_usage_log.py"
+      },
+      "timeout": 15
+    },
+    {
+      "name": "Kiro usage log (file create)",
+      "description": "After the agent creates a file, append timestamp, file and git HEAD to docs/KIRO-LOG.md.",
+      "trigger": "PostFileCreate",
+      "action": {
+        "type": "command",
+        "command": "python tools/kiro_usage_log.py"
+      },
+      "timeout": 15
+    }
+  ]
+}
