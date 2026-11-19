@@ -251,3 +251,73 @@ def test_reference_reader_has_no_necropsy_import():
         elif isinstance(node, ast.ImportFrom):
             assert (node.module or "").split(".")[0] != "necropsy"
     assert not re.search(r"^\s*(import|from)\s+necropsy", src, re.M)
+
+
+# --- Property tests (task 11.9) -----------------------------------------------
+
+from hypothesis import example, given, settings  # noqa: E402
+
+from tests.support.inputs import engine_inputs  # noqa: E402
+from tests.support.reference_reader import parse_candidates  # noqa: E402
+
+
+def _with_corpus_examples(test):
+    for name in reversed(CORPUS_NAMES):
+        test = example(corpus_bytes(name))(test)
+    return test
+
+
+@_with_corpus_examples
+@settings(max_examples=100, deadline=None)
+@given(engine_inputs)
+def test_property_11_spec_emitter_is_total(data):
+    """Feature: structure-inference-engine, Property 11: Spec emitter is total
+
+    **Validates: Requirements 9.1, 9.6, 9.13, 6.4**
+    """
+    result = Engine().run(data)
+    out = emit_spec(result, data)
+    if result.status in ("RESOLVED", "UNRESOLVED_AMBIGUITY"):
+        assert isinstance(out, EmittedSpec)
+        assert sorted(n for n, _ in out.files) == sorted(FILES)
+        assert len(out.files) == 3
+        req = dict(out.files)["requirements.md"]
+        assert len(BLOCK_RE.findall(req)) == 1
+        layout = extract_layout(req)
+        assert isinstance(layout, dict)
+        assert layout["schema"] == "necropsy-layout/1"
+        compile(dict(out.files)["tests.py"], "tests.py", "exec")
+    else:
+        assert result.status == "FAILED"
+        assert isinstance(out, EmitError)
+
+
+@_with_corpus_examples
+@settings(max_examples=100, deadline=None)
+@given(engine_inputs)
+def test_property_12_emitted_layout_reproduces_engine(data):
+    """Feature: structure-inference-engine, Property 12: Emitted layout reproduces the engine
+
+    **Validates: Requirements 9.16, 9.18**
+    """
+    result = Engine().run(data)
+    if result.status == "RESOLVED":
+        candidates = (result.candidate,)
+    elif result.status == "UNRESOLVED_AMBIGUITY":
+        candidates = result.candidates
+    else:
+        return
+    spec = emit_spec(result, data)
+    assert isinstance(spec, EmittedSpec)
+    layout = extract_layout(dict(spec.files)["requirements.md"])
+    assert isinstance(layout, dict)
+    parsed = [p for p in parse_candidates(layout, data) if p.get("ok")]
+    for cand in candidates:
+        h = cand.hypothesis
+        if h.encoding != "none":
+            continue
+        want = (h.width, h.height, h.bit_depth, cand.data_start, cand.data_end,
+                bytes(cand.decoded))
+        got = [(p["width"], p["height"], p["bit_depth"], p["data_start"],
+                p["data_end"], p["pixels"]) for p in parsed]
+        assert want in got, (want[:5], [g[:5] for g in got])
