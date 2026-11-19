@@ -64,6 +64,8 @@ These decisions are final. Each is recorded with its reason so later work does n
 13. **A computed coherence score is never relabelled.** When a run stops after a candidate's coherence was computed, the engine keeps the score and reports `scored`. Only a candidate whose coherence step never ran is `not_computed`. This engine's whole claim is that it never reports something it did not establish; labelling a value it did compute as "not computed" is that same failure in miniature. Requirement 11.4 stays as written, and the engine conforms to it.
 14. **The TGA probe reads the image descriptor.** Byte `0x11` bit 5 declares the row origin: set means top-left, clear means bottom-left. That is a declaration in the sense of item 2, the same category as the TIFF byte-order mark. A probe that does not read it makes the error that was reversed on TIFF. It is recorded and reported, not acted on, because consumers need it to render rows the right way up.
 15. **The Trailer Registry knows the TGA 2.0 footer.** The 26-byte footer (two 4-byte offsets, then `TRUEVISION-XFILE.` and a NUL) is a declaration the file writes about itself. The registry was designed for exactly this addition: its entries were generalised from one marker byte to a byte signature, and no change to the closure gate was needed. Without it the engine fails on standard TGA 2.0 output from any real encoder; Pillow's `external_b` failed with a 26-byte `arithmetic_mismatch`. The entry also applies to Generic Search on purpose: an 18-byte literal signature is not a plausible false positive, and a headerless file carrying that footer genuinely has 26 bytes that are not pixel data. Generic Search tries `rle_pcx` only when the PCX palette trailer matched, so the new entry does not widen RLE guessing.
+16. **A file that broke its declared format's rules is emitted as a file layout.** When the probe behind a result recorded `probe_precondition_failed` or `field_out_of_bounds`, the emitted spec has layout kind `file` with this file's literal values, and states that it describes this one file only, exactly as generic results do. A file that broke its declared format's rules cannot produce a truthful spec for that format. Emitting `default: 0` for the missing tag would have the document assert that TIFF permits StripOffsets to be absent and read as 0, which is false about TIFF. Teaching the reference reader that a missing tag reads as 0 would put format knowledge into a reader whose whole value is knowing no formats. Skipping such candidates in Property 12 would hide a real disagreement.
+17. **Header fields and pixel data are disjoint.** An 82-byte big-endian TIFF with no StripOffsets tag resolved with data region [0, 64), so the engine asserted that the same bytes were both header fields it parsed and pixel data it decoded. That is not a format convention; it is internal self-contradiction, derivable from the engine's own output with no format knowledge. The closure arithmetic already treats header and data as disjoint, and Requirement 12 makes every hypothesis agree with it. The rule tests overlap with each field's byte range rather than "data starts after the last field", because a TIFF may legally place its IFD after the image data.
 
 ## Requirements
 
@@ -384,6 +386,7 @@ These decisions are final. Each is recorded with its reason so later work does n
 17. WHEN a parser module is built from the reference reader and the emitted `requirements.md`, and placed in one folder with the emitted `test_<module>.py`, THEN running pytest on that folder, with no file argument and no configuration file, SHALL collect the emitted tests and pass, for `mystery_c` and `mystery_e`.
 18. WHEN the spec emitted for `mystery_d` is given to the reference reader, THE reference reader SHALL enumerate candidates that include the true layout.
 19. THE emitted `requirements.md` and `design.md` for `mystery_e` and `mystery_d` SHALL pass Kiro's spec format validation.
+20. WHEN a probe produced the result and that probe recorded `probe_precondition_failed` or `field_out_of_bounds` (a `RejectionEntry` whose source is the probe's name and whose reason is one of those two), THE emitted spec SHALL have layout kind `file` with this file's literal values for the image dimensions, bit depth, alignment, data region and encoding, and SHALL state explicitly that it describes this one file only and not the format, because the file broke the format's own rules. This criterion takes precedence over criterion 7. For an `AmbiguousResult` it applies to each candidate separately.
 
 ### Requirement 10: Outcomes and Ambiguity
 
@@ -420,3 +423,14 @@ These decisions are final. Each is recorded with its reason so later work does n
    - identical bytes at an identical stride, split into different bit depths, score identically;
    - a header can absorb whole rows.
 8. IF any candidate is unscorable or not computed, THEN no candidate SHALL be promoted.
+
+### Requirement 12: Header and Data Are Disjoint
+
+**User Story:** As a user of NECROPSY, I want the engine never to claim that the same bytes are both header fields it parsed and pixel data it decoded, so that a resolved layout is internally consistent.
+
+#### Acceptance Criteria
+
+1. THE closure gate SHALL reject with reason `degenerate_hypothesis` any hypothesis whose data region `[data_start, data_end)` intersects the byte range `[offset, offset + struct.calcsize(fmt))` of any of that hypothesis's own `FieldRecord`s.
+2. THE closure gate SHALL apply this check after determining `data_end` and before decoding, so that it applies to the probe phase, the revision phase and Generic Search alike.
+3. THE check SHALL use only the hypothesis's own `FieldRecord`s and data region, and no format knowledge. A field located after the data region, such as a TIFF IFD placed after the image data, SHALL NOT cause a rejection.
+4. A hypothesis with no `FieldRecord`s SHALL NOT be rejected by this rule.

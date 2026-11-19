@@ -318,6 +318,10 @@ def check_closure(h, data):
         end, trailer = h.data_end, None
     else:
         end, trailer = match_trailer(data, h.header_size, h.probe_name)
+    for fr in h.fields:                                  # Requirement 12: header and data are disjoint
+        f_end = fr.offset + struct.calcsize(fr.fmt)
+        if fr.offset < end and h.header_size < f_end and end > h.header_size:
+            return reject("degenerate_hypothesis")
     if h.encoding == "none":
         if end - h.header_size == expected: return accept(data[h.header_size:end], h.header_size, end, trailer)
         return reject("arithmetic_mismatch", discrepancy=(end - h.header_size) - expected)
@@ -586,6 +590,7 @@ Kind and content by origin:
 | TGA | `format` | Start is `{"add": [18, "id_length", {"mul": ["color_map_type", "color_map_length", {"ceil_div": ["color_map_entry_size", 8]}]}]}`. Encoding is mapped from `image_type`. Trailers list `tga2_footer`. |
 | TIFF | `format` | `byte_order` is set, with the tag table as specified in Requirement 2.8. Start is `"strip_offset"`; end is `{"add": ["strip_offset", "strip_byte_count"]}`. Encoding is `{"field": "compression", "values": {"1": "none"}, "otherwise": "unsupported"}`. |
 | PBM | `file` | The token offsets are this file's. The prose states the text-header rules. |
+| Any probe that recorded `probe_precondition_failed` or `field_out_of_bounds` | `file` | This file's literal values for image, data region and encoding; the fields it read are listed with `expect: null`. The prose states that the file broke the format's rules and the document describes this one file only (Requirement 9.20). |
 | Generic | `file` | The first equivalent read of each field is used as the field; all reads appear in `equivalent_reads`. The prose states that this is one file's layout, not a format. |
 
 #### Emitted `requirements.md`
