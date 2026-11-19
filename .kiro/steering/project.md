@@ -32,6 +32,14 @@ Kiroween 2026 entry, Resurrection category. Solo build, deadline
 - Finish and polish beat breadth. A smaller number of deeply working
   things wins over many shallow ones.
 
+## Shell
+
+- This is Windows PowerShell 5.1. Use ";" as the statement separator,
+  never "&&".
+- Prefer running a Python script file over a long inline -c command.
+- If a command's output cannot be read after two attempts, stop and
+  report it rather than retrying.
+
 ## Commits
 - Commit after every completed task, never in batches.
 - The git history is graded evidence of process. A repo with three
