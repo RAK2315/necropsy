@@ -48,6 +48,55 @@ def scene_bgr(w: int, h: int) -> bytes:
     return bytes(out)
 
 
+def _pcx_row(y: int, w: int) -> list[int]:
+    row = [(x + y) * 16 % 256 for x in range(w)]
+    if y % 4 == 0:
+        row = [200] * w   # a run, so RLE actually compresses something
+    return row
+
+
+def pcx_rle_rows() -> bytes:
+    """The 64 decoded bytes (8 rows x 8) behind mystery_b and mystery_i."""
+    return bytes(v for y in range(8) for v in _pcx_row(y, 8))
+
+
+def pbm_rows() -> bytes:
+    """The 4 packed row bytes of mystery_a (4x4 scene, thresholded, 1 = black)."""
+    rows = bytearray()
+    for row in scene(4, 4):
+        byte = 0
+        for x, v in enumerate(row):
+            if v < 128:
+                byte |= 0x80 >> x
+        rows.append(byte)
+    return bytes(rows)
+
+
+def pcx_padded_pixels() -> bytes:
+    """The 48 data bytes of mystery_h: 6 rows x (6 pixels + 2 zero pad bytes)."""
+    out = bytearray()
+    for row in scene(6, 6):
+        out += bytes(row)
+        out.extend([0] * 2)
+    return bytes(out)
+
+
+def pixels(name: str) -> bytes:
+    """Decoded data-region bytes for a RESOLVED corpus file.
+
+    Supported: mystery_a, b, c, e, h, i. The ambiguous files (d, f, g) raise
+    KeyError; no single region is "decoded" for them.
+    """
+    return {
+        "mystery_a": pbm_rows,
+        "mystery_b": pcx_rle_rows,
+        "mystery_c": lambda: scene_bgr(16, 16),
+        "mystery_e": lambda: scene_grey(8, 8),
+        "mystery_h": pcx_padded_pixels,
+        "mystery_i": pcx_rle_rows,
+    }[name]()
+
+
 def build_pcx() -> bytes:
     """8x8, 8 bits per pixel, single plane, RLE encoded, 256-colour palette."""
     w, h = 8, 8
@@ -62,11 +111,9 @@ def build_pcx() -> bytes:
     struct.pack_into("<H", header, 66, w)                    # bytes per line
     struct.pack_into("<H", header, 68, 1)                    # palette info: colour
 
-    pixels = bytearray()
+    rle = bytearray()
     for y in range(h):
-        row = [(x + y) * 16 % 256 for x in range(w)]
-        if y % 4 == 0:
-            row = [200] * w   # a run, so RLE actually compresses something
+        row = _pcx_row(y, w)
         x = 0
         while x < w:
             run = 1
@@ -74,15 +121,15 @@ def build_pcx() -> bytes:
                 run += 1
             v = row[x]
             if run > 1 or v >= 0xC0:
-                pixels += bytes([0xC0 | run, v])
+                rle += bytes([0xC0 | run, v])
             else:
-                pixels.append(v)
+                rle.append(v)
             x += run
 
     palette = bytearray()
     for i in range(256):
         palette += bytes([i, (i * 3) % 256, 255 - i])
-    return bytes(header) + bytes(pixels) + b"\x0c" + bytes(palette)
+    return bytes(header) + bytes(rle) + b"\x0c" + bytes(palette)
 
 
 def build_tga() -> bytes:
@@ -105,14 +152,7 @@ def build_tga() -> bytes:
 def build_pbm() -> bytes:
     """4x4 binary (P4) bitmap of the scene, thresholded, rows padded to whole bytes."""
     w, h = 4, 4
-    rows = bytearray()
-    for row in scene(w, h):
-        byte = 0
-        for x, v in enumerate(row):
-            if v < 128:                      # PBM: 1 = black
-                byte |= 0x80 >> x
-        rows.append(byte)
-    return f"P4\n{w} {h}\n".encode("ascii") + bytes(rows)
+    return f"P4\n{w} {h}\n".encode("ascii") + pbm_rows()
 
 
 def build_dib() -> bytes:
@@ -190,11 +230,7 @@ def build_pcx_padded() -> bytes:
     header[65] = 1
     struct.pack_into("<H", header, 66, row_stride)
     struct.pack_into("<H", header, 68, 1)
-    pixels = bytearray()
-    for row in scene(w, h):
-        pixels += bytes(row)
-        pixels.extend([0] * (row_stride - w))
-    return bytes(header) + bytes(pixels)
+    return bytes(header) + pcx_padded_pixels()
 
 
 def build_pcx_corrupt_encoding() -> bytes:
