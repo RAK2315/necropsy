@@ -18,9 +18,12 @@ from necropsy.engine.types import (
     Hypothesis,
     RejectionEntry,
     VerifiedHypothesis,
+    hypothesis_key,
 )
+from necropsy.engine.strategies import STRATEGIES
 
 MIN_INPUT_BYTES = 3
+REVISION_DEPTHS = (1, 2, 3)
 
 
 class Engine:
@@ -74,9 +77,49 @@ class Engine:
             return self._outcome(candidates, "probe", data, budget, rejections)
 
         if seeds:
-            # HOOK (task 7.2): revision phase over `seeds` goes here.
-            return FailureReport("exhausted", tuple(rejections), budget.checks, len(data))
+            return self._revise(seeds, data, budget, rejections)
         # HOOK (task 7.3): generic dispatch goes here (no probe matched).
+        return FailureReport("exhausted", tuple(rejections), budget.checks, len(data))
+
+    def _revise(self, seeds: list[Hypothesis], data: bytes, budget: Budget,
+                rejections: list[RejectionEntry]) -> EngineResult:
+        """Breadth-first revision to depth 3. Stops at the first closing depth."""
+        seen: dict[tuple, int] = {hypothesis_key(s): 0 for s in seeds}
+        alternatives: dict[tuple, list[tuple[str, ...]]] = {}
+        frontier = list(seeds)
+        for depth in REVISION_DEPTHS:
+            winners: list[tuple[Hypothesis, ClosureVerdict]] = []
+            next_frontier: list[Hypothesis] = []
+            for h in frontier:
+                for _name, fn in STRATEGIES:
+                    for c in fn(h):
+                        k = hypothesis_key(c)
+                        if k in seen:
+                            if seen[k] == depth:
+                                alternatives.setdefault(k, []).append(c.revision_path)
+                            continue
+                        seen[k] = depth
+                        stop = budget.charge()
+                        if stop:
+                            return self._failure(stop, data, budget, rejections, winners)
+                        v = check_closure(c, data)
+                        if v.ok:
+                            winners.append((c, v))
+                        else:
+                            rejections.append(RejectionEntry(
+                                v.reason, "revision:" + "->".join(c.revision_path),
+                                c, v.discrepancy))
+                            next_frontier.append(c)
+            if winners:
+                candidates: list[Candidate] = []
+                for c, v in winners:
+                    cand = self._candidate(
+                        c, v, budget, tuple(alternatives.get(hypothesis_key(c), ())))
+                    if isinstance(cand, str):
+                        return self._failure(cand, data, budget, rejections, winners)
+                    candidates.append(cand)
+                return self._outcome(candidates, "revision", data, budget, rejections)
+            frontier = next_frontier
         return FailureReport("exhausted", tuple(rejections), budget.checks, len(data))
 
     def _candidate(self, h: Hypothesis, verdict: ClosureVerdict, budget: Budget,
