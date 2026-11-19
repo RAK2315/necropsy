@@ -149,6 +149,7 @@ Rules for every task:
     - Signature: byte `0x01 ∈ {0, 1}` and byte `0x02 ∈ {1, 2, 3, 9, 10, 11}`, with minimum length 18.
     - `header_size = 18 + id_length + color_map_type × color_map_length × ceil(color_map_entry_size / 8)`.
     - Encoding: `"none"` for image types 1–3 and `"rle_tga"` for 9–11.
+    - Record `image_descriptor` at `0x11` as `B` on the seed. Report it only; it does not change inference (Decision Record item 14).
     - A precondition failure is attached and the seed is still returned.
     - _Requirements: 2.2, 2.3, 2.4, 2.6_
 
@@ -184,7 +185,7 @@ Rules for every task:
       - Byte `0x02 == 2` gives `None`.
       - A crafted header with `xmax < xmin` returns a seed plus `probe_precondition_failed`.
     - TGA:
-      - mystery_c gives 16×16, 24 bpp, header 18.
+      - mystery_c gives 16×16, 24 bpp, header 18, and an `image_descriptor` `FieldRecord` at `0x11`, format `B`, value `(0x20,)`.
       - mystery_b gives `None`, because byte `0x01 = 5` is not a valid colour-map type.
       - A crafted colour-mapped header gives the colour-map header size.
       - Image type 10 gives `"rle_tga"`.
@@ -344,7 +345,7 @@ Rules for every task:
   - [x] 7.3 Implement generic dispatch, termination and the never-raise wrapper in `necropsy/engine/engine.py`
     - Run `generic_search` only when no probe matched.
     - `on_reject` appends `RejectionEntry(..., source="generic")`.
-    - A stop reason anywhere returns `FailureReport(stop, rejections, budget.checks, len(data), partial_candidates)`.
+    - A stop reason anywhere returns `FailureReport(stop, rejections, budget.checks, len(data), partial_candidates)`. Partial candidates keep any coherence already computed (`scored` or `unscorable`); only those whose coherence step never ran are `not_computed` (Decision Record item 13).
     - Wrap `run()` so any exception gives `FailureReport("internal_error", (RejectionEntry("internal_error", "engine", detail="<Class>: <msg>"),), 0, size)`.
     - Export from `necropsy/engine/__init__.py`:
       - `Engine` and `Budget`
@@ -361,7 +362,7 @@ Rules for every task:
     - Collect-all in the revision phase: a monkeypatched strategy set where two distinct candidates close at depth 1 gives `UNRESOLVED_AMBIGUITY` with stage `revision`. Reordering the strategies gives the same candidate set.
     - Dedup: a spy on `check_closure` shows no key checked twice on mystery_h.
     - Rejection order is probe entries, then revision entries.
-    - `partial_candidates`: a winner found before a deadline stop appears in `partial_candidates`.
+    - `partial_candidates`: a winner found before a deadline stop appears in `partial_candidates`. A partial candidate whose coherence was computed before the stop reports that score with `coherence_status = "scored"`; one whose coherence step never ran reports `"not_computed"` with score `None` (Requirement 11.4, Decision Record item 13).
     - _Requirements: 2.9, 3.3–3.6, 5.1–5.10, 6.1, 6.2, 10.4_
 
 - [x] 8. Corpus
@@ -380,6 +381,7 @@ Rules for every task:
       - no assertion on order or rank.
     - For mystery_f, assert the equivalent-width-read condition in Requirement 7.6.
     - For mystery_b, assert the rejection list contains the PCX seed's `decoder_unconsumed` rejection with source `pcx` (Requirement 7.2).
+    - For mystery_c, assert the `image_descriptor` `FieldRecord` is at `0x11`, format `B`, value `(0x20,)`, and round-trips (Requirement 7.3).
     - For mystery_h and mystery_i, assert the exact canonical `revision_path` and that `alternative_paths` contains the reversed-order path (Requirements 7.8, 7.9).
     - For every `RESOLVED` file, `candidate.decoded == make_samples.pixels(name)` exactly.
     - No corpus file is `FAILED`.

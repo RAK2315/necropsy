@@ -61,6 +61,8 @@ These decisions are final. Each is recorded with its reason so later work does n
 10. **When two routes reach the same answer, both are reported.** With the revision loop order unpinned, hypotheses-outer gives `["inclusive_bounds", "row_padding_variants"]` for mystery_h and strategies-outer gives `["row_padding_variants", "inclusive_bounds"]`. Both reach the same hypothesis, deduplication kept whichever came first, and the corpus asserted one exact path, so list order was deciding the reported path. The loop order is now pinned and defines the canonical path and nothing else. Every other same-depth path to the same hypothesis is recorded in `alternative_paths`. Reporting only one of two routes to the same answer is the same failure as promoting one of two closing candidates: the engine states what it found.
 11. **The pretty printer stays in this spec.** Task 11.3 specifies that the emitted `design.md` contains the closure arithmetic line from Requirement 8.4, so moving Requirements 8.4 to 8.7 to another spec would break spec emission's reference. The pretty printer is a text renderer, not a web UI; the UI spec needs its own rendering either way.
 12. **The emitted test file is named for pytest's default collection.** The emitted folder is meant to drop into a real repository and drive a build. A reader who clones it and types `pytest` must see the tests run. A file named `tests.py` is not collected by default, and a `pytest.ini` that works around a filename is worse than the right filename. The file is therefore `test_<module>.py`.
+13. **A computed coherence score is never relabelled.** When a run stops after a candidate's coherence was computed, the engine keeps the score and reports `scored`. Only a candidate whose coherence step never ran is `not_computed`. This engine's whole claim is that it never reports something it did not establish; labelling a value it did compute as "not computed" is that same failure in miniature. Requirement 11.4 stays as written, and the engine conforms to it.
+14. **The TGA probe reads the image descriptor.** Byte `0x11` bit 5 declares the row origin: set means top-left, clear means bottom-left. That is a declaration in the sense of item 2, the same category as the TIFF byte-order mark. A probe that does not read it makes the error that was reversed on TIFF. It is recorded and reported, not acted on, because consumers need it to render rows the right way up.
 
 ## Requirements
 
@@ -127,6 +129,7 @@ These decisions are final. Each is recorded with its reason so later work does n
      - `width` at `0x0C` as `<H`
      - `height` at `0x0E` as `<H`
      - `bit_depth` at `0x10` as `B`
+     - `image_descriptor` at `0x11` as `B`. Bit 5 declares the row origin: set means top-left, clear means bottom-left. The probe records it on the seed and reports it; it does not change inference.
    - Seed: `header_size = 18 + id_length + color_map_type × color_map_length × ceil(color_map_entry_size / 8)`, `row_alignment = 1`.
    - Encoding: `"none"` for image types 1, 2 and 3; `"rle_tga"` for 9, 10 and 11.
    - Precondition: `width > 0` and `height > 0`; otherwise record `probe_precondition_failed`.
@@ -283,7 +286,7 @@ These decisions are final. Each is recorded with its reason so later work does n
    - trailer `pcx_palette_256`;
    - `revision_path = ["inclusive_bounds"]`;
    - the PCX probe's seed (7×7, `encoding = "rle_pcx"`, header 128) rejected with reason `decoder_unconsumed` and source `pcx`. This value was measured in task 2.3: the stream decodes 49 bytes before the region ends.
-3. WHEN given `spike/samples/mystery_c` (TGA, 786 bytes), THE Engine SHALL return `RESOLVED` from the TGA probe with `width = 16`, `height = 16`, `bit_depth = 24`, `header_size = 18`, `row_stride = 48` and `revision_path = []`.
+3. WHEN given `spike/samples/mystery_c` (TGA, 786 bytes), THE Engine SHALL return `RESOLVED` from the TGA probe with `width = 16`, `height = 16`, `bit_depth = 24`, `header_size = 18`, `row_stride = 48` and `revision_path = []`. Its `image_descriptor` `FieldRecord` SHALL be at offset `0x11` with format `B` and value `0x20` (top-left origin), and SHALL round-trip through `struct.unpack_from`.
 4. WHEN given `spike/samples/mystery_d` (headerless DIB body, 104 bytes), THE Engine SHALL return `UNRESOLVED_AMBIGUITY` with stage `generic`, and its candidates SHALL include the hypothesis `width = 8`, `height = 8`, `bit_depth = 8`, `header_size = 40`, `encoding = "none"`. The test SHALL NOT assert candidate order.
 5. WHEN given `spike/samples/mystery_e` (TIFF, big-endian `"MM"`, 150 bytes), THE Engine SHALL return `RESOLVED` from the TIFF probe with:
    - `width = 8`, `height = 8`, `bit_depth = 8`, `header_size = 86`;
