@@ -37,7 +37,7 @@ Design and Presentation carry 40% of the judging weight, and a judge may never r
 - **Sample**: A file offered as a one-click example. Either one of the nine corpus files in `spike/samples/` (`mystery_a` to `mystery_i`, written by `spike/make_samples.py`) or an external sample.
 - **External sample**: A sample written by a tool outside this project (Pillow), committed in `spike/samples/external/` with a README stating its provenance.
 - **PCX palette**: The 768 bytes that follow the `0x0C` marker of the `pcx_palette_256` trailer, read as 256 RGB triples. The trailer is 769 bytes long: the marker, then the palette.
-- **Emitted spec**: The `EmittedSpec` the engine's `emit_spec(result, data)` returns: a slug and the files `requirements.md`, `design.md` and `tests.py`.
+- **Emitted spec**: The `EmittedSpec` the engine's `emit_spec(result, data)` returns: a slug and the files `requirements.md`, `design.md` and `test_<module>.py`, where `<module>` is the slug with `-` replaced by `_`. An earlier draft called the third file `tests.py`; the engine's emitter names it `test_<module>.py` and the UI uses the names as emitted.
 
 ## Decision Record
 
@@ -72,7 +72,7 @@ The brief leaves four questions to the architect. These are the answers. Decisio
 
 1. THE Analysis service SHALL expose one endpoint that accepts the file as the raw request body (`application/octet-stream`) and returns the Result payload as JSON.
 2. THE Analysis service SHALL pass the received bytes to `Engine(deadline_seconds=5.0).run(data)` unchanged and SHALL NOT read the filename, the content type or any header as input to inference.
-3. THE Analysis service SHALL reject a body longer than 65,536 bytes with HTTP 413 and a JSON error body that states the limit, before running the Engine. The limit matches the largest input for which the engine specifies its time bound and the largest source the Spec Emitter embeds in `tests.py`.
+3. THE Analysis service SHALL reject a body longer than 65,536 bytes with HTTP 413 and a JSON error body that states the limit, before running the Engine. The limit matches the largest input for which the engine specifies its time bound and the largest source the Spec Emitter embeds in `test_<module>.py`.
 4. WHEN the body is empty or shorter than 3 bytes, THE Analysis service SHALL return HTTP 200 with the engine's `FAILED` result (`termination = "input_too_short"`). It SHALL NOT treat that case as a client error.
 5. THE Analysis service SHALL never execute, import, unpack or shell out on uploaded bytes, and SHALL make no network call while handling a request.
 6. THE Analysis service SHALL NOT write uploaded bytes to disk, log them, or keep them after the response is sent.
@@ -316,16 +316,16 @@ This screen shows the honesty mechanic. It is a success.
 
 #### Acceptance Criteria
 
-1. THE UI SHALL show a spec panel for every `RESOLVED` and `UNRESOLVED_AMBIGUITY` result, with the Emitted spec's `requirements.md`, `design.md` and `tests.py` selectable as tabs. The text SHALL be shown exactly as the engine's `emit_spec` returned it.
+1. THE UI SHALL show a spec panel for every `RESOLVED` and `UNRESOLVED_AMBIGUITY` result, with the Emitted spec's `requirements.md`, `design.md` and `test_<module>.py` selectable as tabs. The text SHALL be shown exactly as the engine's `emit_spec` returned it.
 2. THE panel SHALL display the folder name `<slug>/` and the three file names.
 3. THE panel SHALL show this one line of framing: `NECROPSY was built with spec-driven development, and it produces spec-driven development.`
-4. THE panel SHALL offer a download button. THE download SHALL be a ZIP archive containing the folder `<slug>/` with exactly the three files `requirements.md`, `design.md` and `tests.py`, each byte-identical to the Emitted spec's text encoded as UTF-8 without a BOM.
+4. THE panel SHALL offer a download button. THE download SHALL be a ZIP archive containing the folder `<slug>/` with exactly the three files `requirements.md`, `design.md` and `test_<module>.py`, each byte-identical to the Emitted spec's text encoded as UTF-8 without a BOM.
 5. THE ZIP SHALL be built in memory. THE Analysis service SHALL NOT call the engine's `write_spec`, and no code in this spec SHALL write to the host's file system, because the chosen host's function file system is not a place to keep state.
 6. THE ZIP SHALL be built from the Emitted spec the same request returned. THE download SHALL NOT re-run inference on bytes the server no longer holds. WHERE the design makes the download a second request, that request SHALL carry the three file texts or the source bytes from the browser, and the server SHALL emit again from them.
 7. WHEN the result is `FAILED`, THE panel SHALL show the engine's `EmitError` message (`nothing recovered: FAILED/<termination>`) and no download button.
 8. WHEN the result is `UNRESOLVED_AMBIGUITY`, THE panel SHALL show the emitted spec as the engine produced it. The UI SHALL NOT add a candidate preference to it.
 9. THE panel SHALL be reachable from a result screen in one click, and a viewer SHALL be able to see the emitted `requirements.md` of a recovered file in under 20 seconds from the first screen.
-10. THE panel SHALL show long files without freezing the page. `tests.py` embeds the source as base64 and may be about 90,000 characters, so the panel SHALL show the text in a scrollable region and SHALL NOT highlight it by a method whose cost grows more than linearly with its length.
+10. THE panel SHALL show long files without freezing the page. `test_<module>.py` embeds the source as base64 and may be about 90,000 characters, so the panel SHALL show the text in a scrollable region and SHALL NOT highlight it by a method whose cost grows more than linearly with its length.
 
 ### Requirement 13: Visual Language and Demo Path
 

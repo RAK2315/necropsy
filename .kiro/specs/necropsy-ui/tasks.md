@@ -33,7 +33,7 @@ Rules for every task:
   - Tests: golden pixels for `mystery_a`, `b`, `c`, `e`, `h`, `i` per Requirement 3.14 (palette for `b` and `i`, BGR for `c`, padding for `h`, PBM polarity for `a`), synthetic bottom-left buffer flips and says so, a record that is not a one-element integer tuple is ignored, synthetic 4-bit with odd width and padding, synthetic 32-bit, short palette gives greyscale, 16-bit gives the failure reason, inconsistent geometry gives its reason. Hypothesis test: never raises on arbitrary bytes and geometry.
   - _Requirements: 3.1 to 3.15_
 
-- [ ] 4. Serialiser and spec zip
+- [x] 4. Serialiser and spec zip
   - Create `web/serialise.py` and `web/speczip.py`. Add `POST /api/spec.zip`. Extend `/api/analyze` to return the full payload.
   - Implement the pixel budget, the 4,000,000-byte size budget with `rejections_omitted` and `rejection_counts`, and the palette read.
   - Tests: status for all nine corpus files per the engine spec; `mystery_i` assertions from Requirement 15.5; candidate order equals discovery order for `d`, `f`, `g`; zip holds `<slug>/` with exactly three files equal to the `emit_spec` text; sample and renamed bytes give identical payloads; Hypothesis test on the endpoint (200 and valid JSON). Add a test that forces the size budget with a large rejection list.
