@@ -180,3 +180,108 @@ def _probe_tga(data: bytes) -> ProbeOutcome | None:
             RejectionEntry("probe_precondition_failed", "tga", seed, detail="; ".join(problems)),
         )
     return ProbeOutcome(seed, rejections)
+
+
+# PBM (P4) text header layout. Offsets are bytes; dimensions are ASCII decimal tokens.
+PBM_MIN_LENGTH = 7
+PBM_SIGNATURE = b"P4\n"
+PBM_MAGIC_OFFSET = 0x00     # 3s
+PBM_SCAN_LIMIT = 1024       # header text is read only within data[:1024]
+PBM_AFTER_MAGIC = 3         # first index after the signature
+
+
+def probe_pbm(data: bytes) -> ProbeOutcome | None:
+    """PBM probe. Returns None when the bytes do not start with b"P4\\n"."""
+    try:
+        return _probe_pbm(data)
+    except Exception:  # last line of defence; inner code bounds-checks
+        return None
+
+
+def _parse_pbm_header(window: bytes) -> tuple[int, int, int, int, int, int, int] | str:
+    """Parse the text header. Returns (width, height, header_size, w_off, w_len, h_off, h_len)
+    or a failure description."""
+    index = PBM_AFTER_MAGIC
+    while index < len(window) and window[index : index + 1] == b"#":
+        newline = window.find(b"\n", index)
+        if newline < 0:
+            return "comment line has no newline within the first 1024 bytes"
+        index = newline + 1
+    newline = window.find(b"\n", index)
+    if newline < 0:
+        return "dimensions line has no newline within the first 1024 bytes"
+    line = window[index:newline]
+    tokens = line.split()
+    if len(tokens) != 2:
+        return f"dimensions line has {len(tokens)} tokens, expected 2"
+    if not all(token.isdigit() for token in tokens):
+        return "dimensions line tokens are not all ASCII digits"
+    width_rel = line.find(tokens[0])
+    height_rel = line.find(tokens[1], width_rel + len(tokens[0]))
+    if width_rel < 0 or height_rel < 0:
+        return "could not locate dimension tokens"
+    return (
+        int(tokens[0]),
+        int(tokens[1]),
+        newline + 1,
+        index + width_rel,
+        len(tokens[0]),
+        index + height_rel,
+        len(tokens[1]),
+    )
+
+
+def _probe_pbm(data: bytes) -> ProbeOutcome | None:
+    if len(data) < PBM_MIN_LENGTH:
+        return None
+    if data[PBM_MAGIC_OFFSET : PBM_MAGIC_OFFSET + 3] != PBM_SIGNATURE:
+        return None
+
+    window = data[:PBM_SCAN_LIMIT]
+    magic = read(data, "magic", PBM_MAGIC_OFFSET, "3s")
+    if magic is None:
+        return None
+
+    parsed = _parse_pbm_header(window)
+    if isinstance(parsed, str):
+        seed = Hypothesis(
+            width=0,
+            height=0,
+            bit_depth=1,
+            header_size=PBM_AFTER_MAGIC,
+            row_alignment=1,
+            encoding="none",
+            fields=(magic,),
+            probe_name="pbm",
+        )
+        return ProbeOutcome(
+            seed, (RejectionEntry("probe_precondition_failed", "pbm", seed, detail=parsed),)
+        )
+
+    width, height, header_size, w_off, w_len, h_off, h_len = parsed
+    width_rec = read(data, "width", w_off, f"{w_len}s")
+    height_rec = read(data, "height", h_off, f"{h_len}s")
+    if width_rec is None or height_rec is None:
+        return None
+    seed = Hypothesis(
+        width=width,
+        height=height,
+        bit_depth=1,
+        header_size=header_size,
+        row_alignment=1,
+        encoding="none",
+        fields=(magic, width_rec, height_rec),
+        probe_name="pbm",
+    )
+
+    problems = []
+    if width <= 0:
+        problems.append(f"width {width} is not > 0")
+    if height <= 0:
+        problems.append(f"height {height} is not > 0")
+    rejections: tuple[RejectionEntry, ...] = ()
+    if problems:
+        rejections = (
+            RejectionEntry("probe_precondition_failed", "pbm", seed, detail="; ".join(problems)),
+        )
+    return ProbeOutcome(seed, rejections)
