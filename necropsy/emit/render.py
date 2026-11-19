@@ -427,3 +427,207 @@ def render_requirements(layout, result, data) -> str:
                     "- **Error**: A render failure.\n\n## Requirements\n\n### Requirement 1: Error\n\n"
                     "**User Story:** As a user, I want the error stated.\n\n#### Acceptance Criteria\n\n"
                     "1. THE system SHALL report a render error.\n")
+
+
+# ------------------------------------------------------- design document
+
+_MAX_REJECTIONS = 500
+_COHERENCE_LABEL = "heuristic (row_mad_ratio)"
+
+
+def _cell(value) -> str:
+    return str(value).replace("|", "\\|").replace("\n", " ")
+
+
+def _table(header: tuple, rows: list) -> str:
+    lines = ["| " + " | ".join(header) + " |", "|" + "|".join("---" for _ in header) + "|"]
+    for row in rows:
+        lines.append("| " + " | ".join(_cell(c) for c in row) + " |")
+    return "\n".join(lines)
+
+
+def _path_text(path) -> str:
+    return "[" + ", ".join(str(p) for p in path) + "]"
+
+
+def _closure_line(cand) -> str:
+    h = cand.hypothesis
+    start, end = cand.data_start, cand.data_end
+    if h.encoding == "none":
+        return "closure: [%d, %d) holds %d bytes = %d x %d" % (
+            start, end, end - start, cand.row_stride, h.height)
+    return "closure: %s decoded [%d, %d) to %d bytes = %d x %d, all input consumed" % (
+        h.encoding, start, end, cand.expected_decoded_bytes, cand.row_stride, h.height)
+
+
+def _coherence_line(cand) -> str:
+    if cand.coherence_status == "scored" and cand.coherence_score is not None:
+        return "coherence: %s = %.4f" % (_COHERENCE_LABEL, cand.coherence_score)
+    return "coherence: %s %s" % (_COHERENCE_LABEL, cand.coherence_status)
+
+
+def _structure_table(cand) -> str:
+    h = cand.hypothesis
+    dims = _table(("property", "value"), [
+        ("width", h.width), ("height", h.height), ("bit_depth", h.bit_depth),
+        ("header_size", h.header_size), ("row_alignment", h.row_alignment),
+        ("encoding", h.encoding), ("row_stride", cand.row_stride),
+        ("expected_decoded_bytes", cand.expected_decoded_bytes),
+    ])
+    if not h.fields:
+        return dims
+    fields = _table(("offset", "field", "struct format", "value"), [
+        ("0x%04X" % f.offset, f.name, f.fmt, ", ".join(str(v) for v in f.value))
+        for f in h.fields
+    ])
+    return dims + "\n\n" + fields
+
+
+def _candidate_block(cand, heading: str) -> str:
+    h = cand.hypothesis
+    lines = [
+        heading, "",
+        _structure_table(cand), "",
+        "- source: `%s`" % h.probe_name,
+        "- revision_path: %s" % _path_text(h.revision_path),
+    ]
+    if cand.alternative_paths:
+        lines.append("- alternative_paths: %s" % "; ".join(_path_text(p) for p in cand.alternative_paths))
+    lines.append("- data region: [%d, %d)" % (cand.data_start, cand.data_end))
+    lines.append("- trailer: %s" % (cand.trailer if cand.trailer else "none"))
+    lines.append("- %s" % _closure_line(cand))
+    lines.append("- %s" % _coherence_line(cand))
+    return "\n".join(lines) + "\n"
+
+
+def _rejection_lines(rejections) -> str:
+    rejections = list(rejections or ())
+    if not rejections:
+        return "No hypotheses were rejected.\n"
+    out = []
+    for i, r in enumerate(rejections[:_MAX_REJECTIONS], 1):
+        line = "%d. source `%s`, reason `%s`" % (i, r.source, r.reason)
+        if r.discrepancy is not None:
+            line += ", discrepancy %d" % r.discrepancy
+        if r.detail:
+            line += ", detail: %s" % " ".join(str(r.detail).split())
+        out.append(line)
+    if len(rejections) > _MAX_REJECTIONS:
+        out.append("\u2026 and %d more not listed" % (len(rejections) - _MAX_REJECTIONS))
+    return "\n".join(out) + "\n"
+
+
+def _design_document(overview, architecture, components, models, prop, errors, testing) -> str:
+    return (
+        "# Design Document\n\n## Overview\n\n%s\n\n## Architecture\n\n%s\n\n"
+        "## Components and Interfaces\n\n%s\n\n## Data Models\n\n%s\n\n"
+        "## Correctness Properties\n\n%s\n\n## Error Handling\n\n%s\n\n"
+        "## Testing Strategy\n\n%s\n"
+    ) % (overview, architecture, components, models, prop, errors, testing)
+
+
+def _property(title: str, text: str, validates: str) -> str:
+    return "### Property 1: %s\n\n%s\n\n**Validates: Requirements %s**" % (title, text, validates)
+
+
+def _error_design(message: str) -> str:
+    message = " ".join(str(message).split()).rstrip(".")
+    return _design_document(
+        "NECROPSY could not describe this input. Error: %s." % message,
+        "No structure was recovered, so there is no architecture to describe.",
+        "No components were derived.",
+        "No data model was derived.",
+        _property("Error is reported", "The system reports that no layout was recovered.", "1.1"),
+        "The error is: %s." % message,
+        "No tests apply because nothing was recovered.",
+    )
+
+
+def _render_design(layout: dict, result) -> str:
+    kind = layout.get("kind")
+    if kind == "error":
+        return _error_design(layout.get("error", "unknown error"))
+    status = getattr(result, "status", None)
+    slug = layout.get("slug")
+    rejections = getattr(result, "rejections", ())
+    nrej = len(rejections or ())
+    errors = (
+        "Every hypothesis the engine tried and rejected is listed below with its source and "
+        "reason. %d rejection%s recorded.\n\n%s"
+        % (nrej, "" if nrej == 1 else "s", _rejection_lines(rejections))
+    )
+
+    if kind == "ambiguous":
+        cands = list(getattr(result, "candidates", ()) or ())
+        if not cands:
+            return _error_design("ambiguous result holds no candidates")
+        n = len(cands)
+        stage = getattr(result, "stage", "")
+        overview = (
+            "Result `%s` for slug `%s`: %d candidate layouts close, and the bytes cannot "
+            "distinguish them. No candidate is preferred. Coherence is %s and does not choose."
+            % (status, slug, n, _COHERENCE_LABEL)
+        )
+        architecture = "- stage: `%s`\n- sources: %s\n- candidates: %d" % (
+            stage, ", ".join("`%s`" % c.hypothesis.probe_name for c in cands), n)
+        blocks = [_candidate_block(c, "### Candidate %d" % i) for i, c in enumerate(cands, 1)]
+        components = "\n".join(
+            "%d. Candidate %d: data region [%d, %d), trailer %s. %s. %s." % (
+                i, i, c.data_start, c.data_end, c.trailer if c.trailer else "none",
+                _closure_line(c), _coherence_line(c))
+            for i, c in enumerate(cands, 1))
+        prop = _property(
+            "Every candidate closes and none is promoted",
+            "Each of the %d candidates satisfies its closure arithmetic, and no candidate is "
+            "selected over another by coherence or order." % n,
+            "1.1, %d.2" % (n + 1))
+        testing = ("Tests target `parse_candidates`, which must return every candidate. "
+                   "Each candidate is checked for field round-trip and for the closure size.")
+        return _design_document(overview, architecture, components, "\n".join(blocks),
+                                prop, errors, testing)
+
+    if kind not in ("format", "file"):
+        return _error_design("unsupported layout kind")
+    cand = getattr(result, "candidate", None)
+    if cand is None:
+        return _error_design("result holds no candidate")
+    h = cand.hypothesis
+    overview = (
+        "Result `%s` for slug `%s` (layout kind `%s`): one layout closes. The structure is "
+        "%d x %d at %d bits per pixel, header size %d."
+        % (status, slug, kind, h.width, h.height, h.bit_depth, h.header_size)
+    )
+    architecture = "- stage: `%s`\n- source: `%s`\n- revision_path: %s" % (
+        getattr(result, "stage", ""), h.probe_name, _path_text(h.revision_path))
+    if cand.alternative_paths:
+        architecture += "\n- alternative_paths: %s" % "; ".join(
+            _path_text(p) for p in cand.alternative_paths)
+    components = "\n".join([
+        "- data region: [%d, %d)" % (cand.data_start, cand.data_end),
+        "- trailer: %s" % (cand.trailer if cand.trailer else "none"),
+        "- %s" % _closure_line(cand),
+        "- %s" % _coherence_line(cand),
+    ])
+    prop = _property(
+        "Closure holds",
+        "The data region decodes to exactly `row_stride` \u00d7 `height` bytes. %s." % _closure_line(cand),
+        "4.1, 3.1")
+    testing = ("Tests parse the embedded source and assert the observed values and closure, and "
+               "check that `parse` never raises on arbitrary bytes.")
+    return _design_document(overview, architecture, components, _structure_table(cand),
+                            prop, errors, testing)
+
+
+def render_design(layout, result, data) -> str:
+    """Render the emitted design.md. Never raises."""
+    try:
+        return _render_design(layout, result)
+    except Exception as exc:
+        try:
+            return _error_design("render error: " + type(exc).__name__)
+        except Exception:
+            return ("# Design Document\n\n## Overview\n\nRender error.\n\n## Architecture\n\nNone.\n\n"
+                    "## Components and Interfaces\n\nNone.\n\n## Data Models\n\nNone.\n\n"
+                    "## Correctness Properties\n\n### Property 1: Error is reported\n\n"
+                    "**Validates: Requirements 1.1**\n\n## Error Handling\n\nRender error.\n\n"
+                    "## Testing Strategy\n\nNone.\n")
