@@ -83,7 +83,7 @@ Rules for every task:
   - Must be visible: the emitted `requirements.md` for a recovered file within 20 seconds of the first screen; the downloaded zip opens with one folder and three files.
   - _Requirements: 12_
 
-- [ ] 13. Replay
+- [x] 13. Replay
   - Controller over `buildSteps` and `batch`: play, pause, step, skip to end, 0.5× to 4×, `Replay` label with the `engine_ms` sentence, exact counter, step log, lit fields per step, reads-in-file-order note, reduced-motion start at the end.
   - Must be visible: `mystery_i` replays the seed rejection, the intermediate rejection and the resolved candidate in order; a large generic failure replays within 10 seconds at 1× with an exact range counter.
   - _Requirements: 7_

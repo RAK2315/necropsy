@@ -6,6 +6,7 @@ import {
 import { createPane, fieldTable } from './pane.js';
 import { paint } from './image.js';
 import { specPanel } from './spec.js';
+import { createReplay } from './replay.js';
 
 function el(tag, cls, text) {
   const e = document.createElement(tag);
@@ -109,7 +110,11 @@ function ambiguityScreen(root, payload, bytes) {
   const paneNote = el('p', 'pane-note', 'Bytes read by any reading. Hover or focus a reading to see its layout.');
   const tableSlot = el('div', 'table-slot');
   tableSlot.append(el('p', 'pane-note', 'Select a reading to list its fields.'));
-  left.append(paneNote, pane.root, tableSlot);
+  const replay = createReplay(payload, {
+    onStep: (s) => { pane.show(stepView(s)); paneNote.textContent = 'Replay: bytes read by this hypothesis.'; },
+    onFinal: () => { union(); paneNote.textContent = 'Bytes read by any reading. Hover or focus a reading to see its layout.'; lead.classList.remove('pending'); right.classList.remove('pending'); },
+  });
+  left.append(replay.root, paneNote, pane.root, tableSlot);
 
   const grid = el('div', 'cards');
   grid.innerHTML = cardsHTML(payload);                 // markup is a pure function of the payload (tested for neutrality)
@@ -136,10 +141,12 @@ function ambiguityScreen(root, payload, bytes) {
     card.addEventListener('click', select);
     card.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); select(); } });
   }
-  const right = el('div', 'exam-right');
+  const right = el('div', 'exam-right pending');
   right.append(grid);
+  lead.classList.add('pending');
   wrap.append(left, right);
   root.append(lead, wrap);
+  return replay;
 }
 
 // ---- FAILED ----
@@ -241,23 +248,44 @@ function views(root, payload, bytes) {
   return exam;
 }
 
+/** The pane view for one replay step: the rejected hypothesis's own field reads, no regions. */
+function stepView(step) {
+  const h = step.rejection.hypothesis;
+  return { cands: h ? [{ fields: h.fields }] : [], regions: null };
+}
+
 export function renderResult(root, payload, bytes) {
   root.replaceChildren();
   const target = views(root, payload, bytes);
-  if (payload.status === 'UNRESOLVED_AMBIGUITY') { ambiguityScreen(target, payload, bytes); return; }
+  if (payload.status === 'UNRESOLVED_AMBIGUITY') { ambiguityScreen(target, payload, bytes).start(); return; }
   const pane = createPane(bytes);
   const wrap = el('div', 'exam');
   const left = el('div', 'exam-left');
-  left.append(pane.root);
-  wrap.append(left);
+  const right = el('div', 'exam-right pending');
+  wrap.append(left, right);
   target.append(wrap);
+  let finalView, buildRight, table = null;
   if (payload.status === 'RESOLVED') {
     const c = payload.candidates[0];
-    const records = pane.show({ cands: [c], regions: c });
-    left.append(fieldTable(c, records, pane));
-    wrap.append(resolvedPanel(payload).side);
+    finalView = { cands: [c], regions: c };
+    buildRight = () => right.replaceChildren(...resolvedPanel(payload).side.childNodes);   // built at the final step, so the image reveal starts then
   } else {
-    pane.show({ cands: [], regions: null });
-    wrap.append(failedPanel(payload));
+    finalView = { cands: [], regions: null };
+    buildRight = () => right.replaceChildren(...failedPanel(payload).childNodes);
   }
+  let built = false;
+  const replay = createReplay(payload, {
+    onStep: (s) => pane.show(stepView(s)),
+    onFinal: () => {
+      const records = pane.show(finalView);
+      if (!built) {
+        built = true;
+        buildRight();
+        right.classList.remove('pending');
+        if (payload.status === 'RESOLVED') { table = fieldTable(payload.candidates[0], records, pane); left.append(table); }
+      }
+    },
+  });
+  left.append(replay.root, pane.root);
+  replay.start();
 }
