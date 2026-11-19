@@ -2,231 +2,398 @@
 
 ## Introduction
 
-The Structure-Inference Engine is the core reasoning component of NECROPSY. Given an arbitrary sequence of bytes with no extension or format declaration, the engine hypothesises a binary image structure, verifies the hypothesis against a closure gate, applies an ordered composition of revision strategies when closure fails, and returns either a verified hypothesis or an explicit failure report listing every hypothesis tried and each rejection reason. The engine never guesses; it only returns what it can verify.
+The Structure-Inference Engine is the core reasoning component of NECROPSY. It accepts an arbitrary byte sequence with no extension or format declaration and works out how the bytes are laid out as a raster image. It proposes structural hypotheses, verifies each against a closure gate, revises hypotheses that fail, and searches generically when no known format matches.
+
+The engine has two successful outcomes and one failure outcome:
+
+- **RESOLVED**: exactly one hypothesis closes. The engine returns it with the revision path that reached it.
+- **UNRESOLVED_AMBIGUITY**: more than one hypothesis closes and the bytes cannot separate them. The engine returns every candidate and states why. This is a correct answer, not an error.
+- **FAILED**: no hypothesis closed within the search axes and budget. The engine returns every hypothesis it tried and why each was rejected.
+
+The engine never returns a guess it could not verify. When the engine resolves a file, or reaches an unresolved ambiguity, it can also emit a Kiro-format spec folder describing what it recovered, so that NECROPSY produces spec-driven development as well as using it.
 
 ## Glossary
 
-- **Engine**: The Structure-Inference Engine — the top-level component that accepts raw bytes and returns a `HypothesisResult`.
-- **Hypothesis**: A candidate structural interpretation of a byte sequence, consisting of a header layout (named fields with byte offsets and struct formats), computed image dimensions, bit depth, header length, row padding, and encoding.
-- **Encoding**: The compression scheme applied to the pixel data region. Defined values: `"none"` (uncompressed) and `"rle_pcx"` (PCX run-length encoding).
-- **Closure**: The property that decoding the data region under the declared encoding produces exactly `row_stride × height` bytes. For `"none"` encoding this reduces to `header_size + row_stride × height == total_file_size`. For `"rle_pcx"` encoding the PCX RLE decoder is run against bytes from `header_size` onward; the decoded output must be exactly `row_stride × height` bytes.
-- **Row stride**: The number of bytes per image row: `floor(width × bit_depth / 8) + row_padding` for `bit_depth ≥ 8`; `ceil(width × bit_depth / 8) + row_padding` for `bit_depth < 8`.
-- **Revision Strategy**: A deterministic transformation applied to a Hypothesis to produce a new candidate. Defined strategies: `inclusive_bounds`, `endianness_flip`, `header_length_scan`, `row_padding_variants`, `rle_pcx`.
-- **Revision Path**: An ordered list of strategy names applied in sequence to reach a passing Hypothesis. Recorded in the `VerifiedHypothesis` as `revision_path: list[str]`. Empty list means the initial probe hypothesis closed without revision.
-- **Strategy Composition**: The process of applying sequences of Revision Strategies of increasing depth to a base Hypothesis until closure holds or the search cap is reached.
-- **HypothesisResult**: The Engine's return value — either a `VerifiedHypothesis` or a `FailureReport`.
-- **VerifiedHypothesis**: A Hypothesis that has passed the closure gate, annotated with the offset, struct format, and extracted value of every field, the `revision_path`, and the probe name that generated the base Hypothesis (or `"generic"` if no probe matched).
-- **FailureReport**: A structured record listing every Hypothesis tried, its rejection reason, the closure failure details, and the strategy sequence that produced it.
-- **Field**: A named value extracted from the byte sequence at a specific byte offset using an explicit struct format string.
-- **FieldRecord**: A record storing field name (string), byte offset (int), struct format string (string), and extracted value as the tuple returned directly by `struct.unpack_from` without unpacking.
-- **Probe**: An initial, format-specific attempt to build a Hypothesis directly from the byte sequence before any revision strategy is applied.
-- **Generic Search**: The fallback path taken when no probe matches. Enumerates combinations of candidate header lengths, field offsets, field widths (uint8/uint16/uint32), and endianness, applying the closure gate to each.
-- **Pretty_Printer**: A utility that renders a `HypothesisResult` as a human-readable string; it has no side effects and does not modify the result.
-- **RejectionEntry**: One record in a `FailureReport`'s list, carrying the Hypothesis parameters, field records, closure failure details, and the probe name or strategy sequence that produced it.
-- **Deadline**: A wall-clock time limit for the entire inference run, default 5 seconds, configurable at Engine construction time. On expiry the Engine returns a `FailureReport` with `reason = "deadline_exceeded"` listing all hypotheses tried so far. The Engine never returns a partial or unverified result after deadline expiry.
-- **Search cap**: A secondary limit of 10,000 total closure checks across the Revision Phase and Generic Search combined. Prevents infinite loops on pathological inputs where individual checks are fast. Returns `FailureReport` with `reason = "search_cap_exceeded"` if reached before the deadline.
+- **Engine**: The Structure-Inference Engine. Its entry point is `Engine.run(data: bytes)`, which returns an `EngineResult`.
+- **EngineResult**: One of `VerifiedHypothesis` (status `RESOLVED`), `AmbiguousResult` (status `UNRESOLVED_AMBIGUITY`) or `FailureReport` (status `FAILED`).
+- **Hypothesis**: A candidate interpretation of the bytes: `width`, `height`, `bit_depth`, `header_size`, `row_alignment`, `encoding`, an optional declared `data_end`, the `FieldRecord`s it was built from, its origin (`probe_name` or `"generic"`), optional PCX bounds (`xmin`, `ymin`, `xmax`, `ymax`) and its `revision_path`.
+- **Hypothesis key**: The tuple `(width, height, bit_depth, header_size, row_alignment, encoding, data_end)`. Two hypotheses with the same key are the same hypothesis.
+- **FieldRecord**: A field read from the bytes: name, byte offset, `struct` format string, and the tuple returned by `struct.unpack_from`, never unwrapped.
+- **Equivalent reads**: Several `FieldRecord`s with the same name that read the same value from different formats or offsets. Listing all of them states that the bytes cannot distinguish them.
+- **Encoding**: The scheme applied to the data region. `"none"` and `"rle_pcx"` are decodable. `"rle_tga"` and `"tiff_compression_<n>"` are recognised declarations that this engine cannot decode.
+- **Row stride**: `row_stride = round_up(ceil(width × bit_depth / 8), row_alignment)`, where `row_alignment ∈ {1, 2, 4}` and `round_up(n, a)` is the smallest multiple of `a` that is at least `n`.
+- **Expected decoded bytes**: `row_stride × height`.
+- **Data region**: The byte range `[header_size, data_end)`. `data_end` is the hypothesis's declared data end when it has one; otherwise it is `trailer_start` from the Trailer Registry; otherwise it is the file length.
+- **Trailer Registry**: An ordered list of recognised trailers that a file writes about itself. Each entry has a name, a length, a marker byte at the start of the trailer, and the hypothesis origins it applies to.
+- **Closure**: The binary property that decoding the data region under the declared encoding yields exactly the expected decoded bytes and consumes the entire data region.
+- **Probe**: A format-specific reader that, on a signature match, emits one seed hypothesis from the format's fixed layout and the file's declarations.
+- **Seed**: The hypothesis a probe emits. Revision operates only on seeds and their descendants.
+- **Declaration**: A field in which the file states something about itself, such as the PCX encoding byte, the TIFF byte-order mark or the TIFF Compression tag. Reading a declaration is correct parsing.
+- **Convention**: Knowledge that is not present in the file, such as "width is `xmax − xmin + 1`". Probes never apply conventions. Revision strategies discover them.
+- **Revision Strategy**: A transformation of a hypothesis into new candidates. There are exactly three: `inclusive_bounds`, `rle_pcx` and `row_padding_variants`.
+- **Revision path**: The ordered list of strategy names applied to reach a hypothesis. An empty list means a seed closed directly.
+- **Generic Search**: The search used when no probe signature matches. Its axes are header length, field offset, field width, endianness, signedness and encoding.
+- **Candidate**: A hypothesis that passed closure, with its row stride, expected decoded bytes, data region, trailer name, revision path, source and coherence fields.
+- **Row coherence**: A heuristic score computed on candidates that already passed closure. It is reported and never used to gate, promote or order candidates.
+- **Deadline**: The wall-clock limit for one `run()` call, default 5.0 seconds, configurable.
+- **Search cap**: 10,000 closure checks per `run()` call, shared by the probe phase, the revision phase and generic search.
+- **RejectionEntry**: One failed hypothesis: its parameters, its `FieldRecord`s, a reason from the reason vocabulary, an optional discrepancy and its source.
+- **Spec Emitter**: The component that turns a `VerifiedHypothesis` or `AmbiguousResult` into a Kiro-format spec folder.
+- **Layout block**: A fenced code block with info string `necropsy-layout` inside an emitted `requirements.md`. It holds a JSON description of the recovered layout in schema `necropsy-layout/1`.
+- **Reference reader**: Test-support code that parses a file using only an emitted layout block. It imports nothing from the `necropsy` package.
+- **Pretty_Printer**: A pure function that renders an `EngineResult` as text. It lives outside `necropsy/engine/`.
 
----
+## Decision Record
+
+These decisions are final. Each is recorded with its reason so later work does not reopen it.
+
+1. **Closure is a hard gate.** A hypothesis that does not close is rejected. No plausibility score can admit it.
+2. **Probes read declarations and never apply conventions.** A probe that reads a byte saying "RLE compressed", ignores it, fails closure and then has a revision strategy guess RLE would be theatre. A probe applies its format's fixed layout (offsets, field widths, header length, byte order) and reads declarations. Value conventions such as inclusive bounds are left to revision.
+3. **A signature match always emits a seed.** Revision can only operate on seeds. A probe that matches but emits nothing would make every damaged file of that format unrecoverable. This is a general rule, not a TIFF special case.
+4. **Closure consumes the whole data region.** The earlier decoder stopped when its output was full and never checked for leftover input, so wrong, smaller images closed. On mystery_b, 224 of 1,521 (width, height) pairs below 40 closed, including the naive 7×7. Closure now requires both an exact output length and full consumption of `[header_size, data_end)`. Trailers are handled by a registry of self-declaring trailers, not by format special cases.
+5. **Three revision strategies, each with a corpus case.** `endianness_flip`, `field_width_variants` and `header_length_scan` were deleted from revision. Every probe knows its byte order, field widths and header length from its format specification (PCX 128, TGA 18 + id_length + colour map, PBM parsed from text, TIFF from tag 273), so none has an honest probe-revision case. They remain generic-search axes. `header_length_scan` also produced wrong closing answers on mystery_i.
+6. **Every phase collects all closers.** Under the deleted four-strategy design, the correct answer for mystery_i surfaced only because `inclusive_bounds` happened to be listed first. Ordering is not evidence. The probe phase, the revision phase and generic search each collect every closing hypothesis at their stage, and more than one is an unresolved ambiguity.
+7. **Ambiguity is a correct outcome.** A headerless blob does not contain the information needed to separate 8×8 at 8 bpp from 64×8 at 1 bpp. Both readings are true. Reporting that is correct behaviour, not a limitation.
+8. **Row coherence is demoted to a reported heuristic.** Measured on the corpus, it ranked a wrong candidate first on mystery_d and mystery_g, and separated mystery_f's true answer from the runner-up by only 8.8%. It has three known failure modes, listed in Requirement 11. It never gates, promotes or orders.
+9. **Field width that the bytes cannot distinguish is reported, not decided.** `<H`, `<I` and `<i` over the same bytes with zero high bytes are the same read. The engine lists every equivalent read.
 
 ## Requirements
 
 ### Requirement 1: Closure Gate
 
-**User Story:** As a developer integrating the Engine into NECROPSY, I want the Engine to reject any Hypothesis whose declared encoding does not produce the exact expected decoded output, so that the system never returns a structurally inconsistent interpretation.
+**User Story:** As a developer integrating the Engine, I want every hypothesis checked against an exact decoding of its data region, so that the Engine never returns a structurally inconsistent interpretation.
 
 #### Acceptance Criteria
 
-1. WHEN a Hypothesis specifies `width`, `height`, `bit_depth`, `header_size`, `row_padding`, and `encoding == "none"`, THE Engine SHALL compute `row_stride` as `floor(width × bit_depth / 8) + row_padding` for `bit_depth ≥ 8` or `ceil(width × bit_depth / 8) + row_padding` for `bit_depth < 8`, and accept the Hypothesis only when `header_size + row_stride × height == total_file_size`.
+1. THE Engine SHALL compute `row_stride = round_up(ceil(width × bit_depth / 8), row_alignment)` and `expected_decoded_bytes = row_stride × height` using integer arithmetic only.
+2. IF a hypothesis has `width ≤ 0`, `height ≤ 0`, `bit_depth ≤ 0`, `row_alignment ∉ {1, 2, 4}`, `header_size < 0` or `header_size > len(data)`, THEN THE Engine SHALL reject it with reason `degenerate_hypothesis` without decoding.
+3. THE Engine SHALL determine `data_end` as the hypothesis's declared `data_end` when one is set, otherwise as `trailer_start` from the first matching Trailer Registry entry, otherwise as `len(data)`.
+4. IF a declared `data_end` is greater than `len(data)` or less than `header_size`, THEN THE Engine SHALL reject the hypothesis with reason `field_out_of_bounds`.
+5. THE Trailer Registry SHALL contain, as its first entry, `pcx_palette_256`: length 769 bytes, marker byte `0x0C` at offset `len(data) − 769`, applying to hypotheses from the PCX probe and from Generic Search. An entry SHALL match only when `len(data) − length ≥ header_size` and the byte at `len(data) − length` equals the marker; `trailer_start` is then `len(data) − length`.
+6. THE closure gate SHALL read the Trailer Registry as data, so that adding an entry requires no change to the closure gate.
+7. WHEN `encoding == "none"`, THE Engine SHALL accept the hypothesis only when `data_end − header_size == expected_decoded_bytes`, and otherwise reject it with reason `arithmetic_mismatch` and discrepancy `(data_end − header_size) − expected_decoded_bytes`.
+8. WHEN `encoding == "rle_pcx"`, THE Engine SHALL run the PCX RLE decoder over `[header_size, data_end)` with `max_output_bytes = expected_decoded_bytes`, and accept the hypothesis only when the decoder reports `ok`.
+9. THE PCX RLE decoder SHALL treat a byte `b ≥ 0xC0` as a run of `b & 0x3F` copies of the next byte, and any other byte as one literal byte.
+10. THE PCX RLE decoder SHALL check, inside its loop and before writing, whether the next run or literal would exceed `max_output_bytes`, and return `overrun` without writing it. The decoder's output SHALL never exceed `max_output_bytes`.
+11. THE PCX RLE decoder SHALL return `underrun` when the region ends before `max_output_bytes` bytes are produced, including when a run marker is the last byte of the region; `unconsumed` when the output is complete but region bytes remain; and `ok` only when the output length equals `max_output_bytes` and the decoder stopped exactly at `data_end`.
+12. THE Engine SHALL map decoder results `overrun`, `underrun` and `unconsumed` to rejection reasons `decoder_overrun`, `decoder_underrun` and `decoder_unconsumed`.
+13. WHEN `encoding` is any value other than `"none"` or `"rle_pcx"`, THE Engine SHALL reject the hypothesis with reason `unsupported_encoding`.
+14. THE closure gate SHALL be binary. No score of any kind SHALL admit a hypothesis that fails closure or reject one that passes.
 
-2. WHEN a Hypothesis specifies `encoding == "rle_pcx"`, THE Engine SHALL run the PCX RLE decoder against the bytes beginning at offset `header_size`; the Hypothesis is accepted only when the decoder produces exactly `row_stride × height` output bytes without overrunning the input region or terminating early.
+### Requirement 2: Probe Set
 
-3. IF a Hypothesis fails the closure check, THEN THE Engine SHALL record a `RejectionEntry` containing: the Hypothesis parameters (`width`, `height`, `bit_depth`, `header_size`, `row_padding`, `encoding`), the struct format string and byte offset of every extracted field, and a rejection reason stating the specific failure — one of: `arithmetic_mismatch` (with discrepancy `total_file_size − (header_size + row_stride × height)`), `decoder_overrun`, or `decoder_underrun`.
-
-4. THE Engine SHALL treat the closure gate as binary: a Hypothesis that does not close is rejected unconditionally, regardless of any plausibility score.
-
-5. THE Engine SHALL state every field offset and struct format string explicitly in the `VerifiedHypothesis`; no field may appear without a declared offset and format.
-
-6. WHEN `encoding == "rle_pcx"`, THE RLE decoder SHALL accept a `max_output_bytes` parameter equal to `row_stride × height` and SHALL abort immediately if the decoded output would exceed `max_output_bytes`, returning a `decoder_overrun` failure rather than allocating unbounded memory.
-
-7. THE Engine SHALL accept a `deadline_seconds` configuration parameter (default 5.0). THE Engine SHALL check elapsed wall-clock time before each closure check; IF the deadline has been reached, THE Engine SHALL immediately return a `FailureReport` with `reason = "deadline_exceeded"` and the rejection list accumulated so far, without attempting any further checks.
-
----
-
-### Requirement 2: Initial Probe Set
-
-**User Story:** As a user dropping an unknown file into NECROPSY, I want the Engine to attempt a set of well-defined initial structure guesses before invoking revision strategies, so that common formats are identified quickly.
-
-#### Acceptance Criteria
-
-1. THE Engine SHALL attempt the following four Probes in order before invoking any Revision Strategy or Generic Search:
-
-   **PCX Probe** — Signature: byte 0x00 == 0x0A and byte 0x02 ∈ {0x00, 0x01}; minimum file length 128 bytes. Fields read as literal raw values with no per-format arithmetic applied:
-   - `xmin` at 0x04 as `<H`
-   - `ymin` at 0x06 as `<H`
-   - `xmax` at 0x08 as `<H`
-   - `ymax` at 0x0A as `<H`
-   - `bit_depth` at 0x03 as `B`
-   - `planes` at 0x41 as `B`
-   - `bytes_per_line` at 0x42 as `<H`
-
-   Initial Hypothesis: `width = xmax`, `height = ymax`, `header_size = 128`, `encoding = "none"` when byte 0x02 == 0x00; `encoding = "rle_pcx"` when byte 0x02 == 0x01. Closure condition additionally requires `xmax ≥ xmin`, `ymax ≥ ymin`, and `bytes_per_line > 0`; if any fails, record a `RejectionEntry` and skip to the next probe.
-
-   **TGA Probe** — Signature: `image_type` at 0x02 as `B` ∈ {1, 2, 3, 9, 10, 11}; minimum file length `18 + id_length` bytes where `id_length` is the byte at 0x00 as `B`. Fields:
-   - `id_length` at 0x00 as `B`
-   - `image_type` at 0x02 as `B`
-   - `width` at 0x0C as `<H`
-   - `height` at 0x0E as `<H`
-   - `bit_depth` at 0x10 as `B`
-
-   Initial Hypothesis: `header_size = 18 + id_length`, `encoding = "none"`. Closure additionally requires `width > 0` and `height > 0`.
-
-   **PBM Probe** — Signature: bytes 0–2 == ASCII `P4\n`; minimum file length 7 bytes. Width and height parsed as ASCII decimal integers from the header text following the magic line; comment lines beginning with `#` are skipped; `bit_depth` fixed at 1; `row_stride = ceil(width / 8)`. Initial Hypothesis: `header_size` = byte length of the ASCII header through and including the final newline before the binary data, `encoding = "none"`. Closure additionally requires `width > 0` and `height > 0`.
-
-   **TIFF Probe** — Signature: bytes 0–1 ∈ {`b'II'`, `b'MM'`} AND the uint16 at offset 0x02 read in the declared byte order (little-endian for `II`, big-endian for `MM`) == 42. Fields read naively as little-endian regardless of the byte order mark:
-   - `ifd_offset` at 0x04 as `<I`
-   - At `ifd_offset`: IFD entry count as `<H`, then entries searched for tags 256 (`<H`/`<I` value depending on type), 257, 258, 273, 279
-   - `width` from tag 256, `height` from tag 257, `bit_depth` from tag 258, `strip_offset` from tag 273, `strip_byte_count` from tag 279
-
-   Initial Hypothesis: `header_size = strip_offset`, `encoding = "none"`. Closure condition: `strip_offset + strip_byte_count == total_file_size` AND decoded bytes == `row_stride × height`. If `ifd_offset` or any tag offset falls outside `[0, total_file_size)`, record a `RejectionEntry` with reason `field_out_of_bounds` and continue.
-
-2. IF a Probe's file length is less than that Probe's minimum header length, THEN THE Engine SHALL treat it as a signature mismatch and skip it without recording a `RejectionEntry`.
-
-3. WHEN a Probe's signature check does not match, THE Engine SHALL skip that Probe without recording a `RejectionEntry`.
-
-4. WHEN a Probe's signature matches but closure fails, THE Engine SHALL record a `RejectionEntry` with the probe name and failure reason, then continue to the next Probe.
-
----
-
-### Requirement 3: Revision Strategy Composition
-
-**User Story:** As a developer, I want the Engine to search over ordered compositions of revision strategies, up to a bounded depth, before declaring failure, so that multi-strategy solutions like ["inclusive_bounds", "rle_pcx"] are found while the search remains tractable.
+**User Story:** As a user dropping a file into NECROPSY, I want known formats read correctly from their own declarations, so that common files resolve quickly and damaged ones still produce a seed for revision.
 
 #### Acceptance Criteria
 
-1. WHEN all Probes have been attempted and at least one generated a rejected Hypothesis (i.e., signature matched but closure failed), THE Engine SHALL enter the Revision Phase with the set of rejected Hypotheses as the seed pool.
+1. THE Engine SHALL run the four probes in the order PCX, TGA, PBM, TIFF, and SHALL run every probe even after an earlier probe's seed closes.
+2. IF a file is shorter than a probe's minimum length, or a probe's signature does not match, THEN THE probe SHALL emit no seed and record no `RejectionEntry`.
+3. WHEN a probe's signature matches, THE probe SHALL emit exactly one seed carrying the values as read. Values that cannot be read SHALL be 0. WHERE a field is out of bounds, a precondition fails or the header cannot be parsed, THE probe SHALL additionally record a `RejectionEntry` with reason `field_out_of_bounds` or `probe_precondition_failed`.
+4. THE probes SHALL apply only their format's fixed layout (field offsets, field widths, header length rules, byte order) and the file's declarations. THE probes SHALL NOT apply value conventions, including inclusive bounds.
+5. **PCX probe.**
+   - Minimum length: 128 bytes.
+   - Signature: byte `0x00 == 0x0A` and byte `0x02 ∈ {0x00, 0x01}`.
+   - Fields:
+     - `encoding` at `0x02` as `B`
+     - `bit_depth` at `0x03` as `B`
+     - `xmin` at `0x04` as `<H`
+     - `ymin` at `0x06` as `<H`
+     - `xmax` at `0x08` as `<H`
+     - `ymax` at `0x0A` as `<H`
+     - `planes` at `0x41` as `B`
+     - `bytes_per_line` at `0x42` as `<H`
+   - Seed: `width = xmax`, `height = ymax`, `bit_depth`, `header_size = 128`, `row_alignment = 1`, bounds set. `encoding = "none"` when byte `0x02 == 0x00` and `"rle_pcx"` when it is `0x01`, because that byte is the file's declaration of its encoding.
+   - Precondition: `xmax ≥ xmin`, `ymax ≥ ymin` and `bytes_per_line > 0`; otherwise record `probe_precondition_failed`.
+6. **TGA probe.**
+   - Minimum length: 18 bytes.
+   - Signature: byte `0x01 ∈ {0, 1}` (colour-map type) and byte `0x02 ∈ {1, 2, 3, 9, 10, 11}` (image type).
+   - Fields:
+     - `id_length` at `0x00` as `B`
+     - `color_map_type` at `0x01` as `B`
+     - `image_type` at `0x02` as `B`
+     - `color_map_length` at `0x05` as `<H`
+     - `color_map_entry_size` at `0x07` as `B`
+     - `width` at `0x0C` as `<H`
+     - `height` at `0x0E` as `<H`
+     - `bit_depth` at `0x10` as `B`
+   - Seed: `header_size = 18 + id_length + color_map_type × color_map_length × ceil(color_map_entry_size / 8)`, `row_alignment = 1`.
+   - Encoding: `"none"` for image types 1, 2 and 3; `"rle_tga"` for 9, 10 and 11.
+   - Precondition: `width > 0` and `height > 0`; otherwise record `probe_precondition_failed`.
+7. **PBM probe.**
+   - Minimum length: 7 bytes.
+   - Signature: bytes `0x00..0x02 == b"P4\n"`.
+   - Header parsing:
+     - Parse only within the first 1,024 bytes.
+     - Skip lines beginning with `#`.
+     - The next line must hold exactly two ASCII decimal tokens separated by whitespace: width, then height.
+     - `header_size` is the offset of the byte after that line's newline.
+   - Fields:
+     - `magic` at `0x00` as `3s`
+     - `width` at its token offset as `<n>s`, where `<n>` is the token length
+     - `height` at its token offset as `<n>s`
+   - Seed: `bit_depth = 1`, `row_alignment = 1`, `encoding = "none"`.
+   - IF the header cannot be parsed, THEN the seed SHALL have `width = 0`, `height = 0`, `header_size = 3`, and the probe SHALL record `probe_precondition_failed`.
+8. **TIFF probe.**
+   - Minimum length: 8 bytes.
+   - Signature: bytes `0x00..0x01 ∈ {b"II", b"MM"}`, and the `uint16` at `0x02` read in the declared byte order equals 42.
+   - Byte order: the probe SHALL honour the byte-order mark. Every multi-byte read uses `<` for `II` and `>` for `MM`; the formats below write this prefix as `o`.
+   - Fields:
+     - `byte_order` at `0x00` as `2s`
+     - `magic` at `0x02` as `oH`
+     - `ifd_offset` at `0x04` as `oI`
+     - `ifd_entry_count` at `ifd_offset` as `oH`
+   - IFD entries:
+     - Each entry is 12 bytes, at `ifd_offset + 2 + 12k`.
+     - Layout: tag at `+0` as `oH`, type at `+2` as `oH`, count at `+4` as `oI`, value at `+8`.
+     - A type 3 (SHORT) value is read as `oH` at `+8`. It is left-justified in the 4-byte value field.
+     - A type 4 (LONG) value is read as `oI` at `+8`.
+     - A tag is used only when its type is 3 or 4 and its count is 1.
+   - Tags used:
+     - 256 `width`
+     - 257 `height`
+     - 258 `bits_per_sample`
+     - 259 `compression` (default 1)
+     - 273 `strip_offset`
+     - 277 `samples_per_pixel` (default 1)
+     - 279 `strip_byte_count`
+   - Seed: `bit_depth = bits_per_sample × samples_per_pixel`, `header_size = strip_offset`, declared `data_end = strip_offset + strip_byte_count`, `row_alignment = 1`. `encoding = "none"` when `compression == 1`, otherwise `"tiff_compression_<n>"`.
+   - IF `ifd_offset + 2 > len(data)`, or the entry table runs past the end of the file, THEN the probe SHALL record `field_out_of_bounds` and emit the seed from the values read so far.
+   - IF any of tags 256, 257, 258, 273 or 279 is missing, or `samples_per_pixel ≠ 1`, THEN the probe SHALL record `probe_precondition_failed`.
+   - Only single-strip TIFF files are in scope.
+9. WHEN exactly one distinct seed closes, THE Engine SHALL return `RESOLVED` with `revision_path = []`. WHEN more than one distinct seed closes, THE Engine SHALL return `UNRESOLVED_AMBIGUITY` with stage `probe`. WHEN no seed closes and at least one seed exists, THE Engine SHALL enter the revision phase with every seed as the seed pool.
 
-2. THE Engine SHALL search strategy sequences breadth-first by depth. At depth 1 it tries every single strategy against every seed Hypothesis. At depth 2 it tries every two-strategy sequence against every seed Hypothesis. At depth 3 it tries every three-strategy sequence. The search halts at depth 3.
+### Requirement 3: Revision Strategies
 
-3. THE defined Revision Strategies, each of which transforms a Hypothesis into one or more candidate Hypotheses, are:
+**User Story:** As a developer, I want failed seeds revised by a small set of strategies that each correspond to a real recovery case, so that damaged or unconventional files are recovered without the engine picking among answers by list order.
 
-   **inclusive_bounds** — Applies only to Hypotheses with `xmin`, `ymin`, `xmax`, `ymax` fields. Produces one new Hypothesis: `width = xmax − xmin + 1`, `height = ymax − ymin + 1`, all other parameters unchanged.
+#### Acceptance Criteria
 
-   **endianness_flip** — Swaps the byte order of every multi-byte field in the Hypothesis simultaneously. For each field with a little-endian format (`<H`, `<I`, `<i`), re-reads it at the same offset with the corresponding big-endian format (`>H`, `>I`, `>i`), and vice versa. Produces one new Hypothesis.
-
-   **header_length_scan** — Produces multiple candidate Hypotheses by trying adjusted header lengths. For the base `header_size`, tries `header_size + k` for `k ∈ {1, 2, 4, 8, 16, 32, 64, 128}` and `header_size − k` for `k ∈ {1, 2, 4}`, in that order, skipping values outside `[0, total_file_size)`. Each adjusted header length is a separate candidate.
-
-   **row_padding_variants** — Produces three candidate Hypotheses with `row_padding ∈ {1, 2, 4}` bytes respectively, all other parameters unchanged.
-
-   **rle_pcx** — Sets `encoding = "rle_pcx"` on the Hypothesis, leaving all other parameters unchanged. Produces one new Hypothesis.
-
-4. FOR each candidate Hypothesis produced by a strategy sequence, THE Engine SHALL apply the closure gate immediately. IF a candidate passes, THE Engine SHALL return a `VerifiedHypothesis` with `revision_path` set to the ordered list of strategy names applied and halt all further search.
-
-5. THE Engine SHALL deduplicate: if a candidate Hypothesis has identical parameters (`width`, `height`, `bit_depth`, `header_size`, `row_padding`, `encoding`) to any previously closure-checked Hypothesis, it SHALL be skipped without re-checking.
-
-6. THE Engine SHALL enforce a hard cap of 10,000 total closure checks shared across the Revision Phase and Generic Search. IF the cap is reached before a passing Hypothesis is found, THE Engine SHALL return a `FailureReport` with the rejection list accumulated so far plus a final entry with `reason = "search_cap_exceeded"`. The check count and the wall-clock deadline (Requirement 1 criterion 7) are independent termination conditions; whichever triggers first wins.
-
-7. WHEN a strategy combination produces multiple candidates (header_length_scan, row_padding_variants), each candidate is closure-checked in the order the strategy defines before moving to the next candidate of that strategy.
-
----
+1. THE Engine SHALL define exactly three revision strategies. Each strategy produces zero or more candidates, and each candidate's `revision_path` is its parent's path plus the strategy name.
+   - **`inclusive_bounds`**: applies only to hypotheses with bounds set. It produces one candidate with `width = xmax − xmin + 1` and `height = ymax − ymin + 1`.
+   - **`rle_pcx`**: applies only to hypotheses from the PCX probe with `encoding == "none"`. It produces one candidate with `encoding = "rle_pcx"`.
+   - **`row_padding_variants`**: produces one candidate for each `row_alignment` in `(2, 4)` that differs from the hypothesis's current alignment, in that order.
+2. THE Engine SHALL search breadth-first by depth from 1 to 3. At each depth it SHALL apply every strategy, in the order listed, to every hypothesis in the current frontier.
+3. THE Engine SHALL skip, without a closure check, any candidate whose hypothesis key equals the key of a seed or of any previously checked candidate.
+4. WHEN at least one candidate closes at a depth, THE Engine SHALL finish that depth, collect every closing candidate from it, and not search deeper.
+5. WHEN exactly one candidate closes at that depth, THE Engine SHALL return `RESOLVED` with that candidate's `revision_path`. WHEN more than one closes, THE Engine SHALL return `UNRESOLVED_AMBIGUITY` with stage `revision`.
+6. THE order of strategies and seeds SHALL determine only the enumeration order. It SHALL NOT determine which candidate is returned.
+7. THE Engine SHALL NOT change byte order, field width or header length during revision. These are Generic Search axes only.
+8. WHEN no candidate closes by depth 3, THE Engine SHALL return `FAILED` with termination `exhausted`, and SHALL NOT enter Generic Search.
 
 ### Requirement 4: Generic Search
 
-**User Story:** As a developer verifying the Engine's core capability, I want the Engine to find a closing hypothesis for a file that matches no registered probe, using only generic structural search, so that NECROPSY can handle formats beyond its known probe set.
+**User Story:** As a developer, I want files that match no probe searched over explicit structural axes, with every closing layout reported, so that NECROPSY handles unknown formats without guessing.
 
 #### Acceptance Criteria
 
-1. WHEN all Probes have been attempted and none generated a Hypothesis (i.e., every probe was a signature mismatch or file-too-short skip), THE Engine SHALL enter the Generic Search phase.
+1. WHEN no probe signature matches, THE Engine SHALL run Generic Search.
+2. THE Generic Search SHALL try header lengths `L ∈ {4, 8, 12, …, 256}`, every multiple of 4 from 4 to 256 inclusive, in ascending order, and only those with `L < len(data)`. This set already contains every power of 2 from 4 to 256.
+3. FOR each header length `L`, THE Generic Search SHALL collect every read of width or height values: every pair of format `f ∈ {<H, >H, <I, >I, <i, >i}` and offset `o` with `o + size(f) ≤ L` whose value is greater than 0, grouped by value. `size` is 2 for `H` formats and 4 for `I` and `i` formats.
+4. FOR each header length `L`, THE Generic Search SHALL collect every bit-depth read: every offset `o < L` whose byte is in `{1, 4, 8, 16, 24, 32}`, read as `B`, grouped by value.
+5. FOR each header length `L`, THE Generic Search SHALL determine `data_end` with the Trailer Registry. It SHALL try `encoding = "none"` with decoded size `S = data_end − L`. Only when a registered trailer matched, it SHALL also try `encoding = "rle_pcx"` with `S` equal to the run-length output of the whole region, counted without allocating; a truncated final run means the RLE encoding is skipped for that `L`.
+6. FOR each encoding with `S > 0`, each width value `W` and each bit-depth value `B`, THE Generic Search SHALL:
+   - compute `row_stride = ceil(W × B / 8)` with `row_alignment = 1`;
+   - skip the combination when `S mod row_stride ≠ 0`;
+   - otherwise set `height = S / row_stride`;
+   - skip it unless `height` is a read value and at least one width read and one height read are at different offsets;
+   - otherwise run one closure check.
+7. EACH Generic Search candidate SHALL carry, as `FieldRecord`s, every equivalent read: one record named `width` per read of `W`, one named `height` per read of the height, and one named `bit_depth` per offset holding `B`.
+8. THE Generic Search SHALL collect every closing candidate and SHALL NOT stop at the first. WHEN exactly one closes, THE Engine SHALL return `RESOLVED` with `probe_name = "generic"` and `revision_path = []`. WHEN more than one closes, THE Engine SHALL return `UNRESOLVED_AMBIGUITY` with stage `generic`. WHEN none closes, THE Engine SHALL return `FAILED` with termination `exhausted`.
+9. A `FAILED` result from Generic Search SHALL state only that no closing layout was found within the stated axes and budget. It SHALL NOT claim the file has no valid layout.
 
-2. THE Generic Search SHALL enumerate candidate header lengths in order: every multiple of 4 from 4 to 256 inclusive, plus every power of 2 from 4 to 256 inclusive, deduplicated and sorted ascending. For each candidate header length `h`, the data region is `data[h:]`.
+### Requirement 5: Failure Report and Termination
 
-3. FOR each candidate header length, THE Engine SHALL try reading `width` and `height` using formats `<H`, `>H`, `<I`, `>I`, `<i`, `>i` at all valid byte offsets within the header, and `bit_depth` as `B` at all valid byte offsets within the header. Format size is 2 bytes for `H` formats and 4 bytes for `I`/`i` formats; a field offset is valid if `offset + format_size ≤ h`.
-
-4. THE Engine SHALL skip any combination where `width ≤ 0`, `height ≤ 0`, `bit_depth ∉ {1, 4, 8, 16, 24, 32}`, `width_offset == height_offset`, or `header_size + row_stride × height > total_file_size`.
-
-5. FOR each non-skipped combination, THE Engine SHALL first apply the closure gate with `encoding = "none"`. IF that fails, THE Engine SHALL also try `encoding = "rle_pcx"`. IF either passes, THE Engine SHALL return a `VerifiedHypothesis` with `probe_name = "generic"`, `revision_path = []`, and the winning combination's field offsets, formats, and values as `FieldRecord` entries.
-
-6. THE `VerifiedHypothesis` for a generic-search result SHALL record: the winning `header_size`, `width_offset`, `width_format`, `height_offset`, `height_format`, and `bit_depth_offset` as named fields, so the search axes that resolved the file are observable in the result.
-
-7. WHEN the Generic Search exhausts all combinations without finding a closing Hypothesis, THE Engine SHALL return a `FailureReport`; it SHALL NOT return a guess.
-
-8. THE Generic Search is not guaranteed to be exhaustive: the search space at header length 256 alone exceeds 500 million combinations before skip guards are applied, so the wall-clock deadline and the shared 10,000-check cap (Requirement 3 criterion 6) will typically terminate the search before it is complete. THE Engine SHALL NOT claim or imply that a `FailureReport` from Generic Search means the file has no closing hypothesis; the report merely records what was tried within the allotted budget.
-
----
-
-### Requirement 5: Failure Report
-
-**User Story:** As a developer debugging an unresolvable file, I want the Engine to return a complete account of every Hypothesis tried and why each was rejected, so that I can diagnose the failure without re-running the Engine.
+**User Story:** As a developer debugging an unresolvable file, I want a complete, ordered record of what was tried and why it stopped, so that I can diagnose the failure without re-running the Engine.
 
 #### Acceptance Criteria
 
-1. WHEN all Probes, Revision Strategies, and Generic Search have been exhausted without finding a closing Hypothesis, THE Engine SHALL return a `FailureReport`.
-
-2. THE `FailureReport` SHALL contain a list of `RejectionEntry` records. Each record SHALL include:
-   - The Hypothesis parameters (`width`, `height`, `bit_depth`, `header_size`, `row_padding`, `encoding`).
-   - The struct format string and byte offset of every field extracted.
-   - The closure failure reason: `arithmetic_mismatch` (with discrepancy value), `decoder_overrun`, `decoder_underrun`, `field_out_of_bounds`, `search_cap_exceeded`, or `deadline_exceeded`.
-   - The name of the Probe or the ordered strategy sequence (e.g., `["inclusive_bounds", "rle_pcx"]`) that produced the Hypothesis.
-
-3. IF the input byte sequence is fewer than 3 bytes, THEN THE Engine SHALL return a `FailureReport` whose `RejectionEntry` list contains exactly one entry with `reason = "input_too_short"` and SHALL NOT attempt any Probe or Search.
-
-4. THE `FailureReport` SHALL record entries in the order: probe rejections first (in probe order), then revision-phase rejections (in breadth-first depth order), then generic-search rejections.
-
----
+1. THE Engine SHALL accept `deadline_seconds` (default 5.0) at construction. It SHALL check elapsed wall-clock time:
+   - before each probe;
+   - before each closure check;
+   - at the start of each Generic Search header length;
+   - before each coherence computation.
+2. WHEN the deadline has passed at a check, THE Engine SHALL stop and return `FAILED` with termination `deadline_exceeded`, the rejections so far and the candidates found so far.
+3. THE Engine SHALL count closure checks across the probe phase, the revision phase and Generic Search against one shared cap of 10,000. WHEN a further check would exceed the cap, THE Engine SHALL return `FAILED` with termination `search_cap_exceeded`, the rejections so far and the candidates found so far.
+4. FOR any input of at most 65,536 bytes, THE Engine SHALL return within `deadline_seconds + 0.25` seconds.
+5. EACH `RejectionEntry` SHALL include:
+   - the hypothesis parameters;
+   - every `FieldRecord` of that hypothesis;
+   - a reason from the vocabulary in criterion 6;
+   - the discrepancy for `arithmetic_mismatch`, otherwise none;
+   - its source: a probe name, a revision path, or `"generic"`.
+6. THE reason vocabulary SHALL be exactly:
+   - `arithmetic_mismatch`
+   - `decoder_overrun`
+   - `decoder_underrun`
+   - `decoder_unconsumed`
+   - `degenerate_hypothesis`
+   - `field_out_of_bounds`
+   - `probe_precondition_failed`
+   - `unsupported_encoding`
+   - `input_too_short`
+   - `internal_error`
+7. THE termination vocabulary of a `FailureReport` SHALL be exactly:
+   - `exhausted`
+   - `deadline_exceeded`
+   - `search_cap_exceeded`
+   - `input_too_short`
+   - `internal_error`
+8. IF the input is shorter than 3 bytes, THEN THE Engine SHALL return `FAILED` with termination `input_too_short` and exactly one `RejectionEntry` with reason `input_too_short`, and SHALL run no probe.
+9. THE Engine SHALL record rejections in the order produced: probe phase, then revision phase in breadth-first order, then Generic Search.
+10. A `FailureReport` SHALL list any candidates that closed before termination as `partial_candidates`, and SHALL NOT present them as a resolved or ambiguous outcome.
+11. EVERY `EngineResult` SHALL carry `rejections`, `total_checks` and `total_file_size`.
 
 ### Requirement 6: Never-Raise Contract
 
-**User Story:** As a developer running automated tests against arbitrary byte sequences, I want the Engine to handle all inputs without raising an exception, so that NECROPSY does not crash on corrupted or adversarial files.
+**User Story:** As a developer running NECROPSY on corrupted or adversarial files, I want every component to return a structured value instead of raising, so that no input crashes the system.
 
 #### Acceptance Criteria
 
-1. IF any exception propagates to the Engine's top-level entry point during processing, THEN THE Engine SHALL catch it and return a `FailureReport` containing a single `RejectionEntry` whose `reason` field is the exception class name and message; all Hypothesis parameter fields in that entry SHALL be absent.
+1. IF any exception reaches `Engine.run`, THEN THE Engine SHALL return `FAILED` with termination `internal_error` and exactly one `RejectionEntry` whose reason is `internal_error`, with detail `"<ExceptionClass>: <message>"`, and no hypothesis.
+2. WHEN given a zero-length input, THE Engine SHALL return a `FailureReport`.
+3. WHEN given any byte sequence, THE Engine SHALL return a `VerifiedHypothesis`, an `AmbiguousResult` or a `FailureReport`.
+4. THE probes, revision strategies, closure gate, RLE decoder, Generic Search, coherence function, Pretty_Printer and Spec Emitter SHALL each return a structured value and never raise on any input.
+5. THE Engine SHALL be tested with a Hypothesis property test over arbitrary byte inputs of up to 65,536 bytes, including mutated corpus files, asserting `run()` never raises and returns one of the three result types.
+6. THE Engine SHALL be tested with a Hypothesis property test over the same inputs, using `deadline_seconds = 5.0`, asserting `run()` returns within 5.25 seconds.
+7. EACH component in criterion 4 SHALL have its own Hypothesis property test asserting it never raises on arbitrary input and returns its declared type.
 
-2. WHEN given a zero-length byte sequence, THE Engine SHALL return a `FailureReport`; it SHALL NOT raise.
+### Requirement 7: Test Corpus
 
-3. WHEN given a byte sequence of arbitrary length and content, THE Engine SHALL return either a `VerifiedHypothesis` or a `FailureReport`; it SHALL NOT raise.
-
-4. THE Engine SHALL be tested with a Hypothesis property test using the `hypothesis` library that generates arbitrary `bytes` inputs up to 65,536 bytes in length and asserts the Engine returns a `HypothesisResult` without raising.
-
-5. THE Engine SHALL be tested with a Hypothesis property test using the `hypothesis` library that generates arbitrary `bytes` inputs up to 65,536 bytes in length, runs the Engine with `deadline_seconds=5.0`, and asserts the Engine returns a `HypothesisResult` within 5 seconds without raising.
-
----
-
-### Requirement 7: Test Corpus Verification
-
-**User Story:** As a developer validating the Engine against known ground truth, I want the Engine to correctly identify all eight corpus files with their exact revision paths, so that each revision strategy and search path has at least one verifiable acceptance test.
+**User Story:** As a developer validating the Engine against ground truth, I want each corpus file to assert its exact outcome, so that a strategy or search path that silently breaks fails a test.
 
 #### Acceptance Criteria
 
-1. WHEN given the bytes of `spike/samples/mystery_a` (PBM P4, 4×4, 1 bpp, 11 bytes), THE Engine SHALL return a `VerifiedHypothesis` with `width=4`, `height=4`, `bit_depth=1`, `header_size=7`, `row_stride=1`, `revision_path=[]`.
+1. WHEN given `spike/samples/mystery_a` (PBM P4, 11 bytes), THE Engine SHALL return `RESOLVED` from the PBM probe with `width = 4`, `height = 4`, `bit_depth = 1`, `header_size = 7`, `row_stride = 1` and `revision_path = []`.
+2. WHEN given `spike/samples/mystery_b` (PCX, RLE, 955 bytes), THE Engine SHALL return `RESOLVED` from the PCX probe with:
+   - `width = 8`, `height = 8`, `bit_depth = 8`, `header_size = 128`;
+   - `encoding = "rle_pcx"` and data region `[128, 186)`;
+   - trailer `pcx_palette_256`;
+   - `revision_path = ["inclusive_bounds"]`.
+3. WHEN given `spike/samples/mystery_c` (TGA, 786 bytes), THE Engine SHALL return `RESOLVED` from the TGA probe with `width = 16`, `height = 16`, `bit_depth = 24`, `header_size = 18`, `row_stride = 48` and `revision_path = []`.
+4. WHEN given `spike/samples/mystery_d` (headerless DIB body, 104 bytes), THE Engine SHALL return `UNRESOLVED_AMBIGUITY` with stage `generic`, and its candidates SHALL include the hypothesis `width = 8`, `height = 8`, `bit_depth = 8`, `header_size = 40`, `encoding = "none"`. The test SHALL NOT assert candidate order.
+5. WHEN given `spike/samples/mystery_e` (TIFF, big-endian `"MM"`, 150 bytes), THE Engine SHALL return `RESOLVED` from the TIFF probe with:
+   - `width = 8`, `height = 8`, `bit_depth = 8`, `header_size = 86`;
+   - declared data region `[86, 150)`;
+   - `revision_path = []`;
+   - every multi-byte `FieldRecord` using a `>` format.
+6. WHEN given `spike/samples/mystery_f` (12 bytes of 32-bit dimensions, then pixels; 132 bytes), THE Engine SHALL return `UNRESOLVED_AMBIGUITY` with stage `generic`, and its candidates SHALL include `width = 12`, `height = 10`, `bit_depth = 8`, `header_size = 12`, `encoding = "none"`. That candidate's `width` records SHALL include reads at offset `0x00` in at least two distinct formats from `{<H, <I, <i}`, all with value 12.
+7. WHEN given `spike/samples/mystery_g` (unusual 20-byte header, 212 bytes), THE Engine SHALL return `UNRESOLVED_AMBIGUITY` with stage `generic`, and its candidates SHALL include `width = 8`, `height = 8`, `bit_depth = 24`, `header_size = 20`, `encoding = "none"`.
+8. WHEN given `spike/samples/mystery_h` (PCX, rows padded to 4 bytes, 176 bytes), THE Engine SHALL return `RESOLVED` from the PCX probe with `width = 6`, `height = 6`, `bit_depth = 8`, `header_size = 128`, `row_alignment = 4`, `row_stride = 8` and `revision_path = ["inclusive_bounds", "row_padding_variants"]`.
+9. WHEN given `spike/samples/mystery_i` (PCX, RLE data, encoding byte corrupted to `0x00`, 955 bytes), THE Engine SHALL return `RESOLVED` from the PCX probe with `width = 8`, `height = 8`, `bit_depth = 8`, `header_size = 128`, `encoding = "rle_pcx"` and `revision_path = ["inclusive_bounds", "rle_pcx"]`.
+10. FOR every `RESOLVED` corpus file, THE corpus test SHALL compare the decoded pixel bytes exactly with the pixel content that `spike/make_samples.py` writes.
+11. THE Engine SHALL return `FAILED` for none of the nine corpus files.
 
-2. WHEN given the bytes of `spike/samples/mystery_b` (PCX RLE, 8×8, 8 bpp, 955 bytes), THE Engine SHALL return a `VerifiedHypothesis` with `width=8`, `height=8`, `bit_depth=8`, `header_size=128`, `encoding="rle_pcx"`, `revision_path=["inclusive_bounds","rle_pcx"]`.
+### Requirement 8: Field Integrity and Rendering
 
-3. WHEN given the bytes of `spike/samples/mystery_c` (TGA uncompressed, 16×16, 24 bpp, 786 bytes), THE Engine SHALL return a `VerifiedHypothesis` with `width=16`, `height=16`, `bit_depth=24`, `header_size=18`, `row_stride=48`, `revision_path=[]`.
-
-4. WHEN given the bytes of `spike/samples/mystery_d` (DIB body, 8×8, 8 bpp, 104 bytes), THE Engine SHALL return a `VerifiedHypothesis` with `width=8`, `height=8`, `bit_depth=8`, `header_size=40`, `probe_name="generic"`, and `FieldRecord` entries recording `width_offset=0x04`, `width_format="<i"`, `height_offset=0x08`, `height_format="<i"`, `bit_depth_offset=0x0E`.
-
-5. WHEN given the bytes of `spike/samples/mystery_e` (TIFF big-endian "MM", 8×8, 8 bpp, 150 bytes), THE Engine SHALL return a `VerifiedHypothesis` with `width=8`, `height=8`, `bit_depth=8`, `header_size=86`, `revision_path=["endianness_flip"]`.
-
-6. WHEN given the bytes of `spike/samples/mystery_f` (raw 32-bit dims, 12×10, 8 bpp, 132 bytes), THE Engine SHALL return a `VerifiedHypothesis` with `width=12`, `height=10`, `bit_depth=8`, `header_size=12`, `probe_name="generic"`, and `FieldRecord` entries recording `width_offset=0x00`, `width_format="<I"`, `height_offset=0x04`, `height_format="<I"`, `bit_depth_offset=0x08`.
-
-7. WHEN given the bytes of `spike/samples/mystery_g` (raw unusual header, 8×8, 24 bpp, 212 bytes), THE Engine SHALL return a `VerifiedHypothesis` with `width=8`, `height=8`, `bit_depth=24`, `header_size=20`, `probe_name="generic"`, and `FieldRecord` entries recording `width_offset=0x04`, `width_format="<H"`, `height_offset=0x06`, `height_format="<H"`, `bit_depth_offset=0x08`.
-
-8. WHEN given the bytes of `spike/samples/mystery_h` (PCX padded rows, 6×6, 8 bpp, 176 bytes), THE Engine SHALL return a `VerifiedHypothesis` with `width=6`, `height=6`, `bit_depth=8`, `header_size=128`, `row_stride=8`, `revision_path=["inclusive_bounds","row_padding_variants"]`.
-
-9. FOR ALL eight corpus files, THE Engine SHALL return a `VerifiedHypothesis`, not a `FailureReport`.
-
----
-
-### Requirement 8: Round-Trip Structural Integrity
-
-**User Story:** As a developer verifying the Engine's field extraction, I want the VerifiedHypothesis to contain enough information to reconstruct the field extraction exactly, so that the extraction can be independently replicated without re-running the Engine.
+**User Story:** As a developer verifying a result, I want every field reproducible from the bytes and every outcome rendered distinctly, so that results can be checked independently and the two success outcomes are never confused.
 
 #### Acceptance Criteria
 
-1. THE Engine SHALL record each extracted field as a `FieldRecord` containing: field name (string), byte offset (int), struct format string (string), and extracted value stored as the tuple returned directly by `struct.unpack_from` without unpacking.
+1. THE Engine SHALL record each field read as a `FieldRecord` with name, offset, format and the tuple returned by `struct.unpack_from`.
+2. FOR every `FieldRecord` of every candidate in a `RESOLVED` or `UNRESOLVED_AMBIGUITY` result, `struct.unpack_from(record.fmt, data, record.offset)` SHALL equal `record.value`.
+3. WHERE several `FieldRecord`s of a candidate share a name, they SHALL all hold the same interpreted value. The set states that the bytes cannot distinguish those reads.
+4. WHEN rendering `RESOLVED`, THE Pretty_Printer SHALL output, in order:
+   - the line `RESOLVED`;
+   - a field table with columns offset as `0x%04X`, field name, struct format, and value;
+   - the closure line:
+     - for `none`: `closure: [{start}, {end}) holds {end − start} bytes = {row_stride} x {height}`;
+     - for `rle_pcx`: `closure: rle_pcx decoded [{start}, {end}) to {expected} bytes = {row_stride} x {height}, all input consumed`;
+   - the line `trailer: {name}` when a trailer matched;
+   - the line `revision_path: {revision_path}`.
+5. WHEN rendering `UNRESOLVED_AMBIGUITY`, THE Pretty_Printer SHALL output:
+   - the line `UNRESOLVED_AMBIGUITY: {n} candidates close; the bytes cannot distinguish them`;
+   - the stage;
+   - every candidate, numbered in discovery order, with its dimensions, bit depth, header size, alignment, encoding, and either `coherence (heuristic, row_mad_ratio): {score:.4f}` or `coherence (heuristic): {status}`.
+   It SHALL mark no candidate as preferred.
+6. WHEN rendering `FAILED`, THE Pretty_Printer SHALL output the line `FAILED: {termination}`, the rejection and check counts, and a numbered list of rejections. Each rejection shows its source, its reason, and `(discrepancy={n})` when a discrepancy is set.
+7. THE Pretty_Printer SHALL be a pure function outside `necropsy/engine/`, and SHALL never raise.
 
-2. THE Engine SHALL ensure that for every `FieldRecord` in a `VerifiedHypothesis`, calling `struct.unpack_from(record.format, original_bytes, record.offset)` produces a tuple equal to `record.extracted_value`.
+### Requirement 9: Spec Emission
 
-3. WHEN the Pretty_Printer is given a `VerifiedHypothesis`, THE Pretty_Printer SHALL render a human-readable table with columns in the order: offset (hex), field name, struct format, extracted value; followed by a closure line in the form `{header_size} + {row_stride × height} = {total_file_size}` with all three values as decimal integers; followed by `revision_path: {revision_path}`.
+**User Story:** As a NECROPSY user, I want the engine to emit a Kiro-format spec for the format it recovered, so that a recovered format can drive a real spec-driven build without the original file.
 
-4. WHEN the Pretty_Printer is given a `FailureReport`, THE Pretty_Printer SHALL render a numbered list of rejection entries in the order they appear in the report, each entry showing the strategy sequence and the closure failure reason.
+#### Acceptance Criteria
+
+1. WHEN given a `VerifiedHypothesis` or an `AmbiguousResult` together with the source bytes, THE Spec Emitter SHALL produce a folder named `<slug>/` containing exactly `requirements.md`, `design.md` and `tests.py`.
+2. THE slug SHALL be the probe name (`pcx`, `tga`, `pbm` or `tiff`) when a probe produced the result, and `unknown-<first 8 hex digits of the SHA-256 of the source bytes>` when Generic Search produced it.
+3. THE emitted `requirements.md` SHALL use the Kiro requirements structure (Introduction, Glossary, Requirements with user stories and EARS acceptance criteria).
+4. THE emitted `requirements.md` SHALL state, for every field, one acceptance criterion giving its name, offset in hex, struct format, endianness and size.
+5. THE emitted `requirements.md` SHALL state the data region rule, the trailer rule if one applies, the encoding, and the closure rule that verified the result.
+6. THE emitted `requirements.md` SHALL contain exactly one layout block in schema `necropsy-layout/1`.
+7. WHEN a probe produced the result, THE emitted spec SHALL have layout kind `format` and describe the format's rules, including the byte-order rule and the IFD walk for TIFF, together with the values observed in the source file.
+   - WHERE the result's revision path contains `inclusive_bounds`, the width and height rules SHALL be the inclusive-bounds expressions.
+   - WHERE the revision path contains `rle_pcx`, the encoding SHALL be `rle_pcx`, and the spec SHALL state that the file's encoding declaration was overridden by revision.
+   - FOR PBM, whose text header the layout schema cannot express, the layout kind SHALL be `file`, and the format's text-header rules SHALL be stated in prose.
+8. WHEN Generic Search produced the result, THE emitted spec SHALL have layout kind `file`, and SHALL state explicitly that it describes this file's layout only and not a format.
+9. WHEN the result is `UNRESOLVED_AMBIGUITY`, THE emitted `requirements.md` SHALL:
+   - state every candidate;
+   - state that each candidate passes closure;
+   - state that the bytes cannot separate them, and that coherence is a heuristic with known failure modes;
+   - assert no single candidate.
+   Its layout block SHALL have kind `ambiguous` and list every candidate layout.
+10. THE emitted `design.md` SHALL use the Kiro design structure and state:
+    - the resolved structure or the candidates;
+    - the stage and source;
+    - the revision path;
+    - the data region and trailer;
+    - the closure arithmetic;
+    - each candidate's coherence, labelled as a heuristic;
+    - every rejected hypothesis with its reason. When there are more than 500 rejections, it shall list the first 500 and state how many were omitted.
+11. THE emitted `tests.py` SHALL contain Hypothesis property tests against the module `parser_<slug with "-" replaced by "_">`:
+    - `parse(data)` never raises on arbitrary bytes of up to 65,536 bytes;
+    - every field record that `parse` reports round-trips through `struct.unpack_from`;
+    - whenever `parse` succeeds, the decoded pixels contain exactly `row_stride × height` bytes.
+    For an ambiguous result, the tests SHALL target `parse_candidates(data)` instead.
+12. THE emitted `tests.py` SHALL embed the source bytes in base64 as a fixture when the source is at most 65,536 bytes. Its fixture tests SHALL assert the observed field values and closure. When the source is larger, the fixture tests SHALL skip with a stated reason.
+13. WHEN given a `FailureReport`, THE Spec Emitter SHALL write nothing and return an `EmitError` stating that nothing was recovered.
+14. THE Spec Emitter SHALL be pure until a separate write step.
+15. THE write step SHALL:
+    - write only inside the given output directory;
+    - accept only slugs matching `[a-z0-9-]+`;
+    - refuse to overwrite an existing folder unless `overwrite = True`;
+    - make no network call;
+    - never raise.
+16. WHEN the spec emitted for `mystery_e` is given to the reference reader, THE reference reader SHALL use only the emitted `requirements.md` as its source of format knowledge, and SHALL reproduce from `mystery_e`'s bytes:
+    - `width = 8`, `height = 8`, `bit_depth = 8`;
+    - data region `[86, 150)`;
+    - pixel bytes identical to the engine's.
+    The original file SHALL be used only to check the result.
+17. WHEN a parser module is built from the reference reader and the emitted `requirements.md`, THE emitted `tests.py` for `mystery_c` and `mystery_e` SHALL pass under pytest.
+18. WHEN the spec emitted for `mystery_d` is given to the reference reader, THE reference reader SHALL enumerate candidates that include the true layout.
+19. THE emitted `requirements.md` and `design.md` for `mystery_e` and `mystery_d` SHALL pass Kiro's spec format validation.
+
+### Requirement 10: Outcomes and Ambiguity
+
+**User Story:** As a NECROPSY user, I want the engine to tell me clearly whether it found one answer, several equally valid answers or none, so that I can trust what it says.
+
+#### Acceptance Criteria
+
+1. EVERY `EngineResult` SHALL carry a `status` field with value `RESOLVED`, `UNRESOLVED_AMBIGUITY` or `FAILED`, so that a UI can render each outcome differently without inspecting other fields.
+2. A `VerifiedHypothesis` SHALL hold exactly one candidate together with its source and `revision_path`.
+3. AN `AmbiguousResult` SHALL hold at least two candidates with distinct hypothesis keys, in discovery order, together with:
+   - its stage (`probe`, `revision` or `generic`);
+   - a `reason` stating that every candidate passes closure and that the bytes cannot separate them.
+4. THE Engine SHALL treat `RESOLVED` and `UNRESOLVED_AMBIGUITY` as successful outcomes, and `FAILED` as the only error outcome.
+5. THE Engine SHALL promote no candidate of an `AmbiguousResult` by any heuristic, score or ordering.
+
+### Requirement 11: Row Coherence Heuristic
+
+**User Story:** As a user looking at an ambiguous result, I want a visual-plausibility hint on each candidate that is clearly labelled as a heuristic, so that I get useful information without the engine pretending to decide.
+
+#### Acceptance Criteria
+
+1. THE Engine SHALL compute row coherence only for candidates that have passed closure. Coherence SHALL never gate, promote or order candidates, and the outcome and candidate order SHALL be identical whatever values coherence returns.
+2. THE Engine SHALL compute coherence over a candidate's decoded bytes, reshaped to `height` rows of `row_stride` bytes.
+   - Let `mad(a, b)` be the mean over the row of `|a_k − b_k|`.
+   - `adjacent` is the mean of `mad` over the vertically adjacent row pairs `(i, i + 1)`.
+   - `baseline` is the mean of `mad` over every distinct row pair `(i, j)` with `i < j`. When there are more than 1,024 such pairs, it uses the 1,024 pairs chosen by `random.Random(0).sample(range(P), 1024)`, where `P` is the pair count and index `k` maps to the `k`-th pair in lexicographic order.
+   - `coherence_score = adjacent / baseline`. A lower score means more coherent.
+3. WHEN `height < 2`, or all rows are identical so that `baseline = 0`, THE candidate SHALL have `coherence_status = "unscorable"` and `coherence_score = None`.
+4. WHEN `expected_decoded_bytes > 262,144`, THE candidate SHALL have `coherence_status = "not_computed"` and `coherence_score = None`, so that computation time stays bounded.
+5. EVERY candidate SHALL report `coherence_score`, `coherence_status` (`scored`, `unscorable` or `not_computed`) and `coherence_method = "row_mad_ratio"`.
+6. AN `AmbiguousResult` SHALL report `coherence_gap = (second − first) / second` over the two lowest scores, for information only. The gap SHALL be `None` when fewer than two candidates are scored or the second-lowest score is 0.
+7. THE coherence function's docstring SHALL name its three known failure modes:
+   - narrower strides score better on smooth images;
+   - identical bytes at an identical stride, split into different bit depths, score identically;
+   - a header can absorb whole rows.
+8. IF any candidate is unscorable or not computed, THEN no candidate SHALL be promoted.

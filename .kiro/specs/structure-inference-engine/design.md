@@ -2,854 +2,813 @@
 
 ## Overview
 
-The Structure-Inference Engine is a pure-Python library that accepts an arbitrary byte sequence and returns either a `VerifiedHypothesis` (a structurally consistent interpretation of the bytes as a raster image) or a `FailureReport` (a complete account of every hypothesis tried and why each was rejected). It runs with no network calls and no GPU, making it compatible with free hosting tiers.
+The Structure-Inference Engine is a pure-Python, standard-library-only package that takes arbitrary bytes and returns one of three results: `VerifiedHypothesis` (`RESOLVED`), `AmbiguousResult` (`UNRESOLVED_AMBIGUITY`) or `FailureReport` (`FAILED`). It makes no network calls, needs no GPU and runs on a free hosting tier.
 
-The engine works in three sequential phases:
+Inference runs in three phases. Each phase collects every closing hypothesis at its own stage and never picks one by list order.
 
-1. **Probe Phase** — Four format-specific probes (PCX, TGA, PBM, TIFF) each attempt to build a `Hypothesis` directly from the byte sequence. Each probe is tried in order; the first whose derived hypothesis passes the closure gate is returned immediately.
-2. **Revision Phase** — If any probe generated a rejected hypothesis (signature matched but closure failed), the engine applies an ordered, breadth-first search over compositions of five revision strategies (up to depth 3) against those seed hypotheses.
-3. **Generic Search** — If no probe even generated a hypothesis (all signatures mismatched), the engine enumerates combinations of header lengths, field offsets, field widths, and encodings until a closing hypothesis is found or the budget is exhausted.
+1. **Probe phase.** Four probes (PCX, TGA, PBM, TIFF) each emit one seed on a signature match. Probes read declarations and fixed layout, and never apply conventions.
+2. **Revision phase.** This runs only if a probe matched and no seed closed. It is a breadth-first search, to depth 3, over three strategies: `inclusive_bounds`, `rle_pcx` and `row_padding_variants`.
+3. **Generic Search.** This runs only if no probe matched. It searches header length, field offset, field width, endianness, signedness and encoding. Width plus bit depth fixes the height.
 
-Every hypothesis is verified against a **closure gate** before being accepted. The gate is binary: a hypothesis either closes exactly or is rejected. The engine never raises an exception at its public entry point; malformed or adversarial input always produces a `FailureReport`.
+Every hypothesis must pass the closure gate. The gate decodes the data region `[header_size, data_end)` under the declared encoding, and requires an exact output length and full consumption of the region. Row coherence is computed on closing candidates as a reported heuristic. It never affects the outcome.
 
-The engine enforces two independent termination conditions: a wall-clock deadline (default 5 seconds) and a shared cap of 10,000 total closure checks. Whichever triggers first wins.
+A separate emitter package turns a successful result into a Kiro spec folder. A separate report package renders results as text. Neither lives in `necropsy/engine/`, because the engine steering rules forbid presentation code in the inference path.
 
----
+**Determinism.** The steering rule for the engine forbids clocks and randomness in the inference path. There are two exceptions, both stated here:
+
+- The deadline reads `time.monotonic()`. Through the injected `Budget`, the deadline can only turn a run into `FAILED / deadline_exceeded`. It never changes a `RESOLVED` or `UNRESOLVED_AMBIGUITY` outcome into a different one.
+- Coherence sampling uses `random.Random(0)`. It is seeded, so it is deterministic for a given Python version (3.10 here).
 
 ## Architecture
 
-### High-Level Control Flow
+### Control flow
 
 ```mermaid
 flowchart TD
-    A([run&#40;data&#41;]) --> B{len&#40;data&#41; &lt; 3?}
-    B -- yes --> Z1([FailureReport: input_too_short])
-    B -- no --> C[Phase 1: Probes]
-
-    C --> D{PCX probe}
-    D -- signature mismatch --> E{TGA probe}
-    D -- hypothesis generated --> P1{closure gate}
-    P1 -- pass --> R([VerifiedHypothesis])
-    P1 -- fail → record rejection --> E
-
-    E -- signature mismatch --> F{PBM probe}
-    E -- hypothesis generated --> P2{closure gate}
-    P2 -- pass --> R
-    P2 -- fail → record rejection --> F
-
-    F -- signature mismatch --> G{TIFF probe}
-    F -- hypothesis generated --> P3{closure gate}
-    P3 -- pass --> R
-    P3 -- fail → record rejection --> G
-
-    G -- signature mismatch --> H{any probe generated a hypothesis?}
-    G -- hypothesis generated --> P4{closure gate}
-    P4 -- pass --> R
-    P4 -- fail → record rejection --> H
-
-    H -- yes → at least one rejection --> I[Phase 2: Revision BFS]
-    H -- no → all signatures mismatched --> J[Phase 3: Generic Search]
-
-    I --> P5{candidate passes closure?}
-    P5 -- yes --> R
-    P5 -- no, record rejection --> P5
-    I --> L{deadline or cap?}
-    L -- yes --> Z2([FailureReport: deadline_exceeded / search_cap_exceeded])
-    I --> K{depth 3 exhausted?}
-    K -- yes, no match found --> Z3([FailureReport])
-
-    J --> P6{candidate passes closure?}
-    P6 -- yes --> R
-    J --> M{deadline or cap?}
-    M -- yes --> Z4([FailureReport: deadline_exceeded / search_cap_exceeded])
-    J --> N{all combinations tried?}
-    N -- yes --> Z5([FailureReport])
+    A([Engine.run data]) --> B{len data < 3?}
+    B -- yes --> F1([FAILED input_too_short])
+    B -- no --> P[Probe phase: PCX, TGA, PBM, TIFF, all run]
+    P --> PC{seeds that close}
+    PC -- exactly 1 --> R([RESOLVED, revision_path empty])
+    PC -- 2 or more --> AM([UNRESOLVED_AMBIGUITY stage probe])
+    PC -- none, some seed exists --> V[Revision BFS depth 1..3]
+    PC -- no probe matched --> G[Generic Search]
+    V --> VC{closers at first closing depth}
+    VC -- exactly 1 --> R2([RESOLVED with revision_path])
+    VC -- 2 or more --> AM2([UNRESOLVED_AMBIGUITY stage revision])
+    VC -- none by depth 3 --> F2([FAILED exhausted])
+    G --> GC{all closers}
+    GC -- exactly 1 --> R3([RESOLVED probe_name generic])
+    GC -- 2 or more --> AM3([UNRESOLVED_AMBIGUITY stage generic])
+    GC -- none --> F3([FAILED exhausted])
+    P -. deadline or cap .-> F4([FAILED deadline_exceeded or search_cap_exceeded])
+    V -. deadline or cap .-> F4
+    G -. deadline or cap .-> F4
 ```
 
-### Module Dependency Graph
+### Package layout
+
+```
+necropsy/
+    __init__.py
+    engine/                  inference only; no formatting
+        __init__.py          exports Engine, result types, Budget
+        types.py             dataclasses and hypothesis_key
+        budget.py            deadline and shared closure-check cap
+        trailers.py          TrailerEntry, TRAILER_REGISTRY, match_trailer
+        closure.py           row_stride, RLE decoder, check_closure
+        probes.py            probe_pcx, probe_tga, probe_pbm, probe_tiff
+        strategies.py        inclusive_bounds, rle_pcx, row_padding_variants
+        generic.py           generic_search
+        coherence.py         row_coherence
+        engine.py            Engine
+    report/
+        __init__.py
+        pretty.py            render(result) -> str
+    emit/
+        __init__.py          exports emit_spec, write_spec, EmittedSpec, EmitError
+        layout.py            build_layout(result, data) -> dict
+        render.py            render_requirements, render_design, render_tests
+        emit.py              emit_spec, write_spec
+tests/
+    conftest.py              corpus loader; puts spike/ on sys.path
+    support/
+        __init__.py
+        reference_reader.py  layout-block interpreter; imports nothing from necropsy
+    test_closure.py
+    test_probes.py
+    test_strategies.py
+    test_coherence.py
+    test_generic.py
+    test_engine.py
+    test_corpus.py
+    test_engine_properties.py
+    test_pretty.py
+    test_emit.py
+    test_emit_acceptance.py
+```
+
+### Module dependencies
 
 ```mermaid
 flowchart LR
+    types --> budget
+    types --> trailers
+    trailers --> closure
     types --> closure
     types --> probes
     types --> strategies
-    types --> generic
-    types --> pretty
-    closure --> probes
-    closure --> strategies
     closure --> generic
+    budget --> generic
+    types --> coherence
     closure --> engine
     probes --> engine
     strategies --> engine
     generic --> engine
-    types --> engine
-    engine --> init["__init__"]
-    pretty --> init
+    coherence --> engine
+    engine --> report_pretty[report.pretty]
+    engine --> emit_layout[emit.layout]
+    emit_layout --> emit_render[emit.render]
+    emit_render --> emit_emit[emit.emit]
 ```
-
----
 
 ## Components and Interfaces
 
-### `types.py` — Data Model
-
-All public data types are `dataclasses`. No business logic lives here.
-
-| Type | Role |
+| Module | Public interface |
 |---|---|
-| `FieldRecord` | A single extracted field: name, byte offset, struct format, raw value tuple |
-| `Hypothesis` | A candidate structural interpretation, fully parameterised |
-| `RejectionEntry` | One closure failure: hypothesis parameters + reason + source |
-| `VerifiedHypothesis` | A hypothesis that passed the closure gate, plus derived values |
-| `FailureReport` | Complete failure accounting: rejection list + total check count |
-| `HypothesisResult` | `VerifiedHypothesis | FailureReport` |
-
-### `closure.py` — Closure Gate
-
-Three pure functions; no I/O; never raise.
-
-| Function | Signature | Purpose |
-|---|---|---|
-| `compute_row_stride` | `(width, bit_depth, row_padding) → int` | Row byte width including padding |
-| `rle_pcx_decode` | `(data, start, max_output_bytes) → bytes \| None` | Bounded PCX RLE decoder |
-| `check_closure` | `(h: Hypothesis, data: bytes) → (bool, str, int \| None)` | Full closure verdict |
-
-### `probes.py` — Initial Probes
-
-Four functions, each `probe_xxx(data: bytes) → Hypothesis | None`. Return `None` on signature mismatch (silent); return a `Hypothesis` (which may fail closure) on signature match.
-
-### `strategies.py` — Revision Strategies
-
-Five functions, each `apply_xxx(h: Hypothesis, data: bytes) → list[Hypothesis]`. Return an empty list when the strategy does not apply to the given hypothesis.
-
-### `generic.py` — Generic Search
-
-One function: `generic_search(data, check_fn, deadline_fn) → HypothesisResult | None`. Returns `None` when the budget is exhausted without a match.
-
-### `engine.py` — Orchestrator
-
-`Engine` class with public method `run(data: bytes) → HypothesisResult`. Owns all mutable state (check counter, deadline start, rejection list, termination flag). `run()` wraps `_run_inner()` in a bare `except Exception` to satisfy the never-raise contract.
-
-### `pretty.py` — Pretty Printer
-
-`PrettyPrinter.render(result: HypothesisResult) → str`. Pure function over the result types; no side effects.
-
----
+| `engine/types.py` | `FieldRecord`, `Hypothesis`, `hypothesis_key`, `RejectionEntry`, `Candidate`, `VerifiedHypothesis`, `AmbiguousResult`, `FailureReport`, `EngineResult`, `REASONS`, `TERMINATIONS` |
+| `engine/budget.py` | `Budget(deadline_seconds, cap=10_000, clock=time.monotonic)` with `stop_reason() -> str \| None`, `charge() -> str \| None`, `checks: int` |
+| `engine/trailers.py` | `TrailerEntry`, `TRAILER_REGISTRY`, `match_trailer(data, header_size, origin, registry=TRAILER_REGISTRY) -> tuple[int, str \| None]` |
+| `engine/closure.py` | `row_stride(width, bit_depth, row_alignment) -> int`, `RleResult`, `rle_pcx_decode(data, start, end, max_output_bytes) -> RleResult`, `rle_pcx_output_length(data, start, end) -> int \| None`, `ClosureVerdict`, `check_closure(h, data) -> ClosureVerdict` |
+| `engine/probes.py` | `ProbeOutcome`, `probe_pcx`, `probe_tga`, `probe_pbm`, `probe_tiff`, each `(data) -> ProbeOutcome \| None`; `PROBES` |
+| `engine/strategies.py` | `inclusive_bounds`, `rle_pcx`, `row_padding_variants`, each `(h) -> tuple[Hypothesis, ...]`; `STRATEGIES` |
+| `engine/generic.py` | `HEADER_LENGTHS`, `WIDTH_HEIGHT_FORMATS`, `VALID_BIT_DEPTHS`, `GenericOutcome`, `generic_search(data, budget, on_reject) -> GenericOutcome` |
+| `engine/coherence.py` | `row_coherence(decoded, height, row_stride) -> tuple[float \| None, str]`, `COHERENCE_METHOD = "row_mad_ratio"`, `COHERENCE_SIZE_LIMIT = 262_144` |
+| `engine/engine.py` | `Engine(deadline_seconds=5.0, clock=time.monotonic)` with `run(data) -> EngineResult` |
+| `report/pretty.py` | `render(result) -> str` |
+| `emit/layout.py` | `build_layout(result, data) -> dict` |
+| `emit/render.py` | `render_requirements(layout, result, data) -> str`, `render_design(layout, result, data) -> str`, `render_tests(layout, result, data) -> str` |
+| `emit/emit.py` | `EmittedSpec`, `EmitError`, `emit_spec(result, data) -> EmittedSpec \| EmitError`, `write_spec(spec, out_dir, overwrite=False) -> pathlib.Path \| EmitError` |
+| `tests/support/reference_reader.py` | `extract_layout(markdown) -> dict \| str`, `parse(layout, data) -> dict`, `parse_candidates(layout, data) -> list[dict]`, `make_parser_module(markdown) -> str` |
 
 ## Data Models
 
-### Type Relationships
-
-```mermaid
-classDiagram
-    class FieldRecord {
-        +str name
-        +int offset
-        +str fmt
-        +tuple value
-    }
-    class Hypothesis {
-        +int width
-        +int height
-        +int bit_depth
-        +int header_size
-        +int row_padding
-        +str encoding
-        +list~FieldRecord~ fields
-        +str probe_name
-        +list~str~ revision_path
-        +int|None xmin
-        +int|None ymin
-        +int|None xmax
-        +int|None ymax
-    }
-    class RejectionEntry {
-        +Hypothesis hypothesis
-        +str reason
-        +int|None discrepancy
-        +str source
-    }
-    class VerifiedHypothesis {
-        +Hypothesis hypothesis
-        +int row_stride
-        +int expected_decoded_bytes
-        +int total_file_size
-        +int|None width_offset
-        +str|None width_format
-        +int|None height_offset
-        +str|None height_format
-        +int|None bit_depth_offset
-    }
-    class FailureReport {
-        +list~RejectionEntry~ rejections
-        +int total_checks
-    }
-
-    Hypothesis "1" --> "*" FieldRecord : contains
-    RejectionEntry "1" --> "1" Hypothesis : carries
-    VerifiedHypothesis "1" --> "1" Hypothesis : wraps
-    FailureReport "1" --> "*" RejectionEntry : lists
-```
-
-### `FieldRecord`
-
 ```python
-@dataclass
+from dataclasses import dataclass, field
+
+REASONS = frozenset({
+    "arithmetic_mismatch", "decoder_overrun", "decoder_underrun", "decoder_unconsumed",
+    "degenerate_hypothesis", "field_out_of_bounds", "probe_precondition_failed",
+    "unsupported_encoding", "input_too_short", "internal_error",
+})
+TERMINATIONS = frozenset({
+    "exhausted", "deadline_exceeded", "search_cap_exceeded", "input_too_short", "internal_error",
+})
+
+@dataclass(frozen=True)
 class FieldRecord:
     name: str
     offset: int
-    fmt: str       # struct format string, e.g. "<H"
-    value: tuple   # raw tuple from struct.unpack_from — never unwrapped
-```
+    fmt: str            # struct format with explicit "<" or ">" for multi-byte reads
+    value: tuple        # exactly what struct.unpack_from returned
 
-The `value` field stores the tuple directly from `struct.unpack_from`. This guarantees the field round-trip property: `struct.unpack_from(fr.fmt, original_data, fr.offset) == fr.value` for every record in a `VerifiedHypothesis`.
-
-### `Hypothesis`
-
-```python
-@dataclass
+@dataclass(frozen=True)
 class Hypothesis:
     width: int
     height: int
     bit_depth: int
     header_size: int
-    row_padding: int           # default 0
-    encoding: str              # "none" or "rle_pcx"
-    fields: list[FieldRecord]  # all extracted fields with offsets
-    probe_name: str            # probe that generated this, or "generic"
-    revision_path: list[str]   # strategies applied so far, in order
-    # Optional bounds fields (present only for PCX-origin hypotheses):
-    xmin: int | None = None
-    ymin: int | None = None
-    xmax: int | None = None
-    ymax: int | None = None
-```
+    row_alignment: int = 1                 # 1, 2 or 4
+    encoding: str = "none"
+    data_end: int | None = None            # declared data end (TIFF); None means trailer registry, then EOF
+    fields: tuple[FieldRecord, ...] = ()
+    probe_name: str = "generic"            # "pcx" | "tga" | "pbm" | "tiff" | "generic"
+    bounds: tuple[int, int, int, int] | None = None   # (xmin, ymin, xmax, ymax), PCX only
+    revision_path: tuple[str, ...] = ()
 
-The `revision_path` accumulates in-place as strategies are applied; each strategy appends its own name before returning the new candidate. The deduplication key used by the engine is `(width, height, bit_depth, header_size, row_padding, encoding)` — `revision_path` and `fields` are excluded from the key.
+def hypothesis_key(h: Hypothesis) -> tuple:
+    return (h.width, h.height, h.bit_depth, h.header_size, h.row_alignment, h.encoding, h.data_end)
 
-### `RejectionEntry`
-
-```python
-@dataclass
+@dataclass(frozen=True)
 class RejectionEntry:
-    hypothesis: Hypothesis     # None only for uncaught_exception / input_too_short
-    reason: str                # typed reason string (see closure.py)
-    discrepancy: int | None    # set for arithmetic_mismatch; None otherwise
-    source: str                # probe name or strategy-sequence string, e.g. '["inclusive_bounds","rle_pcx"]'
-```
+    reason: str                            # member of REASONS
+    source: str                            # probe name, "revision:" + "->".join(path), or "generic"
+    hypothesis: Hypothesis | None = None
+    discrepancy: int | None = None         # arithmetic_mismatch only
+    detail: str = ""
 
-Valid `reason` values: `arithmetic_mismatch`, `decoder_overrun`, `decoder_underrun`, `field_out_of_bounds`, `search_cap_exceeded`, `deadline_exceeded`, `input_too_short`, or an exception class name and message.
-
-### `VerifiedHypothesis`
-
-```python
-@dataclass
-class VerifiedHypothesis:
+@dataclass(frozen=True)
+class Candidate:
     hypothesis: Hypothesis
     row_stride: int
-    expected_decoded_bytes: int   # row_stride × height
-    total_file_size: int
-    # Set only for generic-search results:
-    width_offset: int | None = None
-    width_format: str | None = None
-    height_offset: int | None = None
-    height_format: str | None = None
-    bit_depth_offset: int | None = None
-```
+    expected_decoded_bytes: int
+    data_start: int
+    data_end: int
+    trailer: str | None
+    coherence_score: float | None
+    coherence_status: str                  # "scored" | "unscorable" | "not_computed"
+    coherence_method: str = "row_mad_ratio"
+    decoded: bytes = field(default=b"", repr=False)
 
-### `FailureReport`
-
-```python
-@dataclass
-class FailureReport:
-    rejections: list[RejectionEntry]
+@dataclass(frozen=True)
+class VerifiedHypothesis:
+    candidate: Candidate
+    stage: str                             # "probe" | "revision" | "generic"
+    rejections: tuple[RejectionEntry, ...]
     total_checks: int
+    total_file_size: int
+    status: str = "RESOLVED"
+
+@dataclass(frozen=True)
+class AmbiguousResult:
+    candidates: tuple[Candidate, ...]      # discovery order, >= 2, distinct keys
+    stage: str
+    reason: str
+    coherence_gap: float | None
+    rejections: tuple[RejectionEntry, ...]
+    total_checks: int
+    total_file_size: int
+    status: str = "UNRESOLVED_AMBIGUITY"
+
+@dataclass(frozen=True)
+class FailureReport:
+    termination: str                       # member of TERMINATIONS
+    rejections: tuple[RejectionEntry, ...]
+    total_checks: int
+    total_file_size: int
+    partial_candidates: tuple[Candidate, ...] = ()
+    status: str = "FAILED"
+
+EngineResult = VerifiedHypothesis | AmbiguousResult | FailureReport
 ```
 
-Entries are ordered: probe rejections first (in probe order), then revision-phase rejections (breadth-first depth order), then generic-search rejections.
-
----
+`AmbiguousResult.reason` is fixed text: `"{n} candidates pass closure; the bytes cannot separate them. Coherence scores are a heuristic and do not choose."`
 
 ## Low-Level Design
 
-### Closure Gate (`closure.py`)
-
-#### `compute_row_stride`
-
-```python
-import math
-
-def compute_row_stride(width: int, bit_depth: int, row_padding: int) -> int:
-    if bit_depth >= 8:
-        return (width * bit_depth // 8) + row_padding
-    else:
-        return math.ceil(width * bit_depth / 8) + row_padding
-```
-
-#### `rle_pcx_decode`
-
-Decodes from `data[start:]`. Returns the decoded `bytes` only when the output length equals `max_output_bytes` exactly. Returns `None` for overrun or underrun. Never raises.
+### Budget (`engine/budget.py`)
 
 ```
-out = bytearray()
-i = start
-while i < len(data) and len(out) < max_output_bytes:
-    b = data[i]; i += 1
-    if b >= 0xC0:                       # RLE run marker
-        run = b & 0x3F
-        if i < len(data):
-            val = data[i]; i += 1
-            remaining = max_output_bytes - len(out)
-            if run > remaining:
-                return None             # overrun
-            out.extend([val] * run)
-    else:
-        out.append(b)                   # literal byte
-
-if len(out) != max_output_bytes:
-    return None                         # underrun
-return bytes(out)
+class Budget:
+    def __init__(self, deadline_seconds, cap=10_000, clock=time.monotonic):
+        self._end = clock() + deadline_seconds; self._clock = clock; self.cap = cap; self.checks = 0
+    def stop_reason(self):
+        if self._clock() >= self._end: return "deadline_exceeded"
+        if self.checks >= self.cap:    return "search_cap_exceeded"
+        return None
+    def charge(self):                  # call immediately before a closure check
+        reason = self.stop_reason()
+        if reason is None: self.checks += 1
+        return reason
 ```
 
-The `max_output_bytes` guard prevents unbounded memory allocation on malformed or adversarial data.
+One `Budget` is created per `run()` call. It is passed to every phase, so the deadline and the 10,000-check cap are shared by the probe phase, the revision phase and Generic Search. The clock is injectable, so tests can make the deadline fire deterministically.
 
-#### `check_closure`
+### Trailer Registry (`engine/trailers.py`)
 
 ```
-row_stride = compute_row_stride(h.width, h.bit_depth, h.row_padding)
-expected_bytes = row_stride * h.height
+TrailerEntry(name: str, length: int, marker: int, applies_to: frozenset[str])
+TRAILER_REGISTRY = (
+    TrailerEntry("pcx_palette_256", 769, 0x0C, frozenset({"pcx", "generic"})),
+)
+def match_trailer(data, header_size, origin, registry=TRAILER_REGISTRY):
+    n = len(data)
+    for e in registry:
+        if origin in e.applies_to and n - e.length >= header_size and data[n - e.length] == e.marker:
+            return n - e.length, e.name
+    return n, None
+```
 
-if h.encoding == "none":
-    actual = len(data) - h.header_size
-    if actual == expected_bytes:
-        return (True, "", None)
-    else:
-        discrepancy = len(data) - (h.header_size + expected_bytes)
-        return (False, "arithmetic_mismatch", discrepancy)
+The `applies_to` scope keeps a one-byte marker from cutting the tail off TGA, PBM or TIFF hypotheses. TIFF hypotheses declare their own `data_end`, so the registry never applies to them. A future TGA footer or GIF trailer is one new entry, with no change to `check_closure`.
 
-elif h.encoding == "rle_pcx":
-    decoded = rle_pcx_decode(data, h.header_size, expected_bytes)
-    if decoded is None:
-        # Distinguish overrun vs underrun by re-running with a larger cap
-        # and checking how many bytes were produced before abort
-        # (implementation detail — both return None, so we probe the reason)
-        # Practical approach: attempt a decode with max_output_bytes+1
-        probe = rle_pcx_decode(data, h.header_size, expected_bytes + 1)
-        if probe is not None and len(probe) == expected_bytes + 1:
-            # would have kept going → actual underrun
-            return (False, "decoder_underrun", None)
+### Closure (`engine/closure.py`)
+
+```
+def row_stride(width, bit_depth, row_alignment):
+    raw = -(-(width * bit_depth) // 8)           # ceil(width * bit_depth / 8)
+    return -(-raw // row_alignment) * row_alignment
+
+RleResult(status: str, data: bytes | None, consumed_to: int)   # status: ok | overrun | underrun | unconsumed
+
+def rle_pcx_decode(data, start, end, max_output_bytes):
+    if start < 0 or end > len(data) or start > end or max_output_bytes < 0:
+        return RleResult("underrun", None, start)
+    out = bytearray(); i = start
+    while i < end and len(out) < max_output_bytes:
+        b = data[i]; i += 1
+        if b >= 0xC0:
+            if i >= end: return RleResult("underrun", None, i)       # marker is last byte
+            run = b & 0x3F; v = data[i]; i += 1
+            if run > max_output_bytes - len(out):
+                return RleResult("overrun", None, i)                 # checked before writing
+            out += bytes((v,)) * run
         else:
-            # stopped early or ran over → overrun
-            return (False, "decoder_overrun", None)
-    return (True, "", None)
+            out.append(b)
+    if len(out) != max_output_bytes: return RleResult("underrun", None, i)
+    if i != end:                     return RleResult("unconsumed", None, i)
+    return RleResult("ok", bytes(out), i)
+
+def rle_pcx_output_length(data, start, end):     # counts only; allocates nothing
+    n = 0; i = start
+    while i < end:
+        b = data[i]; i += 1
+        if b >= 0xC0:
+            if i >= end: return None
+            n += b & 0x3F; i += 1
+        else:
+            n += 1
+    return n
 ```
 
-> **Implementation note**: The overrun/underrun distinction above is approximated; a cleaner approach is to instrument `rle_pcx_decode` to return a typed sentinel. The final implementation should return an enum or typed result from the decoder so `check_closure` does not need to call the decoder twice. The contract is: `decoder_overrun` when the decoded output would exceed `max_output_bytes`; `decoder_underrun` when the input is exhausted before producing `max_output_bytes` bytes.
-
-### Probes (`probes.py`)
-
-All probes return `None` on a signature mismatch. A matching signature always produces a `Hypothesis`, which may still fail closure. All byte offsets and struct formats are taken verbatim from the requirements.
-
-#### PCX Probe
-
-Signature: `data[0] == 0x0A` and `data[2] == 0x01`; minimum length 128 bytes.
-
-| Field | Offset | Format | Notes |
-|---|---|---|---|
-| `xmin` | `0x04` | `<H` | |
-| `ymin` | `0x06` | `<H` | |
-| `xmax` | `0x08` | `<H` | |
-| `ymax` | `0x0A` | `<H` | |
-| `bit_depth` | `0x03` | `B` | bits per plane |
-| `planes` | `0x41` | `B` | |
-| `bytes_per_line` | `0x42` | `<H` | |
-
-Initial hypothesis: `width = xmax`, `height = ymax`, `header_size = 128`, `encoding = "none"`. Closure additionally requires `xmax ≥ xmin`, `ymax ≥ ymin`, and `bytes_per_line > 0`; if any fails, the probe records a `RejectionEntry` and returns that failed hypothesis (so the revision phase can still use it as a seed — specifically to apply `inclusive_bounds`).
-
-**Corpus coverage**: `mystery_b` (PCX RLE, 8×8) and `mystery_h` (PCX padded rows, 6×6) both trigger this probe. Neither closes on the initial hypothesis; both reach `VerifiedHypothesis` via the revision phase.
-
-#### TGA Probe
-
-Signature: `data[2] ∈ {1, 2, 3, 9, 10, 11}`; minimum length `18 + data[0]` bytes.
-
-| Field | Offset | Format |
-|---|---|---|
-| `id_length` | `0x00` | `B` |
-| `image_type` | `0x02` | `B` |
-| `width` | `0x0C` | `<H` |
-| `height` | `0x0E` | `<H` |
-| `bit_depth` | `0x10` | `B` |
-
-Initial hypothesis: `header_size = 18 + id_length`, `encoding = "none"`. Closure additionally requires `width > 0` and `height > 0`.
-
-**Corpus coverage**: `mystery_c` (TGA uncompressed, 16×16, 24 bpp) closes on the initial hypothesis with `revision_path = []`.
-
-#### PBM Probe
-
-Signature: `data[0:3] == b"P4\n"`; minimum length 7 bytes.
-
-The ASCII header is parsed line by line from byte 3. Comment lines beginning with `#` are skipped. The first non-comment line is split on whitespace to extract `width` and `height` as decimal integers. `header_size` is the byte offset of the first byte after the final newline in the ASCII header (the start of the binary pixel data). `bit_depth` is fixed at 1; `row_stride = ceil(width / 8)`.
-
-**Corpus coverage**: `mystery_a` (PBM P4, 4×4, 1 bpp, 11 bytes). Header is `"P4\n4 4\n"` = 7 bytes; `row_stride = ceil(4/8) = 1`; `header_size = 7`; closure: `7 + 1×4 = 11`. Closes immediately with `revision_path = []`.
-
-#### TIFF Probe
-
-Signature: `data[0:2] ∈ {b"II", b"MM"}` and magic uint16 at offset `0x02` read in the declared byte order equals 42. All subsequent fields are read as little-endian regardless of byte order mark (the requirements state "naively as little-endian").
-
-| Field | Offset | Format | Notes |
-|---|---|---|---|
-| `ifd_offset` | `0x04` | `<I` | |
-| IFD entry count | `ifd_offset` | `<H` | |
-| tag 256 (`width`) | search | `<H` or `<I` | value depending on TIFF type |
-| tag 257 (`height`) | search | `<H` or `<I` | |
-| tag 258 (`bit_depth`) | search | `<H` or `<I` | |
-| tag 273 (`strip_offset`) | search | `<H` or `<I` | |
-| tag 279 (`strip_byte_count`) | search | `<H` or `<I` | |
-
-If `ifd_offset` or any tag offset falls outside `[0, len(data))`, the probe records a `RejectionEntry` with `reason = "field_out_of_bounds"` and returns `None` (skips). Initial hypothesis: `header_size = strip_offset`, `encoding = "none"`. Closure condition additionally checks `strip_offset + strip_byte_count == len(data)` AND decoded bytes == `row_stride × height`.
-
-**Corpus coverage**: `mystery_e` (TIFF big-endian "MM", 8×8, 8 bpp). The probe reads all fields as little-endian, producing wrong values. The `endianness_flip` strategy corrects them, yielding `revision_path = ["endianness_flip"]`.
-
-### Revision Strategies (`strategies.py`)
-
-All strategy functions have signature `apply_xxx(h: Hypothesis, data: bytes) → list[Hypothesis]`.
-
-#### `apply_inclusive_bounds`
-
-Applies only when `h.xmin`, `h.ymin`, `h.xmax`, `h.ymax` are all set (PCX-origin hypotheses).
+The decoder's allocation never exceeds `min(max_output_bytes, 63 × (end − start))`, even when `max_output_bytes` is derived from huge input-declared dimensions.
 
 ```
-new_width  = h.xmax - h.xmin + 1
-new_height = h.ymax - h.ymin + 1
-return [Hypothesis(..., width=new_width, height=new_height,
-                   revision_path=h.revision_path + ["inclusive_bounds"])]
-```
+ClosureVerdict(ok, reason, discrepancy, decoded, data_start, data_end, trailer)
 
-**Corpus coverage**: Both `mystery_b` and `mystery_h` reach `VerifiedHypothesis` through paths that start with `inclusive_bounds`.
-
-#### `apply_endianness_flip`
-
-Iterates over all `FieldRecord` entries in `h.fields`. For each record whose `fmt` starts with `<`, re-reads at the same offset using the `>` prefix (and vice versa). Rebuilds `width`, `height`, `bit_depth`, `header_size` from the flipped values by name. Single-byte formats (`B`, `b`) are unchanged.
-
-```
-flipped_fields = []
-name_to_value = {}
-for fr in h.fields:
-    if fr.fmt.startswith("<"):
-        new_fmt = ">" + fr.fmt[1:]
-    elif fr.fmt.startswith(">"):
-        new_fmt = "<" + fr.fmt[1:]
+def check_closure(h, data):
+    if h.width <= 0 or h.height <= 0 or h.bit_depth <= 0 or h.row_alignment not in (1, 2, 4) \
+       or h.header_size < 0 or h.header_size > len(data):
+        return reject("degenerate_hypothesis")
+    stride = row_stride(h.width, h.bit_depth, h.row_alignment); expected = stride * h.height
+    if h.data_end is not None:
+        if h.data_end > len(data) or h.data_end < h.header_size: return reject("field_out_of_bounds")
+        end, trailer = h.data_end, None
     else:
-        new_fmt = fr.fmt
-    new_val = struct.unpack_from(new_fmt, data, fr.offset)
-    flipped_fields.append(FieldRecord(fr.name, fr.offset, new_fmt, new_val))
-    name_to_value[fr.name] = new_val[0]
-
-return [Hypothesis(
-    width=name_to_value.get("width", h.width),
-    height=name_to_value.get("height", h.height),
-    ...
-    revision_path=h.revision_path + ["endianness_flip"],
-)]
+        end, trailer = match_trailer(data, h.header_size, h.probe_name)
+    if h.encoding == "none":
+        if end - h.header_size == expected: return accept(data[h.header_size:end], h.header_size, end, trailer)
+        return reject("arithmetic_mismatch", discrepancy=(end - h.header_size) - expected)
+    if h.encoding == "rle_pcx":
+        r = rle_pcx_decode(data, h.header_size, end, expected)
+        if r.status == "ok": return accept(r.data, h.header_size, end, trailer)
+        return reject("decoder_" + r.status)
+    return reject("unsupported_encoding")
 ```
 
-**Corpus coverage**: `mystery_e` (TIFF big-endian "MM"). The initial TIFF probe reads fields as little-endian. `endianness_flip` re-reads them in big-endian, yielding the correct `width=8`, `height=8`, `bit_depth=8`, `header_size=86`.
+`check_closure` is wrapped in `try/except Exception`, and an exception becomes `reject("internal_error")`. This is a last line of defence; inner code bounds-checks every read.
 
-#### `apply_header_length_scan`
+### Probes (`engine/probes.py`)
 
-Generates candidates with adjusted `header_size` values:
-
-- Add `k` for `k ∈ {1, 2, 4, 8, 16, 32, 64, 128}` (in that order)
-- Subtract `k` for `k ∈ {1, 2, 4}` (in that order)
-
-Skips any adjusted value outside `[0, len(data))`. Each adjusted size is a separate candidate with `revision_path = h.revision_path + ["header_length_scan"]`.
-
-#### `apply_row_padding_variants`
-
-Returns three candidates with `row_padding ∈ {1, 2, 4}`, all other parameters unchanged.
+Every read goes through one helper. The helper returns `None` instead of raising when `offset < 0` or `offset + struct.calcsize(fmt) > len(data)`.
 
 ```
-return [
-    replace(h, row_padding=p, revision_path=h.revision_path + ["row_padding_variants"])
-    for p in (1, 2, 4)
-]
+def read(data, name, offset, fmt) -> FieldRecord | None
+ProbeOutcome(seed: Hypothesis, rejections: tuple[RejectionEntry, ...])
 ```
 
-**Corpus coverage**: `mystery_h` (PCX padded rows, 6×6, row_stride=8). After `inclusive_bounds` gives `width=6`, `height=6`, `header_size=128`, `encoding="none"`, the row stride with `row_padding=0` is 6, giving closure check `128 + 6×6 = 164 ≠ 176`. With `row_padding=2` the stride is 8, giving `128 + 8×6 = 176 = len(data)`. Hence `revision_path = ["inclusive_bounds", "row_padding_variants"]`.
+A probe returns `None` only for a signature mismatch or a file shorter than its minimum length. After a signature match, it always returns a `ProbeOutcome`. Values it cannot read are 0, and it attaches `field_out_of_bounds` or `probe_precondition_failed` entries.
 
-#### `apply_rle_pcx`
+| Probe | Min length | Signature | Fields (offset, format) | Seed |
+|---|---|---|---|---|
+| PCX | 128 | `0x00 == 0x0A`, `0x02 ∈ {0,1}` | encoding 0x02 `B`; bit_depth 0x03 `B`; xmin 0x04 `<H`; ymin 0x06 `<H`; xmax 0x08 `<H`; ymax 0x0A `<H`; planes 0x41 `B`; bytes_per_line 0x42 `<H` | width = xmax, height = ymax, header 128, alignment 1, encoding none (0x00) or rle_pcx (0x01), bounds set |
+| TGA | 18 | `0x01 ∈ {0,1}`, `0x02 ∈ {1,2,3,9,10,11}` | id_length 0x00 `B`; color_map_type 0x01 `B`; image_type 0x02 `B`; color_map_length 0x05 `<H`; color_map_entry_size 0x07 `B`; width 0x0C `<H`; height 0x0E `<H`; bit_depth 0x10 `B` | header = 18 + id_length + color_map_type × color_map_length × ceil(entry_size / 8); encoding none for 1–3, rle_tga for 9–11 |
+| PBM | 7 | `0x00..0x02 == b"P4\n"` | magic 0x00 `3s`; width at token offset `<n>s`; height at token offset `<n>s` | bit_depth 1, alignment 1, header = offset after dimensions line |
+| TIFF | 8 | `0x00..0x01 ∈ {II, MM}` and magic 42 in that order | byte_order 0x00 `2s`; magic 0x02 `oH`; ifd_offset 0x04 `oI`; ifd_entry_count at ifd_offset `oH`; tag values at entry + 8 (`oH` for SHORT, `oI` for LONG) | width, height, bit_depth = bps × spp, header = strip_offset, data_end = strip_offset + strip_byte_count, encoding none if compression 1 |
 
-```
-return [replace(h, encoding="rle_pcx",
-                revision_path=h.revision_path + ["rle_pcx"])]
-```
+In the TIFF row, `o` is `<` for `II` and `>` for `MM`.
 
-**Corpus coverage**: `mystery_b` (PCX RLE). After `inclusive_bounds` gives `width=8`, `height=8`, `encoding="none"`, closure fails (file contains RLE-compressed data). `rle_pcx` switches to `encoding="rle_pcx"`, the decoder produces exactly `8×8 = 64` bytes, closure passes. `revision_path = ["inclusive_bounds", "rle_pcx"]`.
+**PBM parsing.** The header text is read only within `data[:1024]`. From index 3, while the line starts with `#`, the parser skips past the next `\n`. It then takes the next line up to `\n`. That line must split on ASCII whitespace into exactly two all-digit tokens. The token offsets are found by locating each token inside the line. `header_size` is the index after that `\n`. On any failure, the seed is `width = 0`, `height = 0`, `header_size = 3`, with `probe_precondition_failed`.
 
-### Strategy Ordering
+**TIFF walk.**
+- Entries are read at `ifd_offset + 2 + 12k` for `k < ifd_entry_count`, stopping at the first entry that does not fit. The stop records `field_out_of_bounds`.
+- For each entry, the probe reads tag (`oH`, +0), type (`oH`, +2) and count (`oI`, +4).
+- A tag in `{256, 257, 258, 259, 273, 277, 279}` with type 3 or 4 and count 1 becomes a `FieldRecord` at entry + 8. SHORT values are left-justified, so `oH` at +8 is the value.
+- Defaults: compression 1, samples_per_pixel 1.
 
-```python
-STRATEGIES = [
-    apply_inclusive_bounds,
-    apply_endianness_flip,
-    apply_header_length_scan,
-    apply_row_padding_variants,
-    apply_rle_pcx,
-]
-```
-
-### Revision Phase BFS (`engine.py`)
-
-The revision phase searches strategy sequences breadth-first up to depth 3. At depth 1 every single strategy is applied to every seed hypothesis. At depth 2 every two-strategy sequence is applied to every seed. At depth 3 every three-strategy sequence.
+### Revision strategies (`engine/strategies.py`)
 
 ```
-seed_pool: list[Hypothesis]  # probe-generated, closure-failed hypotheses
-seen: set[tuple] = {hypothesis_key(h) for h in seed_pool}
-frontier: list[Hypothesis] = seed_pool[:]
+def inclusive_bounds(h):
+    if h.bounds is None: return ()
+    xmin, ymin, xmax, ymax = h.bounds
+    return (replace(h, width=xmax - xmin + 1, height=ymax - ymin + 1,
+                    revision_path=h.revision_path + ("inclusive_bounds",)),)
 
-for depth in range(1, 4):
-    next_frontier: list[Hypothesis] = []
-    for base_h in frontier:
-        for strategy_fn in STRATEGIES:
-            candidates = strategy_fn(base_h, data)
-            for candidate in candidates:
-                key = hypothesis_key(candidate)
-                if key in seen:
-                    continue
-                seen.add(key)
-                if over_limit():          # deadline or cap
-                    return termination_failure_report()
-                check_count += 1
-                passed, reason, disc = check_closure(candidate, data)
-                if passed:
-                    return make_verified(candidate, data)
-                record_rejection(candidate, reason, disc)
-                next_frontier.append(candidate)
+def rle_pcx(h):
+    if h.probe_name != "pcx" or h.encoding != "none": return ()
+    return (replace(h, encoding="rle_pcx", revision_path=h.revision_path + ("rle_pcx",)),)
+
+def row_padding_variants(h):
+    return tuple(replace(h, row_alignment=a, revision_path=h.revision_path + ("row_padding_variants",))
+                 for a in (2, 4) if a != h.row_alignment)
+
+STRATEGIES = (("inclusive_bounds", inclusive_bounds), ("rle_pcx", rle_pcx),
+              ("row_padding_variants", row_padding_variants))
+```
+
+`rle_pcx` is restricted to PCX-origin hypotheses that declare `none`. The file says it is PCX, PCX's only compression is RLE, and the encoding byte may be damaged, as in mystery_i. Applying it to a TGA or TIFF declaration would replace one declaration with an arbitrary other one.
+
+### Revision phase (`engine/engine.py`)
+
+```
+seen = {hypothesis_key(s) for s in seeds}
+frontier = list(seeds)
+for depth in (1, 2, 3):
+    winners, next_frontier = [], []
+    for h in frontier:
+        for name, fn in STRATEGIES:
+            for c in fn(h):
+                k = hypothesis_key(c)
+                if k in seen: continue
+                seen.add(k)
+                stop = budget.charge()
+                if stop: return failure(stop, partial=winners)
+                v = check_closure(c, data)
+                if v.ok: winners.append((c, v))
+                else:    reject(c, v, source="revision:" + "->".join(c.revision_path)); next_frontier.append(c)
+    if winners:
+        return resolved(winners[0]) if len(winners) == 1 else ambiguous(winners, "revision")
     frontier = next_frontier
-
-return None  # exhausted without finding a match
+return failure("exhausted")
 ```
 
-`hypothesis_key(h) = (h.width, h.height, h.bit_depth, h.header_size, h.row_padding, h.encoding)`
+Winners are not added to the next frontier, because the search stops at the first closing depth. The probe phase uses the same collect-all rule: every probe runs, and its closing seeds go through the same `resolved` or `ambiguous` decision with stage `probe`.
 
-Deduplication prevents the same parameter combination from being closure-checked more than once, regardless of which strategy sequence produced it.
+### Generic Search (`engine/generic.py`)
 
-### Generic Search (`generic.py`)
-
-The generic search is entered only when no probe even generated a hypothesis (all signatures mismatched — the file has no recognised format header).
+The design no longer nests over every pair of width offset and height offset. Width plus bit depth fixes the height. The search groups reads by value, so the inner loop runs over distinct width values and distinct bit-depth values, and looks the height up.
 
 ```
-HEADER_LENGTHS = sorted(set(range(4, 257, 4)) | {4, 8, 16, 32, 64, 128, 256})
-# = [4, 8, 12, 16, ..., 256]  (multiples of 4 plus powers of 2, deduplicated)
+HEADER_LENGTHS = tuple(range(4, 257, 4))
+WIDTH_HEIGHT_FORMATS = ("<H", ">H", "<I", ">I", "<i", ">i")
+FORMAT_SIZE = {"<H": 2, ">H": 2, "<I": 4, ">I": 4, "<i": 4, ">i": 4}
+VALID_BIT_DEPTHS = (1, 4, 8, 16, 24, 32)
 
-WIDTH_HEIGHT_FORMATS = ["<H", ">H", "<I", ">I", "<i", ">i"]
-FORMAT_SIZES = {"<H": 2, ">H": 2, "<I": 4, ">I": 4, "<i": 4, ">i": 4}
-VALID_BPP = {1, 4, 8, 16, 24, 32}
-
-for h_len in HEADER_LENGTHS:
-    if h_len >= len(data):
-        continue
-    for w_fmt in WIDTH_HEIGHT_FORMATS:
-        ws = FORMAT_SIZES[w_fmt]
-        for w_off in range(0, h_len - ws + 1):
-            w_val = struct.unpack_from(w_fmt, data, w_off)[0]
-            if w_val <= 0:
-                continue
-            for h_fmt in WIDTH_HEIGHT_FORMATS:
-                hs = FORMAT_SIZES[h_fmt]
-                for h_off in range(0, h_len - hs + 1):
-                    if w_off == h_off:
-                        continue
-                    h_val = struct.unpack_from(h_fmt, data, h_off)[0]
-                    if h_val <= 0:
-                        continue
-                    for bpp_off in range(0, h_len):
-                        bpp_val = data[bpp_off]
-                        if bpp_val not in VALID_BPP:
-                            continue
-                        row_stride = compute_row_stride(w_val, bpp_val, 0)
-                        # Skip guard: would exceed file even before closure check
-                        if h_len + row_stride * h_val > len(data):
-                            continue
-                        for enc in ("none", "rle_pcx"):
-                            if over_limit():
-                                return termination_failure_report()
-                            check_count += 1
-                            hyp = Hypothesis(width=w_val, height=h_val,
-                                             bit_depth=bpp_val, header_size=h_len,
-                                             row_padding=0, encoding=enc,
-                                             fields=[...], probe_name="generic",
-                                             revision_path=[])
-                            passed, reason, disc = check_closure(hyp, data)
-                            if passed:
-                                return make_verified_generic(
-                                    hyp, w_off, w_fmt, h_off, h_fmt, bpp_off, data)
-return None
+def generic_search(data, budget, on_reject):
+    found = {}                                        # key -> (Hypothesis, ClosureVerdict), insertion order
+    for L in HEADER_LENGTHS:
+        if L >= len(data): break
+        stop = budget.stop_reason()
+        if stop: return GenericOutcome(tuple(found.values()), stop)
+        reads = {}                                    # value -> [(fmt, offset)], formats then offsets ascending
+        for f in WIDTH_HEIGHT_FORMATS:
+            for o in range(0, L - FORMAT_SIZE[f] + 1):
+                v = struct.unpack_from(f, data, o)[0]
+                if v > 0: reads.setdefault(v, []).append((f, o))
+        depths = {}                                   # value -> [offset]
+        for o in range(L):
+            if data[o] in VALID_BIT_DEPTHS: depths.setdefault(data[o], []).append(o)
+        end, trailer = match_trailer(data, L, "generic")
+        sizes = [("none", end - L)]
+        if trailer is not None:
+            n = rle_pcx_output_length(data, L, end)
+            if n: sizes.append(("rle_pcx", n))
+        for enc, S in sizes:
+            if S <= 0: continue
+            for W, w_reads in reads.items():
+                for B in depths:
+                    stride = row_stride(W, B, 1)
+                    if S % stride: continue
+                    Hh = S // stride
+                    h_reads = reads.get(Hh)
+                    if not h_reads or not any(a[1] != b[1] for a in w_reads for b in h_reads): continue
+                    h = Hypothesis(W, Hh, B, L, 1, enc, None, fields(w_reads, h_reads, depths[B]), "generic")
+                    if hypothesis_key(h) in found: continue
+                    stop = budget.charge()
+                    if stop: return GenericOutcome(tuple(found.values()), stop)
+                    v = check_closure(h, data)
+                    if v.ok: found[hypothesis_key(h)] = (h, v)
+                    else: on_reject(h, v)
+    return GenericOutcome(tuple(found.values()), None)
 ```
 
-**Corpus coverage**: `mystery_d`, `mystery_f`, `mystery_g` all reach `VerifiedHypothesis` via generic search (no probe signature matches). The search is not exhaustive — the shared 10,000-check cap and 5-second deadline will terminate it on large files before all combinations are tried. The engine never claims a `FailureReport` from generic search proves no closing hypothesis exists.
+`fields(...)` builds every equivalent read. It makes one `width` record per `(fmt, offset)` in `w_reads`, one `height` record per entry in `h_reads`, and one `bit_depth` record (`B`) per offset in `depths[B]`.
 
-For generic-search results, the `VerifiedHypothesis` records `width_offset`, `width_format`, `height_offset`, `height_format`, and `bit_depth_offset` as top-level fields so the winning search axes are observable.
+The enumeration order is deterministic: header length, then encoding, then width value in first-seen order, then bit depth in first-seen order. The order affects only the discovery order of candidates. It never decides between them.
 
-### Engine Class (`engine.py`)
+### Row coherence (`engine/coherence.py`)
 
-```python
+```
+COHERENCE_METHOD = "row_mad_ratio"
+COHERENCE_SIZE_LIMIT = 262_144
+
+def row_coherence(decoded, height, row_stride):
+    """Heuristic only. Never a gate, never promotes, never orders.
+
+    Known failure modes:
+    1. Narrower strides score better on smooth images: at stride 1 the "rows" are horizontal neighbours.
+    2. Identical bytes at an identical stride, split into different bit depths (8x8 at 8 bpp and
+       64x8 at 1 bpp), score identically.
+    3. A header can absorb whole rows: a candidate missing the top rows of the true image scores close to it.
+    """
+    if height * row_stride > COHERENCE_SIZE_LIMIT: return None, "not_computed"
+    if height < 2 or row_stride < 1 or len(decoded) < height * row_stride: return None, "unscorable"
+    rows = [decoded[i*row_stride:(i+1)*row_stride] for i in range(height)]
+    mad = lambda a, b: sum(map(abs, map(int.__sub__, a, b))) / row_stride
+    adjacent = sum(mad(rows[i], rows[i+1]) for i in range(height - 1)) / (height - 1)
+    P = height * (height - 1) // 2
+    ks = range(P) if P <= 1024 else random.Random(0).sample(range(P), 1024)
+    pairs = [pair_at(k, height) for k in ks]          # k-th pair (i, j), i < j, lexicographic order
+    baseline = sum(mad(rows[i], rows[j]) for i, j in pairs) / len(pairs)
+    if baseline == 0: return None, "unscorable"
+    return adjacent / baseline, "scored"
+```
+
+`pair_at(k, h)` finds row `i` by binary search on `before(i) = i × (2h − i − 1) / 2`, the number of pairs that start before row `i`. It then returns `(i, i + 1 + k − before(i))`, in `O(log h)`.
+
+`coherence_gap` is `(second − first) / second` over the two lowest scores. It is `None` when fewer than two candidates are scored or the second-lowest score is 0.
+
+### Engine (`engine/engine.py`)
+
+```
 class Engine:
-    def __init__(self, deadline_seconds: float = 5.0):
-        self._deadline_seconds = deadline_seconds
-
-    def run(self, data: bytes) -> HypothesisResult:
+    def __init__(self, deadline_seconds=5.0, clock=time.monotonic): ...
+    def run(self, data):
         try:
-            return self._run_inner(data)
+            return self._run(bytes(data))
         except Exception as exc:
-            return FailureReport(
-                rejections=[RejectionEntry(
-                    hypothesis=None,
-                    reason=f"{type(exc).__name__}: {exc}",
-                    discrepancy=None,
-                    source="uncaught_exception",
-                )],
-                total_checks=0,
-            )
+            return FailureReport("internal_error",
+                                 (RejectionEntry("internal_error", "engine", detail=f"{type(exc).__name__}: {exc}"),),
+                                 0, len(data) if isinstance(data, (bytes, bytearray)) else 0)
 ```
 
-The outer `try/except` is the last line of defence for the never-raise contract. All inner code is expected to handle its own errors; this catch is for truly unexpected failures.
+`_run` follows the control flow above. It creates one `Budget`, keeps one rejection list in the order produced, and checks `budget.stop_reason()` before each probe. It builds each `Candidate` from a `(Hypothesis, ClosureVerdict)` pair, checking `budget.stop_reason()` before each `row_coherence` call. A stop at any point returns `FailureReport(termination, rejections, budget.checks, len(data), partial_candidates)`.
 
-`_run_inner` owns these instance variables for one `run()` call:
-- `self._start: float` — `time.monotonic()` at the start of the call
-- `self._check_count: int` — total closure checks performed so far
-- `self._rejections: list[RejectionEntry]` — accumulated in entry order
-- `self._terminated: str | None` — `"deadline"` or `"cap"` once a limit fires
+### Pretty printer (`report/pretty.py`)
 
-### Pretty Printer (`pretty.py`)
+`render(result) -> str` dispatches on `result.status` and produces the exact lines from Requirement 8.4 to 8.6. Each status has its own first line: `RESOLVED`, `UNRESOLVED_AMBIGUITY: …` or `FAILED: …`. The function is wrapped in `try/except Exception`, and an exception returns `"render error: <ExceptionClass>"`.
+
+### Spec emission (`emit/`)
+
+`emit_spec(result, data)` is pure.
+- It returns `EmittedSpec(slug, files)`, where `files` is a tuple of `(name, text)` pairs for `requirements.md`, `design.md` and `tests.py`.
+- For a `FailureReport` it returns `EmitError("nothing recovered: FAILED/<termination>")`.
+
+`write_spec(spec, out_dir, overwrite=False)` does the writing.
+- It rejects slugs that do not match `^[a-z0-9-]+$`.
+- It resolves `out_dir / slug` and checks that the result is inside `out_dir`.
+- It refuses an existing folder unless `overwrite`.
+- It writes the three files as UTF-8 without a BOM, and returns the folder path or an `EmitError`.
+
+#### Slugs
+
+- Probe origin: the probe name (`pcx`, `tga`, `pbm` or `tiff`).
+- Generic Search: `unknown-` followed by `hashlib.sha256(data).hexdigest()[:8]`.
+
+#### Layout schema `necropsy-layout/1`
+
+The emitted `requirements.md` contains exactly one fenced block whose info string is `necropsy-layout`, holding JSON:
+
+```
+{
+  "schema": "necropsy-layout/1",
+  "kind": "format" | "file" | "ambiguous",
+  "slug": "<slug>",
+  "byte_order": null | {"offset": 0, "length": 2, "values": {"II": "<", "MM": ">"}},
+  "fields": [ {"name": str, "offset": <expr>, "fmt": str, "expect": int | null} ],
+  "tag_table": null | {
+      "at": <expr>, "count_fmt": str, "entry_size": 12,
+      "tag_offset": 0, "tag_fmt": str, "type_offset": 2, "type_fmt": str,
+      "count_offset": 4, "count_fmt_entry": str, "value_offset": 8,
+      "value_fmt_by_type": {"3": str, "4": str}, "require_count": 1,
+      "entries": [ {"name": str, "tag": int, "default": int | null} ]
+  },
+  "image": {"width": <expr>, "height": <expr>, "bit_depth": <expr>, "row_alignment": 1 | 2 | 4},
+  "data": {"start": <expr>, "end": <expr> | null, "encoding": <encoding>,
+           "trailers": [ {"name": str, "length": int, "marker": int} ]},
+  "equivalent_reads": { "<field>": [[fmt, offset], ...] },
+  "observed": { "<name>": int, ... },
+  "candidates": [ <layout without "candidates">, ... ]
+}
+```
+
+The schema's building blocks:
+
+- **Expressions.** An `<expr>` is an integer literal, a string naming a field or tag entry already read, or one of `{"add": [e, …]}`, `{"sub": [a, b]}`, `{"mul": [e, …]}` and `{"ceil_div": [a, b]}`.
+- **Byte order.** In any format string, `@` is replaced by the resolved byte-order prefix.
+- **Encoding.** `<encoding>` is either a literal string, or `{"field": name, "values": {"<int>": str}, "otherwise": str}`.
+- **Data end.** When `data.end` is `null`, a reader applies the first matching trailer, otherwise it uses the file end.
+- **Kind `ambiguous`.** Only `schema`, `kind`, `slug` and `candidates` are set; each candidate is a `file` or `format` layout.
+
+Kind and content by origin:
+
+| Origin | Kind | Notes |
+|---|---|---|
+| PCX | `format` | Width and height are `{"add": [{"sub": ["xmax", "xmin"]}, 1]}` when `inclusive_bounds` is in the path, otherwise `"xmax"` and `"ymax"`. Encoding is `{"field": "encoding", "values": {"0": "none", "1": "rle_pcx"}}`, or the literal `"rle_pcx"` when `rle_pcx` is in the path. Alignment is taken from the result. Trailers list `pcx_palette_256`. |
+| TGA | `format` | Start is `{"add": [18, "id_length", {"mul": ["color_map_type", "color_map_length", {"ceil_div": ["color_map_entry_size", 8]}]}]}`. Encoding is mapped from `image_type`. |
+| TIFF | `format` | `byte_order` is set, with the tag table as specified in Requirement 2.8. Start is `"strip_offset"`; end is `{"add": ["strip_offset", "strip_byte_count"]}`. Encoding is `{"field": "compression", "values": {"1": "none"}, "otherwise": "unsupported"}`. |
+| PBM | `file` | The token offsets are this file's. The prose states the text-header rules. |
+| Generic | `file` | The first equivalent read of each field is used as the field; all reads appear in `equivalent_reads`. The prose states that this is one file's layout, not a format. |
+
+#### Emitted `requirements.md`
+
+The emitted file uses the Kiro headings `# Requirements Document`, `## Introduction`, `## Glossary`, `## Requirements`, `### Requirement N: …`, `**User Story:**` and `#### Acceptance Criteria`. Its requirements are:
+
+1. **Signature and byte order.** One criterion per `expect` field, and one for the byte-order rule.
+2. **Fields.** One criterion per field and tag entry. Example: `THE parser SHALL read \`width\` at offset 0x000C using struct format \`<H\` (little-endian, 2 bytes).` For `@` formats, the endianness is described as "declared by bytes 0x00–0x01 (II little-endian, MM big-endian)".
+3. **Data region and encoding.** The start and end rule, trailers and encoding.
+4. **Closure.** The closure rule, and the statement that the source file satisfied it with the observed numbers.
+5. **Observed values.** `WHEN parsing the source file, THE parser SHALL return <name> = <value>`.
+
+For an ambiguous result, the file instead has one requirement per candidate, written with `WHERE candidate k is assumed, …`. It also has a requirement stating that every candidate passes closure, that the bytes cannot separate them, and that coherence is a heuristic with the three failure modes named.
+
+The layout block sits in the Introduction.
+
+#### Emitted `design.md`
+
+The emitted file uses the Kiro headings Overview, Architecture, Components and Interfaces, Data Models, Correctness Properties, Error Handling and Testing Strategy. Its content:
+
+- the structure table (or one table per candidate);
+- the stage and source;
+- `revision_path`;
+- the data region and trailer;
+- the closure arithmetic line from Requirement 8.4;
+- coherence, labelled "heuristic (row_mad_ratio)";
+- rejected hypotheses, numbered, with source, reason and discrepancy. Up to 500 are listed, followed by `"… and N more not listed"`.
+
+#### Emitted `tests.py`
 
 ```python
-class PrettyPrinter:
-    def render(self, result: HypothesisResult) -> str:
-        if isinstance(result, VerifiedHypothesis):
-            return self._render_verified(result)
-        return self._render_failure(result)
+"""Generated by NECROPSY from <slug>. Tests for parser_<module>.parse."""
+import base64, struct
+import pytest
+from hypothesis import given, settings, strategies as st
+import parser_<module> as parser
 
-    def _render_verified(self, v: VerifiedHypothesis) -> str:
-        h = v.hypothesis
-        lines = ["=== Verified Hypothesis ==="]
-        lines.append(f"{'Offset':<8}  {'Field':<20}  {'Format':<6}  Value")
-        for fr in h.fields:
-            lines.append(f"0x{fr.offset:04X}    {fr.name:<20}  {fr.fmt:<6}  {fr.value}")
-        lines.append("")
-        lines.append(
-            f"Closure: {h.header_size} + {v.row_stride * h.height} = {v.total_file_size}"
-        )
-        lines.append(f"revision_path: {h.revision_path}")
-        return "\n".join(lines)
+SOURCE = base64.b64decode("<...>")          # or None when the source exceeds 65,536 bytes
+EXPECTED = {"width": 8, "height": 8, "bit_depth": 8, "row_alignment": 1, "data_start": 86, "data_end": 150}
+FIELDS = [("width", 22, ">H", (8,)), ...]
 
-    def _render_failure(self, f: FailureReport) -> str:
-        lines = [
-            f"=== Failure Report ({len(f.rejections)} entries, "
-            f"{f.total_checks} checks) ==="
-        ]
-        for i, entry in enumerate(f.rejections, 1):
-            disc = (
-                f" (discrepancy={entry.discrepancy})"
-                if entry.discrepancy is not None
-                else ""
-            )
-            lines.append(f"{i:3}. [{entry.source}] {entry.reason}{disc}")
-        return "\n".join(lines)
+def _stride(w, b, a):
+    raw = -(-(w * b) // 8)
+    return -(-raw // a) * a
+
+@settings(max_examples=200, deadline=None)
+@given(st.binary(max_size=65536))
+def test_never_raises(data):
+    assert isinstance(parser.parse(data), dict)
+
+@settings(max_examples=200, deadline=None)
+@given(st.binary(max_size=65536))
+def test_reported_fields_round_trip(data):
+    r = parser.parse(data)
+    if r.get("ok"):
+        for name, offset, fmt, value in r["fields"]:
+            assert struct.unpack_from(fmt, data, offset) == tuple(value)
+
+@settings(max_examples=200, deadline=None)
+@given(st.binary(max_size=65536))
+def test_closure_holds_whenever_parse_succeeds(data):
+    r = parser.parse(data)
+    if r.get("ok"):
+        assert len(r["pixels"]) == _stride(r["width"], r["bit_depth"], r["row_alignment"]) * r["height"]
+
+def test_source_fields_and_closure():
+    if SOURCE is None:
+        pytest.skip("source larger than 65,536 bytes; fixture not embedded")
+    for name, offset, fmt, value in FIELDS:
+        assert struct.unpack_from(fmt, SOURCE, offset) == value
+    r = parser.parse(SOURCE)
+    assert r["ok"] and {k: r[k] for k in EXPECTED} == EXPECTED
 ```
 
-The closure line format is exactly: `{header_size} + {row_stride × height} = {total_file_size}` with all three values as decimal integers (Requirement 8 criterion 3).
+**Parser contract.**
+- On success, `parse(data)` returns a dict with:
+  - `ok: True`;
+  - `width`, `height`, `bit_depth`, `row_alignment`, `encoding`, `data_start`, `data_end`;
+  - `pixels: bytes`;
+  - `fields: [(name, offset, fmt, value_tuple)]`.
+- On failure, it returns `{"ok": False, "error": str}`.
+- It never raises.
 
----
+**Ambiguous results.** The emitted tests target `parse_candidates(data) -> list[dict]`. `EXPECTED_CANDIDATES` lists each candidate's summary, and the fixture test asserts that every expected candidate is present.
 
-## Corpus Trace
+#### Reference reader (`tests/support/reference_reader.py`)
 
-This section walks through the expected resolution path for each of the eight corpus files, grounding every requirement in a concrete example.
+The reference reader is a generic interpreter of `necropsy-layout/1` and contains no format knowledge.
 
-| File | Format | Size | Expected resolution |
+- **Inputs and imports.** It reads the single `necropsy-layout` block from markdown text. It imports only `json`, `re` and `struct`. A test asserts that its source contains no `necropsy` import.
+- **Steps.** It resolves the byte order, then reads `fields` in order (offsets may be expressions over earlier fields), checks each `expect`, and walks `tag_table`. It then evaluates `image`, resolves `data.start` and `data.end` (falling back to `trailers`, then EOF), and resolves the encoding.
+- **Decoding.** It decodes `none` only by slicing. Any other encoding returns `{"ok": False, "error": "encoding not supported by reference reader"}`.
+- **Result.** It checks closure and returns the parser-contract dict.
+- **`make_parser_module(markdown)`** returns Python source for a `parser_<slug>` module. The module embeds the markdown text and exposes `parse` and `parse_candidates` by calling the reader. The acceptance test writes it to a temporary directory and runs the emitted `tests.py` there with `python -m pytest`.
+
+## Corpus Trace (measured)
+
+Measured with a reference model of these rules on Python 3.10.11. The implementation tasks re-measure the same values as tests.
+
+| File | Probes matched | Stage | Closing | Result | Checks |
+|---|---|---|---|---|---|
+| mystery_a | pbm | probe | 1 | 4×4, 1 bpp, header 7, stride 1, region [7, 11), path [] | 1 |
+| mystery_b | pcx | revision depth 1 | 1 | 8×8, 8 bpp, rle_pcx, region [128, 186), trailer pcx_palette_256, path [inclusive_bounds] | 4 |
+| mystery_c | tga | probe | 1 | 16×16, 24 bpp, header 18, stride 48, region [18, 786), path [] | 1 |
+| mystery_d | none | generic | 18 | ambiguous; includes 8×8, 8 bpp, header 40; 9 scored, 9 unscorable | 18 |
+| mystery_e | tiff | probe | 1 | 8×8, 8 bpp, declared region [86, 150), all multi-byte fields `>`, path [] | 1 |
+| mystery_f | none | generic | 8 | ambiguous; includes 12×10, 8 bpp, header 12; width reads `<H`, `<I`, `<i` at 0x00 | 8 |
+| mystery_g | none | generic | 8 | ambiguous; includes 8×8, 24 bpp, header 20; 7 scored, 1 unscorable | 8 |
+| mystery_h | pcx | revision depth 2 | 1 | 6×6, 8 bpp, alignment 4, stride 8, region [128, 176), path [inclusive_bounds, row_padding_variants] | 10 |
+| mystery_i | pcx | revision depth 2 | 1 | 8×8, 8 bpp, rle_pcx, region [128, 186), path [inclusive_bounds, rle_pcx] | 10 |
+
+Two details from the trace:
+
+- **mystery_b and the TGA probe.** mystery_b matched the TGA probe in an earlier draft, because byte `0x02 = 1` is a valid TGA image type. It no longer matches, because byte `0x01 = 5` is not a valid TGA colour-map type.
+- **Field round-trip.** Every `FieldRecord` of every candidate round-tripped through `struct.unpack_from`, with 0 failures across the corpus.
+
+## Measured Performance
+
+| Input | Result | Closure checks | Time |
 |---|---|---|---|
-| `mystery_a` | PBM P4, 4×4, 1 bpp | 11 B | PBM probe → immediate closure |
-| `mystery_b` | PCX RLE, 8×8, 8 bpp | 955 B | PCX probe → `["inclusive_bounds", "rle_pcx"]` |
-| `mystery_c` | TGA uncompressed, 16×16, 24 bpp | 786 B | TGA probe → immediate closure |
-| `mystery_d` | DIB body, 8×8, 8 bpp | 104 B | No probe match → Generic Search |
-| `mystery_e` | TIFF big-endian "MM", 8×8, 8 bpp | 150 B | TIFF probe → `["endianness_flip"]` |
-| `mystery_f` | Raw 32-bit dims, 12×10, 8 bpp | 132 B | No probe match → Generic Search |
-| `mystery_g` | Raw unusual header, 8×8, 24 bpp | 212 B | No probe match → Generic Search |
-| `mystery_h` | PCX padded rows, 6×6, 8 bpp | 176 B | PCX probe → `["inclusive_bounds", "row_padding_variants"]` |
+| 65,536 random bytes | FAILED / exhausted | 0 | 0.041 s |
+| 65,536 bytes: dense small header values, valid bit depths, PCX palette trailer, RLE-safe body | FAILED / exhausted | 0 | 0.220 s |
+| 65,536 bytes of `0x08` | FAILED / exhausted | 0 | 0.009 s |
+| 300 random and mutated corpus inputs | no exceptions | — | worst 0.048 s |
+| `Engine(deadline_seconds=0.0)` on mystery_c | FAILED / deadline_exceeded | 0 | — |
 
-### mystery_a (PBM)
-- Header: `b"P4\n4 4\n"` = 7 bytes; `bit_depth = 1`; `row_stride = ceil(4/8) = 1`
-- Closure: `7 + 1×4 = 11 == len(data)` ✓
+An earlier version of the measurement script recorded 0.03 s on 65,536 random bytes. The figures above are from the final-rules reference model. A second run of that model gave 0.042 s, 0.236 s and 0.008 s for the three 65,536-byte inputs, and a worst case of 0.057 s over the 300 inputs; every non-timing output line was identical.
 
-### mystery_b (PCX RLE)
-- PCX probe: `data[0]=0x0A`, `data[2]=0x01` ✓; reads `xmax=7`, `ymax=7` → `width=7`, `height=7`
-- Closure with `encoding="none"`: `128 + 7×7 = 177 ≠ 955` ✗
-- `inclusive_bounds`: `width = 7−0+1 = 8`, `height = 7−0+1 = 8`
-- Closure with `encoding="none"`: `128 + 8×8 = 192 ≠ 955` ✗
-- `rle_pcx`: `encoding = "rle_pcx"`; decoder produces exactly `64` bytes ✓
+The per-unit work bounds that make the 0.25-second overshoot in Requirement 5.4 hold:
 
-### mystery_c (TGA)
-- TGA probe: `data[2]=2 ∈ {1,2,3,9,10,11}` ✓; `width=16`, `height=16`, `bit_depth=24`, `header_size=18`
-- `row_stride = 16×24/8 = 48`; closure: `18 + 48×16 = 786 == len(data)` ✓
-
-### mystery_d (DIB body)
-- No probe signature matches → Generic Search
-- Header length 40; `width` at `0x04` as `<i` = 8; `height` at `0x08` as `<i` = 8; `bit_depth` at `0x0E` as `B` = 8
-- `row_stride = 8`; closure: `40 + 8×8 = 104 == len(data)` ✓
-
-### mystery_e (TIFF big-endian "MM")
-- TIFF probe: `data[0:2]=b"MM"` ✓; magic read as big-endian = 42 ✓
-- All fields read as little-endian (probe convention) → wrong values
-- Closure fails; `endianness_flip` re-reads all multi-byte fields in big-endian
-- With flipped values: `width=8`, `height=8`, `bit_depth=8`, `header_size=86 (strip_offset)`
-- `row_stride = 8`; closure: `86 + 8×8 = 150 == len(data)` ✓
-
-### mystery_f (raw 32-bit dims)
-- No probe signature matches → Generic Search
-- Header length 12; `width` at `0x00` as `<I` = 12; `height` at `0x04` as `<I` = 10; `bit_depth` at `0x08` as `B` = 8
-- `row_stride = 12`; closure: `12 + 12×10 = 132 == len(data)` ✓
-
-### mystery_g (raw unusual header)
-- No probe signature matches → Generic Search
-- Header length 20; `width` at `0x04` as `<H` = 8; `height` at `0x06` as `<H` = 8; `bit_depth` at `0x08` as `B` = 24
-- `row_stride = 8×24/8 = 24`; closure: `20 + 24×8 = 212 == len(data)` ✓
-
-### mystery_h (PCX padded rows)
-- PCX probe: `data[0]=0x0A`, `data[2]=0x00` → `data[2] != 0x01` → signature mismatch
-  - **Wait**: `mystery_h` uses `header[2] = 0` (uncompressed). The PCX probe checks `data[2] == 0x01`. This is a mismatch. However the requirements state `mystery_h` should return `revision_path=["inclusive_bounds","row_padding_variants"]`, which implies the PCX probe must have matched (otherwise there would be no PCX seed for `inclusive_bounds`).
-  - **Resolution**: The PCX probe signature must accept `data[2] ∈ {0, 1}` (0 = uncompressed PCX, 1 = RLE). The requirements state `data[2] == 0x01` as the signature for the PCX probe in Requirement 2 criterion 1, but `mystery_h` is encoded as uncompressed PCX (`header[2] = 0`). The probe must be relaxed to `data[2] in (0, 1)` to generate the seed hypothesis needed for the revision path `["inclusive_bounds", "row_padding_variants"]` to apply.
-  - **Design decision**: The PCX probe checks `data[0] == 0x0A` and `data[2] in (0, 1)`. The initial `encoding` field of the resulting hypothesis is `"none"` for `data[2] == 0` and `"none"` for `data[2] == 1` as well (the `rle_pcx` strategy later switches encoding if needed).
-- With signature matched: `xmin=0`, `ymin=0`, `xmax=5`, `ymax=5` → `width=5`, `height=5` (raw `xmax`/`ymax`)
-- Closure with `encoding="none"`: `128 + 5×5 = 153 ≠ 176` ✗
-- `inclusive_bounds`: `width = 5−0+1 = 6`, `height = 5−0+1 = 6`
-- Closure with `row_padding=0`: `128 + 6×6 = 164 ≠ 176` ✗
-- `row_padding_variants(padding=2)`: `row_stride = 6+2 = 8`; closure: `128 + 8×6 = 176 == len(data)` ✓
-
----
-
-## Error Handling
-
-### Never-Raise Contract
-
-The public `Engine.run()` method wraps `_run_inner()` in a bare `except Exception`. Any unexpected exception is caught and returned as a `FailureReport` with the exception class name and message as the rejection reason. This contract holds for all inputs including zero-length bytes, adversarially crafted bytes, and integers-disguised-as-bytes.
-
-### Input Validation
-
-- `len(data) < 3`: Return `FailureReport` with `reason = "input_too_short"` immediately, without attempting any probe.
-- `len(data) == 0`: Covered by the above.
-
-### Probe Errors
-
-Each probe guards its minimum length before reading any field. All `struct.unpack_from` calls are preceded by a length check; if data is too short, the probe returns `None` (silent skip). Probes never raise.
-
-### Decoder Safety
-
-`rle_pcx_decode` accepts `max_output_bytes` and aborts immediately if the decoded output would exceed it. This prevents unbounded memory growth on adversarial RLE inputs. The decoder also handles truncated input (exhausted before `max_output_bytes` reached) by returning `None`.
-
-### Termination Guarantees
-
-- **Deadline**: Checked before each closure check via `time.monotonic()`. Once triggered, the engine returns immediately with `FailureReport(reason="deadline_exceeded")` and the rejection list accumulated so far.
-- **Search cap**: Counter incremented after each closure check. At 10,000 the engine returns `FailureReport(reason="search_cap_exceeded")`.
-- Both conditions are checked in the same `_over_limit()` guard function, called before each check.
-
-### Field Out of Bounds
-
-The TIFF probe validates `ifd_offset` and all tag offsets against `[0, len(data))` before reading. If any falls outside the range, the probe records a `RejectionEntry` with `reason = "field_out_of_bounds"` and returns `None`.
-
-### Deduplication
-
-The revision phase maintains a `seen` set of hypothesis keys `(width, height, bit_depth, header_size, row_padding, encoding)`. Identical parameter combinations are skipped without a closure check, preventing redundant work and protecting against strategy compositions that circle back to the same hypothesis.
-
----
-
-## Testing Strategy
-
-### Framework and Libraries
-
-- **Test runner**: `pytest`
-- **Property-based testing**: `hypothesis` library (already in use in the project, as evidenced by `.hypothesis/` directory in the workspace)
-- **Corpus fixtures**: The eight sample files in `spike/samples/` are read as bytes fixtures
-
-### File Layout
-
-```
-tests/
-    test_engine.py        # corpus tests (Req 7) + never-raise property tests (Req 6)
-    test_closure.py       # unit tests for compute_row_stride, rle_pcx_decode, check_closure
-    test_probes.py        # unit tests for each probe
-    test_strategies.py    # unit tests for each strategy
-    test_generic.py       # unit tests for generic_search
-    test_pretty.py        # unit tests for PrettyPrinter
-```
-
-### Unit Tests (example-based)
-
-Each probe, strategy, and closure function gets concrete example tests:
-
-- **Probes**: Each probe is tested with its matching corpus file (should return a `Hypothesis`) and with a file whose signature does not match (should return `None`). PCX and TGA probes are also tested with files shorter than their minimum length (should return `None`).
-- **Closure**: `compute_row_stride` is tested for `bit_depth ≥ 8` and `bit_depth < 8`. `check_closure` is tested for `arithmetic_mismatch`, correct match, `decoder_overrun`, and `decoder_underrun`.
-- **Strategies**: Each strategy is tested with a known input and known expected output. `apply_inclusive_bounds` is tested with a PCX-origin hypothesis; `apply_endianness_flip` with a TIFF-origin hypothesis.
-- **Pretty printer**: Tested with a minimal `VerifiedHypothesis` and a minimal `FailureReport`. The closure line format and column ordering are asserted exactly.
-- **Corpus**: All eight files in `spike/samples/` are tested against the expected `VerifiedHypothesis` values from Requirement 7.
-
-### Property Tests (Hypothesis library)
-
-Each property test is configured with `@settings(max_examples=100)` and tagged with a comment referencing the design property it validates.
-
-| Test | Tag | Property |
-|---|---|---|
-| Engine never raises on arbitrary bytes | `Feature: structure-inference-engine, Property 1: never raises` | Req 6.3 |
-| Engine returns within deadline on arbitrary bytes | `Feature: structure-inference-engine, Property 2: deadline respected` | Req 6.5 |
-| VerifiedHypothesis always passes closure gate | `Feature: structure-inference-engine, Property 3: closure soundness` | Req 1.1–1.2 |
-| All FieldRecords round-trip via struct.unpack_from | `Feature: structure-inference-engine, Property 4: field round-trip` | Req 8.2 |
-| RLE decoder never raises on arbitrary bytes | `Feature: structure-inference-engine, Property 5: RLE decoder never raises` | Req 6.4 |
-| RLE decoder output is exactly max_output_bytes when not None | `Feature: structure-inference-engine, Property 6: RLE output bounded` | Req 1.6 |
-| FailureReport is structurally valid | `Feature: structure-inference-engine, Property 7: FailureReport is total` | Req 5 |
-
----
+- One closure check decodes at most the data region.
+- One Generic Search header length does at most `6 × 256` reads and one `rle_pcx_output_length` pass.
+- One coherence computation handles at most 262,144 decoded bytes and 1,024 pairs.
 
 ## Correctness Properties
 
-*A property is a characteristic or behavior that should hold true across all valid executions of a system — essentially, a formal statement about what the system should do. Properties serve as the bridge between human-readable specifications and machine-verifiable correctness guarantees.*
+### Property 1: Never raises
 
-### Property 1: Never Raises
+For any byte sequence of up to 65,536 bytes, including mutated corpus files, `Engine().run(data)` returns a `VerifiedHypothesis`, `AmbiguousResult` or `FailureReport` without raising.
 
-*For any* byte sequence `data`, `Engine().run(data)` returns a `HypothesisResult` without raising an exception.
+**Validates: Requirements 6.2, 6.3, 6.5**
 
-**Validates: Requirements 6.1, 6.2, 6.3**
+### Property 2: Deadline bound
 
-### Property 2: Deadline Respected
+For the same inputs, `Engine(deadline_seconds=5.0).run(data)` returns within 5.25 seconds.
 
-*For any* byte sequence `data`, `Engine(deadline_seconds=5.0).run(data)` returns a `HypothesisResult` within 5 seconds of the call.
+**Validates: Requirements 5.4, 6.6**
 
-**Validates: Requirements 1.7, 6.5**
+### Property 3: Closure soundness
 
-### Property 3: Closure Soundness
+For every candidate of a `RESOLVED` or `UNRESOLVED_AMBIGUITY` result, `check_closure(candidate.hypothesis, data).ok` is true, and its `data_start`, `data_end` and `decoded` match the candidate.
 
-*For any* byte sequence `data` where `Engine().run(data)` returns a `VerifiedHypothesis` `v`, calling `check_closure(v.hypothesis, data)` returns `True`.
+**Validates: Requirements 1.7, 1.8, 1.14, 10.2, 10.3**
 
-**Validates: Requirements 1.1, 1.2, 1.4**
+### Property 4: Field round-trip
 
-### Property 4: Field Round-Trip
-
-*For any* `VerifiedHypothesis` `v` produced from byte sequence `data`, for every `FieldRecord` `fr` in `v.hypothesis.fields`, `struct.unpack_from(fr.fmt, data, fr.offset) == fr.value`.
+For every `FieldRecord` of every candidate, `struct.unpack_from(fr.fmt, data, fr.offset) == fr.value`.
 
 **Validates: Requirements 8.1, 8.2**
 
-### Property 5: RLE Decoder Never Raises
+### Property 5: Equivalent reads agree
 
-*For any* byte sequence `data`, start offset `start ∈ [0, len(data)]`, and non-negative integer `max_output_bytes`, `rle_pcx_decode(data, start, max_output_bytes)` returns either `bytes` or `None` without raising.
+For every candidate, all `FieldRecord`s sharing a name have the same first value.
 
-**Validates: Requirements 1.6, 6.3**
+**Validates: Requirements 4.7, 8.3**
 
-### Property 6: RLE Output Bounded
+### Property 6: RLE decoder is bounded and typed
 
-*For any* call to `rle_pcx_decode(data, start, max_output_bytes)` that returns a non-`None` result `r`, `len(r) == max_output_bytes`.
+For any bytes, `start`, `end` and `max_output_bytes`, `rle_pcx_decode` returns an `RleResult` whose status is one of `ok`, `overrun`, `underrun` and `unconsumed`, without raising. When the status is `ok`, the decoded length equals `max_output_bytes` and `consumed_to == end`. Otherwise `data is None`.
 
-**Validates: Requirements 1.6**
+**Validates: Requirements 1.9, 1.10, 1.11, 6.4**
 
-### Property 7: FailureReport Is Total
+### Property 7: Outcome well-formed
 
-*For any* byte sequence `data` where `Engine().run(data)` returns a `FailureReport` `f`, `len(f.rejections) >= 0` and `f.total_checks >= 0`.
+- `status` matches the result type.
+- `RESOLVED` holds exactly one candidate.
+- `UNRESOLVED_AMBIGUITY` holds at least two candidates with distinct keys.
+- `FAILED` has a termination in `TERMINATIONS`.
+- Every rejection reason is in `REASONS`.
 
-**Validates: Requirements 5.1, 5.2, 5.3**
+**Validates: Requirements 5.6, 5.7, 10.1, 10.2, 10.3**
+
+### Property 8: Coherence cannot change the outcome
+
+If `row_coherence` is replaced by any function returning arbitrary scores, `run(data)` gives the same status, the same candidate keys and the same candidate order.
+
+**Validates: Requirements 10.5, 11.1, 11.8**
+
+### Property 9: No duplicate hypotheses
+
+No two candidates in a result share a hypothesis key, and no key is closure-checked twice in one run.
+
+**Validates: Requirements 3.3**
+
+### Property 10: Deterministic
+
+With the deadline far from expiry, two runs on the same bytes return equal results.
+
+**Validates: Requirements 3.6** (and the engine steering rule on determinism)
+
+### Property 11: Spec emitter is total
+
+For any result produced from arbitrary bytes, `emit_spec` returns `EmittedSpec` for `RESOLVED` and `UNRESOLVED_AMBIGUITY` and `EmitError` for `FAILED`, without raising. An `EmittedSpec` holds exactly the three named files, and its `requirements.md` holds exactly one layout block that parses as JSON with `schema == "necropsy-layout/1"`.
+
+**Validates: Requirements 9.1, 9.6, 9.13, 6.4**
+
+### Property 12: Emitted layout reproduces the engine
+
+For each result with `encoding == "none"`, the reference reader, given only the emitted `requirements.md`, reproduces each candidate's width, height, bit depth, data region and decoded bytes.
+
+**Validates: Requirements 9.16, 9.18**
+
+### Property 13: Pretty printer is total
+
+For any `EngineResult`, `render` returns a string whose first line starts with the result's status, without raising.
+
+**Validates: Requirements 8.4, 8.5, 8.6, 8.7**
+
+### Property 14: Coherence function is total
+
+For any bytes and any integers `height` and `row_stride`, `row_coherence` returns `(float, "scored")` with a finite non-negative float, `(None, "unscorable")` or `(None, "not_computed")`, without raising.
+
+**Validates: Requirements 11.2, 11.3, 11.4, 6.4**
+
+## Error Handling
+
+- **Public entry points.** `Engine.run`, every probe, every strategy, `check_closure`, `rle_pcx_decode`, `generic_search`, `row_coherence`, `render`, `emit_spec` and `write_spec` return structured values. Each has a last-resort `try/except Exception` that converts to its error value. Inner code bounds-checks every read and must not rely on the wrapper.
+- **Input-declared sizes.** These are never trusted for allocation:
+  - The RLE decoder is capped by `max_output_bytes` and by the region length.
+  - Coherence is capped at 262,144 bytes.
+  - Generic Search reads only inside the header length.
+- **Termination.** The deadline is checked before each probe, before each closure check, at the start of each Generic Search header length and before each coherence call. The cap is checked before each closure check. Both stop the run with a `FailureReport` that keeps the rejections and partial candidates.
+- **File writing.** Only `write_spec` writes files, only inside the given directory and only for a valid slug. It never overwrites unless asked.
+
+## Testing Strategy
+
+- **Framework.** pytest, with Hypothesis for property tests. Run with `python -m pytest tests/<file> -q`.
+- **Engine property settings.** `@settings(max_examples=100, deadline=None)`, because the engine has its own deadline.
+- **Input generator.** `engine_inputs = st.one_of(st.binary(max_size=65536), mutated_corpus())`. `mutated_corpus` takes a corpus file and applies byte flips, truncation and extension. Properties that need a successful result add every corpus file with `@example`, so their assertions run on real `RESOLVED` and `UNRESOLVED_AMBIGUITY` results.
+- **Fixtures.** Binary fixtures are built in code from documented byte layouts. The only committed binaries are `spike/samples/`.
+- **Pixel checks.** Corpus pixel checks compare exact bytes against the pixel content exposed by `spike/make_samples.py`.
+- **Deadline tests.** These use an injected clock, so no test depends on wall-clock timing. The one exception is Property 2, whose 0.25-second margin is stated.
+- **Property tags.** Each property test is tagged `Feature: structure-inference-engine, Property N: <title>`.
+- **Emitted-spec acceptance.** This runs the emitted `tests.py` in a subprocess with a temporary directory on `PYTHONPATH`. The final checkpoint validates the emitted `requirements.md` and `design.md` for mystery_e and mystery_d with Kiro's spec format validator.
