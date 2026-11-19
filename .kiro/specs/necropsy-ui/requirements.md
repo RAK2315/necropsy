@@ -270,6 +270,7 @@ This screen shows the honesty mechanic. It is a success.
 
 1. THE screen SHALL show the status `FAILED` and the termination reason in plain words:
    - `exhausted`: `Every hypothesis within the search axes was tried and none closed.`
+   - `no_hypothesis_checked`: `No hypothesis reached the closure gate.` When generic search ran, the screen SHALL add that no combination of header length, width, height and bit depth fitted the file's size, so nothing was closure-checked, and that this does not mean the file has no layout. (Added when the engine split this case out of `exhausted`, which had claimed checks that never ran.)
    - `deadline_exceeded`: `The search stopped at the {deadline} second deadline.`
    - `search_cap_exceeded`: `The search stopped at the 10,000 closure-check cap.`
    - `input_too_short`: `The file is shorter than 3 bytes.`

@@ -158,11 +158,14 @@ function failedPanel(payload) {
                kv('rejections', String(total)));
   side.append(facts);
 
-  if (payload.termination === 'exhausted' && (!stages.size || stages.has('generic'))) {
+  const generic = !stages.size || stages.has('generic');
+  if (payload.termination === 'exhausted' && generic) {
     side.append(el('p', 'fail-scope', 'No probe signature matched, so generic search ran. No closing layout was found within its stated axes and budget. That does not mean the file has no layout.'));
-    if (payload.total_checks === 0) {
-      side.append(el('p', 'fail-scope', 'No combination of header length, width, height and bit depth fitted the file\u2019s size, so no hypothesis reached the closure gate.'));
-    }
+  }
+  if (payload.termination === 'no_hypothesis_checked') {
+    side.append(el('p', 'fail-scope', generic
+      ? 'No probe signature matched, so generic search ran. No combination of header length, width, height and bit depth fitted the file\u2019s size, so nothing was closure-checked. That does not mean the file has no layout.'
+      : 'Nothing was closure-checked.'));
   }
   if (payload.termination === 'internal_error') {
     for (const r of payload.rejections) if (r.detail) side.append(el('p', 'mono fail-detail', r.detail));

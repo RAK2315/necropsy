@@ -76,7 +76,8 @@ test('failureGroups keeps engine order within stage and reason', () => {
 });
 
 test('termination text never claims the file has no valid layout', () => {
-  for (const t of ['exhausted', 'deadline_exceeded', 'search_cap_exceeded', 'input_too_short', 'internal_error']) {
+  for (const t of ['exhausted', 'no_hypothesis_checked', 'deadline_exceeded', 'search_cap_exceeded', 'input_too_short', 'internal_error']) {
+    assert.notEqual(L.terminationText(t), t, `no sentence for ${t}`);
     assert.ok(!/no valid layout|not an image|cannot be (read|opened)/i.test(L.terminationText(t)), t);
   }
 });

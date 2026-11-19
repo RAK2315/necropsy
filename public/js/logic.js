@@ -237,6 +237,7 @@ export function cardsHTML(payload) {
 export function terminationText(t) {
   return {
     exhausted: 'Every hypothesis within the search axes was tried and none closed.',
+    no_hypothesis_checked: 'No hypothesis reached the closure gate.',
     deadline_exceeded: 'The search stopped at the 5 second deadline.',
     search_cap_exceeded: 'The search stopped at the 10,000 closure-check cap.',
     input_too_short: 'The file is shorter than 3 bytes.',
