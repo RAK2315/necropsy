@@ -68,7 +68,7 @@ Rules for every task:
       - `checks` never exceeds the cap.
     - _Requirements: 3.3, 5.1, 5.3, 10.1_
 
-- [ ] 2. Closure gate
+- [x] 2. Closure gate
   - [x] 2.1 Implement `necropsy/engine/trailers.py`
     - `TrailerEntry`, `TRAILER_REGISTRY` and `match_trailer`, exactly as written in design.md "Trailer Registry".
     - The registry has one entry, `pcx_palette_256` (length 769, marker `0x0C`, applies to `pcx` and `generic`).
@@ -107,16 +107,17 @@ Rules for every task:
       - A trailing marker returns `underrun`.
       - Leftover input returns `unconsumed`.
       - `consumed_to` equals `end` on `ok`.
+      - `consumed_to` on every non-`ok` status equals the value Requirement 1.11 states for that status.
     - `check_closure` reasons: one test for each of `degenerate_hypothesis`, `field_out_of_bounds`, `arithmetic_mismatch` (with a signed discrepancy), `decoder_overrun`, `decoder_underrun`, `decoder_unconsumed` and `unsupported_encoding`.
     - Trailers:
       - The PCX palette trailer is applied for origins `pcx` and `generic` and not for `tga`.
       - A test registry with an extra entry changes `match_trailer` results without any edit to `closure.py`.
     - Regression for the leftover-input defect, on the mystery_b bytes:
-      - `rle_pcx` at 7×7, header 128, does not close.
-      - At header 128, 8 bpp and alignment 1, the only closing `(width, height)` pairs with both values in 1..256 are the seven area-64 shapes 1×64, 2×32, 4×16, 8×8, 16×4, 32×2 and 64×1.
+      - `rle_pcx` at 7×7, header 128, origin `pcx`, does not close, with reason `decoder_unconsumed` (Requirement 7.2).
+      - With `encoding = "rle_pcx"` and origin `"pcx"`, at header 128, 8 bpp and alignment 1, the only closing `(width, height)` pairs with both values in 1..256 are the seven area-64 shapes 1×64, 2×32, 4×16, 8×8, 16×4, 32×2 and 64×1. The encoding and origin are fixed because the PCX palette trailer then applies and the RLE region [128, 186) decodes to 64 bytes. Under `"none"` the region is 58 bytes, so the closing shapes would have area 58, not 64.
     - _Requirements: 1.1–1.14_
 
-  - [~] 2.5 Write property tests in `tests/test_closure.py`
+  - [x] 2.5 Write property tests in `tests/test_closure.py`
     - **Property 6: RLE decoder is bounded and typed**
     - **Validates: Requirements 1.9, 1.10, 1.11, 6.4**
     - Generators:
@@ -133,7 +134,7 @@ Rules for every task:
     - Use `@settings(max_examples=100)`.
     - Tag: `Feature: structure-inference-engine, Property 6: RLE decoder is bounded and typed`
 
-- [ ] 3. Probes
+- [x] 3. Probes
   - [x] 3.1 Implement the safe read helper, `ProbeOutcome` and the PCX probe in `necropsy/engine/probes.py`
     - `read(data, name, offset, fmt) -> FieldRecord | None` never raises. It returns `None` when `offset < 0` or `offset + struct.calcsize(fmt) > len(data)`.
     - `ProbeOutcome(seed, rejections)`.
@@ -159,7 +160,7 @@ Rules for every task:
     - On parse failure, return a seed with `width = 0`, `height = 0`, `header_size = 3`, and `probe_precondition_failed`.
     - _Requirements: 2.2, 2.3, 2.4, 2.7_
 
-  - [~] 3.4 Implement the TIFF probe in `necropsy/engine/probes.py`
+  - [x] 3.4 Implement the TIFF probe in `necropsy/engine/probes.py`
     - Follow Requirement 2.8 and the design.md TIFF walk.
     - Honour the byte-order mark: every multi-byte read uses `<` for `II` and `>` for `MM`.
     - Read SHORT values as `oH` at entry + 8 and LONG values as `oI` at entry + 8.
@@ -175,7 +176,7 @@ Rules for every task:
     - Export `PROBES = (("pcx", probe_pcx), ("tga", probe_tga), ("pbm", probe_pbm), ("tiff", probe_tiff))`.
     - _Requirements: 2.2, 2.3, 2.4, 2.8_
 
-  - [~] 3.5 Write unit tests in `tests/test_probes.py`
+  - [x] 3.5 Write unit tests in `tests/test_probes.py`
     - PCX:
       - mystery_b gives seed 7×7, `encoding = "rle_pcx"`, bounds `(0, 0, 7, 7)`.
       - mystery_i gives `encoding = "none"`.
@@ -200,7 +201,7 @@ Rules for every task:
     - Build crafted inputs in code, from documented layouts.
     - _Requirements: 2.1–2.8, 8.1, 8.2_
 
-  - [~] 3.6 Write never-raises property tests in `tests/test_probes.py`
+  - [x] 3.6 Write never-raises property tests in `tests/test_probes.py`
     - **Property: each probe never raises on arbitrary bytes**
     - **Validates: Requirements 2.3, 6.4, 6.7**
     - For each probe:
@@ -273,8 +274,8 @@ Rules for every task:
     - Use `@settings(max_examples=100, deadline=None)`.
     - Tag: `Feature: structure-inference-engine, Property 14: Coherence function is total`
 
-- [ ] 6. Generic Search
-  - [~] 6.1 Implement `necropsy/engine/generic.py`
+- [x] 6. Generic Search
+  - [x] 6.1 Implement `necropsy/engine/generic.py`
     - Implement `HEADER_LENGTHS = tuple(range(4, 257, 4))`, `WIDTH_HEIGHT_FORMATS`, `VALID_BIT_DEPTHS`, `GenericOutcome(found, stop)` and `generic_search(data, budget, on_reject)`, exactly as written in design.md "Generic Search".
     - Group reads by value.
     - Width plus bit depth fixes the height.
@@ -286,7 +287,7 @@ Rules for every task:
     - The function never raises.
     - _Requirements: 4.1–4.9, 5.1, 5.3_
 
-  - [~] 6.2 Write unit tests in `tests/test_generic.py`
+  - [x] 6.2 Write unit tests in `tests/test_generic.py`
     - Use a `Budget` with a far deadline.
     - mystery_d:
       - The found set includes key `(8, 8, 8, 40, 1, "none", None)`.
@@ -304,7 +305,7 @@ Rules for every task:
     - `HEADER_LENGTHS` runs from 4 to 256 in steps of 4.
     - _Requirements: 4.2–4.9, 7.4, 7.6, 7.7_
 
-  - [~] 6.3 Write property tests in `tests/test_generic.py`
+  - [x] 6.3 Write property tests in `tests/test_generic.py`
     - **Property: Generic Search never raises and respects the cap**
     - **Validates: Requirements 4.8, 5.3, 6.4, 6.7**
     - Use `@given(st.binary(max_size=65536))` with a cap of 10,000.
@@ -317,7 +318,7 @@ Rules for every task:
     - Tag: `Feature: structure-inference-engine, Generic search never raises`
 
 - [ ] 7. Engine
-  - [~] 7.1 Implement the probe phase and candidate assembly in `necropsy/engine/engine.py`
+  - [x] 7.1 Implement the probe phase and candidate assembly in `necropsy/engine/engine.py`
     - `Engine(deadline_seconds=5.0, clock=time.monotonic)`.
     - `run()` creates one `Budget` and one ordered rejection list.
     - An input shorter than 3 bytes returns `FailureReport("input_too_short", ...)` with exactly one `input_too_short` entry, and runs no probe.
@@ -328,7 +329,7 @@ Rules for every task:
       - more than one gives `AmbiguousResult` with `AMBIGUITY_REASON` and `coherence_gap`, keeping discovery order.
     - _Requirements: 2.1, 2.9, 5.1, 5.8, 5.9, 5.11, 10.1–10.5, 11.1, 11.5, 11.6_
 
-  - [~] 7.2 Implement the revision phase in `necropsy/engine/engine.py`
+  - [x] 7.2 Implement the revision phase in `necropsy/engine/engine.py`
     - Follow the BFS in design.md "Revision phase".
     - The `seen` map starts with every seed key at depth 0.
     - Loop order is pinned (Requirement 3.2): hypotheses of the frontier are the outer loop, strategies in `STRATEGIES` order the inner loop. This defines the canonical path only.
@@ -340,7 +341,7 @@ Rules for every task:
     - If nothing closes by depth 3, return `FailureReport("exhausted")`. Never enter Generic Search afterwards.
     - _Requirements: 3.2–3.10, 5.9_
 
-  - [~] 7.3 Implement generic dispatch, termination and the never-raise wrapper in `necropsy/engine/engine.py`
+  - [x] 7.3 Implement generic dispatch, termination and the never-raise wrapper in `necropsy/engine/engine.py`
     - Run `generic_search` only when no probe matched.
     - `on_reject` appends `RejectionEntry(..., source="generic")`.
     - A stop reason anywhere returns `FailureReport(stop, rejections, budget.checks, len(data), partial_candidates)`.
@@ -378,6 +379,7 @@ Rules for every task:
       - the true key is in the candidate keys;
       - no assertion on order or rank.
     - For mystery_f, assert the equivalent-width-read condition in Requirement 7.6.
+    - For mystery_b, assert the rejection list contains the PCX seed's `decoder_unconsumed` rejection with source `pcx` (Requirement 7.2).
     - For mystery_h and mystery_i, assert the exact canonical `revision_path` and that `alternative_paths` contains the reversed-order path (Requirements 7.8, 7.9).
     - For every `RESOLVED` file, `candidate.decoded == make_samples.pixels(name)` exactly.
     - No corpus file is `FAILED`.
@@ -577,6 +579,7 @@ Rules for every task:
 
 - The expected corpus values and candidate counts (18, 8 and 8) come from a reference model of these exact rules, recorded in design.md. A mismatch means the implementation and the spec disagree; report it, do not tune either.
 - Coherence never affects the outcome. Property 8 enforces this.
+- Tasks 10.1 and 10.2 (pretty printer) run in the last waves, immediately before task 12, so they block nothing. They stay in this spec because task 11.3 references the closure line from Requirement 8.4. See the requirements Decision Record item 11.
 - `header_length_scan`, `endianness_flip` and `field_width_variants` were deliberately removed from revision. See the requirements Decision Record. Do not reintroduce them.
 
 ## Task Dependency Graph
@@ -592,15 +595,17 @@ Rules for every task:
     { "id": 5, "tasks": ["2.5", "3.4", "6.1"] },
     { "id": 6, "tasks": ["3.5", "6.2", "7.1"] },
     { "id": 7, "tasks": ["3.6", "6.3", "7.2"] },
-    { "id": 8, "tasks": ["7.3", "10.1"] },
-    { "id": 9, "tasks": ["7.4", "8.2", "10.2", "11.1"] },
+    { "id": 8, "tasks": ["7.3"] },
+    { "id": 9, "tasks": ["7.4", "8.2", "11.1"] },
     { "id": 10, "tasks": ["9.1", "11.2"] },
     { "id": 11, "tasks": ["9.2", "11.3"] },
     { "id": 12, "tasks": ["9.3", "11.4"] },
     { "id": 13, "tasks": ["9.4", "11.5"] },
     { "id": 14, "tasks": ["11.7", "11.8"] },
     { "id": 15, "tasks": ["11.9"] },
-    { "id": 16, "tasks": ["12"] }
+    { "id": 16, "tasks": ["10.1"] },
+    { "id": 17, "tasks": ["10.2"] },
+    { "id": 18, "tasks": ["12"] }
   ]
 }
 ```

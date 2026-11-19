@@ -59,6 +59,7 @@ These decisions are final. Each is recorded with its reason so later work does n
 8. **Row coherence is demoted to a reported heuristic.** Measured on the corpus, it ranked a wrong candidate first on mystery_d and mystery_g, and separated mystery_f's true answer from the runner-up by only 8.8%. It has three known failure modes, listed in Requirement 11. It never gates, promotes or orders.
 9. **Field width that the bytes cannot distinguish is reported, not decided.** `<H`, `<I` and `<i` over the same bytes with zero high bytes are the same read. The engine lists every equivalent read.
 10. **When two routes reach the same answer, both are reported.** With the revision loop order unpinned, hypotheses-outer gives `["inclusive_bounds", "row_padding_variants"]` for mystery_h and strategies-outer gives `["row_padding_variants", "inclusive_bounds"]`. Both reach the same hypothesis, deduplication kept whichever came first, and the corpus asserted one exact path, so list order was deciding the reported path. The loop order is now pinned and defines the canonical path and nothing else. Every other same-depth path to the same hypothesis is recorded in `alternative_paths`. Reporting only one of two routes to the same answer is the same failure as promoting one of two closing candidates: the engine states what it found.
+11. **The pretty printer stays in this spec.** Task 11.3 specifies that the emitted `design.md` contains the closure arithmetic line from Requirement 8.4, so moving Requirements 8.4 to 8.7 to another spec would break spec emission's reference. The pretty printer is a text renderer, not a web UI; the UI spec needs its own rendering either way.
 
 ## Requirements
 
@@ -78,7 +79,13 @@ These decisions are final. Each is recorded with its reason so later work does n
 8. WHEN `encoding == "rle_pcx"`, THE Engine SHALL run the PCX RLE decoder over `[header_size, data_end)` with `max_output_bytes = expected_decoded_bytes`, and accept the hypothesis only when the decoder reports `ok`.
 9. THE PCX RLE decoder SHALL treat a byte `b ≥ 0xC0` as a run of `b & 0x3F` copies of the next byte, and any other byte as one literal byte.
 10. THE PCX RLE decoder SHALL check, inside its loop and before writing, whether the next run or literal would exceed `max_output_bytes`, and return `overrun` without writing it. The decoder's output SHALL never exceed `max_output_bytes`.
-11. THE PCX RLE decoder SHALL return `underrun` when the region ends before `max_output_bytes` bytes are produced, including when a run marker is the last byte of the region; `unconsumed` when the output is complete but region bytes remain; and `ok` only when the output length equals `max_output_bytes` and the decoder stopped exactly at `data_end`.
+11. THE PCX RLE decoder SHALL return `underrun` when the region ends before `max_output_bytes` bytes are produced, including when a run marker is the last byte of the region; `unconsumed` when the output is complete but region bytes remain; and `ok` only when the output length equals `max_output_bytes` and the decoder stopped exactly at `data_end`. For every result, `consumed_to` SHALL be the index of the first byte not consumed, which is the loop position when the decoder stopped:
+    - `ok`: `data_end`;
+    - `overrun`: the index after the value byte of the run that would overflow;
+    - `underrun` because a run marker is the last byte of the region: `data_end`;
+    - `underrun` because the region ended before the output was full: `data_end`;
+    - `unconsumed`: the index of the first leftover byte;
+    - out-of-range `start` or `end`, or negative `max_output_bytes`: `start`.
 12. THE Engine SHALL map decoder results `overrun`, `underrun` and `unconsumed` to rejection reasons `decoder_overrun`, `decoder_underrun` and `decoder_unconsumed`.
 13. WHEN `encoding` is any value other than `"none"` or `"rle_pcx"`, THE Engine SHALL reject the hypothesis with reason `unsupported_encoding`.
 14. THE closure gate SHALL be binary. No score of any kind SHALL admit a hypothesis that fails closure or reject one that passes.
@@ -273,7 +280,8 @@ These decisions are final. Each is recorded with its reason so later work does n
    - `width = 8`, `height = 8`, `bit_depth = 8`, `header_size = 128`;
    - `encoding = "rle_pcx"` and data region `[128, 186)`;
    - trailer `pcx_palette_256`;
-   - `revision_path = ["inclusive_bounds"]`.
+   - `revision_path = ["inclusive_bounds"]`;
+   - the PCX probe's seed (7×7, `encoding = "rle_pcx"`, header 128) rejected with reason `decoder_unconsumed` and source `pcx`. This value was measured in task 2.3: the stream decodes 49 bytes before the region ends.
 3. WHEN given `spike/samples/mystery_c` (TGA, 786 bytes), THE Engine SHALL return `RESOLVED` from the TGA probe with `width = 16`, `height = 16`, `bit_depth = 24`, `header_size = 18`, `row_stride = 48` and `revision_path = []`.
 4. WHEN given `spike/samples/mystery_d` (headerless DIB body, 104 bytes), THE Engine SHALL return `UNRESOLVED_AMBIGUITY` with stage `generic`, and its candidates SHALL include the hypothesis `width = 8`, `height = 8`, `bit_depth = 8`, `header_size = 40`, `encoding = "none"`. The test SHALL NOT assert candidate order.
 5. WHEN given `spike/samples/mystery_e` (TIFF, big-endian `"MM"`, 150 bytes), THE Engine SHALL return `RESOLVED` from the TIFF probe with:
