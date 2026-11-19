@@ -96,3 +96,128 @@ def test_equivalent_reads_agree(data):
         first = {}
         for fr in cand.hypothesis.fields:
             assert first.setdefault(fr.name, fr.value[0]) == fr.value[0]
+
+
+# ---------------------------------------------------------------- Properties 7, 9, 10, 15
+import itertools
+from unittest.mock import patch
+
+from necropsy.engine.types import REASONS, TERMINATIONS, hypothesis_key
+import necropsy.engine.engine as engine_module
+import necropsy.engine.generic as generic_module
+
+REVISION_CORPUS = ("mystery_b", "mystery_h", "mystery_i")
+
+
+@_with_corpus_examples
+@settings(max_examples=100, deadline=None)
+@given(engine_inputs)
+def test_outcome_well_formed(data):
+    """Feature: structure-inference-engine, Property 7: Outcome well-formed
+
+    **Validates: Requirements 5.6, 5.7, 10.1, 10.2, 10.3**
+    """
+    result = Engine().run(data)
+    assert isinstance(result, RESULT_TYPES)
+    if isinstance(result, VerifiedHypothesis):
+        assert result.status == "RESOLVED"
+    elif isinstance(result, AmbiguousResult):
+        assert result.status == "UNRESOLVED_AMBIGUITY"
+        assert len(result.candidates) >= 2
+        keys = [hypothesis_key(c.hypothesis) for c in result.candidates]
+        assert len(set(keys)) == len(keys)
+    else:
+        assert result.status == "FAILED"
+        assert result.termination in TERMINATIONS
+    for rej in result.rejections:
+        assert rej.reason in REASONS
+
+
+def _keys(result):
+    return [hypothesis_key(c.hypothesis) for c in _candidates(result)]
+
+
+@_with_corpus_examples
+@settings(max_examples=100, deadline=None)
+@given(engine_inputs)
+def test_no_duplicate_hypotheses(data):
+    """Feature: structure-inference-engine, Property 9: No duplicate hypotheses
+
+    **Validates: Requirements 3.3**
+    """
+    seen = []
+
+    def spy(h, d, *args, **kwargs):
+        seen.append(hypothesis_key(h))
+        return check_closure(h, d, *args, **kwargs)
+
+    with patch.object(engine_module, "check_closure", spy), \
+            patch.object(generic_module, "check_closure", spy):
+        result = Engine().run(data)
+    keys = _keys(result)
+    assert len(set(keys)) == len(keys)
+    assert len(set(seen)) == len(seen)
+
+
+@_with_corpus_examples
+@settings(max_examples=100, deadline=None)
+@given(engine_inputs)
+def test_deterministic(data):
+    """Feature: structure-inference-engine, Property 10: Deterministic
+
+    **Validates: Requirements 3.6**
+    """
+    assert Engine(deadline_seconds=3600.0).run(data) == Engine(deadline_seconds=3600.0).run(data)
+
+
+def _path_sets(result):
+    return [
+        {c.hypothesis.revision_path} | set(c.alternative_paths)
+        for c in _candidates(result)
+    ]
+
+
+def _check_permutations(data):
+    base = Engine().run(data)
+    if getattr(base, "stage", None) != "revision":
+        return
+    for perm in itertools.permutations(engine_module.STRATEGIES):
+        with patch.object(engine_module, "STRATEGIES", perm):
+            other = Engine().run(data)
+        assert type(other) is type(base)
+        assert other.status == base.status
+        assert _keys(other) == _keys(base)
+        assert _path_sets(other) == _path_sets(base)
+
+
+@_with_corpus_examples
+@settings(max_examples=100, deadline=None)
+@given(engine_inputs)
+def test_alternative_paths_well_formed(data):
+    """Feature: structure-inference-engine, Property 15: Alternative paths are well-formed
+
+    **Validates: Requirements 3.6, 3.9, 3.10**
+    """
+    result = Engine().run(data)
+    stage = getattr(result, "stage", None)
+    for cand in _candidates(result):
+        path = cand.hypothesis.revision_path
+        alts = cand.alternative_paths
+        if stage in ("probe", "generic"):
+            assert alts == ()
+        assert len(set(alts)) == len(alts)
+        for alt in alts:
+            assert len(alt) == len(path)
+            assert alt != path
+    _check_permutations(data)
+
+
+def test_strategy_permutations_on_revision_corpus():
+    """Feature: structure-inference-engine, Property 15: Alternative paths are well-formed
+
+    **Validates: Requirements 3.6, 3.9, 3.10**
+    """
+    for name in REVISION_CORPUS:
+        data = corpus_bytes(name)
+        assert Engine().run(data).stage == "revision", name
+        _check_permutations(data)
