@@ -251,3 +251,30 @@ Note: commit `d661837` still contained the old `api/index.py` (its deletion land
 Cause: the file is 9,260 bytes = 18 header + 9,216 pixel bytes + 26 trailing bytes. The 26 bytes are the TGA 2.0 footer Pillow always writes (4-byte extension offset, 4-byte developer-area offset, `TRUEVISION-XFILE.` and a NUL). The engine's trailer registry holds only `pcx_palette_256`, so the data region runs 26 bytes past `row_stride x height`. The engine's own design notes that a TGA footer is one new registry entry; none exists yet.
 
 Per Requirement 11.15 nothing was changed: not the engine, the sample, the 64 x 48 size, the `save` arguments or the expectations. The test that states the expected outcome (`RESOLVED`, upright, flip note) is committed as a strict xfail in `tests/ui/test_external.py`, plus a test that pins the finding. Decision needed from the user: add a TGA 2.0 footer entry to the engine's Trailer Registry (an engine change, which is a separate task and needs the engine spec updated), or accept that real TGA 2.0 files fail.
+| 2026-11-19 13:54:24Z | PostFileSave | `necropsy/emit/layout.py` | `53973dc` |
+| 2026-11-19 13:54:26Z | PostFileSave | `tests/support/reference_reader.py` | `53973dc` |
+| 2026-11-19 13:54:27Z | PostFileSave | `necropsy/emit/render.py` | `53973dc` |
+| 2026-11-19 13:55:19Z | PostFileCreate | `_tmp_dbg.py` | `53973dc` |
+| 2026-11-19 13:55:20Z | PostFileSave | `_tmp_dbg.py` | `53973dc` |
+| 2026-11-19 13:55:32Z | PostFileSave | `_tmp_dbg.py` | `53973dc` |
+| 2026-11-19 13:58:36Z | PostFileSave | `public/js/pane.js` | `0707a07` |
+| 2026-11-19 14:11:21Z | PostFileCreate | `_baseline_tmp.py` | `4d84581` |
+| 2026-11-19 14:11:21Z | PostFileSave | `_baseline_tmp.py` | `4d84581` |
+| 2026-11-19 14:11:32Z | PostFileSave | `necropsy/engine/closure.py` | `4d84581` |
+| 2026-11-19 14:11:32Z | PostFileSave | `necropsy/engine/closure.py` | `4d84581` |
+| 2026-11-19 14:11:55Z | PostFileSave | `tests/test_closure.py` | `4d84581` |
+| 2026-11-19 14:24:25Z | PostFileCreate | `C:/Users/rehtr/AppData/Local/Temp/necropsy_verify.py` | `8bcf308` |
+| 2026-11-19 14:24:25Z | PostFileSave | `C:/Users/rehtr/AppData/Local/Temp/necropsy_verify.py` | `8bcf308` |
+| 2026-11-19 14:39:29Z | PostFileCreate | `_measure_tmp.py` | `b2d0a69` |
+| 2026-11-19 14:39:29Z | PostFileSave | `_measure_tmp.py` | `b2d0a69` |
+| 2026-11-19 14:39:36Z | PostFileCreate | `_baseline_tmp.py` | `b2d0a69` |
+| 2026-11-19 14:39:36Z | PostFileSave | `_baseline_tmp.py` | `b2d0a69` |
+| 2026-11-19 14:39:45Z | PostFileSave | `necropsy/engine/types.py` | `0b3fcc5` |
+| 2026-11-19 14:39:46Z | PostFileSave | `necropsy/engine/engine.py` | `0b3fcc5` |
+| 2026-11-19 14:39:48Z | PostFileSave | `necropsy/engine/engine.py` | `0b3fcc5` |
+| 2026-11-19 14:40:13Z | PostFileSave | `necropsy/emit/render.py` | `0b3fcc5` |
+| 2026-11-19 14:40:20Z | PostFileSave | `tests/test_engine.py` | `0b3fcc5` |
+| 2026-11-19 14:42:18Z | PostFileCreate | `C:/Users/rehtr/AppData/Local/Temp/t153.py` | `d268f32` |
+| 2026-11-19 14:42:19Z | PostFileSave | `C:/Users/rehtr/AppData/Local/Temp/t153.py` | `d268f32` |
+| 2026-11-19 14:43:48Z | PostFileCreate | `build/t153.py` | `d268f32` |
+| 2026-11-19 14:43:48Z | PostFileSave | `build/t153.py` | `d268f32` |

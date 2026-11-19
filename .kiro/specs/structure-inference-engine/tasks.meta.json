@@ -1002,6 +1002,16 @@
         "executionId": "9c563a54-12f2-43fe-80ac-ff0bbd3ecde8",
         "chatSessionId": "sess_adc10a50-7555-4556-944a-4698b367e060",
         "timestamp": 1795093593600
+      },
+      {
+        "executionId": "1df27d9f-0c24-41c8-9dd7-d970f90b0b8c",
+        "chatSessionId": "sess_adc10a50-7555-4556-944a-4698b367e060",
+        "timestamp": 1795098069283
+      },
+      {
+        "executionId": "1df27d9f-0c24-41c8-9dd7-d970f90b0b8c",
+        "chatSessionId": "sess_adc10a50-7555-4556-944a-4698b367e060",
+        "timestamp": 1795098333978
       }
     ],
     "1. Scaffold, types and budget": [
@@ -1079,6 +1089,185 @@
         "executionId": "4a8aaca4-bbdd-426e-86c4-b14e89ec3f57",
         "chatSessionId": "sess_adc10a50-7555-4556-944a-4698b367e060",
         "timestamp": 1795087303037
+      }
+    ],
+    "13.1 Generalise `TrailerEntry` and add `tga2_footer` in `necropsy/engine/trailers.py`": [
+      {
+        "executionId": "52c84413-c025-484a-91b1-e28dfb84d80e",
+        "chatSessionId": "sess_adc10a50-7555-4556-944a-4698b367e060",
+        "timestamp": 1795096244400
+      },
+      {
+        "executionId": "52c84413-c025-484a-91b1-e28dfb84d80e",
+        "chatSessionId": "sess_adc10a50-7555-4556-944a-4698b367e060",
+        "timestamp": 1795096254752
+      },
+      {
+        "executionId": "52c84413-c025-484a-91b1-e28dfb84d80e",
+        "chatSessionId": "sess_adc10a50-7555-4556-944a-4698b367e060",
+        "timestamp": 1795096424164
+      }
+    ],
+    "13.2 Update spec emission for signature trailers": [
+      {
+        "executionId": "52c84413-c025-484a-91b1-e28dfb84d80e",
+        "chatSessionId": "sess_adc10a50-7555-4556-944a-4698b367e060",
+        "timestamp": 1795096244613
+      },
+      {
+        "executionId": "52c84413-c025-484a-91b1-e28dfb84d80e",
+        "chatSessionId": "sess_adc10a50-7555-4556-944a-4698b367e060",
+        "timestamp": 1795096424238
+      },
+      {
+        "executionId": "52c84413-c025-484a-91b1-e28dfb84d80e",
+        "chatSessionId": "sess_adc10a50-7555-4556-944a-4698b367e060",
+        "timestamp": 1795096630749
+      }
+    ],
+    "13.3 Write tests for the footer": [
+      {
+        "executionId": "52c84413-c025-484a-91b1-e28dfb84d80e",
+        "chatSessionId": "sess_adc10a50-7555-4556-944a-4698b367e060",
+        "timestamp": 1795096245455
+      },
+      {
+        "executionId": "52c84413-c025-484a-91b1-e28dfb84d80e",
+        "chatSessionId": "sess_adc10a50-7555-4556-944a-4698b367e060",
+        "timestamp": 1795096631040
+      },
+      {
+        "executionId": "1df27d9f-0c24-41c8-9dd7-d970f90b0b8c",
+        "chatSessionId": "sess_adc10a50-7555-4556-944a-4698b367e060",
+        "timestamp": 1795097408740
+      },
+      {
+        "executionId": "1df27d9f-0c24-41c8-9dd7-d970f90b0b8c",
+        "chatSessionId": "sess_adc10a50-7555-4556-944a-4698b367e060",
+        "timestamp": 1795097886589
+      },
+      {
+        "executionId": "1df27d9f-0c24-41c8-9dd7-d970f90b0b8c",
+        "chatSessionId": "sess_adc10a50-7555-4556-944a-4698b367e060",
+        "timestamp": 1795098055699
+      }
+    ],
+    "13.4 Update `tests/ui/test_external.py` for the resolved finding": [
+      {
+        "executionId": "52c84413-c025-484a-91b1-e28dfb84d80e",
+        "chatSessionId": "sess_adc10a50-7555-4556-944a-4698b367e060",
+        "timestamp": 1795096245682
+      },
+      {
+        "executionId": "1df27d9f-0c24-41c8-9dd7-d970f90b0b8c",
+        "chatSessionId": "sess_adc10a50-7555-4556-944a-4698b367e060",
+        "timestamp": 1795098068594
+      }
+    ],
+    "14.1 Reject header and data overlap in `check_closure`": [
+      {
+        "executionId": "1df27d9f-0c24-41c8-9dd7-d970f90b0b8c",
+        "chatSessionId": "sess_adc10a50-7555-4556-944a-4698b367e060",
+        "timestamp": 1795097409044
+      },
+      {
+        "executionId": "1df27d9f-0c24-41c8-9dd7-d970f90b0b8c",
+        "chatSessionId": "sess_adc10a50-7555-4556-944a-4698b367e060",
+        "timestamp": 1795097418587
+      },
+      {
+        "executionId": "1df27d9f-0c24-41c8-9dd7-d970f90b0b8c",
+        "chatSessionId": "sess_adc10a50-7555-4556-944a-4698b367e060",
+        "timestamp": 1795097591712
+      }
+    ],
+    "14.2 Emit rule-breaking probe results as file layouts": [
+      {
+        "executionId": "1df27d9f-0c24-41c8-9dd7-d970f90b0b8c",
+        "chatSessionId": "sess_adc10a50-7555-4556-944a-4698b367e060",
+        "timestamp": 1795097409225
+      },
+      {
+        "executionId": "1df27d9f-0c24-41c8-9dd7-d970f90b0b8c",
+        "chatSessionId": "sess_adc10a50-7555-4556-944a-4698b367e060",
+        "timestamp": 1795097608455
+      },
+      {
+        "executionId": "1df27d9f-0c24-41c8-9dd7-d970f90b0b8c",
+        "chatSessionId": "sess_adc10a50-7555-4556-944a-4698b367e060",
+        "timestamp": 1795097886053
+      }
+    ],
+    "14. Header overlap rule and file layouts for rule-breaking files": [
+      {
+        "executionId": "1df27d9f-0c24-41c8-9dd7-d970f90b0b8c",
+        "chatSessionId": "sess_adc10a50-7555-4556-944a-4698b367e060",
+        "timestamp": 1795097886098
+      }
+    ],
+    "13. TGA 2.0 footer in the Trailer Registry": [
+      {
+        "executionId": "1df27d9f-0c24-41c8-9dd7-d970f90b0b8c",
+        "chatSessionId": "sess_adc10a50-7555-4556-944a-4698b367e060",
+        "timestamp": 1795098069075
+      }
+    ],
+    "15.1 Verify and correct the acceptance-suite text in `necropsy/emit/render.py`": [
+      {
+        "executionId": "8a60903e-bf38-4333-9285-669faa7aa76f",
+        "chatSessionId": "sess_adc10a50-7555-4556-944a-4698b367e060",
+        "timestamp": 1795099114868
+      },
+      {
+        "executionId": "8a60903e-bf38-4333-9285-669faa7aa76f",
+        "chatSessionId": "sess_adc10a50-7555-4556-944a-4698b367e060",
+        "timestamp": 1795099116066
+      },
+      {
+        "executionId": "8a60903e-bf38-4333-9285-669faa7aa76f",
+        "chatSessionId": "sess_adc10a50-7555-4556-944a-4698b367e060",
+        "timestamp": 1795099300637
+      }
+    ],
+    "15.2 Add termination `no_hypothesis_checked`": [
+      {
+        "executionId": "8a60903e-bf38-4333-9285-669faa7aa76f",
+        "chatSessionId": "sess_adc10a50-7555-4556-944a-4698b367e060",
+        "timestamp": 1795099114911
+      },
+      {
+        "executionId": "8a60903e-bf38-4333-9285-669faa7aa76f",
+        "chatSessionId": "sess_adc10a50-7555-4556-944a-4698b367e060",
+        "timestamp": 1795099116263
+      },
+      {
+        "executionId": "8a60903e-bf38-4333-9285-669faa7aa76f",
+        "chatSessionId": "sess_adc10a50-7555-4556-944a-4698b367e060",
+        "timestamp": 1795099299733
+      }
+    ],
+    "15.3 Re-time the three 65,536-byte inputs": [
+      {
+        "executionId": "8a60903e-bf38-4333-9285-669faa7aa76f",
+        "chatSessionId": "sess_adc10a50-7555-4556-944a-4698b367e060",
+        "timestamp": 1795099114949
+      },
+      {
+        "executionId": "8a60903e-bf38-4333-9285-669faa7aa76f",
+        "chatSessionId": "sess_adc10a50-7555-4556-944a-4698b367e060",
+        "timestamp": 1795099301226
+      },
+      {
+        "executionId": "8a60903e-bf38-4333-9285-669faa7aa76f",
+        "chatSessionId": "sess_adc10a50-7555-4556-944a-4698b367e060",
+        "timestamp": 1795099460241
+      }
+    ],
+    "15. Truthful emitted-suite text, a zero-check termination, and timing": [
+      {
+        "executionId": "8a60903e-bf38-4333-9285-669faa7aa76f",
+        "chatSessionId": "sess_adc10a50-7555-4556-944a-4698b367e060",
+        "timestamp": 1795099460302
       }
     ]
   }

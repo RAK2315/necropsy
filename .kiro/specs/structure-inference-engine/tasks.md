@@ -614,8 +614,8 @@ Rules for every task:
     - Add tests to `tests/test_emit.py` from Requirement 9.20: a crafted TIFF whose probe records `probe_precondition_failed` and which still resolves emits kind `file`, states it describes one file only, and the reference reader reproduces it from the emitted `requirements.md` alone. mystery_e still emits kind `format`.
     - _Requirements: 9.20, 9.16_
 
-- [ ] 15. Truthful emitted-suite text, a zero-check termination, and timing
-  - [-] 15.1 Verify and correct the acceptance-suite text in `necropsy/emit/render.py`
+- [x] 15. Truthful emitted-suite text, a zero-check termination, and timing
+  - [x] 15.1 Verify and correct the acceptance-suite text in `necropsy/emit/render.py`
     - Print verbatim the text `_acceptance_line` emits for a single result (mystery_e) and an ambiguous one (mystery_d).
     - Measure: run plain `python -m pytest <folder> -q` in an emitted folder with nothing added, and again with the reference parser module beside it. Record both outcomes exactly.
     - Where the emitted text claims anything the measurement contradicts, fix the text, not the measurement.
@@ -627,7 +627,7 @@ Rules for every task:
     - Re-run the nine `mystery_*` files and `external_b` against a recorded baseline. If any result changes, stop and report.
     - _Requirements: 5.7, 5.12, 4.8_
 
-  - [~] 15.3 Re-time the three 65,536-byte inputs
+  - [x] 15.3 Re-time the three 65,536-byte inputs
     - Time them once with nothing else running and report against design.md "Measured Performance". Do not optimise.
     - _Requirements: 5.4_
 
