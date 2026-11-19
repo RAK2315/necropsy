@@ -7,6 +7,7 @@ Build the web layer over the finished engine. Order: skeleton and early deploy (
 Do not start task 1 until the user confirms that the engine amendments (including the `image_descriptor` `FieldRecord` at offset `0x11` of a TGA seed) are committed.
 
 Rules for every task:
+- Deploy only with `tools/deploy.ps1`. Its first step commits `docs/KIRO-LOG.md` (the usage hook dirties it every session); it then refuses any other uncommitted change and deploys a clean clone of HEAD to `necropsy`, never `necropsy-coldtest`.
 - Do not modify anything under `necropsy/`. If the engine's interface differs from its `design.md`, stop and report.
 - Commit after every completed task.
 - Shell is Windows PowerShell 5.1: `;` between statements, never `&&`. Run tests with `python -m pytest tests/ui -q`.
