@@ -1,0 +1,89 @@
+// Emitted spec panel (Requirement 12). Shows the engine's emitted files as text and downloads them as a ZIP.
+
+export const FRAMING = 'NECROPSY was built with spec-driven development, and it produces spec-driven development.';
+
+function el(tag, cls, text) {
+  const e = document.createElement(tag);
+  if (cls) e.className = cls;
+  if (text !== undefined) e.textContent = text;
+  return e;
+}
+
+async function download(bytes, slug, button, status) {
+  button.disabled = true;
+  status.textContent = 'Preparing…';
+  try {
+    // The server holds nothing, so the browser sends the same bytes again and the server emits again.
+    const r = await fetch('/api/spec.zip', { method: 'POST', body: bytes, headers: { 'Content-Type': 'application/octet-stream' } });
+    if (!r.ok) throw new Error(String(r.status));
+    const url = URL.createObjectURL(await r.blob());
+    const a = el('a');
+    a.href = url;
+    a.download = `${slug}.zip`;
+    document.body.append(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 10000);
+    status.textContent = `Downloaded ${slug}.zip`;
+  } catch (e) {
+    status.textContent = 'The download failed. Try again.';
+  } finally {
+    button.disabled = false;
+  }
+}
+
+/** Build the panel for one payload. bytes are the file the user examined. */
+export function specPanel(payload, bytes) {
+  const root = el('section', 'spec');
+  root.setAttribute('aria-label', 'Emitted Kiro spec');
+  root.append(el('p', 'spec-framing', FRAMING));
+  const spec = payload.spec || {};
+  if (spec.error) {
+    root.append(el('p', 'spec-error mono', spec.error),
+      el('p', 'spec-sub', 'A spec is emitted only for a RESOLVED or UNRESOLVED_AMBIGUITY result.'));
+    return root;
+  }
+  const head = el('div', 'spec-head');
+  const folder = el('span', 'spec-folder mono', `${spec.slug}/`);
+  const button = el('button', 'quiet', 'Download spec folder (.zip)');
+  button.type = 'button';
+  const status = el('span', 'spec-status');
+  status.setAttribute('role', 'status');
+  button.addEventListener('click', () => download(bytes, spec.slug, button, status));
+  head.append(folder, button, status);
+  root.append(head);
+
+  if (!spec.files) {
+    root.append(el('p', 'spec-sub', 'The emitted files are too large to show here. Download the folder to read them.'));
+    return root;
+  }
+  const names = Object.keys(spec.files);
+  const tabs = el('div', 'spec-tabs');
+  tabs.setAttribute('role', 'tablist');
+  const body = el('pre', 'spec-text mono');
+  body.tabIndex = 0;
+  body.setAttribute('role', 'tabpanel');
+  const buttons = names.map((name, i) => {
+    const b = el('button', 'spec-tab mono', name);
+    b.type = 'button';
+    b.setAttribute('role', 'tab');
+    b.addEventListener('click', () => select(i));
+    b.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+        const j = (i + (e.key === 'ArrowRight' ? 1 : names.length - 1)) % names.length;
+        select(j);
+        buttons[j].focus();
+      }
+    });
+    return b;
+  });
+  function select(i) {
+    buttons.forEach((b, k) => { b.setAttribute('aria-selected', String(k === i)); b.tabIndex = k === i ? 0 : -1; });
+    body.textContent = spec.files[names[i]];          // plain text: no highlighting, cost linear in length
+    body.scrollTop = 0;
+  }
+  tabs.append(...buttons);
+  root.append(tabs, body);
+  select(0);
+  return root;
+}

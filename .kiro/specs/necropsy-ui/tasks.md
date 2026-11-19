@@ -77,7 +77,7 @@ Rules for every task:
   - Must be visible: a text file and an empty file each give a complete FAILED screen, distinct from the two success screens.
   - _Requirements: 10, 11.9_
 
-- [ ] 12. Spec panel and download
+- [x] 12. Spec panel and download
   - Tabs for the three files, folder name, framing sentence, download button using `/api/spec.zip`, the `EmitError` message for FAILED.
   - Must be visible: the emitted `requirements.md` for a recovered file within 20 seconds of the first screen; the downloaded zip opens with one folder and three files.
   - _Requirements: 12_

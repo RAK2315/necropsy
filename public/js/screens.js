@@ -5,6 +5,7 @@ import {
 } from './logic.js';
 import { createPane, fieldTable } from './pane.js';
 import { paint } from './image.js';
+import { specPanel } from './spec.js';
 
 function el(tag, cls, text) {
   const e = document.createElement(tag);
@@ -217,15 +218,39 @@ function failedPanel(payload) {
   return side;
 }
 
+/** Two views of one result: the examination and the emitted spec, one click apart. */
+function views(root, payload, bytes) {
+  const bar = el('nav', 'viewbar');
+  const exam = el('div', 'view-exam');
+  const spec = el('div', 'view-spec');
+  spec.hidden = true;
+  const b1 = el('button', 'vtab', 'Examination');
+  const b2 = el('button', 'vtab', 'Emitted spec');
+  for (const b of [b1, b2]) b.type = 'button';
+  let built = false;
+  const show = (s) => {
+    exam.hidden = s; spec.hidden = !s;
+    b1.setAttribute('aria-pressed', String(!s)); b2.setAttribute('aria-pressed', String(s));
+    if (s && !built) { spec.append(specPanel(payload, bytes)); built = true; }
+  };
+  b1.addEventListener('click', () => show(false));
+  b2.addEventListener('click', () => show(true));
+  bar.append(b1, b2);
+  root.append(bar, exam, spec);
+  show(false);
+  return exam;
+}
+
 export function renderResult(root, payload, bytes) {
   root.replaceChildren();
-  if (payload.status === 'UNRESOLVED_AMBIGUITY') { ambiguityScreen(root, payload, bytes); return; }
+  const target = views(root, payload, bytes);
+  if (payload.status === 'UNRESOLVED_AMBIGUITY') { ambiguityScreen(target, payload, bytes); return; }
   const pane = createPane(bytes);
   const wrap = el('div', 'exam');
   const left = el('div', 'exam-left');
   left.append(pane.root);
   wrap.append(left);
-  root.append(wrap);
+  target.append(wrap);
   if (payload.status === 'RESOLVED') {
     const c = payload.candidates[0];
     const records = pane.show({ cands: [c], regions: c });
