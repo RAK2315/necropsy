@@ -286,3 +286,89 @@ def test_mystery_b_only_area_64_shapes_close_decision_4():
     # Region [128, 186) decodes to 64 bytes; at 8 bpp, align 1, stride = w and
     # expected = w*h, so only w*h = 64 can close: divisors of 64.
     assert closing == {(1, 64), (2, 32), (4, 16), (8, 8), (16, 4), (32, 2), (64, 1)}
+
+
+# ------------------------------------------------------- property tests (2.5)
+from hypothesis import given, settings, strategies as st  # noqa: E402
+
+from necropsy.engine.closure import ClosureVerdict  # noqa: E402
+from necropsy.engine.types import REASONS  # noqa: E402
+
+RLE_STATUSES = {"ok", "overrun", "underrun", "unconsumed"}
+
+
+@st.composite
+def valid_rle_streams(draw):
+    """(stream, known_output_length). Run: 0xC0|n (n in 1..63) + value byte
+    (n bytes out, Req 1.9); literal: byte < 0xC0 (1 byte out)."""
+    items = draw(st.lists(
+        st.one_of(
+            st.tuples(st.integers(1, 63), st.integers(0, 255)).map(
+                lambda t: (bytes((0xC0 | t[0], t[1])), t[0])),
+            st.integers(0, 0xBF).map(lambda b: (bytes((b,)), 1)),
+        ),
+        max_size=200,
+    ))
+    return b"".join(s for s, _ in items), sum(n for _, n in items)
+
+
+# Feature: structure-inference-engine, Property 6: RLE decoder is bounded and typed
+# **Validates: Requirements 1.9, 1.10, 1.11, 6.4**
+@settings(max_examples=100, deadline=None)
+@given(
+    data=st.binary(max_size=65536),
+    start=st.integers(),
+    end=st.integers(),
+    max_out=st.integers(-10, 10**9),
+)
+def test_property_6_rle_decoder_bounded_and_typed_arbitrary(data, start, end, max_out):
+    r = rle_pcx_decode(data, start, end, max_out)
+    assert isinstance(r, RleResult)
+    assert r.status in RLE_STATUSES
+    if r.status == "ok":
+        assert len(r.data) == max_out
+        assert r.consumed_to == end
+    else:
+        assert r.data is None
+
+
+# Feature: structure-inference-engine, Property 6: RLE decoder is bounded and typed
+# **Validates: Requirements 1.9, 1.10, 1.11, 6.4**
+@settings(max_examples=100, deadline=None)
+@given(valid_rle_streams())
+def test_property_6_valid_streams_decode_to_known_length(stream_and_len):
+    stream, known = stream_and_len
+    r = rle_pcx_decode(stream, 0, len(stream), known)
+    assert r.status == "ok"
+    assert len(r.data) == known
+    assert r.consumed_to == len(stream)
+
+
+# Feature: structure-inference-engine, Property 6: RLE decoder is bounded and typed
+# **Validates: Requirements 1.9, 1.10, 1.11, 6.4**
+@settings(max_examples=100, deadline=None)
+@given(
+    data=st.binary(max_size=65536),
+    width=st.integers(),
+    height=st.integers(),
+    bit_depth=st.integers(),
+    header_size=st.integers(),
+    row_alignment=st.integers(),
+    encoding=st.sampled_from(["none", "rle_pcx", "rle_tga", "x"]),
+    data_end=st.one_of(st.none(), st.integers()),
+    probe_name=st.sampled_from(["pcx", "tga", "pbm", "tiff", "generic"]),
+)
+def test_property_6_check_closure_never_raises(
+    data, width, height, bit_depth, header_size, row_alignment,
+    encoding, data_end, probe_name,
+):
+    h = Hypothesis(
+        width=width, height=height, bit_depth=bit_depth, header_size=header_size,
+        row_alignment=row_alignment, encoding=encoding, data_end=data_end,
+        probe_name=probe_name,
+    )
+    v = check_closure(h, data)
+    assert isinstance(v, ClosureVerdict)
+    if not v.ok:
+        assert v.decoded is None
+        assert v.reason in REASONS
