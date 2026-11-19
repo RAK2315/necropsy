@@ -181,6 +181,7 @@ The static pane is built and working before any animation is added. A static pan
 8. WHEN the candidate has no trailer, THE pane SHALL NOT mark any byte after `data_end` as a trailer.
 9. WHEN the user hovers or focuses a labelled field in the pane, THE UI SHALL highlight the matching row in the field table. WHEN the user hovers or focuses a row in the field table, THE UI SHALL highlight its bytes in the pane and scroll them into view if they are out of view.
 10. THE accent colour SHALL be used only for recovered data: field bytes, the recovered image's frame and the closure line. No other interface element SHALL use it.
+   - ON the UNRESOLVED_AMBIGUITY screen, THE candidate image frames SHALL be neutral grey, not the accent. Reason: the accent marks what the file turned out to be, and on an ambiguous result nothing turned out to be anything. Accenting every candidate's frame would assert a recovery for each one while the screen's text says no choice was made.
 11. THE pane SHALL be operable from the keyboard: it is focusable, scrolls with the arrow and page keys, and every labelled field is reachable by Tab.
 
 ### Requirement 6: Field Table
