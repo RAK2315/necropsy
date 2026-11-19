@@ -1,5 +1,13 @@
-"""Unit tests for revision strategies (Requirement 3.1, 3.7)."""
+"""Unit tests for revision strategies (Requirement 3.1).
 
+Every expected value below is derived from requirements.md Requirement 3.1
+and Decision Record item 5, or from design.md "Data Models". None is read
+from the implementation.
+"""
+
+from dataclasses import replace
+
+import pytest
 from hypothesis import given, settings, strategies as st
 
 from necropsy.engine.strategies import (
@@ -8,63 +16,137 @@ from necropsy.engine.strategies import (
     row_padding_variants,
     rle_pcx,
 )
-from necropsy.engine.types import Hypothesis
+from necropsy.engine.types import FieldRecord, Hypothesis
 
 
-def _hyp(**kw):
-    base = dict(width=8, height=8, bit_depth=8, header_size=128, probe_name="pcx")
+def _pcx(**kw):
+    """A PCX-origin hypothesis with every field set to a non-default value,
+    so a strategy that disturbs an unrelated field is detected."""
+    base = dict(
+        width=5, height=6, bit_depth=8, header_size=128, row_alignment=1,
+        encoding="none", data_end=999,
+        fields=(FieldRecord("xmax", 0x08, "<H", (7,)),),
+        probe_name="pcx", bounds=(2, 3, 9, 12), revision_path=("earlier",),
+    )
     base.update(kw)
     return Hypothesis(**base)
 
 
+def _by_name(name):
+    return dict(STRATEGIES)[name]
+
+
+# ---- Req 3.1 / Decision Record item 5: exactly three strategies, in order
+
 def test_strategy_names_exact():
-    assert tuple(name for name, _ in STRATEGIES) == (
+    # Req 3.1 "exactly three revision strategies", listed order.
+    assert tuple(n for n, _ in STRATEGIES) == (
         "inclusive_bounds", "rle_pcx", "row_padding_variants")
 
 
-def test_inclusive_bounds_gives_8x8():
-    h = _hyp(width=7, height=7, bounds=(0, 0, 7, 7))
-    out = inclusive_bounds(h)
+# ---- Req 3.1 inclusive_bounds
+
+def test_inclusive_bounds_zero_origin_gives_8x8():
+    # Req 3.1 inclusive_bounds: width = xmax - xmin + 1 = 7 - 0 + 1 = 8,
+    # height = ymax - ymin + 1 = 7 - 0 + 1 = 8.
+    out = inclusive_bounds(_pcx(bounds=(0, 0, 7, 7)))
     assert len(out) == 1
     assert (out[0].width, out[0].height) == (8, 8)
 
 
+def test_inclusive_bounds_nonzero_origin():
+    # Req 3.1 inclusive_bounds with bounds (2, 3, 9, 12):
+    # width = 9 - 2 + 1 = 8; height = 12 - 3 + 1 = 10.
+    out = inclusive_bounds(_pcx())
+    assert len(out) == 1
+    assert (out[0].width, out[0].height) == (8, 10)
+
+
 def test_inclusive_bounds_without_bounds_is_empty():
-    assert inclusive_bounds(_hyp(bounds=None)) == ()
+    # Req 3.1 "applies only to hypotheses with bounds set".
+    assert inclusive_bounds(_pcx(bounds=None)) == ()
 
 
-def test_rle_pcx_from_none():
-    out = rle_pcx(_hyp(encoding="none"))
-    assert len(out) == 1 and out[0].encoding == "rle_pcx"
+# ---- Req 3.1 rle_pcx
+
+def test_rle_pcx_from_pcx_none_gives_rle_pcx():
+    # Req 3.1 rle_pcx: PCX origin, encoding "none" -> one candidate "rle_pcx".
+    out = rle_pcx(_pcx(encoding="none"))
+    assert len(out) == 1
+    assert out[0].encoding == "rle_pcx"
 
 
 def test_rle_pcx_not_for_tga():
-    assert rle_pcx(_hyp(probe_name="tga")) == ()
+    # Req 3.1 rle_pcx: "only to hypotheses from the PCX probe".
+    assert rle_pcx(_pcx(probe_name="tga", bounds=None)) == ()
 
 
-def test_rle_pcx_already_rle():
-    assert rle_pcx(_hyp(encoding="rle_pcx")) == ()
+def test_rle_pcx_already_rle_is_empty():
+    # Req 3.1 rle_pcx: only when encoding == "none".
+    assert rle_pcx(_pcx(encoding="rle_pcx")) == ()
 
 
-def test_row_padding_from_1():
-    out = row_padding_variants(_hyp(row_alignment=1))
-    assert [c.row_alignment for c in out] == [2, 4]
+# ---- Req 3.1 row_padding_variants
+
+def test_row_padding_from_1_gives_2_then_4():
+    # Req 3.1: one candidate per alignment in (2, 4) differing from current,
+    # in that order. Current 1 -> (2, 4).
+    out = row_padding_variants(_pcx(row_alignment=1))
+    assert tuple(c.row_alignment for c in out) == (2, 4)
 
 
-def test_row_padding_from_4():
-    out = row_padding_variants(_hyp(row_alignment=4))
-    assert [c.row_alignment for c in out] == [2]
+def test_row_padding_from_4_gives_2():
+    # Req 3.1: current 4 excluded -> (2,).
+    out = row_padding_variants(_pcx(row_alignment=4))
+    assert tuple(c.row_alignment for c in out) == (2,)
 
 
-def test_revision_path_extends_parent_and_parent_unchanged():
-    parent = _hyp(bounds=(0, 0, 7, 7), revision_path=("earlier",))
-    snapshot = _hyp(bounds=(0, 0, 7, 7), revision_path=("earlier",))
-    for name, fn in STRATEGIES:
-        cands = fn(parent)
-        assert cands, name
-        for c in cands:
-            assert c.revision_path == ("earlier", name)
+def test_row_padding_from_2_gives_4():
+    # Req 3.1: current 2 excluded -> (4,).
+    out = row_padding_variants(_pcx(row_alignment=2))
+    assert tuple(c.row_alignment for c in out) == (4,)
+
+
+# ---- Req 3.1 revision_path and "every other field unchanged"
+
+@pytest.mark.parametrize("name", [n for n, _ in STRATEGIES])
+def test_revision_path_is_parent_path_plus_name_and_parent_unchanged(name):
+    # Req 3.1: "each candidate's revision_path is its parent's path plus
+    # the strategy name".
+    parent = _pcx()
+    snapshot = _pcx()
+    cands = _by_name(name)(parent)
+    assert cands, name  # the parent above is applicable to every strategy
+    for c in cands:
+        assert c.revision_path == ("earlier", name)
     assert parent == snapshot
+
+
+def test_inclusive_bounds_changes_only_width_height_and_path():
+    # Req 3.1 inclusive_bounds "produces one candidate with width = ... and
+    # height = ...": nothing else changes. 9-2+1 = 8, 12-3+1 = 10.
+    p = _pcx()
+    (c,) = inclusive_bounds(p)
+    assert c == replace(p, width=8, height=10,
+                        revision_path=("earlier", "inclusive_bounds"))
+
+
+def test_rle_pcx_changes_only_encoding_and_path():
+    # Req 3.1 rle_pcx "produces one candidate with encoding = rle_pcx".
+    p = _pcx()
+    (c,) = rle_pcx(p)
+    assert c == replace(p, encoding="rle_pcx",
+                        revision_path=("earlier", "rle_pcx"))
+
+
+def test_row_padding_changes_only_alignment_and_path():
+    # Req 3.1 row_padding_variants: one candidate per alignment in (2, 4).
+    p = _pcx(row_alignment=1)
+    out = row_padding_variants(p)
+    assert out == tuple(
+        replace(p, row_alignment=a,
+                revision_path=("earlier", "row_padding_variants"))
+        for a in (2, 4))
 
 
 # Feature: structure-inference-engine, Strategy never raises
