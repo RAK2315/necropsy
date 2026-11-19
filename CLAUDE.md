@@ -29,6 +29,7 @@ is coherent, and recovers the contents.
 - Every parser has a Hypothesis property test asserting it never raises
   on arbitrary bytes.
 - Build only what was asked. No extra formats, variants or options.
+- No UTF-8 BOM in `.kiro/` (it breaks steering front matter): `.githooks/pre-commit` runs `tools/check_no_bom.py` (`--fix` strips); enable per clone with `git config core.hooksPath .githooks`.
 
 ## Context
 Full brief with positioning: notes/BRIEF.md
