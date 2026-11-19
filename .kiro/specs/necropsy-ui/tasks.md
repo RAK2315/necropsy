@@ -52,8 +52,8 @@ Rules for every task:
   - Must be visible: near-empty first screen, one instruction, samples below, clicking `mystery_a` posts bytes and logs the status.
   - _Requirements: 11.1 to 11.12, 13.1 to 13.3, 13.7_
 
-- [ ] 7. Pure logic with tests
-  - `public/js/logic.js` as in design.md. `node --test` tests for `fieldRange`, `regions`, `byteRoles` (overlap, `mystery_f` equivalent reads), `buildSteps` (payload order, nothing added), `batch` (10 s bound, exact ranges), `stageOf`, `revisionDiffs`, `declaredVsActual`.
+- [x] 7. Pure logic with tests
+  - `public/js/logic.js` as in design.md. `node --test tests/ui/js/logic.test.mjs` (pass the file; `node --test <dir>` fails on Windows) tests for `fieldRange`, `regions`, `byteRoles` (overlap, `mystery_f` equivalent reads), `buildSteps` (payload order, nothing added), `batch` (10 s bound, exact ranges), `stageOf`, `revisionDiffs`, `declaredVsActual`.
   - _Requirements: 5.4 to 5.8, 7.2, 7.6, 7.7, 8.6 to 8.8, 15.8_
 
 - [ ] 8. Static hex pane and field table
