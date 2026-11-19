@@ -1,6 +1,7 @@
 """Closure gate primitives: row stride and the PCX run-length decoder."""
 from __future__ import annotations
 
+import struct
 from dataclasses import dataclass
 from typing import Optional
 
@@ -107,6 +108,16 @@ def check_closure(h, data: bytes) -> ClosureVerdict:
         else:
             from .trailers import match_trailer
             end, trailer = match_trailer(data, h.header_size, h.probe_name)
+        # Requirement 12: header fields and the data region are disjoint
+        # (half-open ranges). A malformed fmt cannot raise out of here.
+        if end > h.header_size:
+            for fr in h.fields:
+                try:
+                    f_end = fr.offset + struct.calcsize(fr.fmt)
+                except Exception:
+                    return _reject("degenerate_hypothesis")
+                if fr.offset < end and h.header_size < f_end:
+                    return _reject("degenerate_hypothesis")
         if h.encoding == "none":
             if end - h.header_size == expected:
                 return _accept(bytes(data[h.header_size:end]), h.header_size, end, trailer)

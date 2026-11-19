@@ -416,3 +416,71 @@ def test_property_6_check_closure_never_raises(
     if not v.ok:
         assert v.decoded is None
         assert v.reason in REASONS
+
+
+# ------------------------------------------- Req 12: header and data disjoint
+import struct as _struct
+from necropsy.engine import Engine
+from necropsy.engine.types import FieldRecord
+
+
+def _fr(offset, fmt="<H"):
+    return FieldRecord("f", offset, fmt, (0,) * len(_struct.unpack(fmt, bytes(_struct.calcsize(fmt)))))
+
+
+def _h12(fields, header_size=4, data_end=None):
+    return Hypothesis(width=4, height=4, bit_depth=8, header_size=header_size,
+                      data_end=data_end, fields=tuple(fields))
+
+
+def test_req12_1_field_inside_data_region_rejected():
+    # data [4, 20); field [10, 12) lies inside it
+    v = check_closure(_h12([_fr(10)]), bytes(20))
+    assert not v.ok and v.reason == "degenerate_hypothesis"
+
+
+def test_req12_1_field_straddling_data_start_rejected():
+    # data [4, 20); field [3, 5) crosses data_start
+    v = check_closure(_h12([_fr(3)]), bytes(20))
+    assert not v.ok and v.reason == "degenerate_hypothesis"
+
+
+def test_req12_3_field_after_data_region_not_rejected():
+    # data [4, 20) declared; field [20, 22) is after it
+    v = check_closure(_h12([_fr(20)], data_end=20), bytes(22))
+    assert v.ok
+
+
+def test_req12_half_open_field_ending_at_data_start_not_rejected():
+    # field [2, 4) ends exactly at data_start 4
+    v = check_closure(_h12([_fr(2)]), bytes(20))
+    assert v.ok
+
+
+def test_req12_4_no_fields_unaffected():
+    assert check_closure(_h12([]), bytes(20)).ok
+
+
+def test_req12_bad_fmt_does_not_raise():
+    bad = FieldRecord("f", 0, "not-a-fmt", ())
+    v = check_closure(_h12([bad]), bytes(20))
+    assert not v.ok
+
+
+def _tiff_82_no_stripoffsets() -> bytes:
+    def entry(tag, typ, val):
+        if typ == 3:
+            return _struct.pack(">HHIHH", tag, typ, 1, val, 0)
+        return _struct.pack(">HHII", tag, typ, 1, val)
+    d = _struct.pack(">2sHIH", b"MM", 42, 8, 6)
+    d += entry(256, 3, 5) + entry(257, 3, 8) + entry(258, 3, 7)
+    d += bytes(12) + bytes(12) + entry(279, 4, 0x40)
+    return d.ljust(82, b"\0")
+
+
+def test_req12_tiff_without_stripoffsets_no_longer_resolves_overlapping():
+    data = _tiff_82_no_stripoffsets()
+    assert len(data) == 82
+    r = Engine().run(data)
+    assert not (r.status == "RESOLVED"
+                and (r.candidate.data_start, r.candidate.data_end) == (0, 64))
