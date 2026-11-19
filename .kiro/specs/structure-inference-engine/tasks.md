@@ -577,7 +577,7 @@ Rules for every task:
   - Ask the user if questions arise.
   - _Requirements: 5.4, 9.19_
 
-- [ ] 13. TGA 2.0 footer in the Trailer Registry
+- [x] 13. TGA 2.0 footer in the Trailer Registry
   - [x] 13.1 Generalise `TrailerEntry` and add `tga2_footer` in `necropsy/engine/trailers.py`
     - `TrailerEntry(name, length, signature: bytes, signature_offset: int, applies_to)` and `match_trailer`, exactly as in design.md "Trailer Registry".
     - `pcx_palette_256` becomes signature `b"\x0c"` at offset 0, with unchanged behaviour.
@@ -591,25 +591,25 @@ Rules for every task:
     - TGA layouts list `tga2_footer`.
     - _Requirements: 9.5, 9.6, 9.16_
 
-  - [-] 13.3 Write tests for the footer
+  - [x] 13.3 Write tests for the footer
     - `tests/test_closure.py`: both registry entries in order; `tga2_footer` matches for origins `tga` and `generic` and not `pcx`; a one-byte change to the signature stops the match; the existing `pcx_palette_256` tests still pass unchanged.
     - `tests/test_corpus.py`: `external_b` per Requirement 7.12, including the data region `[18, 9234)`, trailer `tga2_footer`, `image_descriptor` `(0x00,)`, and decoded bytes equal to `source.ppm` stored bottom row first in BGR order. The nine `mystery_*` results are unchanged.
     - `tests/test_emit.py`: the emitted TGA layout lists `tga2_footer` with its signature, and the reference reader reproduces `external_b` from the emitted `requirements.md` alone.
     - _Requirements: 1.5, 4.5, 7.12, 9.16_
 
-  - [~] 13.4 Update `tests/ui/test_external.py` for the resolved finding
+  - [x] 13.4 Update `tests/ui/test_external.py` for the resolved finding
     - Its own comment says the strict xfail must be removed when the engine gains a TGA footer entry. Remove it, and replace the finding test with one asserting `external_b` resolves with trailer `tga2_footer`.
     - If the UI-level assertions in the formerly xfailed test fail for a UI reason, report it; do not change UI code in this spec.
     - _Requirements: 7.12_
 
-- [ ] 14. Header overlap rule and file layouts for rule-breaking files
-  - [ ] 14.1 Reject header and data overlap in `check_closure`
+- [x] 14. Header overlap rule and file layouts for rule-breaking files
+  - [x] 14.1 Reject header and data overlap in `check_closure`
     - Implement Requirement 12 in `necropsy/engine/closure.py` exactly as design.md "Closure": after `data_end` is known and before decoding, reject with `degenerate_hypothesis` when the data region intersects any of the hypothesis's own `FieldRecord` byte ranges.
     - Add tests to `tests/test_closure.py` from Requirement 12: a crafted hypothesis whose data region covers one of its fields is rejected; a field placed after the data region is not; a hypothesis with no fields is unaffected. Build inputs in code.
     - Run the full corpus. If any of the nine `mystery_*` results or `external_b` changes in any way (status, candidates, candidate counts 18/8/8, paths, checks), stop and report it; do not adjust expectations.
     - _Requirements: 12.1, 12.2, 12.3, 12.4_
 
-  - [ ] 14.2 Emit rule-breaking probe results as file layouts
+  - [x] 14.2 Emit rule-breaking probe results as file layouts
     - Implement Requirement 9.20 in `necropsy/emit/layout.py` (layout kind `file` with literal values) and the "describes this one file only" statement in the emitted documents.
     - Add tests to `tests/test_emit.py` from Requirement 9.20: a crafted TIFF whose probe records `probe_precondition_failed` and which still resolves emits kind `file`, states it describes one file only, and the reference reader reproduces it from the emitted `requirements.md` alone. mystery_e still emits kind `format`.
     - _Requirements: 9.20, 9.16_
