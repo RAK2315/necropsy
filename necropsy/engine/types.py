@@ -67,6 +67,7 @@ class Candidate:
     coherence_score: float | None
     coherence_status: str                  # "scored" | "unscorable" | "not_computed"
     coherence_method: str = "row_mad_ratio"
+    alternative_paths: tuple[tuple[str, ...], ...] = ()   # same-depth routes to this key; informational only
     decoded: bytes = field(default=b"", repr=False)
 
 
