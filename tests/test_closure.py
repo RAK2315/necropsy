@@ -1,11 +1,16 @@
-"""Unit tests for the closure gate (row_stride, PCX RLE decoder, check_closure, trailers)."""
-from __future__ import annotations
+"""Unit tests for the closure gate (task 2.4).
 
-from pathlib import Path
+Every expected value comes from requirements.md (Req 1.x, Decision Record
+item 4) or design.md ("Trailer Registry", "Closure"). Each test cites the
+criterion and shows the arithmetic. Inputs are built in code from documented
+layouts.
+"""
+from __future__ import annotations
 
 import pytest
 
 from necropsy.engine.closure import (
+    RleResult,
     check_closure,
     rle_pcx_decode,
     rle_pcx_output_length,
@@ -13,162 +18,271 @@ from necropsy.engine.closure import (
 )
 from necropsy.engine.trailers import TRAILER_REGISTRY, TrailerEntry, match_trailer
 from necropsy.engine.types import Hypothesis
+from tests.conftest import corpus_bytes
 
 
-def corpus_bytes(name: str) -> bytes:
-    return (Path(__file__).resolve().parent.parent / "spike" / "samples" / name).read_bytes()
+def hyp(width, height, bit_depth=8, header_size=0, row_alignment=1,
+        encoding="none", data_end=None, probe_name="generic"):
+    return Hypothesis(
+        width=width, height=height, bit_depth=bit_depth, header_size=header_size,
+        row_alignment=row_alignment, encoding=encoding, data_end=data_end,
+        probe_name=probe_name,
+    )
 
 
-def hyp(**kw):
-    base = dict(width=2, height=2, bit_depth=8, header_size=0)
-    base.update(kw)
-    return Hypothesis(**base)
-
-
-# ---------------------------------------------------------------- row_stride
-
+# --------------------------------------------------------------- row_stride
+# Req 1.1: row_stride = round_up(ceil(width * bit_depth / 8), row_alignment)
 @pytest.mark.parametrize(
-    "width,bpp,align,expected",
+    "width, bpp, align, expected",
     [
-        (4, 1, 1, 1),    # 4 bits -> 1 byte
-        (9, 1, 1, 2),    # 9 bits -> 2 bytes
-        (16, 24, 1, 48),
-        (6, 8, 4, 8),    # 6 bytes rounded up to multiple of 4
-        (3, 12, 1, 5),   # 36 bits -> 4.5 -> 5 bytes
+        (4, 1, 1, 1),    # ceil(4*1/8)=ceil(0.5)=1; round_up(1,1)=1
+        (9, 1, 1, 2),    # ceil(9/8)=2; round_up(2,1)=2
+        (16, 24, 1, 48),  # ceil(16*24/8)=48; round_up(48,1)=48
+        (6, 8, 4, 8),    # ceil(6*8/8)=6; round_up(6,4)=8
+        (3, 12, 1, 5),   # ceil(3*12/8)=ceil(4.5)=5; round_up(5,1)=5
     ],
 )
-def test_row_stride(width, bpp, align, expected):
+def test_row_stride_req_1_1(width, bpp, align, expected):
     assert row_stride(width, bpp, align) == expected
 
 
-# ------------------------------------------------------------------- decoder
-
-def test_decoder_literal_and_run_mix_ok():
-    # 0x01 literal; 0xC3 0x07 = run of 3 x 0x07; 0x02 literal -> 01 07 07 07 02
-    data = bytes([0x01, 0xC3, 0x07, 0x02])
+# ------------------------------------------------------------------ decoder
+def test_decoder_ok_literal_and_run_mix_req_1_9_1_11():
+    # Req 1.9: b >= 0xC0 is a run of (b & 0x3F) copies of the next byte; else literal.
+    # 0x41 literal; 0xC3 0x07 run of 3 x 0x07; 0x42 literal -> 1+3+1 = 5 bytes.
+    data = b"\x41" + b"\xC3\x07" + b"\x42"
     r = rle_pcx_decode(data, 0, len(data), 5)
+    assert isinstance(r, RleResult)
     assert r.status == "ok"
-    assert r.data == bytes([1, 7, 7, 7, 2])
-    assert r.consumed_to == len(data)
-    assert rle_pcx_output_length(data, 0, len(data)) == 5
+    assert r.data == b"\x41\x07\x07\x07\x42"
+    assert r.consumed_to == len(data)  # Req 1.11: ok means stopped exactly at end (4)
 
 
-def test_decoder_overrun_large_run_small_limit():
-    # 0xFF 0xAA = run of 63 x 0xAA, limit 4
-    data = bytes([0xFF, 0xAA])
-    r = rle_pcx_decode(data, 0, 2, 4)
+def test_decoder_ok_respects_start_and_end_req_1_11():
+    # 2 junk bytes, then region [2, 4) = 0x41 0x42, then 1 junk byte beyond end.
+    data = b"\xEE\xEE" + b"\x41\x42" + b"\xEE"
+    r = rle_pcx_decode(data, 2, 4, 2)
+    assert r.status == "ok" and r.data == b"\x41\x42"
+    assert r.consumed_to == 4  # equals end
+
+
+def test_decoder_overrun_req_1_10():
+    # 0xFF = run of 0x3F = 63 copies of 0x09, against max_output_bytes = 4.
+    r = rle_pcx_decode(b"\xFF\x09", 0, 2, 4)
     assert r.status == "overrun"
-    assert r.data is None  # nothing emitted beyond the limit
+    assert r.data is None  # nothing beyond the limit is returned
 
 
-def test_decoder_trailing_marker_underrun():
-    # 0x05 literal, then 0xC2 run marker with no value byte
-    data = bytes([0x05, 0xC2])
-    r = rle_pcx_decode(data, 0, 2, 3)
+def test_decoder_overrun_after_partial_output_req_1_10():
+    # literal 0x01 (1 byte out), then run 0xC5 = 5 copies; 1+5=6 > max 4 -> overrun.
+    r = rle_pcx_decode(b"\x01\xC5\x09", 0, 3, 4)
+    assert r.status == "overrun" and r.data is None
+
+
+def test_decoder_underrun_marker_is_last_byte_req_1_11():
+    # 0x41 literal (1 out); 0xC2 is a run marker with no value byte left. max 3.
+    r = rle_pcx_decode(b"\x41\xC2", 0, 2, 3)
     assert r.status == "underrun"
-    assert rle_pcx_output_length(data, 0, 2) is None
+    assert r.data is None
 
 
-def test_decoder_unconsumed_leftover():
-    # three literals but only 2 bytes wanted: one input byte left over
-    data = bytes([1, 2, 3])
-    r = rle_pcx_decode(data, 0, 3, 2)
-    assert r.status == "unconsumed"
-    assert r.consumed_to == 2
+def test_decoder_underrun_region_ends_early_req_1_11():
+    # two literals -> 2 bytes out, but max_output_bytes = 5.
+    r = rle_pcx_decode(b"\x41\x42", 0, 2, 5)
+    assert r.status == "underrun" and r.data is None
 
 
-def test_decoder_consumed_to_equals_end_on_ok():
-    data = bytes([9, 9, 0xC2, 4])  # literals 9 9, run 2 x 4 -> 4 bytes
-    r = rle_pcx_decode(data, 1, 4, 3)  # start at 1: 9, run 2x4 -> 3 bytes
-    assert r.status == "ok"
-    assert r.consumed_to == 4
+def test_decoder_unconsumed_req_1_11():
+    # three literals, max_output_bytes = 2: output completes after 2, 1 byte remains.
+    r = rle_pcx_decode(b"\x41\x42\x43", 0, 3, 2)
+    assert r.status == "unconsumed" and r.data is None
 
 
-# ------------------------------------------------------------- check_closure
-
-def test_reason_degenerate_hypothesis():
-    assert check_closure(hyp(width=0), b"abcd").reason == "degenerate_hypothesis"
-
-
-def test_reason_field_out_of_bounds():
-    v = check_closure(hyp(data_end=99), b"abcd")
-    assert not v.ok and v.reason == "field_out_of_bounds"
+def test_decoder_bad_range_is_underrun_not_raise():
+    # design.md "Closure": start < 0, end > len(data), start > end, max < 0 -> underrun.
+    assert rle_pcx_decode(b"\x01", -1, 1, 1).status == "underrun"
+    assert rle_pcx_decode(b"\x01", 0, 5, 1).status == "underrun"
+    assert rle_pcx_decode(b"\x01\x02", 2, 1, 1).status == "underrun"
+    assert rle_pcx_decode(b"\x01", 0, 1, -1).status == "underrun"
 
 
-def test_reason_arithmetic_mismatch_signed():
-    # 2x2 @8bpp needs 4 bytes; 6 present -> +2, 3 present -> -1
-    over = check_closure(hyp(), b"abcdef")
-    under = check_closure(hyp(), b"abc")
-    assert over.reason == "arithmetic_mismatch" and over.discrepancy == 2
-    assert under.reason == "arithmetic_mismatch" and under.discrepancy == -1
+def test_rle_output_length_counts_without_allocating():
+    # design.md: literal=1, run=(b & 0x3F). 0x41 (1) + 0xC3 0x07 (3) + 0x42 (1) = 5.
+    data = b"\x41\xC3\x07\x42"
+    assert rle_pcx_output_length(data, 0, 4) == 5
+    # design.md: marker as last byte -> None.
+    assert rle_pcx_output_length(b"\x41\xC2", 0, 2) is None
 
 
-def test_none_encoding_ok():
-    v = check_closure(hyp(), b"abcd")
-    assert v.ok and v.decoded == b"abcd" and (v.data_start, v.data_end) == (0, 4)
+# ------------------------------------------------------------ check_closure
+def test_closure_ok_none_encoding_req_1_7():
+    # 3x2 at 8 bpp: stride = ceil(24/8)=3, expected = 3*2 = 6. Header 2, region 6 bytes.
+    data = b"\xAA\xBB" + bytes(range(1, 7))
+    v = check_closure(hyp(3, 2, header_size=2), data)
+    assert v.ok is True
+    assert v.decoded == bytes(range(1, 7))
+    assert (v.data_start, v.data_end, v.trailer) == (2, 8, None)
 
 
-def test_reason_decoder_overrun():
-    v = check_closure(hyp(encoding="rle_pcx"), bytes([0xFF, 0xAA]))  # 63 bytes > 4
-    assert v.reason == "decoder_overrun"
+def test_closure_degenerate_hypothesis_req_1_2():
+    data = bytes(16)
+    bad = [
+        hyp(0, 2),                      # width <= 0
+        hyp(2, 0),                      # height <= 0
+        hyp(2, 2, bit_depth=0),         # bit_depth <= 0
+        hyp(2, 2, row_alignment=3),     # alignment not in {1,2,4}
+        hyp(2, 2, header_size=-1),      # header_size < 0
+        hyp(2, 2, header_size=17),      # header_size > len(data) = 16
+    ]
+    for h in bad:
+        v = check_closure(h, data)
+        assert v.ok is False and v.reason == "degenerate_hypothesis", h
 
 
-def test_reason_decoder_underrun():
-    v = check_closure(hyp(encoding="rle_pcx"), bytes([1, 2]))  # only 2 of 4 bytes
-    assert v.reason == "decoder_underrun"
+def test_closure_field_out_of_bounds_req_1_4():
+    data = bytes(10)
+    # declared data_end 11 > len(data) 10
+    assert check_closure(hyp(2, 2, data_end=11), data).reason == "field_out_of_bounds"
+    # declared data_end 3 < header_size 4
+    assert check_closure(hyp(2, 2, header_size=4, data_end=3), data).reason == "field_out_of_bounds"
 
 
-def test_reason_decoder_unconsumed():
-    v = check_closure(hyp(encoding="rle_pcx"), bytes([1, 2, 3, 4, 5]))  # 1 byte left
-    assert v.reason == "decoder_unconsumed"
+def test_closure_declared_data_end_is_used_req_1_3():
+    # header 2, declared data_end 6 -> region 4 = 2x2 at 8bpp (stride 2, expected 4).
+    data = bytes(10)
+    v = check_closure(hyp(2, 2, header_size=2, data_end=6), data)
+    assert v.ok and v.data_end == 6 and v.trailer is None
 
 
-def test_rle_ok_through_check_closure():
-    v = check_closure(hyp(encoding="rle_pcx"), bytes([0xC4, 7]))  # run 4 x 7
-    assert v.ok and v.decoded == bytes([7] * 4)
+def test_closure_arithmetic_mismatch_negative_discrepancy_req_1_7():
+    # 3x3 at 8 bpp: expected 9. data 10 bytes, header 2 -> region 8.
+    # discrepancy = (data_end - header_size) - expected = 8 - 9 = -1.
+    v = check_closure(hyp(3, 3, header_size=2), bytes(10))
+    assert v.ok is False
+    assert v.reason == "arithmetic_mismatch"
+    assert v.discrepancy == -1
 
 
-def test_reason_unsupported_encoding():
-    assert check_closure(hyp(encoding="lzw"), b"abcd").reason == "unsupported_encoding"
+def test_closure_arithmetic_mismatch_positive_discrepancy_req_1_7():
+    # 3x3 at 8 bpp: expected 9. header 0, region 12. discrepancy = 12 - 9 = +3.
+    v = check_closure(hyp(3, 3), bytes(12))
+    assert v.reason == "arithmetic_mismatch" and v.discrepancy == 3
 
 
-# ------------------------------------------------------------------ trailers
-
-def _palette_file(n_body=10):
-    # body bytes, then 0x0C marker, then 768 palette bytes (769-byte trailer)
-    return bytes(n_body) + bytes([0x0C]) + bytes(768)
-
-
-def test_pcx_palette_trailer_applies_to_pcx_and_generic_not_tga():
-    data = _palette_file()
-    start = len(data) - 769
-    assert match_trailer(data, 0, "pcx") == (start, "pcx_palette_256")
-    assert match_trailer(data, 0, "generic") == (start, "pcx_palette_256")
-    assert match_trailer(data, 0, "tga") == (len(data), None)
+def test_closure_decoder_overrun_req_1_12():
+    # 2x2 at 8 bpp: expected 4. Region 0xFF 0x09 = run of 63 > 4 -> overrun.
+    v = check_closure(hyp(2, 2, encoding="rle_pcx"), b"\xFF\x09")
+    assert v.ok is False and v.reason == "decoder_overrun"
 
 
-def test_extra_registry_entry_changes_match_without_closure_edit():
-    data = bytes(10) + bytes([0xAB]) + bytes(3)  # 0xAB marker, 4-byte trailer
-    assert match_trailer(data, 0, "tga") == (len(data), None)
-    extra = TrailerEntry("test_footer", 4, 0xAB, frozenset({"tga"}))
-    reg = TRAILER_REGISTRY + (extra,)
-    assert match_trailer(data, 0, "tga", reg) == (10, "test_footer")
+def test_closure_decoder_underrun_req_1_12():
+    # expected 4. 0x41 literal, then marker 0xC2 as last byte -> underrun.
+    v = check_closure(hyp(2, 2, encoding="rle_pcx"), b"\x41\xC2")
+    assert v.ok is False and v.reason == "decoder_underrun"
 
 
-# --------------------------------------------------------------- regression
+def test_closure_decoder_unconsumed_req_1_12():
+    # expected 4. Five literals: output is full after 4, 1 byte remains.
+    v = check_closure(hyp(2, 2, encoding="rle_pcx"), b"\x01\x02\x03\x04\x05")
+    assert v.ok is False and v.reason == "decoder_unconsumed"
 
-def test_mystery_b_rle_7x7_header128_does_not_close():
+
+def test_closure_rle_ok_req_1_8():
+    # expected 4: 0xC2 0x07 (2 x 0x07) + 0x01 + 0x02 = 4 bytes, region fully consumed.
+    v = check_closure(hyp(2, 2, encoding="rle_pcx"), b"\xC2\x07\x01\x02")
+    assert v.ok is True and v.decoded == b"\x07\x07\x01\x02"
+
+
+@pytest.mark.parametrize("enc", ["rle_tga", "tiff_compression_5", "x"])
+def test_closure_unsupported_encoding_req_1_13(enc):
+    # 2x2 at 8 bpp over 4 bytes would close under "none"; the encoding alone rejects it.
+    v = check_closure(hyp(2, 2, encoding=enc), bytes(4))
+    assert v.ok is False and v.reason == "unsupported_encoding"
+
+
+# ----------------------------------------------------------------- trailers
+def _trailer_file():
+    # 4 header bytes + 10 body bytes + 769-byte trailer whose first byte is 0x0C.
+    # len = 4 + 10 + 769 = 783; trailer_start = 783 - 769 = 14; data[14] = 0x0C.
+    return bytes(4) + bytes(range(10)) + b"\x0C" + bytes(768)
+
+
+def test_registry_first_entry_req_1_5():
+    e = TRAILER_REGISTRY[0]
+    assert (e.name, e.length, e.marker) == ("pcx_palette_256", 769, 0x0C)
+    assert set(e.applies_to) == {"pcx", "generic"}
+
+
+@pytest.mark.parametrize("origin", ["pcx", "generic"])
+def test_trailer_applies_to_pcx_and_generic_req_1_5(origin):
+    data = _trailer_file()
+    assert match_trailer(data, 4, origin) == (14, "pcx_palette_256")
+
+
+@pytest.mark.parametrize("origin", ["tga", "pbm", "tiff"])
+def test_trailer_not_applied_to_other_origins_req_1_5(origin):
+    data = _trailer_file()
+    assert match_trailer(data, 4, origin) == (len(data), None)
+
+
+def test_trailer_requires_marker_and_room_for_header_req_1_5():
+    data = _trailer_file()
+    # marker byte at 14 changed -> no match
+    bad = data[:14] + b"\x0D" + data[15:]
+    assert match_trailer(bad, 4, "pcx") == (len(bad), None)
+    # len - length = 14: header_size 14 satisfies >= ; header_size 15 does not.
+    assert match_trailer(data, 14, "pcx") == (14, "pcx_palette_256")
+    assert match_trailer(data, 15, "pcx") == (len(data), None)
+
+
+def test_check_closure_uses_trailer_for_pcx_not_tga_req_1_3():
+    data = _trailer_file()
+    # 2x5 at 8 bpp: expected 10; header 4; PCX region [4, 14) = 10 -> closes.
+    v = check_closure(hyp(2, 5, header_size=4, probe_name="pcx"), data)
+    assert v.ok and v.trailer == "pcx_palette_256" and v.data_end == 14
+    # TGA origin: no trailer, region [4, 783) = 779; discrepancy = 779 - 10 = 769.
+    v = check_closure(hyp(2, 5, header_size=4, probe_name="tga"), data)
+    assert v.reason == "arithmetic_mismatch" and v.discrepancy == 769
+
+
+def test_extra_registry_entry_changes_match_req_1_6():
+    # 10 body bytes + 4-byte footer: 0xEE marker at len - 4 = 10.
+    data = bytes(10) + b"\xEE\x00\x00\x00"
+    footer = TrailerEntry("test_footer", 4, 0xEE, frozenset({"tga"}))
+    registry = TRAILER_REGISTRY + (footer,)
+    assert match_trailer(data, 0, "tga") == (14, None)  # default registry: no match
+    assert match_trailer(data, 0, "tga", registry) == (10, "test_footer")
+    assert match_trailer(data, 0, "pcx", registry) == (14, None)  # scope: tga only
+
+
+# -------------------------------------------------- mystery_b regression
+# Req 1.11 and Decision Record item 4: closure consumes the whole data region.
+# Req 7.2: mystery_b is PCX RLE, 8x8, header 128, region [128, 186), pcx_palette_256.
+def test_mystery_b_true_reading_closes_req_7_2():
     data = corpus_bytes("mystery_b")
-    h = Hypothesis(7, 7, 8, 128, 1, "rle_pcx", None, (), "pcx")
-    assert not check_closure(h, data).ok
+    v = check_closure(hyp(8, 8, header_size=128, encoding="rle_pcx", probe_name="pcx"), data)
+    assert v.ok
+    assert (v.data_start, v.data_end, v.trailer) == (128, 186, "pcx_palette_256")
+    assert len(v.decoded) == 64  # 8 * 8 at 8 bpp
 
 
-def test_mystery_b_only_area_64_shapes_close():
+def test_mystery_b_7x7_rle_does_not_close_decision_4():
+    data = corpus_bytes("mystery_b")
+    v = check_closure(hyp(7, 7, header_size=128, encoding="rle_pcx", probe_name="pcx"), data)
+    assert v.ok is False
+    assert v.reason in ("decoder_overrun", "decoder_underrun", "decoder_unconsumed")
+
+
+def test_mystery_b_only_area_64_shapes_close_decision_4():
     data = corpus_bytes("mystery_b")
     closing = set()
     for w in range(1, 257):
-        for ht in range(1, 257):
-            h = Hypothesis(w, ht, 8, 128, 1, "rle_pcx", None, (), "pcx")
-            if check_closure(h, data).ok:
-                closing.add((w, ht))
+        for h in range(1, 257):
+            v = check_closure(
+                hyp(w, h, header_size=128, encoding="rle_pcx", probe_name="pcx"), data
+            )
+            if v.ok:
+                closing.add((w, h))
+    # Region [128, 186) decodes to 64 bytes; at 8 bpp, align 1, stride = w and
+    # expected = w*h, so only w*h = 64 can close: divisors of 64.
     assert closing == {(1, 64), (2, 32), (4, 16), (8, 8), (16, 4), (32, 2), (64, 1)}
