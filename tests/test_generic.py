@@ -122,3 +122,45 @@ def test_found_candidates_close_and_fields_round_trip():
             assert check_closure(h, data).ok
             for r in h.fields:
                 assert struct.unpack_from(r.fmt, data, r.offset) == r.value
+
+
+# --- Task 6.3: Generic Search never raises and respects the cap ---
+from hypothesis import example, given, settings
+from hypothesis import strategies as st
+
+from tests.support.inputs import engine_inputs
+
+CAP = 10_000
+
+
+def _check_generic_invariants(data):
+    budget = Budget(FAR, cap=CAP)
+    out = generic_search(data, budget, lambda h, v: None)
+    assert isinstance(out, GenericOutcome)
+    assert budget.checks <= CAP  # Req 5.3
+    for h, _v in out.found:
+        assert check_closure(h, data).ok  # Req 8.2
+        by_name = {}
+        for r in h.fields:
+            by_name.setdefault(r.name, r.value)
+            assert r.value == by_name[r.name]  # Property 5
+            assert struct.unpack_from(r.fmt, data, r.offset) == r.value
+
+
+# Feature: structure-inference-engine, Generic search never raises
+# **Validates: Requirements 4.8, 5.3, 6.4, 6.7**
+@settings(max_examples=100, deadline=None)
+@given(st.binary(max_size=65536))
+def test_generic_search_never_raises_arbitrary_bytes(data):
+    _check_generic_invariants(data)
+
+
+# Feature: structure-inference-engine, Generic search never raises
+# **Validates: Requirements 4.8, 5.3, 6.4, 6.7**
+@settings(max_examples=100, deadline=None)
+@given(engine_inputs)
+@example(corpus_bytes("mystery_d"))
+@example(corpus_bytes("mystery_f"))
+@example(corpus_bytes("mystery_g"))
+def test_generic_search_never_raises_mutated_corpus(data):
+    _check_generic_invariants(data)
