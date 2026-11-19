@@ -88,7 +88,7 @@ Rules for every task:
   - Must be visible: `mystery_i` replays the seed rejection, the intermediate rejection and the resolved candidate in order; a large generic failure replays within 10 seconds at 1× with an exact range counter.
   - _Requirements: 7_
 
-- [ ] 14. Polish pass
+- [x] 14. Polish pass
   - One pass over the visual language at 1280×720: type scale, spacing, the accent used only on recovered data, status chips, region labels, focus rings, reduced motion. Check no scanlines, glow or third-party request.
   - Must be visible: each screen looks finished, and none uses the accent on anything other than recovered data.
   - _Requirements: 13_

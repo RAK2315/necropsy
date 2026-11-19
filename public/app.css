@@ -67,7 +67,7 @@ button.quiet:hover { color: var(--text); border-color: var(--faint); }
 .b[tabindex]:focus-visible { outline: 1px solid var(--text); outline-offset: -1px; }
 .hex-tip { position: absolute; z-index: 5; background: #0d1014; border: 1px solid var(--line); border-radius: 4px; padding: 6px 10px;
            font-size: 12px; pointer-events: none; white-space: nowrap; box-shadow: 0 2px 10px rgba(0,0,0,.4); }
-.tip-line .tn { color: var(--accent); }
+.tip-line .tn { color: var(--text); font-weight: 600; }
 .tip-line .tv { color: var(--text); }
 .tip-line .tu { color: var(--faint); font-family: var(--sans); }
 
@@ -76,8 +76,8 @@ table.fields { width: 100%; border-collapse: collapse; font-size: 12.5px; }
 table.fields th { text-align: left; font-weight: 400; color: var(--faint); font-size: 11.5px; padding: 4px 8px; border-bottom: 1px solid var(--line); }
 table.fields td { padding: 3px 8px; border-bottom: 1px solid #1f252d; color: var(--muted); }
 table.fields td:nth-child(2) { color: var(--text); }
-table.fields td.v { color: var(--accent); }
-table.fields tr:hover td, table.fields tr.hi td { background: #221d17; }
+table.fields td.v { color: var(--text); }
+table.fields tr:hover td, table.fields tr.hi td { background: #1f262f; }
 table.fields tr:focus-visible { outline: 1px solid var(--text); outline-offset: -1px; }
 table.fields .eq { color: var(--faint); font-family: var(--sans); font-size: 11px; }
 /* examination layout */
@@ -99,12 +99,12 @@ figcaption { display: flex; flex-direction: column; gap: 2px; margin-top: 6px; }
 figcaption .dims { color: var(--text); font-size: 13px; }
 figcaption .note { color: var(--faint); font-size: 12px; }
 .closure { margin: 0; color: var(--accent); font-size: 12.5px; }
-.contradiction { border: 1px solid var(--line); border-left: 2px solid var(--accent); border-radius: 3px; padding: 10px 14px; background: var(--panel); }
+.contradiction { border: 1px solid var(--line); border-left: 2px solid var(--text); border-radius: 3px; padding: 10px 14px; background: var(--panel); }
 .c-title { margin: 0 0 6px; font-size: 13px; color: var(--text); }
 .c-grid { display: grid; grid-template-columns: 70px 1fr; row-gap: 2px; font-size: 13px; }
 .c-grid .k { color: var(--faint); }
 .c-grid .declared { color: var(--muted); text-decoration: line-through; text-decoration-color: var(--faint); }
-.c-grid .actual { color: var(--accent); }
+.c-grid .actual { color: var(--text); font-weight: 600; }
 .c-proof { margin: 8px 0 0; font-size: 12px; color: var(--accent); }
 .facts { display: flex; flex-direction: column; gap: 2px; }
 .kv { display: grid; grid-template-columns: 110px 1fr; gap: 8px; font-size: 13px; }
@@ -121,7 +121,8 @@ figcaption .note { color: var(--faint); font-size: 12px; }
 .cards { display: grid; grid-template-columns: repeat(auto-fill, 208px); gap: 12px; }
 .card { width: 208px; height: 372px; display: flex; flex-direction: column; gap: 2px; padding: 11px; border: 1px solid var(--line);
         border-radius: 4px; background: var(--panel); cursor: pointer; overflow: hidden; }
-.card:hover, .card:focus-visible { border-color: var(--faint); outline: none; }
+.card:hover { border-color: var(--faint); }
+.card:focus-visible { border-color: var(--faint); outline: 2px solid var(--text); outline-offset: 2px; }
 .card.open { border-color: var(--muted); }
 .card-well { flex: none; margin-bottom: 6px; border-color: var(--line); }
 .card-title { margin: 0 0 2px; font-size: 12.5px; line-height: 17px; height: 34px; overflow: hidden; font-weight: 500; color: var(--text); }
