@@ -320,14 +320,16 @@ def test_property_11_spec_emitter_is_total(data):
     out = emit_spec(result, data)
     if result.status in ("RESOLVED", "UNRESOLVED_AMBIGUITY"):
         assert isinstance(out, EmittedSpec)
-        assert sorted(n for n, _ in out.files) == sorted(FILES)
+        assert tuple(n for n, _ in out.files) == expected_files(out.slug)
         assert len(out.files) == 3
+        test_name = emitted_test_name(out.slug)
+        assert fnmatch.fnmatch(test_name, "test_*.py")
         req = dict(out.files)["requirements.md"]
         assert len(BLOCK_RE.findall(req)) == 1
         layout = extract_layout(req)
         assert isinstance(layout, dict)
         assert layout["schema"] == "necropsy-layout/1"
-        compile(dict(out.files)["tests.py"], "tests.py", "exec")
+        compile(dict(out.files)[test_name], test_name, "exec")
     else:
         assert result.status == "FAILED"
         assert isinstance(out, EmitError)
