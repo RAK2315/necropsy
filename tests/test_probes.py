@@ -288,3 +288,83 @@ def test_read_helper_bounds():
     assert read(data, "x", 1, "<H").value == (0x0302,)
     assert read(data, "x", 2, "<H") is None
     assert read(data, "x", -1, "B") is None
+
+
+# ------------------------------------------------- never-raises properties
+# Feature: structure-inference-engine, Probe never raises
+# Validates: Requirements 2.3, 6.4, 6.7
+from hypothesis import given, settings, strategies as st
+
+from necropsy.engine.types import REASONS, Hypothesis
+
+PROBE_FNS = {"pcx": probe_pcx, "tga": probe_tga, "pbm": probe_pbm, "tiff": probe_tiff}
+MIN_LEN = {"pcx": 128, "tga": 18, "pbm": 7, "tiff": 8}
+
+_tail = st.binary(max_size=4096)
+
+
+def _pad(prefix_and_tail, n):
+    return prefix_and_tail.ljust(n, b"\x00")
+
+
+# Signature-prefixed generators (Req 2.5 to 2.8), padded to the probe's minimum length.
+SIGNED = {
+    "pcx": st.builds(
+        lambda a, e, t: _pad(bytes([0x0A, a, e]) + t, 128),
+        st.integers(0, 255), st.sampled_from([0, 1]), _tail),
+    "tga": st.builds(
+        lambda i, c, t, rest: _pad(bytes([i, c, t]) + rest, 18),
+        st.integers(0, 255), st.sampled_from([0, 1]),
+        st.sampled_from([1, 2, 3, 9, 10, 11]), _tail),
+    "pbm": st.builds(lambda t: _pad(b"P4\n" + t, 7), _tail),
+    "tiff": st.builds(lambda m, t: _pad(m + t, 8),
+                      st.sampled_from([b"II*\x00", b"MM\x00*"]), _tail),
+}
+
+
+def check_outcome(data, out):
+    assert out is None or isinstance(out, ProbeOutcome)
+    if out is None:
+        return
+    assert isinstance(out.seed, Hypothesis)
+    for r in out.rejections:
+        assert r.reason in REASONS
+    hyps = [out.seed] + [r.hypothesis for r in out.rejections if r.hypothesis]
+    for hyp in hyps:
+        for f in hyp.fields:  # Req 8.2
+            assert struct.unpack_from(f.fmt, data, f.offset) == f.value
+
+
+def _arbitrary(name):
+    probe = PROBE_FNS[name]
+
+    @settings(max_examples=100, deadline=None)
+    @given(st.binary(max_size=65536))
+    def prop(data):
+        check_outcome(data, probe(data))
+
+    return prop
+
+
+def _signed(name):
+    probe = PROBE_FNS[name]
+
+    @settings(max_examples=100, deadline=None)
+    @given(SIGNED[name])
+    def prop(data):
+        out = probe(data)
+        check_outcome(data, out)
+        if len(data) >= MIN_LEN[name]:
+            assert out is not None  # Req 2.3: signature match always emits a seed
+
+    return prop
+
+
+test_pcx_never_raises_arbitrary = _arbitrary("pcx")
+test_tga_never_raises_arbitrary = _arbitrary("tga")
+test_pbm_never_raises_arbitrary = _arbitrary("pbm")
+test_tiff_never_raises_arbitrary = _arbitrary("tiff")
+test_pcx_never_raises_signed = _signed("pcx")
+test_tga_never_raises_signed = _signed("tga")
+test_pbm_never_raises_signed = _signed("pbm")
+test_tiff_never_raises_signed = _signed("tiff")
