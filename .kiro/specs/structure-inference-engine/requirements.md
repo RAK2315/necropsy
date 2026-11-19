@@ -33,7 +33,9 @@ The engine never returns a guess it could not verify. When the engine resolves a
 - **Revision Strategy**: A transformation of a hypothesis into new candidates. There are exactly three: `inclusive_bounds`, `rle_pcx` and `row_padding_variants`.
 - **Revision path**: The ordered list of strategy names applied to reach a hypothesis. An empty list means a seed closed directly.
 - **Generic Search**: The search used when no probe signature matches. Its axes are header length, field offset, field width, endianness, signedness and encoding.
-- **Candidate**: A hypothesis that passed closure, with its row stride, expected decoded bytes, data region, trailer name, revision path, source and coherence fields.
+- **Candidate**: A hypothesis that passed closure, with its row stride, expected decoded bytes, data region, trailer name, revision path, alternative paths, source and coherence fields.
+- **Canonical path**: The revision path reported in `revision_path`. It is the first path to a hypothesis under the loop order pinned in Requirement 3.2.
+- **Alternative paths**: Other revision paths of the same depth that reached the same hypothesis key. They are recorded in `alternative_paths` and are informational only.
 - **Row coherence**: A heuristic score computed on candidates that already passed closure. It is reported and never used to gate, promote or order candidates.
 - **Deadline**: The wall-clock limit for one `run()` call, default 5.0 seconds, configurable.
 - **Search cap**: 10,000 closure checks per `run()` call, shared by the probe phase, the revision phase and generic search.
@@ -56,6 +58,7 @@ These decisions are final. Each is recorded with its reason so later work does n
 7. **Ambiguity is a correct outcome.** A headerless blob does not contain the information needed to separate 8×8 at 8 bpp from 64×8 at 1 bpp. Both readings are true. Reporting that is correct behaviour, not a limitation.
 8. **Row coherence is demoted to a reported heuristic.** Measured on the corpus, it ranked a wrong candidate first on mystery_d and mystery_g, and separated mystery_f's true answer from the runner-up by only 8.8%. It has three known failure modes, listed in Requirement 11. It never gates, promotes or orders.
 9. **Field width that the bytes cannot distinguish is reported, not decided.** `<H`, `<I` and `<i` over the same bytes with zero high bytes are the same read. The engine lists every equivalent read.
+10. **When two routes reach the same answer, both are reported.** With the revision loop order unpinned, hypotheses-outer gives `["inclusive_bounds", "row_padding_variants"]` for mystery_h and strategies-outer gives `["row_padding_variants", "inclusive_bounds"]`. Both reach the same hypothesis, deduplication kept whichever came first, and the corpus asserted one exact path, so list order was deciding the reported path. The loop order is now pinned and defines the canonical path and nothing else. Every other same-depth path to the same hypothesis is recorded in `alternative_paths`. Reporting only one of two routes to the same answer is the same failure as promoting one of two closing candidates: the engine states what it found.
 
 ## Requirements
 
@@ -172,13 +175,15 @@ These decisions are final. Each is recorded with its reason so later work does n
    - **`inclusive_bounds`**: applies only to hypotheses with bounds set. It produces one candidate with `width = xmax − xmin + 1` and `height = ymax − ymin + 1`.
    - **`rle_pcx`**: applies only to hypotheses from the PCX probe with `encoding == "none"`. It produces one candidate with `encoding = "rle_pcx"`.
    - **`row_padding_variants`**: produces one candidate for each `row_alignment` in `(2, 4)` that differs from the hypothesis's current alignment, in that order.
-2. THE Engine SHALL search breadth-first by depth from 1 to 3. At each depth it SHALL apply every strategy, in the order listed, to every hypothesis in the current frontier.
+2. THE Engine SHALL search breadth-first by depth from 1 to 3. At each depth, the outer loop SHALL iterate over the hypotheses of the current frontier in frontier order, and the inner loop SHALL apply every strategy, in the order listed in criterion 1, to that hypothesis. The depth-1 frontier is the seeds in probe order. Each later frontier is the previous depth's non-closing candidates in the order they were checked. This loop order defines the canonical path and nothing else.
 3. THE Engine SHALL skip, without a closure check, any candidate whose hypothesis key equals the key of a seed or of any previously checked candidate.
 4. WHEN at least one candidate closes at a depth, THE Engine SHALL finish that depth, collect every closing candidate from it, and not search deeper.
 5. WHEN exactly one candidate closes at that depth, THE Engine SHALL return `RESOLVED` with that candidate's `revision_path`. WHEN more than one closes, THE Engine SHALL return `UNRESOLVED_AMBIGUITY` with stage `revision`.
-6. THE order of strategies and seeds SHALL determine only the enumeration order. It SHALL NOT determine which candidate is returned.
+6. THE order of strategies and seeds SHALL determine only the enumeration order and which same-depth path is canonical. It SHALL NOT determine which candidates are returned, their alternative paths as a set, or the outcome.
 7. THE Engine SHALL NOT change byte order, field width or header length during revision. These are Generic Search axes only.
 8. WHEN no candidate closes by depth 3, THE Engine SHALL return `FAILED` with termination `exhausted`, and SHALL NOT enter Generic Search.
+9. WHEN the Engine skips a candidate under criterion 3 because its key equals the key of a candidate first produced at the same depth, THE Engine SHALL record the skipped candidate's revision path as an alternative path for that key. A skipped candidate whose key matches a seed, or a candidate first produced at an earlier depth, SHALL NOT be recorded.
+10. EACH closing candidate from the revision phase SHALL carry `alternative_paths`: the alternative paths recorded for its key, in the order found. THE Engine SHALL build closing candidates only after their depth is complete, so that alternatives found later in the same depth are included. Candidates from the probe phase and Generic Search SHALL have empty `alternative_paths`. `alternative_paths` is informational only and SHALL NOT affect the outcome, the candidate set or the candidate order.
 
 ### Requirement 4: Generic Search
 
@@ -278,8 +283,8 @@ These decisions are final. Each is recorded with its reason so later work does n
    - every multi-byte `FieldRecord` using a `>` format.
 6. WHEN given `spike/samples/mystery_f` (12 bytes of 32-bit dimensions, then pixels; 132 bytes), THE Engine SHALL return `UNRESOLVED_AMBIGUITY` with stage `generic`, and its candidates SHALL include `width = 12`, `height = 10`, `bit_depth = 8`, `header_size = 12`, `encoding = "none"`. That candidate's `width` records SHALL include reads at offset `0x00` in at least two distinct formats from `{<H, <I, <i}`, all with value 12.
 7. WHEN given `spike/samples/mystery_g` (unusual 20-byte header, 212 bytes), THE Engine SHALL return `UNRESOLVED_AMBIGUITY` with stage `generic`, and its candidates SHALL include `width = 8`, `height = 8`, `bit_depth = 24`, `header_size = 20`, `encoding = "none"`.
-8. WHEN given `spike/samples/mystery_h` (PCX, rows padded to 4 bytes, 176 bytes), THE Engine SHALL return `RESOLVED` from the PCX probe with `width = 6`, `height = 6`, `bit_depth = 8`, `header_size = 128`, `row_alignment = 4`, `row_stride = 8` and `revision_path = ["inclusive_bounds", "row_padding_variants"]`.
-9. WHEN given `spike/samples/mystery_i` (PCX, RLE data, encoding byte corrupted to `0x00`, 955 bytes), THE Engine SHALL return `RESOLVED` from the PCX probe with `width = 8`, `height = 8`, `bit_depth = 8`, `header_size = 128`, `encoding = "rle_pcx"` and `revision_path = ["inclusive_bounds", "rle_pcx"]`.
+8. WHEN given `spike/samples/mystery_h` (PCX, rows padded to 4 bytes, 176 bytes), THE Engine SHALL return `RESOLVED` from the PCX probe with `width = 6`, `height = 6`, `bit_depth = 8`, `header_size = 128`, `row_alignment = 4`, `row_stride = 8` and `revision_path = ["inclusive_bounds", "row_padding_variants"]`, and `alternative_paths` containing `["row_padding_variants", "inclusive_bounds"]`.
+9. WHEN given `spike/samples/mystery_i` (PCX, RLE data, encoding byte corrupted to `0x00`, 955 bytes), THE Engine SHALL return `RESOLVED` from the PCX probe with `width = 8`, `height = 8`, `bit_depth = 8`, `header_size = 128`, `encoding = "rle_pcx"` and `revision_path = ["inclusive_bounds", "rle_pcx"]`, and `alternative_paths` containing `["rle_pcx", "inclusive_bounds"]`.
 10. FOR every `RESOLVED` corpus file, THE corpus test SHALL compare the decoded pixel bytes exactly with the pixel content that `spike/make_samples.py` writes.
 11. THE Engine SHALL return `FAILED` for none of the nine corpus files.
 
@@ -299,7 +304,8 @@ These decisions are final. Each is recorded with its reason so later work does n
      - for `none`: `closure: [{start}, {end}) holds {end − start} bytes = {row_stride} x {height}`;
      - for `rle_pcx`: `closure: rle_pcx decoded [{start}, {end}) to {expected} bytes = {row_stride} x {height}, all input consumed`;
    - the line `trailer: {name}` when a trailer matched;
-   - the line `revision_path: {revision_path}`.
+   - the line `revision_path: {revision_path}`;
+   - the line `alternative_paths: {alternative_paths}` when `alternative_paths` is non-empty.
 5. WHEN rendering `UNRESOLVED_AMBIGUITY`, THE Pretty_Printer SHALL output:
    - the line `UNRESOLVED_AMBIGUITY: {n} candidates close; the bytes cannot distinguish them`;
    - the stage;

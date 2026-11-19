@@ -13,13 +13,15 @@ Rules for every task:
 - Build only what the task asks for.
 - The shell is Windows PowerShell 5.1. Use `;` between statements, never `&&`. Run tests with `python -m pytest tests/<file> -q`.
 - Write files as UTF-8 without a BOM. Files under `.kiro/` are checked by `tools/check_no_bom.py` on commit.
+- Import corpus helpers as `from tests.conftest import CORPUS_NAMES, corpus_bytes`. `tests/` is a package, so pytest loads its conftest as `tests.conftest`; a bare `from conftest import ...` fails or loads a second copy. Never copy the helper into a test file.
+- Expected values in tests come from requirements.md and design.md, never from reading the implementation. If the spec does not state a value a test needs, report it as a spec gap instead of copying the code's behaviour.
 - All tasks, including the property tests, are required.
 - If a corpus test fails, stop and report the actual result. Do not change unrelated code to force a pass. The expected values were measured against a reference model of these rules, and are listed in design.md under "Corpus Trace (measured)".
 
 ## Tasks
 
-- [ ] 1. Scaffold, types and budget
-  - [ ] 1.1 Create the package skeleton and test configuration
+- [x] 1. Scaffold, types and budget
+  - [x] 1.1 Create the package skeleton and test configuration
     - Create the following, each empty unless stated:
       - `necropsy/__init__.py`
       - `necropsy/engine/__init__.py`
@@ -37,7 +39,7 @@ Rules for every task:
       - `engine_inputs = st.one_of(st.binary(max_size=65536), mutated_corpus())`.
     - _Requirements: 6.3, 6.5, 7.1_
 
-  - [ ] 1.2 Implement `necropsy/engine/types.py`
+  - [x] 1.2 Implement `necropsy/engine/types.py`
     - Implement, exactly as written in design.md "Data Models":
       - `REASONS` and `TERMINATIONS`
       - `FieldRecord`, `Hypothesis` and `hypothesis_key`
@@ -49,13 +51,13 @@ Rules for every task:
     - No business logic.
     - _Requirements: 5.5, 5.6, 5.7, 5.11, 8.1, 10.1, 10.2, 10.3_
 
-  - [ ] 1.3 Implement `necropsy/engine/budget.py`
+  - [x] 1.3 Implement `necropsy/engine/budget.py`
     - `Budget(deadline_seconds, cap=10_000, clock=time.monotonic)` with `checks`, `stop_reason()` and `charge()`, exactly as written in design.md.
     - `stop_reason()` tests the deadline before the cap.
     - `charge()` increments `checks` only when it returns `None`.
     - _Requirements: 5.1, 5.2, 5.3_
 
-  - [ ] 1.4 Write unit tests for types and budget in `tests/test_engine.py`
+  - [x] 1.4 Write unit tests for types and budget in `tests/test_engine.py`
     - `hypothesis_key` contains exactly `(width, height, bit_depth, header_size, row_alignment, encoding, data_end)`.
     - Each result type has the correct default `status`.
     - Results are immutable: assigning to a field raises `FrozenInstanceError`.
@@ -67,13 +69,13 @@ Rules for every task:
     - _Requirements: 3.3, 5.1, 5.3, 10.1_
 
 - [ ] 2. Closure gate
-  - [ ] 2.1 Implement `necropsy/engine/trailers.py`
+  - [x] 2.1 Implement `necropsy/engine/trailers.py`
     - `TrailerEntry`, `TRAILER_REGISTRY` and `match_trailer`, exactly as written in design.md "Trailer Registry".
     - The registry has one entry, `pcx_palette_256` (length 769, marker `0x0C`, applies to `pcx` and `generic`).
     - `match_trailer` takes an optional `registry` argument, so tests can add entries without editing the gate.
     - _Requirements: 1.3, 1.5, 1.6_
 
-  - [ ] 2.2 Implement `row_stride`, `RleResult`, `rle_pcx_decode` and `rle_pcx_output_length` in `necropsy/engine/closure.py`
+  - [x] 2.2 Implement `row_stride`, `RleResult`, `rle_pcx_decode` and `rle_pcx_output_length` in `necropsy/engine/closure.py`
     - Copy the pseudocode in design.md "Closure".
     - `row_stride` uses integer arithmetic only.
     - The decoder checks the run against the remaining output budget inside the loop, before writing.
@@ -83,7 +85,7 @@ Rules for every task:
     - `rle_pcx_output_length` only counts; it allocates nothing.
     - _Requirements: 1.1, 1.8, 1.9, 1.10, 1.11_
 
-  - [ ] 2.3 Implement `ClosureVerdict` and `check_closure` in `necropsy/engine/closure.py`
+  - [x] 2.3 Implement `ClosureVerdict` and `check_closure` in `necropsy/engine/closure.py`
     - Follow design.md "Closure":
       - Check for a degenerate hypothesis first.
       - Then take the declared `data_end` (and its bounds check), or `match_trailer` with the hypothesis's `probe_name` as origin.
@@ -92,7 +94,7 @@ Rules for every task:
     - Wrap the function so that any exception becomes a `ClosureVerdict` with reason `internal_error`.
     - _Requirements: 1.2, 1.3, 1.4, 1.7, 1.8, 1.12, 1.13, 1.14_
 
-  - [ ] 2.4 Write unit tests in `tests/test_closure.py`
+  - [x] 2.4 Write unit tests in `tests/test_closure.py`
     - `row_stride` cases:
       - width 4 at 1 bpp gives 1
       - width 9 at 1 bpp gives 2
@@ -114,7 +116,7 @@ Rules for every task:
       - At header 128, 8 bpp and alignment 1, the only closing `(width, height)` pairs with both values in 1..256 are the seven area-64 shapes 1×64, 2×32, 4×16, 8×8, 16×4, 32×2 and 64×1.
     - _Requirements: 1.1–1.14_
 
-  - [ ] 2.5 Write property tests in `tests/test_closure.py`
+  - [~] 2.5 Write property tests in `tests/test_closure.py`
     - **Property 6: RLE decoder is bounded and typed**
     - **Validates: Requirements 1.9, 1.10, 1.11, 6.4**
     - Generators:
@@ -132,7 +134,7 @@ Rules for every task:
     - Tag: `Feature: structure-inference-engine, Property 6: RLE decoder is bounded and typed`
 
 - [ ] 3. Probes
-  - [ ] 3.1 Implement the safe read helper, `ProbeOutcome` and the PCX probe in `necropsy/engine/probes.py`
+  - [x] 3.1 Implement the safe read helper, `ProbeOutcome` and the PCX probe in `necropsy/engine/probes.py`
     - `read(data, name, offset, fmt) -> FieldRecord | None` never raises. It returns `None` when `offset < 0` or `offset + struct.calcsize(fmt) > len(data)`.
     - `ProbeOutcome(seed, rejections)`.
     - `probe_pcx` follows Requirement 2.5 and the design.md probe table.
@@ -141,7 +143,7 @@ Rules for every task:
     - When the precondition fails, attach `RejectionEntry("probe_precondition_failed", "pcx", seed, detail=...)` and still return the seed.
     - _Requirements: 2.2, 2.3, 2.4, 2.5_
 
-  - [ ] 3.2 Implement the TGA probe in `necropsy/engine/probes.py`
+  - [x] 3.2 Implement the TGA probe in `necropsy/engine/probes.py`
     - Follow Requirement 2.6.
     - Signature: byte `0x01 ∈ {0, 1}` and byte `0x02 ∈ {1, 2, 3, 9, 10, 11}`, with minimum length 18.
     - `header_size = 18 + id_length + color_map_type × color_map_length × ceil(color_map_entry_size / 8)`.
@@ -149,7 +151,7 @@ Rules for every task:
     - A precondition failure is attached and the seed is still returned.
     - _Requirements: 2.2, 2.3, 2.4, 2.6_
 
-  - [ ] 3.3 Implement the PBM probe in `necropsy/engine/probes.py`
+  - [x] 3.3 Implement the PBM probe in `necropsy/engine/probes.py`
     - Follow Requirement 2.7 and the design.md PBM parsing paragraph.
     - Parse only within `data[:1024]` and skip `#` lines.
     - The dimensions line must split into exactly two all-digit tokens.
@@ -157,7 +159,7 @@ Rules for every task:
     - On parse failure, return a seed with `width = 0`, `height = 0`, `header_size = 3`, and `probe_precondition_failed`.
     - _Requirements: 2.2, 2.3, 2.4, 2.7_
 
-  - [ ] 3.4 Implement the TIFF probe in `necropsy/engine/probes.py`
+  - [~] 3.4 Implement the TIFF probe in `necropsy/engine/probes.py`
     - Follow Requirement 2.8 and the design.md TIFF walk.
     - Honour the byte-order mark: every multi-byte read uses `<` for `II` and `>` for `MM`.
     - Read SHORT values as `oH` at entry + 8 and LONG values as `oI` at entry + 8.
@@ -173,7 +175,7 @@ Rules for every task:
     - Export `PROBES = (("pcx", probe_pcx), ("tga", probe_tga), ("pbm", probe_pbm), ("tiff", probe_tiff))`.
     - _Requirements: 2.2, 2.3, 2.4, 2.8_
 
-  - [ ] 3.5 Write unit tests in `tests/test_probes.py`
+  - [~] 3.5 Write unit tests in `tests/test_probes.py`
     - PCX:
       - mystery_b gives seed 7×7, `encoding = "rle_pcx"`, bounds `(0, 0, 7, 7)`.
       - mystery_i gives `encoding = "none"`.
@@ -198,7 +200,7 @@ Rules for every task:
     - Build crafted inputs in code, from documented layouts.
     - _Requirements: 2.1–2.8, 8.1, 8.2_
 
-  - [ ] 3.6 Write never-raises property tests in `tests/test_probes.py`
+  - [~] 3.6 Write never-raises property tests in `tests/test_probes.py`
     - **Property: each probe never raises on arbitrary bytes**
     - **Validates: Requirements 2.3, 6.4, 6.7**
     - For each probe:
@@ -208,8 +210,8 @@ Rules for every task:
     - Use `@settings(max_examples=100)`.
     - Tag: `Feature: structure-inference-engine, Probe never raises`
 
-- [ ] 4. Revision strategies
-  - [ ] 4.1 Implement `necropsy/engine/strategies.py`
+- [x] 4. Revision strategies
+  - [x] 4.1 Implement `necropsy/engine/strategies.py`
     - Implement `inclusive_bounds`, `rle_pcx`, `row_padding_variants` and `STRATEGIES`, exactly as written in design.md "Revision strategies", using `dataclasses.replace`.
     - `rle_pcx` applies only when `probe_name == "pcx"` and `encoding == "none"`.
     - `row_padding_variants` yields alignments 2 then 4, skipping the current alignment.
@@ -217,7 +219,7 @@ Rules for every task:
     - There are no other strategies. Do not implement endianness, field-width or header-length revision.
     - _Requirements: 3.1, 3.7_
 
-  - [ ] 4.2 Write unit tests in `tests/test_strategies.py`
+  - [x] 4.2 Write unit tests in `tests/test_strategies.py`
     - `inclusive_bounds`:
       - bounds `(0, 0, 7, 7)` give 8×8;
       - with no bounds it gives `()`.
@@ -232,7 +234,7 @@ Rules for every task:
     - `STRATEGIES` names are exactly `("inclusive_bounds", "rle_pcx", "row_padding_variants")`.
     - _Requirements: 3.1, 3.7_
 
-  - [ ] 4.3 Write a never-raises property test in `tests/test_strategies.py`
+  - [x] 4.3 Write a never-raises property test in `tests/test_strategies.py`
     - **Property: each strategy never raises**
     - **Validates: Requirements 6.4, 6.7**
     - Generate arbitrary `Hypothesis` values with arbitrary ints, optional bounds, probe names from the five origins, and encodings from `{"none", "rle_pcx", "rle_tga"}`.
@@ -240,8 +242,8 @@ Rules for every task:
     - Use `@settings(max_examples=100)`.
     - Tag: `Feature: structure-inference-engine, Strategy never raises`
 
-- [ ] 5. Row coherence
-  - [ ] 5.1 Implement `necropsy/engine/coherence.py`
+- [x] 5. Row coherence
+  - [x] 5.1 Implement `necropsy/engine/coherence.py`
     - Implement `row_coherence(decoded, height, row_stride) -> tuple[float | None, str]`, `COHERENCE_METHOD` and `COHERENCE_SIZE_LIMIT`, exactly as written in design.md "Row coherence".
     - The docstring names the three failure modes.
     - Pair sampling is `random.Random(0).sample(range(P), 1024)` when `P > 1024`.
@@ -251,7 +253,7 @@ Rules for every task:
     - Wrap the function so an exception returns `(None, "unscorable")`.
     - _Requirements: 11.2, 11.3, 11.4, 11.5, 11.6, 11.7_
 
-  - [ ] 5.2 Write unit tests in `tests/test_coherence.py`
+  - [x] 5.2 Write unit tests in `tests/test_coherence.py`
     - A hand-computed 3-row example gives the exact `adjacent / baseline` value.
     - Identical rows give `unscorable`. One row gives `unscorable`.
     - 262,145 expected bytes give `not_computed`.
@@ -263,7 +265,7 @@ Rules for every task:
     - The docstring contains all three failure-mode statements.
     - _Requirements: 11.2–11.7_
 
-  - [ ] 5.3 Write a property test in `tests/test_coherence.py`
+  - [x] 5.3 Write a property test in `tests/test_coherence.py`
     - **Property 14: Coherence function is total**
     - **Validates: Requirements 11.2, 11.3, 11.4, 6.4**
     - Inputs: arbitrary bytes up to 65,536, `height` in `[-5, 70000]`, `row_stride` in `[-5, 70000]`.
@@ -272,7 +274,7 @@ Rules for every task:
     - Tag: `Feature: structure-inference-engine, Property 14: Coherence function is total`
 
 - [ ] 6. Generic Search
-  - [ ] 6.1 Implement `necropsy/engine/generic.py`
+  - [~] 6.1 Implement `necropsy/engine/generic.py`
     - Implement `HEADER_LENGTHS = tuple(range(4, 257, 4))`, `WIDTH_HEIGHT_FORMATS`, `VALID_BIT_DEPTHS`, `GenericOutcome(found, stop)` and `generic_search(data, budget, on_reject)`, exactly as written in design.md "Generic Search".
     - Group reads by value.
     - Width plus bit depth fixes the height.
@@ -284,7 +286,7 @@ Rules for every task:
     - The function never raises.
     - _Requirements: 4.1–4.9, 5.1, 5.3_
 
-  - [ ] 6.2 Write unit tests in `tests/test_generic.py`
+  - [~] 6.2 Write unit tests in `tests/test_generic.py`
     - Use a `Budget` with a far deadline.
     - mystery_d:
       - The found set includes key `(8, 8, 8, 40, 1, "none", None)`.
@@ -302,7 +304,7 @@ Rules for every task:
     - `HEADER_LENGTHS` runs from 4 to 256 in steps of 4.
     - _Requirements: 4.2–4.9, 7.4, 7.6, 7.7_
 
-  - [ ] 6.3 Write property tests in `tests/test_generic.py`
+  - [~] 6.3 Write property tests in `tests/test_generic.py`
     - **Property: Generic Search never raises and respects the cap**
     - **Validates: Requirements 4.8, 5.3, 6.4, 6.7**
     - Use `@given(st.binary(max_size=65536))` with a cap of 10,000.
@@ -315,7 +317,7 @@ Rules for every task:
     - Tag: `Feature: structure-inference-engine, Generic search never raises`
 
 - [ ] 7. Engine
-  - [ ] 7.1 Implement the probe phase and candidate assembly in `necropsy/engine/engine.py`
+  - [~] 7.1 Implement the probe phase and candidate assembly in `necropsy/engine/engine.py`
     - `Engine(deadline_seconds=5.0, clock=time.monotonic)`.
     - `run()` creates one `Budget` and one ordered rejection list.
     - An input shorter than 3 bytes returns `FailureReport("input_too_short", ...)` with exactly one `input_too_short` entry, and runs no probe.
@@ -326,17 +328,19 @@ Rules for every task:
       - more than one gives `AmbiguousResult` with `AMBIGUITY_REASON` and `coherence_gap`, keeping discovery order.
     - _Requirements: 2.1, 2.9, 5.1, 5.8, 5.9, 5.11, 10.1–10.5, 11.1, 11.5, 11.6_
 
-  - [ ] 7.2 Implement the revision phase in `necropsy/engine/engine.py`
+  - [~] 7.2 Implement the revision phase in `necropsy/engine/engine.py`
     - Follow the BFS in design.md "Revision phase".
-    - The `seen` set starts with every seed key.
-    - Each depth applies every strategy to every frontier hypothesis.
+    - The `seen` map starts with every seed key at depth 0.
+    - Loop order is pinned (Requirement 3.2): hypotheses of the frontier are the outer loop, strategies in `STRATEGIES` order the inner loop. This defines the canonical path only.
+    - Add `alternative_paths: tuple[tuple[str, ...], ...] = ()` to `Candidate` in `necropsy/engine/types.py`, as in design.md "Data Models".
+    - When a skipped candidate's key was first produced at the same depth, append its path to that key's alternatives. Build closing candidates after the depth completes, passing their alternatives.
     - Charge before each check.
     - Collect all winners at the first closing depth and stop there.
     - Rejection source is `"revision:" + "->".join(path)`.
     - If nothing closes by depth 3, return `FailureReport("exhausted")`. Never enter Generic Search afterwards.
-    - _Requirements: 3.2–3.8, 5.9_
+    - _Requirements: 3.2–3.10, 5.9_
 
-  - [ ] 7.3 Implement generic dispatch, termination and the never-raise wrapper in `necropsy/engine/engine.py`
+  - [~] 7.3 Implement generic dispatch, termination and the never-raise wrapper in `necropsy/engine/engine.py`
     - Run `generic_search` only when no probe matched.
     - `on_reject` appends `RejectionEntry(..., source="generic")`.
     - A stop reason anywhere returns `FailureReport(stop, rejections, budget.checks, len(data), partial_candidates)`.
@@ -347,7 +351,7 @@ Rules for every task:
       - every type in `types.py`
     - _Requirements: 4.1, 4.8, 5.2, 5.3, 5.10, 6.1, 6.2, 6.3_
 
-  - [ ] 7.4 Write unit tests in `tests/test_engine.py`
+  - [~] 7.4 Write unit tests in `tests/test_engine.py`
     - `b""` and a 2-byte input give `FAILED / input_too_short` with one entry.
     - A probe monkeypatched to raise gives `FAILED / internal_error` with detail starting with the class name.
     - An injected clock past the deadline on mystery_c gives `FAILED / deadline_exceeded`.
@@ -360,26 +364,27 @@ Rules for every task:
     - _Requirements: 2.9, 3.3–3.6, 5.1–5.10, 6.1, 6.2, 10.4_
 
 - [ ] 8. Corpus
-  - [ ] 8.1 Expose pixel content in `spike/make_samples.py`
+  - [x] 8.1 Expose pixel content in `spike/make_samples.py`
     - Refactor so the pixel content each builder writes is available as functions, without changing any output byte:
       - `pcx_rle_rows()` gives the 64 decoded bytes behind mystery_b and mystery_i;
       - `pixels(name)` gives the decoded bytes for each `RESOLVED` corpus file.
     - Verify the change: after running `python spike/make_samples.py`, all nine files match the committed versions byte for byte (`git diff --quiet spike/samples`).
     - _Requirements: 7.10_
 
-  - [ ] 8.2 Write corpus tests in `tests/test_corpus.py`
+  - [~] 8.2 Write corpus tests in `tests/test_corpus.py`
     - One test per corpus file asserting exactly Requirements 7.1–7.9: status, stage, probe or `"generic"`, width, height, bit depth, header size, row stride or alignment, encoding, data region, trailer and revision path.
     - For mystery_d, mystery_f and mystery_g, assert:
       - `UNRESOLVED_AMBIGUITY` with stage `generic`;
       - the true key is in the candidate keys;
       - no assertion on order or rank.
     - For mystery_f, assert the equivalent-width-read condition in Requirement 7.6.
+    - For mystery_h and mystery_i, assert the exact canonical `revision_path` and that `alternative_paths` contains the reversed-order path (Requirements 7.8, 7.9).
     - For every `RESOLVED` file, `candidate.decoded == make_samples.pixels(name)` exactly.
     - No corpus file is `FAILED`.
     - _Requirements: 7.1–7.11_
 
 - [ ] 9. Engine property tests in `tests/test_engine_properties.py`
-  - [ ] 9.1 Write Properties 1 and 2
+  - [~] 9.1 Write Properties 1 and 2
     - **Property 1: Never raises**
     - **Validates: Requirements 6.2, 6.3, 6.5**
     - **Property 2: Deadline bound**
@@ -390,7 +395,7 @@ Rules for every task:
     - Use `@settings(max_examples=100, deadline=None)`.
     - Tags: `Feature: structure-inference-engine, Property 1: Never raises` and `Property 2: Deadline bound`
 
-  - [ ] 9.2 Write Properties 3, 4 and 5
+  - [~] 9.2 Write Properties 3, 4 and 5
     - **Property 3: Closure soundness**
     - **Validates: Requirements 1.7, 1.8, 1.14, 10.2, 10.3**
     - **Property 4: Field round-trip**
@@ -404,23 +409,26 @@ Rules for every task:
     - Use `@settings(max_examples=100, deadline=None)`.
     - Tags: `Property 3: Closure soundness`, `Property 4: Field round-trip`, `Property 5: Equivalent reads agree`
 
-  - [ ] 9.3 Write Properties 7, 9 and 10
+  - [~] 9.3 Write Properties 7, 9 and 10
     - **Property 7: Outcome well-formed**
     - **Validates: Requirements 5.6, 5.7, 10.1, 10.2, 10.3**
     - **Property 9: No duplicate hypotheses**
     - **Validates: Requirements 3.3**
     - **Property 10: Deterministic**
     - **Validates: Requirements 3.6**
+    - **Property 15: Alternative paths are well-formed**
+    - **Validates: Requirements 3.6, 3.9, 3.10**
     - Over `engine_inputs` with the corpus examples:
       - status matches the type and the candidate counts;
       - terminations and reasons are in the vocabularies;
       - candidate keys are distinct;
       - a `check_closure` spy sees no key twice;
-      - two runs give equal results.
+      - two runs give equal results;
+      - every alternative path has the same length as `revision_path`, differs from it and does not repeat; probe and generic candidates have none; every permutation of `STRATEGIES` (monkeypatched) gives the same outcome, candidate keys and set of paths per candidate.
     - Use `@settings(max_examples=100, deadline=None)`.
-    - Tags: `Property 7: Outcome well-formed`, `Property 9: No duplicate hypotheses`, `Property 10: Deterministic`
+    - Tags: `Property 7: Outcome well-formed`, `Property 9: No duplicate hypotheses`, `Property 10: Deterministic`, `Property 15: Alternative paths are well-formed`
 
-  - [ ] 9.4 Write Property 8
+  - [~] 9.4 Write Property 8
     - **Property 8: Coherence cannot change the outcome**
     - **Validates: Requirements 10.5, 11.1, 11.8**
     - Over `engine_inputs` with the corpus examples, plus `st.randoms()`:
@@ -434,7 +442,7 @@ Rules for every task:
     - `render(result) -> str` produces exactly the lines in Requirements 8.4–8.6:
       - `RESOLVED` field table with offset as `0x%04X`;
       - the two closure-line forms;
-      - the `trailer:` line and the `revision_path:` line;
+      - the `trailer:` line, the `revision_path:` line, and the `alternative_paths:` line when non-empty;
       - the `UNRESOLVED_AMBIGUITY` header, stage, numbered candidates and coherence wording, with no candidate marked as preferred;
       - the `FAILED: {termination}` header, counts and numbered rejections with `(discrepancy=N)`.
     - Wrap the function so an exception returns `"render error: <Class>"`.
@@ -453,7 +461,7 @@ Rules for every task:
     - Tag: `Feature: structure-inference-engine, Property 13: Pretty printer is total`
 
 - [ ] 11. Spec emission
-  - [ ] 11.1 Implement `necropsy/emit/layout.py`
+  - [~] 11.1 Implement `necropsy/emit/layout.py`
     - `build_layout(result, data) -> dict` in schema `necropsy-layout/1`, exactly as written in design.md "Layout schema":
       - kinds `format`, `file` and `ambiguous`;
       - the per-origin table for PCX, TGA, TIFF, PBM and generic;
@@ -461,7 +469,7 @@ Rules for every task:
     - Slug: the probe name, or `unknown-<sha256[:8]>`.
     - _Requirements: 9.2, 9.6, 9.7, 9.8, 9.9_
 
-  - [ ] 11.2 Implement `render_requirements` in `necropsy/emit/render.py`
+  - [~] 11.2 Implement `render_requirements` in `necropsy/emit/render.py`
     - Use the Kiro requirements structure from design.md "Emitted requirements.md".
     - Include one EARS criterion per field and tag entry, with name, hex offset, format, endianness and size.
     - State the data region, trailer, encoding and closure rule.
@@ -473,20 +481,20 @@ Rules for every task:
     - For ambiguous results, write one `WHERE candidate k …` requirement per candidate, plus the cannot-separate requirement naming the three coherence failure modes. Assert no candidate.
     - _Requirements: 9.3, 9.4, 9.5, 9.6, 9.7, 9.8, 9.9_
 
-  - [ ] 11.3 Implement `render_design` in `necropsy/emit/render.py`
+  - [~] 11.3 Implement `render_design` in `necropsy/emit/render.py`
     - Use the Kiro design headings.
     - Include: structure tables, stage, source, revision path, data region, trailer, closure line, heuristic-labelled coherence, and numbered rejections.
     - List at most 500 rejections, followed by `… and N more not listed`.
     - _Requirements: 9.10_
 
-  - [ ] 11.4 Implement `render_tests` in `necropsy/emit/render.py`
+  - [~] 11.4 Implement `render_tests` in `necropsy/emit/render.py`
     - Generate `tests.py` from the template in design.md "Emitted tests.py", importing `parser_<slug with - replaced by _>`.
     - Embed the source as base64 when it is at most 65,536 bytes; otherwise set `SOURCE = None` and skip the fixture test.
     - For ambiguous results, target `parse_candidates` and `EXPECTED_CANDIDATES`.
     - The generated source must compile with `compile()`.
     - _Requirements: 9.11, 9.12_
 
-  - [ ] 11.5 Implement `necropsy/emit/emit.py` and exports
+  - [~] 11.5 Implement `necropsy/emit/emit.py` and exports
     - `EmittedSpec`, `EmitError`, `emit_spec(result, data)` (pure) and `write_spec(spec, out_dir, overwrite=False)`, exactly as written in design.md "Spec emission".
     - `write_spec` enforces:
       - the `^[a-z0-9-]+$` slug check;
@@ -498,7 +506,7 @@ Rules for every task:
     - Export from `necropsy/emit/__init__.py`.
     - _Requirements: 9.1, 9.2, 9.13, 9.14, 9.15_
 
-  - [ ] 11.6 Implement `tests/support/reference_reader.py`
+  - [x] 11.6 Implement `tests/support/reference_reader.py`
     - A generic interpreter of `necropsy-layout/1`, as described in design.md "Reference reader". It imports only `json`, `re` and `struct`.
     - Functions:
       - `extract_layout(markdown)`
@@ -508,7 +516,7 @@ Rules for every task:
     - It contains no knowledge of any specific format.
     - _Requirements: 9.16, 9.17, 9.18_
 
-  - [ ] 11.7 Write unit tests in `tests/test_emit.py`
+  - [~] 11.7 Write unit tests in `tests/test_emit.py`
     - Slugs:
       - mystery_e gives `tiff`, mystery_b gives `pcx`, mystery_a gives `pbm`;
       - mystery_d gives `unknown-` followed by its SHA-256 prefix.
@@ -531,7 +539,7 @@ Rules for every task:
     - The reference reader source contains no `necropsy` import.
     - _Requirements: 9.1–9.15_
 
-  - [ ] 11.8 Write acceptance tests in `tests/test_emit_acceptance.py`
+  - [~] 11.8 Write acceptance tests in `tests/test_emit_acceptance.py`
     - mystery_e:
       - Emit the spec.
       - Pass only the emitted `requirements.md` text to the reference reader.
@@ -544,7 +552,7 @@ Rules for every task:
     - mystery_d: `parse_candidates` on the emitted layout includes the true layout (8×8, 8 bpp, start 40).
     - _Requirements: 9.16, 9.17, 9.18_
 
-  - [ ] 11.9 Write emission property tests in `tests/test_emit.py`
+  - [~] 11.9 Write emission property tests in `tests/test_emit.py`
     - **Property 11: Spec emitter is total**
     - **Validates: Requirements 9.1, 9.6, 9.13, 6.4**
     - **Property 12: Emitted layout reproduces the engine**
@@ -557,7 +565,7 @@ Rules for every task:
     - Use `@settings(max_examples=100, deadline=None)`.
     - Tags: `Property 11: Spec emitter is total` and `Property 12: Emitted layout reproduces the engine`
 
-- [ ] 12. Final checkpoint
+- [~] 12. Final checkpoint
   - Run `python -m pytest tests -q`. All tests must pass.
   - Emit the specs for mystery_e and mystery_d into a temporary directory. Run Kiro's spec format validator on each emitted `requirements.md` and `design.md`, and report any issue. (Requirement 9.19)
   - Run `python tools/check_no_bom.py`.
@@ -578,13 +586,13 @@ Rules for every task:
   "waves": [
     { "id": 0, "tasks": ["1.1", "8.1"] },
     { "id": 1, "tasks": ["1.2", "1.3", "11.6"] },
-    { "id": 2, "tasks": ["1.4", "2.1", "2.2", "3.1", "4.1", "5.1", "10.1"] },
+    { "id": 2, "tasks": ["1.4", "2.1", "2.2", "3.1", "4.1", "5.1"] },
     { "id": 3, "tasks": ["2.3", "3.2", "4.2", "5.2"] },
     { "id": 4, "tasks": ["2.4", "3.3", "4.3", "5.3"] },
     { "id": 5, "tasks": ["2.5", "3.4", "6.1"] },
     { "id": 6, "tasks": ["3.5", "6.2", "7.1"] },
     { "id": 7, "tasks": ["3.6", "6.3", "7.2"] },
-    { "id": 8, "tasks": ["7.3"] },
+    { "id": 8, "tasks": ["7.3", "10.1"] },
     { "id": 9, "tasks": ["7.4", "8.2", "10.2", "11.1"] },
     { "id": 10, "tasks": ["9.1", "11.2"] },
     { "id": 11, "tasks": ["9.2", "11.3"] },

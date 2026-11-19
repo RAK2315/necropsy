@@ -188,6 +188,7 @@ class Candidate:
     coherence_score: float | None
     coherence_status: str                  # "scored" | "unscorable" | "not_computed"
     coherence_method: str = "row_mad_ratio"
+    alternative_paths: tuple[tuple[str, ...], ...] = ()   # same-depth routes to this key; informational only
     decoded: bytes = field(default=b"", repr=False)
 
 @dataclass(frozen=True)
@@ -381,26 +382,41 @@ STRATEGIES = (("inclusive_bounds", inclusive_bounds), ("rle_pcx", rle_pcx),
 ### Revision phase (`engine/engine.py`)
 
 ```
-seen = {hypothesis_key(s) for s in seeds}
-frontier = list(seeds)
+seen = {hypothesis_key(s): 0 for s in seeds}       # key -> depth at which it was first produced
+alternatives = {}                                   # key -> [paths]; same-depth duplicates only
+frontier = list(seeds)                              # depth 1: seeds in probe order
 for depth in (1, 2, 3):
     winners, next_frontier = [], []
-    for h in frontier:
-        for name, fn in STRATEGIES:
+    for h in frontier:                              # OUTER loop: hypotheses, in frontier order
+        for name, fn in STRATEGIES:                 # INNER loop: strategies, in listed order
             for c in fn(h):
                 k = hypothesis_key(c)
-                if k in seen: continue
-                seen.add(k)
+                if k in seen:
+                    if seen[k] == depth:
+                        alternatives.setdefault(k, []).append(c.revision_path)
+                    continue
+                seen[k] = depth
                 stop = budget.charge()
                 if stop: return failure(stop, partial=winners)
                 v = check_closure(c, data)
                 if v.ok: winners.append((c, v))
                 else:    reject(c, v, source="revision:" + "->".join(c.revision_path)); next_frontier.append(c)
     if winners:
-        return resolved(winners[0]) if len(winners) == 1 else ambiguous(winners, "revision")
+        # The depth is complete, so alternatives found after a winner are included.
+        cands = [candidate(c, v, alternative_paths=tuple(alternatives.get(hypothesis_key(c), ())))
+                 for c, v in winners]
+        return resolved(cands[0]) if len(cands) == 1 else ambiguous(cands, "revision")
     frontier = next_frontier
 return failure("exhausted")
 ```
+
+The loop order (hypotheses outer, strategies inner) defines the canonical path and nothing else. Expected by hand trace of this loop on the corpus:
+
+- mystery_h: canonical `[inclusive_bounds, row_padding_variants]`, alternative `[row_padding_variants, inclusive_bounds]`.
+- mystery_i: canonical `[inclusive_bounds, rle_pcx]`, alternative `[rle_pcx, inclusive_bounds]`.
+- mystery_b: closes at depth 1 with no alternatives.
+
+A duplicate of a key first produced at an earlier depth is a longer route, not an equal one, so it is not recorded.
 
 Winners are not added to the next frontier, because the search stops at the first closing depth. The probe phase uses the same collect-all rule: every probe runs, and its closing seeds go through the same `resolved` or `ambiguous` decision with stage `probe`.
 
@@ -676,8 +692,8 @@ Measured with a reference model of these rules on Python 3.10.11. The implementa
 | mystery_e | tiff | probe | 1 | 8×8, 8 bpp, declared region [86, 150), all multi-byte fields `>`, path [] | 1 |
 | mystery_f | none | generic | 8 | ambiguous; includes 12×10, 8 bpp, header 12; width reads `<H`, `<I`, `<i` at 0x00 | 8 |
 | mystery_g | none | generic | 8 | ambiguous; includes 8×8, 24 bpp, header 20; 7 scored, 1 unscorable | 8 |
-| mystery_h | pcx | revision depth 2 | 1 | 6×6, 8 bpp, alignment 4, stride 8, region [128, 176), path [inclusive_bounds, row_padding_variants] | 10 |
-| mystery_i | pcx | revision depth 2 | 1 | 8×8, 8 bpp, rle_pcx, region [128, 186), path [inclusive_bounds, rle_pcx] | 10 |
+| mystery_h | pcx | revision depth 2 | 1 | 6×6, 8 bpp, alignment 4, stride 8, region [128, 176), path [inclusive_bounds, row_padding_variants], alternative [row_padding_variants, inclusive_bounds] | 10 |
+| mystery_i | pcx | revision depth 2 | 1 | 8×8, 8 bpp, rle_pcx, region [128, 186), path [inclusive_bounds, rle_pcx], alternative [rle_pcx, inclusive_bounds] | 10 |
 
 Two details from the trace:
 
@@ -791,6 +807,12 @@ For any `EngineResult`, `render` returns a string whose first line starts with t
 For any bytes and any integers `height` and `row_stride`, `row_coherence` returns `(float, "scored")` with a finite non-negative float, `(None, "unscorable")` or `(None, "not_computed")`, without raising.
 
 **Validates: Requirements 11.2, 11.3, 11.4, 6.4**
+
+### Property 15: Alternative paths are well-formed
+
+For every candidate, every entry of `alternative_paths` has the same length as `revision_path` and differs from it, and no entry repeats. Candidates from the probe phase and Generic Search have empty `alternative_paths`. Replacing the strategy order with any permutation leaves the outcome and the candidate keys unchanged, and the set `{revision_path} ∪ alternative_paths` of each revision candidate unchanged.
+
+**Validates: Requirements 3.6, 3.9, 3.10**
 
 ## Error Handling
 
