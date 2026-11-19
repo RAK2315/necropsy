@@ -1,5 +1,7 @@
 """Unit tests for revision strategies (Requirement 3.1, 3.7)."""
 
+from hypothesis import given, settings, strategies as st
+
 from necropsy.engine.strategies import (
     STRATEGIES,
     inclusive_bounds,
@@ -63,3 +65,32 @@ def test_revision_path_extends_parent_and_parent_unchanged():
         for c in cands:
             assert c.revision_path == ("earlier", name)
     assert parent == snapshot
+
+
+# Feature: structure-inference-engine, Strategy never raises
+_ints = st.integers(min_value=-(10 ** 30), max_value=10 ** 30)
+_hypotheses = st.builds(
+    Hypothesis,
+    width=_ints,
+    height=_ints,
+    bit_depth=_ints,
+    header_size=_ints,
+    row_alignment=_ints,
+    encoding=st.sampled_from(["none", "rle_pcx", "rle_tga"]),
+    data_end=st.none() | _ints,
+    probe_name=st.sampled_from(["pcx", "tga", "pbm", "tiff", "generic"]),
+    bounds=st.none() | st.tuples(_ints, _ints, _ints, _ints),
+)
+
+
+@settings(max_examples=100)
+@given(h=_hypotheses)
+def test_each_strategy_never_raises(h):
+    """Feature: structure-inference-engine, Strategy never raises.
+
+    **Validates: Requirements 6.4, 6.7**
+    """
+    for name, fn in STRATEGIES:
+        out = fn(h)
+        assert isinstance(out, tuple), name
+        assert all(isinstance(c, Hypothesis) for c in out), name
