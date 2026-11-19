@@ -100,3 +100,83 @@ def _probe_pcx(data: bytes) -> ProbeOutcome | None:
             RejectionEntry("probe_precondition_failed", "pcx", seed, detail="; ".join(problems)),
         )
     return ProbeOutcome(seed, rejections)
+
+
+# TGA header layout (all offsets in bytes, little-endian multi-byte fields).
+TGA_HEADER_SIZE = 18
+TGA_ID_LENGTH_OFFSET = 0x00          # B
+TGA_COLOR_MAP_TYPE_OFFSET = 0x01     # B, must be 0 or 1
+TGA_IMAGE_TYPE_OFFSET = 0x02         # B
+TGA_COLOR_MAP_LENGTH_OFFSET = 0x05   # <H
+TGA_COLOR_MAP_ENTRY_SIZE_OFFSET = 0x07  # B, bits per colour-map entry
+TGA_WIDTH_OFFSET = 0x0C              # <H
+TGA_HEIGHT_OFFSET = 0x0E             # <H
+TGA_BIT_DEPTH_OFFSET = 0x10          # B
+TGA_ENCODINGS = {1: "none", 2: "none", 3: "none", 9: "rle_tga", 10: "rle_tga", 11: "rle_tga"}
+
+
+def probe_tga(data: bytes) -> ProbeOutcome | None:
+    """TGA probe. Returns None when the bytes do not look like a TGA header."""
+    try:
+        return _probe_tga(data)
+    except Exception:  # last line of defence; inner code bounds-checks
+        return None
+
+
+def _probe_tga(data: bytes) -> ProbeOutcome | None:
+    if len(data) < TGA_HEADER_SIZE:
+        return None
+    if data[TGA_COLOR_MAP_TYPE_OFFSET] not in (0, 1):
+        return None
+    if data[TGA_IMAGE_TYPE_OFFSET] not in TGA_ENCODINGS:
+        return None
+
+    specs = (
+        ("id_length", TGA_ID_LENGTH_OFFSET, "B"),
+        ("color_map_type", TGA_COLOR_MAP_TYPE_OFFSET, "B"),
+        ("image_type", TGA_IMAGE_TYPE_OFFSET, "B"),
+        ("color_map_length", TGA_COLOR_MAP_LENGTH_OFFSET, "<H"),
+        ("color_map_entry_size", TGA_COLOR_MAP_ENTRY_SIZE_OFFSET, "B"),
+        ("width", TGA_WIDTH_OFFSET, "<H"),
+        ("height", TGA_HEIGHT_OFFSET, "<H"),
+        ("bit_depth", TGA_BIT_DEPTH_OFFSET, "B"),
+    )
+    records = {}
+    for name, offset, fmt in specs:
+        rec = read(data, name, offset, fmt)
+        if rec is None:
+            return None
+        records[name] = rec
+
+    def val(name: str) -> int:
+        return records[name].value[0]
+
+    entry_bytes = (val("color_map_entry_size") + 7) // 8
+    header_size = (
+        TGA_HEADER_SIZE
+        + val("id_length")
+        + val("color_map_type") * val("color_map_length") * entry_bytes
+    )
+    width, height = val("width"), val("height")
+    seed = Hypothesis(
+        width=width,
+        height=height,
+        bit_depth=val("bit_depth"),
+        header_size=header_size,
+        row_alignment=1,
+        encoding=TGA_ENCODINGS[val("image_type")],
+        fields=tuple(records[name] for name, _, _ in specs),
+        probe_name="tga",
+    )
+
+    problems = []
+    if width <= 0:
+        problems.append(f"width {width} is not > 0")
+    if height <= 0:
+        problems.append(f"height {height} is not > 0")
+    rejections: tuple[RejectionEntry, ...] = ()
+    if problems:
+        rejections = (
+            RejectionEntry("probe_precondition_failed", "tga", seed, detail="; ".join(problems)),
+        )
+    return ProbeOutcome(seed, rejections)
