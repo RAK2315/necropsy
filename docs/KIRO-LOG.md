@@ -278,3 +278,8 @@ Per Requirement 11.15 nothing was changed: not the engine, the sample, the 64 x 
 | 2026-11-19 14:42:19Z | PostFileSave | `C:/Users/rehtr/AppData/Local/Temp/t153.py` | `d268f32` |
 | 2026-11-19 14:43:48Z | PostFileCreate | `build/t153.py` | `d268f32` |
 | 2026-11-19 14:43:48Z | PostFileSave | `build/t153.py` | `d268f32` |
+
+
+## Deploy: UI tasks 1 to 11 (2026-11-19)
+
+Deployed `necropsy` (https://necropsy.vercel.app) from a clean clone of `5b9bd19`, not the working tree. Deployment URL `necropsy-4kp83mtbx-rehaans-projects-33eea979.vercel.app`, ready in 16 s. Checked on the live URL: page, CSS, JS and sample index 200; `mystery_i` RESOLVED with trailer `pcx_palette_256`; `mystery_d` UNRESOLVED_AMBIGUITY with 18 candidates; `external_b` RESOLVED with trailer `tga2_footer`; a text file FAILED with `no_hypothesis_checked`; `/api/spec.zip` for `mystery_e` returns `tiff/requirements.md`, `tiff/design.md`, `tiff/test_tiff.py`; a browser screenshot of `mystery_i` at 1280x720 shows the declared-versus-actual box. `necropsy-coldtest` was not touched.
