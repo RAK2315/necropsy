@@ -134,6 +134,49 @@ def test_tga_zero_width_precondition_failed():
     assert "probe_precondition_failed" in reasons(out)
 
 
+def test_tga_mystery_c_image_descriptor_record():
+    # Req 2.6, Req 7.3: image_descriptor at 0x11, format "B", value 0x20 (top-left)
+    data = corpus_bytes("mystery_c")
+    recs = field(probe_tga(data).seed, "image_descriptor")
+    assert len(recs) == 1
+    rec = recs[0]
+    assert rec.offset == 0x11
+    assert rec.fmt == "B"
+    assert rec.value == (0x20,)
+    assert struct.unpack_from("B", data, 0x11) == (0x20,)
+    assert struct.unpack_from(rec.fmt, data, rec.offset) == rec.value
+
+
+def _tga_with_descriptor(descriptor):
+    """Crafted 18-byte TGA header, 4x4, 24 bpp, uncompressed true-colour (Req 2.6)."""
+    h = bytearray(18)
+    h[0x00] = 0  # id_length: no id field
+    h[0x01] = 0  # color_map_type: none
+    h[0x02] = 2  # image type 2: uncompressed true-colour
+    # 0x03..0x07: colour-map spec, left zero
+    # 0x08..0x0B: x/y origin, left zero
+    struct.pack_into("<H", h, 0x0C, 4)  # width = 4
+    struct.pack_into("<H", h, 0x0E, 4)  # height = 4
+    h[0x10] = 24  # bit depth
+    h[0x11] = descriptor  # image descriptor; bit 5 = row origin
+    return bytes(h)
+
+
+def test_tga_image_descriptor_reported_not_acted_on():
+    # Req 2.6, Decision Record 14: bottom-left (0x00) and top-left (0x20)
+    # headers yield the same seed, apart from the reported descriptor.
+    bottom = probe_tga(_tga_with_descriptor(0x00)).seed
+    top = probe_tga(_tga_with_descriptor(0x20)).seed
+    rec = field(bottom, "image_descriptor")
+    assert len(rec) == 1 and rec[0].offset == 0x11 and rec[0].fmt == "B"
+    assert rec[0].value == (0x00,)
+    assert field(top, "image_descriptor")[0].value == (0x20,)
+    for attr in ("width", "height", "bit_depth", "header_size", "encoding"):
+        assert getattr(bottom, attr) == getattr(top, attr)
+    assert (bottom.width, bottom.height, bottom.bit_depth) == (4, 4, 24)
+    assert (bottom.header_size, bottom.encoding) == (18, "none")
+
+
 # --------------------------------------------------------------------- PBM
 def test_pbm_mystery_a():
     out = probe_pbm(corpus_bytes("mystery_a"))
