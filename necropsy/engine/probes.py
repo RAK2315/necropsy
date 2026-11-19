@@ -112,6 +112,7 @@ TGA_COLOR_MAP_ENTRY_SIZE_OFFSET = 0x07  # B, bits per colour-map entry
 TGA_WIDTH_OFFSET = 0x0C              # <H
 TGA_HEIGHT_OFFSET = 0x0E             # <H
 TGA_BIT_DEPTH_OFFSET = 0x10          # B
+TGA_IMAGE_DESCRIPTOR_OFFSET = 0x11   # B, bit 5 set = top-left origin
 TGA_ENCODINGS = {1: "none", 2: "none", 3: "none", 9: "rle_tga", 10: "rle_tga", 11: "rle_tga"}
 
 
@@ -140,6 +141,8 @@ def _probe_tga(data: bytes) -> ProbeOutcome | None:
         ("width", TGA_WIDTH_OFFSET, "<H"),
         ("height", TGA_HEIGHT_OFFSET, "<H"),
         ("bit_depth", TGA_BIT_DEPTH_OFFSET, "B"),
+        # Reported only: bit 5 set = top-left origin. Does not affect inference.
+        ("image_descriptor", TGA_IMAGE_DESCRIPTOR_OFFSET, "B"),
     )
     records = {}
     for name, offset, fmt in specs:
