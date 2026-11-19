@@ -248,8 +248,48 @@ def _trailer_file():
 
 def test_registry_first_entry_req_1_5():
     e = TRAILER_REGISTRY[0]
-    assert (e.name, e.length, e.marker) == ("pcx_palette_256", 769, 0x0C)
+    assert (e.name, e.length, e.signature, e.signature_offset) == (
+        "pcx_palette_256", 769, b"\x0c", 0)
     assert set(e.applies_to) == {"pcx", "generic"}
+
+
+def test_registry_second_entry_and_order_req_1_5():
+    # Requirement 1.5: pcx_palette_256 first, tga2_footer second, nothing else.
+    assert [e.name for e in TRAILER_REGISTRY] == ["pcx_palette_256", "tga2_footer"]
+    e = TRAILER_REGISTRY[1]
+    assert (e.name, e.length, e.signature, e.signature_offset) == (
+        "tga2_footer", 26, b"TRUEVISION-XFILE.\x00", 8)
+    assert len(e.signature) == 18
+    assert set(e.applies_to) == {"tga", "generic"}
+
+
+def _footer_file():
+    # 4 header bytes + 10 body bytes + 26-byte footer.
+    # Footer: 4-byte extension offset (0), 4-byte developer offset (0), then the
+    # 18-byte signature "TRUEVISION-XFILE.\0". len = 4 + 10 + 26 = 40;
+    # trailer_start = 40 - 26 = 14; signature starts at 14 + 8 = 22 = len - 18.
+    return bytes(4) + bytes(range(10)) + bytes(8) + b"TRUEVISION-XFILE.\x00"
+
+
+@pytest.mark.parametrize("origin", ["tga", "generic"])
+def test_tga2_footer_applies_to_tga_and_generic_req_1_5(origin):
+    data = _footer_file()
+    assert len(data) == 40
+    assert match_trailer(data, 4, origin) == (14, "tga2_footer")
+
+
+@pytest.mark.parametrize("origin", ["pcx", "pbm", "tiff"])
+def test_tga2_footer_not_applied_to_other_origins_req_1_5(origin):
+    data = _footer_file()
+    assert match_trailer(data, 4, origin) == (len(data), None)
+
+
+@pytest.mark.parametrize("index", [0, 8, 17])
+def test_tga2_footer_one_byte_signature_change_stops_match_req_1_5(index):
+    data = _footer_file()
+    pos = len(data) - 18 + index  # a byte inside the 18-byte signature
+    bad = data[:pos] + bytes((data[pos] ^ 0x01,)) + data[pos + 1:]
+    assert match_trailer(bad, 4, "tga") == (len(bad), None)
 
 
 @pytest.mark.parametrize("origin", ["pcx", "generic"])
@@ -287,7 +327,7 @@ def test_check_closure_uses_trailer_for_pcx_not_tga_req_1_3():
 def test_extra_registry_entry_changes_match_req_1_6():
     # 10 body bytes + 4-byte footer: 0xEE marker at len - 4 = 10.
     data = bytes(10) + b"\xEE\x00\x00\x00"
-    footer = TrailerEntry("test_footer", 4, 0xEE, frozenset({"tga"}))
+    footer = TrailerEntry("test_footer", 4, b"\xEE", 0, frozenset({"tga"}))
     registry = TRAILER_REGISTRY + (footer,)
     assert match_trailer(data, 0, "tga") == (14, None)  # default registry: no match
     assert match_trailer(data, 0, "tga", registry) == (10, "test_footer")

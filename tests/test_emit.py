@@ -407,3 +407,39 @@ def test_rule_breaking_tiff_emits_file_layout_for_one_file_only():
 
 def test_mystery_e_still_emits_format_layout():
     assert _layout("mystery_e")["kind"] == "format"
+
+# --- TGA 2.0 footer in emitted layouts (Req 9.16, 1.5) -----------------------
+TGA2_SIGNATURE_HEX = "54525545564953494f4e2d5846494c452e00"  # "TRUEVISION-XFILE.\0"
+
+
+def _external_b():
+    from tests.conftest import SAMPLES_DIR
+    return (SAMPLES_DIR / "external" / "external_b").read_bytes()
+
+
+def test_tga_layout_lists_tga2_footer_with_signature():
+    layout = _layout("mystery_c")
+    trailers = layout["data"]["trailers"]
+    footer = [t for t in trailers if t["name"] == "tga2_footer"]
+    assert len(footer) == 1
+    assert footer[0]["length"] == 26
+    assert footer[0]["signature"] == TGA2_SIGNATURE_HEX
+    assert footer[0]["signature_offset"] == 8
+
+
+def test_reference_reader_reproduces_external_b_from_emitted_requirements():
+    data = _external_b()
+    result = Engine().run(data)
+    assert result.status == "RESOLVED"
+    spec = emit_spec(result, data)
+    assert isinstance(spec, EmittedSpec)
+    layout = extract_layout(_file(spec, "requirements.md"))
+    trailers = layout["data"]["trailers"]
+    assert any(t["name"] == "tga2_footer" and t["signature"] == TGA2_SIGNATURE_HEX
+               and t["signature_offset"] == 8 for t in trailers)
+    got = [p for p in parse_candidates(layout, data) if p.get("ok")]
+    assert len(got) == 1
+    p = got[0]
+    assert (p["width"], p["height"], p["bit_depth"]) == (64, 48, 24)
+    assert (p["data_start"], p["data_end"]) == (18, 9234)
+    assert p["pixels"] == bytes(result.candidate.decoded)

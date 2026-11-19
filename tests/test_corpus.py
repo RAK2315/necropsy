@@ -124,3 +124,55 @@ def test_resolved_pixels_exact(name):
 @pytest.mark.parametrize("name", CORPUS_NAMES)
 def test_no_corpus_file_fails(name):
     assert run(name).status != "FAILED"
+
+
+# --- external_b: Pillow TGA 2.0 with footer (Requirement 7.12) -------------------
+def _read_ppm(path):
+    """Parse a binary P6 PPM; return (width, height, pixel bytes in RGB order)."""
+    raw = path.read_bytes()
+    pos = 0
+    tokens = []
+    while len(tokens) < 4:
+        while raw[pos:pos + 1].isspace():
+            pos += 1
+        if raw[pos:pos + 1] == b"#":
+            while raw[pos:pos + 1] != b"\n":
+                pos += 1
+            continue
+        start = pos
+        while not raw[pos:pos + 1].isspace():
+            pos += 1
+        tokens.append(raw[start:pos])
+    pos += 1  # exactly one whitespace byte after maxval
+    assert tokens[0] == b"P6" and tokens[3] == b"255"
+    w, h = int(tokens[1]), int(tokens[2])
+    pixels = raw[pos:]
+    assert len(pixels) == w * h * 3
+    return w, h, pixels
+
+
+def test_external_b_resolves_with_tga2_footer_req_7_12():
+    from tests.conftest import SAMPLES_DIR
+    data = (SAMPLES_DIR / "external" / "external_b").read_bytes()
+    assert len(data) == 9260
+    r = Engine().run(data)
+    assert r.status == "RESOLVED"
+    assert r.stage == "probe"
+    c = r.candidate
+    hy = c.hypothesis
+    assert hy.probe_name == "tga"
+    assert (hy.width, hy.height, hy.bit_depth, hy.header_size) == (64, 48, 24, 18)
+    assert tuple(hy.revision_path) == ()
+    assert c.trailer == "tga2_footer"
+    assert (c.data_start, c.data_end) == (18, 9234)
+    descs = [f for f in hy.fields if f.name == "image_descriptor"]
+    assert len(descs) == 1 and descs[0].value == (0x00,)
+    # Source pixels stored bottom row first, each pixel as B, G, R.
+    w, h, rgb = _read_ppm(SAMPLES_DIR / "external" / "source.ppm")
+    assert (w, h) == (64, 48)
+    expected = bytearray()
+    for y in range(h - 1, -1, -1):
+        for x in range(w):
+            i = (y * w + x) * 3
+            expected += bytes((rgb[i + 2], rgb[i + 1], rgb[i]))
+    assert bytes(c.decoded) == bytes(expected)
