@@ -614,6 +614,23 @@ Rules for every task:
     - Add tests to `tests/test_emit.py` from Requirement 9.20: a crafted TIFF whose probe records `probe_precondition_failed` and which still resolves emits kind `file`, states it describes one file only, and the reference reader reproduces it from the emitted `requirements.md` alone. mystery_e still emits kind `format`.
     - _Requirements: 9.20, 9.16_
 
+- [ ] 15. Truthful emitted-suite text, a zero-check termination, and timing
+  - [-] 15.1 Verify and correct the acceptance-suite text in `necropsy/emit/render.py`
+    - Print verbatim the text `_acceptance_line` emits for a single result (mystery_e) and an ambiguous one (mystery_d).
+    - Measure: run plain `python -m pytest <folder> -q` in an emitted folder with nothing added, and again with the reference parser module beside it. Record both outcomes exactly.
+    - Where the emitted text claims anything the measurement contradicts, fix the text, not the measurement.
+    - _Requirements: 9.1, 9.11, 9.17_
+
+  - [x] 15.2 Add termination `no_hypothesis_checked`
+    - Add it to `TERMINATIONS` in `necropsy/engine/types.py` and return it from `necropsy/engine/engine.py` exactly when Requirement 5.12 says. `exhausted` keeps its meaning.
+    - Tests from Requirement 5.12: a zero-check input (e.g. 65,536 random bytes, or a short text file) gives `no_hypothesis_checked`; an input whose hypotheses are checked and none closes still gives `exhausted`. Update any existing test that asserted `exhausted` for a zero-check input, citing Requirement 5.12.
+    - Re-run the nine `mystery_*` files and `external_b` against a recorded baseline. If any result changes, stop and report.
+    - _Requirements: 5.7, 5.12, 4.8_
+
+  - [~] 15.3 Re-time the three 65,536-byte inputs
+    - Time them once with nothing else running and report against design.md "Measured Performance". Do not optimise.
+    - _Requirements: 5.4_
+
 ## Notes
 
 - The expected corpus values and candidate counts (18, 8 and 8) come from a reference model of these exact rules, recorded in design.md. A mismatch means the implementation and the spec disagree; report it, do not tune either.
@@ -650,7 +667,9 @@ Rules for every task:
     { "id": 21, "tasks": ["14.2"] },
     { "id": 22, "tasks": ["13.3"] },
     { "id": 23, "tasks": ["13.4"] },
-    { "id": 24, "tasks": ["12"] }
+    { "id": 24, "tasks": ["15.1", "15.2"] },
+    { "id": 25, "tasks": ["15.3"] },
+    { "id": 26, "tasks": ["12"] }
   ]
 }
 ```

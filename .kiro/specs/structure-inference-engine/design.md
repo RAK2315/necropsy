@@ -142,7 +142,7 @@ REASONS = frozenset({
     "unsupported_encoding", "input_too_short", "internal_error",
 })
 TERMINATIONS = frozenset({
-    "exhausted", "deadline_exceeded", "search_cap_exceeded", "input_too_short", "internal_error",
+    "exhausted", "no_hypothesis_checked", "deadline_exceeded", "search_cap_exceeded", "input_too_short", "internal_error",
 })
 
 @dataclass(frozen=True)
