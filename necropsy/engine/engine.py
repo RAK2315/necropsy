@@ -1,4 +1,4 @@
-"""Engine: probe phase and candidate assembly. Revision and generic phases are hooks."""
+"""Engine: probe, revision and generic phases, and candidate assembly."""
 
 from __future__ import annotations
 
@@ -8,6 +8,7 @@ from typing import Callable
 from necropsy.engine.budget import Budget
 from necropsy.engine.closure import ClosureVerdict, check_closure, row_stride
 from necropsy.engine.coherence import coherence_gap, row_coherence
+from necropsy.engine.generic import generic_search
 from necropsy.engine.probes import PROBES
 from necropsy.engine.types import (
     AMBIGUITY_REASON,
@@ -33,6 +34,19 @@ class Engine:
         self._clock = clock
 
     def run(self, data: bytes) -> EngineResult:
+        """Never raises. The wrapper is a last line of defence; inner code does not rely on it."""
+        try:
+            return self._run_checked(data)
+        except Exception as exc:
+            size = len(data) if isinstance(data, (bytes, bytearray)) else 0
+            return FailureReport(
+                "internal_error",
+                (RejectionEntry("internal_error", "engine",
+                                detail=f"{type(exc).__name__}: {exc}"),),
+                0, size,
+            )
+
+    def _run_checked(self, data: bytes) -> EngineResult:
         data = bytes(data)
         if len(data) < MIN_INPUT_BYTES:
             return FailureReport(
@@ -78,8 +92,27 @@ class Engine:
 
         if seeds:
             return self._revise(seeds, data, budget, rejections)
-        # HOOK (task 7.3): generic dispatch goes here (no probe matched).
-        return FailureReport("exhausted", tuple(rejections), budget.checks, len(data))
+        return self._generic(data, budget, rejections)
+
+    def _generic(self, data: bytes, budget: Budget,
+                 rejections: list[RejectionEntry]) -> EngineResult:
+        """Generic Search; runs only when no probe matched."""
+        def on_reject(h: Hypothesis, v: ClosureVerdict) -> None:
+            rejections.append(RejectionEntry(v.reason, "generic", h, v.discrepancy))
+
+        outcome = generic_search(data, budget, on_reject)
+        found = list(outcome.found)
+        if outcome.stop:
+            return self._failure(outcome.stop, data, budget, rejections, found)
+        candidates: list[Candidate] = []
+        for h, v in found:
+            cand = self._candidate(h, v, budget)
+            if isinstance(cand, str):
+                return self._failure(cand, data, budget, rejections, found)
+            candidates.append(cand)
+        if not candidates:
+            return FailureReport("exhausted", tuple(rejections), budget.checks, len(data))
+        return self._outcome(candidates, "generic", data, budget, rejections)
 
     def _revise(self, seeds: list[Hypothesis], data: bytes, budget: Budget,
                 rejections: list[RejectionEntry]) -> EngineResult:
