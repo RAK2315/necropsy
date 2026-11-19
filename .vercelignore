@@ -1,0 +1,11 @@
+.git
+.hypothesis
+.pytest_cache
+.kiro
+build
+docs
+notes
+tests
+tools
+spike
+**/__pycache__
