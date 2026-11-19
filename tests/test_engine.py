@@ -364,3 +364,48 @@ def test_winner_before_deadline_stop_is_partial_candidate(monkeypatch):
     (b_partial,) = [c for c in r.partial_candidates if hypothesis_key(c.hypothesis) == hypothesis_key(b)]
     assert b_partial.coherence_status == "not_computed"
     assert b_partial.coherence_score is None
+
+
+# ---- Req 5.12: no_hypothesis_checked vs exhausted ----
+
+def _pcx_never_closes() -> bytes:
+    """128-byte PCX header (offsets from probes.py), then 7 data bytes.
+    0x00 manufacturer 0x0A; 0x02 encoding 0 (none); 0x03 bit depth 8;
+    0x04..0x0B xmin, ymin, xmax, ymax = 0, 0, 9, 9 (little-endian <H);
+    0x41 planes 1; 0x42 bytes_per_line 10 (<H).
+    7 data bytes match no 8-bit area the seed or any depth-3 revision can propose
+    (width and height are small, so every area is >= 1 and none equals 7 in both dimensions)."""
+    header = bytearray(128)
+    header[0x00] = 0x0A
+    header[0x02] = 0
+    header[0x03] = 8
+    header[0x04:0x0C] = (0).to_bytes(2, "little") * 2 + (9).to_bytes(2, "little") * 2
+    header[0x41] = 1
+    header[0x42:0x44] = (10).to_bytes(2, "little")
+    return bytes(header) + b"\x01" * 7
+
+
+def test_random_65536_bytes_is_no_hypothesis_checked():
+    # Requirement 5.12: zero closure checks, no other termination applies.
+    import random
+    data = random.Random(1).randbytes(65_536)
+    r = Engine().run(data)
+    assert r.status == "FAILED"
+    assert r.termination == "no_hypothesis_checked"
+    assert r.total_checks == 0
+
+
+def test_short_text_file_is_no_hypothesis_checked():
+    # Requirement 5.12.
+    r = Engine().run(b"hello world\n" * 20)
+    assert r.status == "FAILED"
+    assert r.termination == "no_hypothesis_checked"
+    assert r.total_checks == 0
+
+
+def test_checked_but_never_closing_input_is_exhausted():
+    # Requirement 5.12: exhausted means at least one hypothesis was closure-checked.
+    r = Engine().run(_pcx_never_closes())
+    assert r.status == "FAILED"
+    assert r.termination == "exhausted"
+    assert r.total_checks > 0

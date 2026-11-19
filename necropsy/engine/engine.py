@@ -111,7 +111,7 @@ class Engine:
                 return self._failure(cand, data, budget, rejections, found, candidates)
             candidates.append(cand)
         if not candidates:
-            return FailureReport("exhausted", tuple(rejections), budget.checks, len(data))
+            return self._exhausted(data, budget, rejections)
         return self._outcome(candidates, "generic", data, budget, rejections)
 
     def _revise(self, seeds: list[Hypothesis], data: bytes, budget: Budget,
@@ -153,7 +153,15 @@ class Engine:
                     candidates.append(cand)
                 return self._outcome(candidates, "revision", data, budget, rejections)
             frontier = next_frontier
-        return FailureReport("exhausted", tuple(rejections), budget.checks, len(data))
+        return self._exhausted(data, budget, rejections)
+
+    @staticmethod
+    def _exhausted(data: bytes, budget: Budget,
+                   rejections: list[RejectionEntry]) -> FailureReport:
+        """Requirement 5.12: `exhausted` needs at least one closure check; otherwise
+        `no_hypothesis_checked`."""
+        termination = "no_hypothesis_checked" if budget.checks == 0 else "exhausted"
+        return FailureReport(termination, tuple(rejections), budget.checks, len(data))
 
     def _candidate(self, h: Hypothesis, verdict: ClosureVerdict, budget: Budget,
                    alternative_paths: tuple[tuple[str, ...], ...] = ()) -> Candidate | str:

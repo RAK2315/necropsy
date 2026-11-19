@@ -11,7 +11,7 @@ REASONS = frozenset({
 })
 
 TERMINATIONS = frozenset({
-    "exhausted", "deadline_exceeded", "search_cap_exceeded", "input_too_short", "internal_error",
+    "exhausted", "no_hypothesis_checked", "deadline_exceeded", "search_cap_exceeded", "input_too_short", "internal_error",
 })
 
 AMBIGUITY_REASON = (
