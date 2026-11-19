@@ -3,6 +3,8 @@
 Expected values come from requirements.md Requirement 7 and design.md
 "Corpus Trace (measured)", not from the engine.
 """
+import struct
+
 import pytest
 
 import make_samples
@@ -54,7 +56,15 @@ def test_mystery_b():
 
 
 def test_mystery_c():
-    check_resolved("mystery_c", "probe", "tga", 16, 16, 24, 18, 1, 48, "none", (18, 786), None, ())
+    r = check_resolved("mystery_c", "probe", "tga", 16, 16, 24, 18, 1, 48, "none", (18, 786), None, ())
+    # Requirement 7.3: image_descriptor at 0x11, format "B", value 0x20 (top-left origin).
+    descs = [f for f in r.candidate.hypothesis.fields if f.name == "image_descriptor"]
+    assert len(descs) == 1
+    fr = descs[0]
+    assert fr.offset == 0x11
+    assert fr.fmt == "B"
+    assert fr.value == (0x20,)
+    assert struct.unpack_from("B", corpus_bytes("mystery_c"), 0x11) == (0x20,)
 
 
 def test_mystery_e():
