@@ -285,3 +285,125 @@ def _probe_pbm(data: bytes) -> ProbeOutcome | None:
             RejectionEntry("probe_precondition_failed", "pbm", seed, detail="; ".join(problems)),
         )
     return ProbeOutcome(seed, rejections)
+
+
+# TIFF header layout. "o" is "<" for b"II" and ">" for b"MM"; offsets are bytes.
+TIFF_MIN_LENGTH = 8
+TIFF_BYTE_ORDER_OFFSET = 0x00   # 2s, b"II" or b"MM"
+TIFF_MAGIC_OFFSET = 0x02        # oH, must be 42
+TIFF_IFD_OFFSET_OFFSET = 0x04   # oI
+TIFF_MAGIC = 42
+TIFF_ORDERS = {b"II": "<", b"MM": ">"}
+TIFF_ENTRY_SIZE = 12
+TIFF_ENTRY_TAG_OFFSET = 0       # oH
+TIFF_ENTRY_TYPE_OFFSET = 2      # oH
+TIFF_ENTRY_COUNT_OFFSET = 4     # oI
+TIFF_ENTRY_VALUE_OFFSET = 8     # oH for SHORT (3), oI for LONG (4)
+TIFF_TAG_NAMES = {
+    256: "width",
+    257: "height",
+    258: "bits_per_sample",
+    259: "compression",
+    273: "strip_offset",
+    277: "samples_per_pixel",
+    279: "strip_byte_count",
+}
+TIFF_REQUIRED_TAGS = (256, 257, 258, 273, 279)
+TIFF_TYPE_FORMATS = {3: "H", 4: "I"}
+
+
+def probe_tiff(data: bytes) -> ProbeOutcome | None:
+    """TIFF probe. Returns None when the bytes do not look like a TIFF header."""
+    try:
+        return _probe_tiff(data)
+    except Exception:  # last line of defence; inner code bounds-checks
+        return None
+
+
+def _probe_tiff(data: bytes) -> ProbeOutcome | None:
+    if len(data) < TIFF_MIN_LENGTH:
+        return None
+    order = TIFF_ORDERS.get(bytes(data[TIFF_BYTE_ORDER_OFFSET : TIFF_BYTE_ORDER_OFFSET + 2]))
+    if order is None:
+        return None
+    magic = read(data, "magic", TIFF_MAGIC_OFFSET, order + "H")
+    if magic is None or magic.value[0] != TIFF_MAGIC:
+        return None
+    byte_order = read(data, "byte_order", TIFF_BYTE_ORDER_OFFSET, "2s")
+    ifd = read(data, "ifd_offset", TIFF_IFD_OFFSET_OFFSET, order + "I")
+    if byte_order is None or ifd is None:
+        return None
+
+    records = [byte_order, magic, ifd]
+    values: dict[int, int] = {}
+    out_of_bounds = ""
+    ifd_offset = ifd.value[0]
+    count_rec = read(data, "ifd_entry_count", ifd_offset, order + "H")
+    if count_rec is None:
+        out_of_bounds = f"ifd_offset {ifd_offset} leaves no room for the entry count"
+    else:
+        records.append(count_rec)
+        entry_count = count_rec.value[0]
+        for k in range(entry_count):
+            entry = ifd_offset + 2 + TIFF_ENTRY_SIZE * k
+            if entry + TIFF_ENTRY_SIZE > len(data):
+                out_of_bounds = (
+                    f"entry {k} of {entry_count} at offset {entry} runs past the end of the data"
+                )
+                break
+            tag = read(data, "tag", entry + TIFF_ENTRY_TAG_OFFSET, order + "H")
+            kind = read(data, "type", entry + TIFF_ENTRY_TYPE_OFFSET, order + "H")
+            count = read(data, "count", entry + TIFF_ENTRY_COUNT_OFFSET, order + "I")
+            if tag is None or kind is None or count is None:
+                continue
+            tag_id, type_id = tag.value[0], kind.value[0]
+            if tag_id not in TIFF_TAG_NAMES or count.value[0] != 1:
+                continue
+            code = TIFF_TYPE_FORMATS.get(type_id)
+            if code is None or tag_id in values:
+                continue
+            rec = read(data, TIFF_TAG_NAMES[tag_id], entry + TIFF_ENTRY_VALUE_OFFSET, order + code)
+            if rec is None:
+                continue
+            records.append(rec)
+            values[tag_id] = rec.value[0]
+
+    compression = values.get(259, 1)
+    samples = values.get(277, 1)
+    strip_offset = values.get(273, 0)
+    seed = Hypothesis(
+        width=values.get(256, 0),
+        height=values.get(257, 0),
+        bit_depth=values.get(258, 0) * samples,
+        header_size=strip_offset,
+        row_alignment=1,
+        encoding="none" if compression == 1 else f"tiff_compression_{compression}",
+        data_end=strip_offset + values.get(279, 0),
+        fields=tuple(records),
+        probe_name="tiff",
+    )
+
+    rejections: list[RejectionEntry] = []
+    if out_of_bounds:
+        rejections.append(
+            RejectionEntry("field_out_of_bounds", "tiff", seed, detail=out_of_bounds)
+        )
+    problems = []
+    missing = [TIFF_TAG_NAMES[t] for t in TIFF_REQUIRED_TAGS if t not in values]
+    if missing:
+        problems.append("missing tags: " + ", ".join(missing))
+    if samples != 1:
+        problems.append(f"samples_per_pixel {samples} is not 1")
+    if problems:
+        rejections.append(
+            RejectionEntry("probe_precondition_failed", "tiff", seed, detail="; ".join(problems))
+        )
+    return ProbeOutcome(seed, tuple(rejections))
+
+
+PROBES = (
+    ("pcx", probe_pcx),
+    ("tga", probe_tga),
+    ("pbm", probe_pbm),
+    ("tiff", probe_tiff),
+)
