@@ -176,3 +176,99 @@ export function fitSize(w, h, boxW, boxH) {
   const k = Math.min(boxW / w, boxH / h);                      // larger than the box even at 1: shrink, still nearest-neighbour
   return { scale: k, width: Math.max(1, Math.floor(w * k)), height: Math.max(1, Math.floor(h * k)) };
 }
+// ---- UNRESOLVED_AMBIGUITY (Requirement 9) ----
+
+export const escapeHTML = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
+
+export function ambiguityStatement(n) {
+  return `${n} readings fit these bytes exactly. Each one passes closure. The bytes cannot separate them, so NECROPSY does not choose.`;
+}
+
+export const COHERENCE_NOTE =
+  'Coherence is a heuristic with known failure modes. It is shown for information only and does not choose between readings.';
+
+export function coherenceText(c) {
+  return c.coherence_status === 'scored' && typeof c.coherence_score === 'number'
+    ? `coherence (heuristic, ${c.coherence_method}): ${c.coherence_score.toFixed(4)}`
+    : `coherence (heuristic): ${c.coherence_status}`;
+}
+
+/** Card identity is the candidate's own geometry, never a rank. */
+export const cardTitle = (c) => `${c.width} × ${c.height} · ${c.bit_depth}-bit · header ${c.header_size}`;
+
+/**
+ * Everything one ambiguity card shows. Same keys, same number of lines, for every candidate.
+ * Nothing here depends on coherence except the coherence text itself.
+ */
+export function cardModel(c, index) {
+  return {
+    index,
+    title: cardTitle(c),
+    lines: [
+      `row alignment ${c.row_alignment} · stride ${c.row_stride}`,
+      `encoding ${c.encoding}`,
+      `data region [${c.data_start}, ${c.data_end})`,
+    ],
+    note: c.render && c.render.note ? c.render.note : '',
+    failure: c.render && c.render.failure ? c.render.failure : '',
+    coherence: coherenceText(c),
+  };
+}
+
+/** Markup for one card. A pure function of the model; the image is painted into .well afterwards. */
+export function cardHTML(m) {
+  const well = m.failure ? `<p class="no-image">${escapeHTML(m.failure)}</p>` : '';
+  return `<article class="card" tabindex="0" data-index="${m.index}" aria-label="${escapeHTML(m.title)}">`
+    + `<div class="well card-well" data-index="${m.index}">${well}</div>`
+    + `<h3 class="card-title mono">${escapeHTML(m.title)}</h3>`
+    + m.lines.map((l) => `<p class="card-line mono">${escapeHTML(l)}</p>`).join('')
+    + `<p class="card-note">${escapeHTML(m.note)}</p>`
+    + `<p class="card-coh mono">${escapeHTML(m.coherence)}</p>`
+    + `</article>`;
+}
+
+/** All cards in the payload's order, which is the engine's discovery order. */
+export function cardsHTML(payload) {
+  return payload.candidates.map((c, i) => cardHTML(cardModel(c, i))).join('');
+}
+
+// ---- FAILED (Requirement 10) ----
+
+export function terminationText(t) {
+  return {
+    exhausted: 'Every hypothesis within the search axes was tried and none closed.',
+    deadline_exceeded: 'The search stopped at the 5 second deadline.',
+    search_cap_exceeded: 'The search stopped at the 10,000 closure-check cap.',
+    input_too_short: 'The file is shorter than 3 bytes.',
+    internal_error: 'The engine hit an internal error. The detail is below.',
+  }[t] ?? t;
+}
+
+const STAGE_ORDER = ['probe', 'revision', 'generic', 'engine'];
+
+/** Rejections grouped by stage, then reason, keeping the engine's order inside each group. */
+export function failureGroups(rejections) {
+  const stages = new Map();
+  for (const r of rejections) {
+    const s = stageOf(r.source);
+    if (!stages.has(s)) stages.set(s, new Map());
+    const byReason = stages.get(s);
+    if (!byReason.has(r.reason)) byReason.set(r.reason, []);
+    byReason.get(r.reason).push(r);
+  }
+  return STAGE_ORDER.filter((s) => stages.has(s)).map((s) => ({
+    stage: s,
+    count: [...stages.get(s).values()].reduce((a, l) => a + l.length, 0),
+    reasons: [...stages.get(s)].map(([reason, items]) => ({ reason, count: items.length, items })),
+  }));
+}
+
+export function rejectionLine(r) {
+  const d = r.discrepancy === null || r.discrepancy === undefined ? '' : ` (discrepancy=${r.discrepancy})`;
+  return `${r.source}: ${r.reason}${d}`;
+}
+
+export function hypothesisLine(h) {
+  if (!h) return '';
+  return `${h.width} × ${h.height} · ${h.bit_depth}-bit · header ${h.header_size} · align ${h.row_alignment} · ${h.encoding}`;
+}

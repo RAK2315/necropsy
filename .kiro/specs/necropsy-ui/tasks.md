@@ -66,13 +66,13 @@ Rules for every task:
   - Must be visible: `mystery_b` in palette colours; `mystery_c` in correct colours; `mystery_h` 6×6 with no padding column; `mystery_i` shows `declared: none (byte 0x02 = 0x00)` and `actual: rle_pcx` without scrolling at 1280×720; the external samples render.
   - _Requirements: 4, 8_
 
-- [ ] 10. UNRESOLVED_AMBIGUITY screen
+- [x] 10. UNRESOLVED_AMBIGUITY screen
   - Leading statement, identical cards in a wrapping grid in payload order, common frame, coherence in one fixed place, union hex pane with hover to show a candidate, no selection on load, 16-bit placeholder card in the same frame as an image.
   - Add the neutrality test: two fixtures differing only in coherence render identical markup apart from the coherence text.
   - Must be visible: `mystery_d`, `mystery_f` and `mystery_g` show every candidate with its image, none preferred, success styling.
   - _Requirements: 9, 4.2_
 
-- [ ] 11. FAILED screen
+- [x] 11. FAILED screen
   - Chip, termination sentence, counts, grouped collapsible rejections with the 200 cap, omitted-rejection notice, partial candidates heading.
   - Must be visible: a text file and an empty file each give a complete FAILED screen, distinct from the two success screens.
   - _Requirements: 10, 11.9_
