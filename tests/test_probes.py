@@ -62,17 +62,25 @@ def test_pcx_mystery_h_is_5x5():
     assert (s.width, s.height) == (5, 5)
 
 
-def test_pcx_encoding_byte_2_gives_none():
-    # Req 2.5 signature: byte 0x02 must be 0 or 1
-    data = bytearray(corpus_bytes("mystery_b"))
-    data[0x02] = 2
-    assert probe_pcx(bytes(data)) is None
+def test_pcx_encoding_byte_5_declines():
+    # Req 2.10: signature 0x00 == 0x0A matches, but encoding byte 0x02 = 5 is not 0/1.
+    out = probe_pcx(make_pcx(encoding=5))  # 128 bytes, byte 0x00 = 0x0A, byte 0x02 = 0x05
+    assert out is not None
+    assert out.seed is None
+    assert len(out.rejections) == 1
+    r = out.rejections[0]
+    assert r.reason == "probe_precondition_failed"
+    assert r.source == "pcx"
+    assert r.hypothesis is None
+    assert "0x02" in r.detail and "encoding" in r.detail and "0x05" in r.detail
 
 
 def test_pcx_too_short_or_wrong_signature_gives_none():
-    # Req 2.2
-    assert probe_pcx(make_pcx()[:127]) is None
-    assert probe_pcx(b"\x00" + make_pcx()[1:]) is None
+    # Req 2.2, 2.10: no signature match records nothing, even with a bad encoding byte
+    assert probe_pcx(make_pcx()[:127]) is None  # 127 bytes: below minimum length
+    assert probe_pcx(make_pcx(encoding=5)[:127]) is None
+    assert probe_pcx(b"\x00" + make_pcx()[1:]) is None  # byte 0x00 = 0x00, not 0x0A
+    assert probe_pcx(b"\x00" + make_pcx(encoding=5)[1:]) is None
 
 
 def test_pcx_xmax_below_xmin_seed_plus_precondition_failed():
@@ -549,6 +557,13 @@ SIGNED = {
 def check_outcome(data, out):
     assert out is None or isinstance(out, ProbeOutcome)
     if out is None:
+        return
+    if out.seed is None:
+        # Requirements 2.3 / 2.10: a probe may only decline, with exactly one
+        # probe_precondition_failed rejection that carries no hypothesis.
+        assert len(out.rejections) == 1
+        assert out.rejections[0].reason == "probe_precondition_failed"
+        assert out.rejections[0].hypothesis is None
         return
     assert isinstance(out.seed, Hypothesis)
     for r in out.rejections:

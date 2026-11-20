@@ -409,3 +409,59 @@ def test_checked_but_never_closing_input_is_exhausted():
     assert r.status == "FAILED"
     assert r.termination == "exhausted"
     assert r.total_checks > 0
+
+
+# ---- Req 2.10, 4.1: a declining probe contributes no seed ----
+
+def _pcx_bad_encoding() -> bytes:
+    """128-byte PCX header: 0x00 = 0x0A (signature), 0x02 = 5 (impossible encoding),
+    every other byte 0."""
+    header = bytearray(128)
+    header[0x00] = 0x0A
+    header[0x02] = 5
+    return bytes(header)
+
+
+def test_declining_probe_rejection_is_kept_and_generic_search_runs(monkeypatch):
+    calls = []
+    real = engine_mod.generic_search
+
+    def spy(data, budget, on_reject):
+        calls.append(len(data))
+        return real(data, budget, on_reject)
+
+    monkeypatch.setattr(engine_mod, "generic_search", spy)
+    r = Engine().run(_pcx_bad_encoding())
+    assert calls == [128]  # Generic Search ran
+    declined = [e for e in r.rejections
+                if e.source == "pcx" and e.reason == "probe_precondition_failed"]
+    assert len(declined) == 1 and declined[0].hypothesis is None
+    assert "0x02" in declined[0].detail
+    # Generic Search is the only stage that could have run: no probe seed, no revision
+    if r.status == "FAILED":
+        assert r.termination in ("no_hypothesis_checked", "exhausted")
+        assert r.termination == (
+            "no_hypothesis_checked" if r.total_checks == 0 else "exhausted")
+    else:
+        assert r.stage == "generic"
+
+
+def test_outcome_with_seed_none_is_not_a_seed_and_costs_no_check(monkeypatch):
+    from necropsy.engine.types import RejectionEntry
+    rej = RejectionEntry("probe_precondition_failed", "pa", None, detail="declined")
+    monkeypatch.setattr(
+        engine_mod, "PROBES", (("pa", lambda data: ProbeOutcome(None, (rej,))),))
+    seen = []
+    monkeypatch.setattr(
+        engine_mod, "generic_search",
+        lambda data, budget, on_reject: seen.append(budget.checks) or real_generic_stub())
+    r = Engine().run(b"\x00" * 64)
+    assert seen == [0]  # reached Generic Search with no check charged, not Revision
+    assert rej in r.rejections
+    assert r.status == "FAILED" and r.termination == "no_hypothesis_checked"
+    assert r.total_checks == 0
+
+
+def real_generic_stub():
+    from types import SimpleNamespace
+    return SimpleNamespace(found=[], stop=None)

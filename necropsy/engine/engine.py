@@ -70,6 +70,8 @@ class Engine:
             if outcome is None:
                 continue
             rejections.extend(outcome.rejections)
+            if outcome.seed is None:  # Requirement 2.10: declined; no seed, no check
+                continue
             seeds.append(outcome.seed)
             stop = budget.charge()
             if stop:

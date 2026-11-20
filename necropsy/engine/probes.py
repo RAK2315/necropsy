@@ -24,7 +24,15 @@ PCX_ENCODINGS = {0: "none", 1: "rle_pcx"}
 
 @dataclass(frozen=True)
 class ProbeOutcome:
-    seed: Hypothesis
+    """Result of a probe whose signature matched.
+
+    `seed` is None only when the probe declines under Requirement 2.10: the
+    declaration is impossible (e.g. a PCX encoding byte outside {0, 1}), so there
+    is nothing to check. A declining outcome carries exactly one
+    probe_precondition_failed rejection whose hypothesis is None.
+    """
+
+    seed: Hypothesis | None
     rejections: tuple[RejectionEntry, ...]
 
 
@@ -51,8 +59,17 @@ def _probe_pcx(data: bytes) -> ProbeOutcome | None:
         return None
     if data[PCX_MANUFACTURER_OFFSET] != PCX_SIGNATURE:
         return None
-    if data[PCX_ENCODING_OFFSET] not in PCX_ENCODINGS:
-        return None
+    encoding_byte = data[PCX_ENCODING_OFFSET]
+    if encoding_byte not in PCX_ENCODINGS:
+        # Requirement 2.10: decline; no other field is read or recorded.
+        detail = (
+            f"encoding byte at 0x{PCX_ENCODING_OFFSET:02X} is 0x{encoding_byte:02X}; "
+            "PCX defines only 0x00 and 0x01"
+        )
+        return ProbeOutcome(
+            None,
+            (RejectionEntry("probe_precondition_failed", "pcx", None, detail=detail),),
+        )
 
     specs = (
         ("encoding", PCX_ENCODING_OFFSET, "B"),
