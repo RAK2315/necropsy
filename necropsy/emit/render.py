@@ -8,6 +8,7 @@ that states the error. The document holds exactly one ``necropsy-layout`` block
 
 from __future__ import annotations
 
+import hashlib
 import json
 import struct
 
@@ -76,6 +77,58 @@ def _encoding_text(enc) -> str:
             text += ", otherwise `%s`" % enc["otherwise"]
         return text
     return str(enc)
+
+
+def _encoding_names(enc) -> list:
+    """Every encoding name the layout's data.encoding can yield, in order, without repeats."""
+    names = []
+    if isinstance(enc, str):
+        names.append(enc)
+    elif isinstance(enc, dict):
+        names.extend(v for v in (enc.get("values") or {}).values() if isinstance(v, str))
+        if isinstance(enc.get("otherwise"), str):
+            names.append(enc["otherwise"])
+    out = []
+    for n in names:
+        if n not in out:
+            out.append(n)
+    return out
+
+
+_ENCODING_DEFINITIONS = {
+    "none": (
+        "WHEN the encoding is `none`, THE parser SHALL treat the data region as the pixel "
+        "bytes as stored, and SHALL require its length to equal row_stride \u00d7 height."
+    ),
+    "rle_pcx": (
+        "WHEN the encoding is `rle_pcx`, THE parser SHALL decode by reading bytes from the data start while "
+        "fewer than row_stride \u00d7 height bytes have been produced and the data region is not "
+        "exhausted: WHEN a byte b is at least 0xC0, it is a run marker, and the next byte v SHALL "
+        "be written (b & 0x3F) times (a count of 0 writes nothing); a byte below 0xC0 is one "
+        "literal output byte. IF the run marker is the last byte of the data region, THEN THE "
+        "parser SHALL return an error. IF a run would exceed row_stride \u00d7 height bytes of "
+        "output, THEN THE parser SHALL return an error. IF the output is shorter than "
+        "row_stride \u00d7 height when the data region is exhausted, THEN THE parser SHALL return "
+        "an error. IF unread bytes remain when the output is complete, THEN THE parser SHALL "
+        "return an error."
+    ),
+    "unsupported": (
+        "WHEN the encoding is `unsupported`, THE parser SHALL return an error naming the "
+        "declared value."
+    ),
+}
+
+
+def _encoding_definitions(enc) -> list:
+    """One EARS definition per encoding name in use (Requirement 9.28)."""
+    out = []
+    for name in _encoding_names(enc):
+        text = _ENCODING_DEFINITIONS.get(name)
+        if text is None:
+            text = ("THE parser SHALL return an error naming the declared value WHEN the "
+                    "encoding is `%s`, which this document does not define." % name)
+        out.append(text)
+    return out
 
 
 def _plural(n: int, word: str) -> str:
@@ -303,6 +356,7 @@ def _data(lay: dict, cand, origin: str) -> list:
     if not trailers:
         out.append("THE parser SHALL NOT strip any trailer from the data region.")
     out.append("THE parser SHALL decode the data region using encoding %s." % _encoding_text(d.get("encoding")))
+    out.extend(_encoding_definitions(d.get("encoding")))
     if "rle_pcx" in path:
         out.append(
             "WHEN the file's own encoding declaration says the data is uncompressed, THE parser "
@@ -747,14 +801,10 @@ def _stride(w, b, a):
     return -(-raw // a) * a
 
 
-def _unsupported(r):
-    # The reference reader decodes encoding "none" only. Any other encoding comes back
-    # as ok False with an unsupported-encoding error. That is an honest refusal.
-    return (not r.get("ok")) and "encoding" in str(r.get("error", "")) and "not supported" in str(r.get("error", ""))
-
-
 def _summary(r):
-    return {k: r[k] for k in KEYS}
+    out = {k: r[k] for k in KEYS}
+    out["pixels_sha256"] = hashlib.sha256(r["pixels"]).hexdigest()
+    return out
 
 '''
 
@@ -790,11 +840,7 @@ def test_source_fields_and_closure():
     for name, offset, fmt, value in FIELDS:
         assert struct.unpack_from(fmt, SOURCE, offset) == value
     r = parser.parse(SOURCE)
-    # Encodings the reference reader cannot decode (for example rle_pcx): the parser
-    # must not claim success with wrong values. It may refuse with an unsupported-encoding
-    # error, in which case the closure comparison is skipped, with the reason stated.
-    if _unsupported(r) and ENCODING != "none":
-        pytest.skip("encoding %r is not decodable by the parser; fields were checked, closure comparison skipped" % ENCODING)
+    # The parser must decode the source, and its pixels must equal the engine's decode.
     assert r["ok"], r
     assert _summary(r) == EXPECTED
     assert len(r["pixels"]) == _stride(r["width"], r["bit_depth"], r["row_alignment"]) * r["height"]
@@ -832,14 +878,12 @@ def test_source_fields_and_closure():
         assert struct.unpack_from(fmt, SOURCE, offset) == value
     results = parser.parse_candidates(SOURCE)
     ok = [_summary(r) for r in results if r.get("ok")]
-    # A candidate whose encoding the parser cannot decode (for example rle_pcx) may come back
-    # as an unsupported-encoding refusal instead of a result. That is accepted, and stated here.
-    refused = any(_unsupported(r) for r in results)
-    for exp in EXPECTED_CANDIDATES:
-        want = {k: exp[k] for k in KEYS}
-        assert want in ok or (exp["encoding"] != "none" and refused), want
+    # Every expected candidate must be present among the successful results, with pixels
+    # equal to the engine's decode.
+    wants = [dict(e) for e in EXPECTED_CANDIDATES]
+    for want in wants:
+        assert want in ok, want
     # No successful result may carry values outside the expected candidates.
-    wants = [{k: e[k] for k in KEYS} for e in EXPECTED_CANDIDATES]
     for s in ok:
         assert s in wants, s
     for r in results:
@@ -889,7 +933,8 @@ def _render_tests(layout: dict, result, data) -> str:
     def summary(c):
         return {"width": c.hypothesis.width, "height": c.hypothesis.height,
                 "bit_depth": c.hypothesis.bit_depth, "row_alignment": c.hypothesis.row_alignment,
-                "data_start": c.data_start, "data_end": c.data_end}
+                "data_start": c.data_start, "data_end": c.data_end,
+                "pixels_sha256": hashlib.sha256(c.decoded).hexdigest()}
 
     fields, seen = [], set()
     for c in cands:
@@ -903,6 +948,7 @@ def _render_tests(layout: dict, result, data) -> str:
         '"""Generated by NECROPSY from %s. test_%s.py: tests for parser_%s.%s."""' % (
             slug, module, module, "parse_candidates" if ambiguous else "parse"),
         "import base64",
+        "import hashlib",
         "import struct",
         "",
         "import pytest",
@@ -916,12 +962,10 @@ def _render_tests(layout: dict, result, data) -> str:
     if ambiguous:
         head.append("EXPECTED_CANDIDATES = [")
         for c in cands:
-            e = dict(summary(c), encoding=c.hypothesis.encoding)
-            head.append("    %s," % repr(e))
+            head.append("    %s," % repr(summary(c)))
         head.append("]")
     else:
         head.append("EXPECTED = %s" % repr(summary(cands[0])))
-        head.append("ENCODING = %s" % repr(cands[0].hypothesis.encoding))
     head.append("FIELDS = [")
     for rec in fields:
         head.append("    %s," % repr(rec))

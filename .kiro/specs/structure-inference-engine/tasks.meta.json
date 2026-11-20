@@ -1497,6 +1497,49 @@
         "chatSessionId": "sess_adc10a50-7555-4556-944a-4698b367e060",
         "timestamp": 1795205925627
       }
+    ],
+    "21.1 Write the acceptance tests first": [
+      {
+        "executionId": "f14aa2a1-ec3e-4dbe-a92d-d38c2c94bf53",
+        "chatSessionId": "sess_adc10a50-7555-4556-944a-4698b367e060",
+        "timestamp": 1795206248510
+      },
+      {
+        "executionId": "f14aa2a1-ec3e-4dbe-a92d-d38c2c94bf53",
+        "chatSessionId": "sess_adc10a50-7555-4556-944a-4698b367e060",
+        "timestamp": 1795206343323
+      }
+    ],
+    "21.2 Implement the definitions, the TGA mapping, the emitted tests and the reader": [
+      {
+        "executionId": "f14aa2a1-ec3e-4dbe-a92d-d38c2c94bf53",
+        "chatSessionId": "sess_adc10a50-7555-4556-944a-4698b367e060",
+        "timestamp": 1795206354014
+      },
+      {
+        "executionId": "f14aa2a1-ec3e-4dbe-a92d-d38c2c94bf53",
+        "chatSessionId": "sess_adc10a50-7555-4556-944a-4698b367e060",
+        "timestamp": 1795207440637
+      }
+    ],
+    "21.3 Add the break_check entry and run it": [
+      {
+        "executionId": "f14aa2a1-ec3e-4dbe-a92d-d38c2c94bf53",
+        "chatSessionId": "sess_adc10a50-7555-4556-944a-4698b367e060",
+        "timestamp": 1795207448489
+      },
+      {
+        "executionId": "f14aa2a1-ec3e-4dbe-a92d-d38c2c94bf53",
+        "chatSessionId": "sess_adc10a50-7555-4556-944a-4698b367e060",
+        "timestamp": 1795208053730
+      }
+    ],
+    "21. Emitted specs define their encodings (Decision Record item 26)": [
+      {
+        "executionId": "f14aa2a1-ec3e-4dbe-a92d-d38c2c94bf53",
+        "chatSessionId": "sess_adc10a50-7555-4556-944a-4698b367e060",
+        "timestamp": 1795208053780
+      }
     ]
   }
 }

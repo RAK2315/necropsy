@@ -261,25 +261,59 @@ def _parse(layout, data):
             break
 
     enc = d["encoding"]
+    declared = enc
     if isinstance(enc, dict):
-        key = str(env[enc["field"]]) if enc["field"] in env else None
-        enc = enc["values"].get(key, enc.get("otherwise"))
+        declared = env.get(enc["field"])
+        enc = enc["values"].get(str(declared), enc.get("otherwise"))
     if not isinstance(enc, str):
         raise _Err("encoding unresolved")
-    if enc != "none":
-        raise _Err("encoding not supported by reference reader")
+    if enc not in ("none", "rle_pcx"):
+        raise _Err("unsupported encoding %s" % (declared,))
 
     if start < 0 or end < start or end > len(data):
         raise _Err("data region out of range")
     raw_row = -(-(width * depth) // 8)
     stride = -(-raw_row // align) * align
-    if end - start != stride * height:
-        raise _Err("closure failed")
+    expected = stride * height
+    if enc == "none":
+        if end - start != expected:
+            raise _Err("closure failed")
+        pixels = bytes(data[start:end])
+    else:
+        pixels = _rle_pcx(data, start, end, expected)
     return {
         "ok": True, "width": width, "height": height, "bit_depth": depth,
         "row_alignment": align, "encoding": enc, "data_start": start,
-        "data_end": end, "pixels": bytes(data[start:end]), "fields": fields,
+        "data_end": end, "pixels": pixels, "fields": fields,
     }
+
+
+def _rle_pcx(data, start, end, expected):
+    """Decode data[start:end] per the emitted rle_pcx definition (Requirement 9.28).
+
+    Reads while fewer than `expected` bytes are produced and the region is not exhausted.
+    Allocates at most `expected` bytes, checked before each write.
+    """
+    out = bytearray()
+    pos = start
+    while len(out) < expected and pos < end:
+        b = data[pos]
+        pos += 1
+        if b >= 0xC0:
+            if pos >= end:
+                raise _Err("run marker is the last byte of the region")
+            count = b & 0x3F
+            if len(out) + count > expected:
+                raise _Err("run exceeds the expected output")
+            out.extend(data[pos:pos + 1] * count)
+            pos += 1
+        else:
+            out.append(b)
+    if len(out) < expected:
+        raise _Err("output shorter than expected")
+    if pos < end:
+        raise _Err("unread bytes remain")
+    return bytes(out)
 
 
 def parse(layout, data):

@@ -1,0 +1,9 @@
+[
+  {
+    "name": "do-nothing parser fails the emitted suites of mystery_b, mystery_i and external_a",
+    "file": "tests/support/reference_reader.py",
+    "old": "        return _parse(layout, bytes(data))",
+    "new": "        return {\"ok\": False, \"error\": \"encoding rle_pcx not supported\"}",
+    "test": "tests/test_encoding_definitions.py -k \"test_reference_reader_passes_emitted_suite_without_skips and (mystery_b or mystery_i or external_a)\""
+  }
+]

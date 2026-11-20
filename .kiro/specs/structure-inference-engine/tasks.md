@@ -764,6 +764,29 @@ Rules for every task:
     - Run the emission tests, the acceptance tests and the full suite.
     - _Requirements: 9.27, 9.16_
 
+- [x] 21. Emitted specs define their encodings (Decision Record item 26)
+  - [x] 21.1 Write the acceptance tests first
+    - Write these tests from Requirements 9.28 to 9.32 and confirm they fail on the current code. Inputs are the corpus files and the engine's own results; expected values come from the requirements, never from reading the implementation:
+      - the do-nothing parser (`parse()` always returns `{"ok": False, "error": "encoding rle_pcx not supported"}`) placed beside the emitted `test_<module>.py` makes plain `python -m pytest <folder> -q` fail for the specs of `mystery_b`, `mystery_i` and `external_a`;
+      - with the reference reader as the parser module (`make_parser_module`), plain `pytest` on the folder (no file argument, no configuration file) passes for the specs of `mystery_b`, `mystery_i`, `external_a`, `mystery_c` and `mystery_e`, with no skipped test;
+      - the emitted `requirements.md` of `mystery_b`, `mystery_i` and `external_a` contains the `rle_pcx` definition of Requirement 9.28 (the `0xC0` marker, the `(b & 0x3F)` repeat, and the four error conditions); the emitted `requirements.md` of every TGA or TIFF spec that names `unsupported` contains its definition;
+      - no emitted spec of the nine `mystery_*` files, `external_*` files or the TGA files of the real corpus contains the text `rle_tga`; a crafted TGA of image type 10 emits the encoding map with `unsupported` for 9, 10 and 11;
+      - the emitted test text contains neither `pytest.skip("encoding` nor `refused`;
+      - the reference reader decodes a crafted `rle_pcx` region (literals, a run, a run of 63, a marker as the last byte, an overrun, a short output, leftover bytes) with the exact outcomes Requirement 9.28 states, and its source still imports nothing from `necropsy`.
+    - _Requirements: 9.28, 9.29, 9.30, 9.31, 9.32_
+
+  - [x] 21.2 Implement the definitions, the TGA mapping, the emitted tests and the reader
+    - `necropsy/emit/render.py`: write the EARS definition of every encoding name the layout uses (Requirement 9.28, design.md "Emitted requirements.md" item 3); remove the unsupported-encoding skip, the `_unsupported` helper and the `refused` clause from the emitted test text, and add the `pixels_sha256` comparison described in design.md; keep the source-too-large skip.
+    - `necropsy/emit/layout.py`: emit the TGA encoding map with 9, 10 and 11 as `unsupported` (Requirement 9.29). Do not change the engine's `rle_tga` hypothesis encoding.
+    - `tests/support/reference_reader.py`: implement `rle_pcx` from the definition, bounds-checked, with the error cases of Requirement 9.28, and the `unsupported` error naming the declared value. Imports stay `json`, `re`, `struct`.
+    - Run the 21.1 tests until they pass, then the emission tests, the acceptance tests and the full suite. Every emitted spec for the corpus changes only by the added definitions and the TGA mapping; report any other diff.
+    - _Requirements: 9.28, 9.29, 9.30, 9.31_
+
+  - [x] 21.3 Add the break_check entry and run it
+    - Add the do-nothing-parser break from design.md "Testing Strategy" to `tools/break_check.py`'s input (or its `breaks.json`), for `mystery_b`, `mystery_i` and `external_a`. Run `python tools/break_check.py <breaks.json>`.
+    - Expected: all three are reported `caught`, with the restore hashes identical. Report any `NOT CAUGHT`.
+    - _Requirements: 9.32_
+
 ## Notes
 
 - The expected corpus values and candidate counts (18, 8 and 8) come from a reference model of these exact rules, recorded in design.md. A mismatch means the implementation and the spec disagree; report it, do not tune either.
@@ -814,7 +837,10 @@ Rules for every task:
     { "id": 35, "tasks": ["19.2"] },
     { "id": 36, "tasks": ["20.1"] },
     { "id": 37, "tasks": ["20.2"] },
-    { "id": 38, "tasks": ["12"] }
+    { "id": 38, "tasks": ["21.1"] },
+    { "id": 39, "tasks": ["21.2"] },
+    { "id": 40, "tasks": ["21.3"] },
+    { "id": 41, "tasks": ["12"] }
   ]
 }
 ```
