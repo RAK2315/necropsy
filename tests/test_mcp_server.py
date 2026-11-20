@@ -70,14 +70,32 @@ def expected_field(f) -> dict:
             "value": [{"bytes": bytes(v).hex()} if isinstance(v, (bytes, bytearray)) else v for v in f.value]}
 
 
-def remove_two_keys(payload: dict) -> dict:
-    """to_payload output without the top-level `spec` and without every candidate's `render.data_b64`."""
+def remove_three_keys(payload: dict) -> dict:
+    """to_payload output without exactly three things: the top-level `spec`, every candidate's
+    `render.data_b64`, and `value_repr` from every field (candidates and rejected hypotheses)."""
     out = json.loads(json.dumps(payload))
     out.pop("spec", None)
     for k in ("candidates", "partial_candidates"):
         for c in out.get(k, []):
             c["render"].pop("data_b64", None)
+    for f in all_fields(out):
+        f.pop("value_repr", None)
     return out
+
+
+def rebuild_value_repr(value: list) -> str:
+    """repr of the tuple struct.unpack_from returned, rebuilt from the payload's JSON `value` alone."""
+    return repr(tuple(bytes.fromhex(v["bytes"]) if isinstance(v, dict) else v for v in value))
+
+
+def all_fields(payload: dict):
+    """Every field record in a full web payload: candidates, partial candidates and rejected hypotheses."""
+    for k in ("candidates", "partial_candidates"):
+        for c in payload.get(k, []):
+            yield from c["fields"]
+    for r in payload.get("rejections", []):
+        if r["hypothesis"] is not None:
+            yield from r["hypothesis"]["fields"]
 
 
 def candidates_of(result) -> list:
@@ -90,6 +108,19 @@ def candidates_of(result) -> list:
 
 WITHIN = [p for p in FILES if p.stat().st_size <= LIMIT]
 OVER = [p for p in FILES if p.stat().st_size > LIMIT]
+
+
+def test_value_repr_is_a_repetition_of_value_on_all_92_files():
+    # The proof that dropping `value_repr` removes nothing: for every field in the full web payload of every
+    # file (the 10 oversize files included, run in-process), value_repr is rebuilt exactly from value.
+    checked = 0
+    for p in FILES:
+        data = p.read_bytes()
+        payload = to_payload(Engine(deadline_seconds=5.0).run(data), data, 0.0)
+        for f in all_fields(payload):
+            assert rebuild_value_repr(f["value"]) == f["value_repr"], (key(p), f)
+            checked += 1
+    assert checked > 1000, checked
 
 
 def test_the_sweep_covers_11_samples_and_81_real_files():
@@ -120,10 +151,10 @@ def test_analyse_equals_the_engine_on_every_file_within_the_limit(results):
                     problems.append((key(p), "fields"))
                 if not g["fields"] and c.hypothesis.fields:
                     problems.append((key(p), "fields missing"))
-        # Byte-identical to the web serialiser with exactly two things removed, once the measured time is the same.
-        theirs = remove_two_keys(to_payload(engine, data, sc["engine_ms"]))
+        # Byte-identical to the web serialiser with exactly three things removed, once the measured time is the same.
+        theirs = remove_three_keys(to_payload(engine, data, sc["engine_ms"]))
         if json.dumps(theirs) != json.dumps(sc):
-            problems.append((key(p), "payload differs from to_payload minus spec and data_b64"))
+            problems.append((key(p), "payload differs from to_payload minus spec, data_b64 and value_repr"))
         if r.content[0].text != JSONResponse(sc).body.decode("utf-8"):
             problems.append((key(p), "text differs from the web service's rendering"))
     assert not problems, problems
@@ -179,13 +210,18 @@ def test_mystery_d_reports_18_candidates_and_the_tool_chooses_none(results):
     assert "chosen" not in sc and "selected" not in sc
 
 
-AGENT_LIMIT = 20_000
+# Kiro shows a tool result over 30,000 characters as its first and last 500 only and saves the full output
+# to a file (measured in Kiro with the Power installed: mystery_d at 32,236 characters showed 1 of 18 candidates).
+# 30,000 is Kiro's limit, not a number chosen here.
+KIRO_TRUNCATION_LIMIT = 30_000
 
 
-@pytest.mark.xfail(strict=True, reason="measured 32,236 characters with only the two keys removed; the 20,000 limit 's decision is open")
-def test_analyse_on_mystery_d_is_under_20000_characters(results):
-    size = len(results["spike/samples/mystery_d"]["analyse"].content[0].text)
-    assert size < AGENT_LIMIT, size
+def test_analyse_on_every_in_limit_file_is_under_kiros_30000_character_limit(results):
+    sizes = {key(p): len(results[key(p)]["analyse"].content[0].text) for p in WITHIN}
+    top = sorted(sizes.items(), key=lambda kv: -kv[1])[:3]
+    print("largest analyse results:", top)
+    over = {k: n for k, n in sizes.items() if n >= KIRO_TRUNCATION_LIMIT}
+    assert not over, over
 
 
 def test_analyse_on_mystery_d_is_much_smaller_than_the_web_payload(results):
@@ -195,10 +231,12 @@ def test_analyse_on_mystery_d_is_much_smaller_than_the_web_payload(results):
     assert full > 200_000 and size < full / 6, (size, full)   # the reason for the change
 
 
-def test_analyse_removes_only_the_pixel_buffers_and_the_spec(results):
+def test_analyse_removes_only_the_pixel_buffers_the_spec_and_value_repr(results):
     for p in WITHIN:
         sc = results[key(p)]["analyse"].structured_content
         assert "spec" not in sc
+        for f in all_fields(sc):
+            assert "value_repr" not in f and "value" in f and {"name", "offset", "fmt"} <= set(f)
         for k in ("candidates", "partial_candidates"):
             for c in sc.get(k, []):
                 assert "data_b64" not in c["render"]

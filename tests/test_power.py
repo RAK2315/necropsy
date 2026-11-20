@@ -82,7 +82,8 @@ def test_skill_satisfies_the_agent_skills_frontmatter_rules():
 def test_skill_tells_an_agent_to_call_analyse_first_report_every_candidate_and_pick_none():
     body = (POWER / "skills" / "unknown-file" / "SKILL.md").read_text(encoding="utf-8")
     for needle in ("Call `analyse` first", "**every** candidate", "Do not pick one", "UNRESOLVED_AMBIGUITY",
-                   "FAILED", "Stop.", "Never choose between candidates"):
+                   "FAILED", "Stop.", "Never choose between candidates", "arrives truncated", "read the saved full output",
+                   "Never report candidates, a candidate count or a status from a truncated view"):
         assert needle in body, needle
 
 

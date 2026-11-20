@@ -65,23 +65,46 @@ def load(path, data_base64) -> bytes | dict:
 
 
 def agent_sized(payload: dict) -> dict:
-    """The payload with exactly two things removed: every candidate's `render.data_b64` and the top-level `spec`.
+    """The payload with exactly three things removed.
 
-    Nothing is added, summarised, reordered or rewritten. The pixel buffers and the emitted spec made the
-    payload too large for an agent to read (235,254 characters for mystery_d). `emit_spec` returns the spec.
+    1. every candidate's `render.data_b64` (the pixel buffer),
+    2. the top-level `spec` (`emit_spec` returns it),
+    3. `value_repr` from every field record, in candidates and in rejected hypotheses. It is
+       `repr(tuple(value))`, rebuilt exactly from `value` on all 92 files by a test.
+
+    Nothing is added, summarised, dropped, reordered or rewritten. Kiro shows a tool result over
+    30,000 characters as its first and last 500 only, and the full payload for mystery_d was 235,254.
     """
     out = {k: v for k, v in payload.items() if k != "spec"}
     for list_key in ("candidates", "partial_candidates"):
         if isinstance(out.get(list_key), list):
-            out[list_key] = [_without_pixels(c) for c in out[list_key]]
+            out[list_key] = [_slim_candidate(c) for c in out[list_key]]
+    if isinstance(out.get("rejections"), list):
+        out["rejections"] = [_slim_rejection(r) for r in out["rejections"]]
     return out
 
 
-def _without_pixels(candidate: dict) -> dict:
-    render = candidate.get("render")
-    if not isinstance(render, dict):
-        return candidate
-    return {**candidate, "render": {k: v for k, v in render.items() if k != "data_b64"}}
+def _slim_fields(fields):
+    if not isinstance(fields, list):
+        return fields
+    return [{k: v for k, v in f.items() if k != "value_repr"} if isinstance(f, dict) else f for f in fields]
+
+
+def _slim_candidate(candidate: dict) -> dict:
+    out = {**candidate}
+    if "fields" in out:
+        out["fields"] = _slim_fields(out["fields"])
+    render = out.get("render")
+    if isinstance(render, dict):
+        out["render"] = {k: v for k, v in render.items() if k != "data_b64"}
+    return out
+
+
+def _slim_rejection(rejection: dict) -> dict:
+    h = rejection.get("hypothesis") if isinstance(rejection, dict) else None
+    if not isinstance(h, dict) or "fields" not in h:
+        return rejection
+    return {**rejection, "hypothesis": {**h, "fields": _slim_fields(h["fields"])}}
 
 
 def analyse(path=None, data_base64=None) -> tuple[dict, bool]:

@@ -24,9 +24,14 @@
   - _Requirements: 5.1, 5.2_
 
 - [x] 5a. Agent-sized `analyse`
-  - Removed `render.data_b64` and `spec`; sweep equals `to_payload` minus those keys; two more break checks caught. Size 32,236 for `mystery_d`: the under-20,000 test is a strict expected failure pending a decision.
-  - _Requirements: 1.1, 1.3, 4.2, 4.6, 4.7_
+  - Removed `render.data_b64` and `spec` (235,254 to 32,236 characters for `mystery_d`).
+  - _Requirements: 1.1, 1.3, 4.2_
 
-- [ ] 6. Install the Power in Kiro
-  - Powers panel, Add Custom Power, Import power from a folder, `powers/necropsy`. Confirm the tools appear and the skill activates.
+- [x] 5b. Under Kiro's 30,000-character limit
+  - `value_repr` removed from every field after a test rebuilt it from `value` on all 92 files; the 20,000 target replaced by Kiro's measured limit; skill reads the saved full output when a result is truncated; two more break checks. `mystery_d`: 25,890.
+  - _Requirements: 1.1, 4.7, 4.8, 6.4_
+
+- [x] 6. Install the Power in Kiro
+  - Installed from `powers/necropsy` into an empty workspace; Kiro activated it, read the skill and called `analyse` on `mystery_b`. Recorded in `docs/KIRO-LOG.md`.
   - _Requirements: 6.7_
+

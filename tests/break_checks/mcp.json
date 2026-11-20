@@ -23,15 +23,29 @@
   {
     "name": "wrapper also drops a candidate's fields",
     "file": "necropsy_mcp/core.py",
-    "old": "    return {**candidate, \"render\": {k: v for k, v in render.items() if k != \"data_b64\"}}",
-    "new": "    return {**candidate, \"fields\": [], \"render\": {k: v for k, v in render.items() if k != \"data_b64\"}}",
+    "old": "        out[\"fields\"] = _slim_fields(out[\"fields\"])",
+    "new": "        out[\"fields\"] = []",
     "test": "tests/test_mcp_server.py -k analyse_equals_the_engine"
   },
   {
     "name": "wrapper keeps the pixel buffers",
     "file": "necropsy_mcp/core.py",
-    "old": "    return {**candidate, \"render\": {k: v for k, v in render.items() if k != \"data_b64\"}}",
-    "new": "    return candidate",
+    "old": "        out[\"render\"] = {k: v for k, v in render.items() if k != \"data_b64\"}",
+    "new": "        out[\"render\"] = render",
     "test": "tests/test_mcp_server.py -k \"analyse_equals_the_engine or agent_sized\""
+  },
+  {
+    "name": "wrapper drops each field's value instead of value_repr",
+    "file": "necropsy_mcp/core.py",
+    "old": "[{k: v for k, v in f.items() if k != \"value_repr\"} if isinstance(f, dict) else f for f in fields]",
+    "new": "[{k: v for k, v in f.items() if k != \"value\"} if isinstance(f, dict) else f for f in fields]",
+    "test": "tests/test_mcp_server.py -k analyse_equals_the_engine"
+  },
+  {
+    "name": "wrapper keeps value_repr",
+    "file": "necropsy_mcp/core.py",
+    "old": "[{k: v for k, v in f.items() if k != \"value_repr\"} if isinstance(f, dict) else f for f in fields]",
+    "new": "fields",
+    "test": "tests/test_mcp_server.py -k analyse_equals_the_engine"
   }
 ]

@@ -22,7 +22,7 @@ The engine and the web service are not changed. `core.py` duplicates four lines 
 | | `analyse` | `emit_spec` |
 |---|---|---|
 | Arguments | `path` or `data_base64`, exactly one | same |
-| Result | `web.serialise.to_payload(result, data, engine_ms)` minus every candidate's `render.data_b64` and the top-level `spec` | `{"slug", "files": {name: text}}` from `emit_spec`, or `{"error": "nothing_recovered", "message"}` |
+| Result | `web.serialise.to_payload(result, data, engine_ms)` minus three things: every candidate's `render.data_b64`, the top-level `spec`, and `value_repr` from every field record | `{"slug", "files": {name: text}}` from `emit_spec`, or `{"error": "nothing_recovered", "message"}` |
 | `isError` | false for every engine outcome, including FAILED | same; `nothing_recovered` is a normal outcome |
 
 Both tools return a `CallToolResult` with structured content (the object) and one text block holding the same JSON rendered as Starlette's `JSONResponse` renders it (`ensure_ascii=False`, compact separators). A test checks the text equals `JSONResponse(payload).body`.
@@ -39,7 +39,7 @@ The server is started as a subprocess over stdio, and every call goes through th
 
 | Check | Result |
 |---|---|
-| `analyse` on 82 files within the limit: status, candidate count, fields, payload | equal to `Engine().run` and to `to_payload` minus the two keys on the same bytes; payload byte-identical to `to_payload` minus those two keys, once `engine_ms` is set to the same value |
+| `analyse` on 82 files within the limit: status, candidate count, fields, payload | equal to `Engine().run` and to `to_payload` minus the three removals on the same bytes; payload byte-identical to `to_payload` minus those three, once `engine_ms` is set to the same value |
 | `emit_spec` on 82 files: slug and files, or the `EmitError` message | equal to `emit_spec(Engine().run(data), data)` |
 | 10 real files over the limit, both tools | the web service's 413 body, `isError` true |
 | mystery_d | UNRESOLVED_AMBIGUITY, 18 candidates, no field naming a choice |
@@ -59,12 +59,18 @@ No file's MCP result differed from the engine's. The 10 oversize files are refus
 | wrapper also drops a candidate's fields | caught (fields missing, payload differs) |
 | wrapper keeps the pixel buffers | caught (payload differs) |
 | `emit_spec` returns the first spec it produced for every later call | caught (spec differs on every file after the first) |
+| wrapper drops each field's `value` instead of `value_repr` | caught (payload and fields differ) |
+| wrapper keeps `value_repr` | caught (payload differs) |
 
 ## Size
 
-`analyse` first returned the whole web payload. In a fresh Kiro session that was 235,254 characters for `mystery_d` and the client truncated it. The cause is each candidate's pixel buffer (`render.data_b64`) and the emitted spec inside the payload. The change removes exactly those two things and nothing else (`core.agent_sized`), so every status, candidate, field, rejection and reason is the engine's and in the engine's order. A wrapper-written summary was rejected: it would be text the engine did not produce.
+`analyse` first returned the whole web payload: 235,254 characters for `mystery_d`. Kiro shows a tool result over 30,000 characters as only its first and last 500 and saves the full output to a file. That limit was measured in Kiro with the Power installed, and it is Kiro's, not a number chosen here. After the first change (pixel buffers and spec removed) `mystery_d` was 32,236 characters, so Kiro saw 1 of its 18 candidates.
 
-Measured after the change, `mystery_d`: **32,236 characters** (the figure moves by a character or two with `engine_ms`). Eighteen candidates account for 31,909 of them, about 1,800 each, of which each candidate's `fields` list is about 2,500 on the first candidate. That is 7 times smaller than 235,254 but not under the 20,000 target in Requirement 1.7. `test_analyse_on_mystery_d_is_under_20000_characters` states the target and is a strict expected failure, so it stays visible and turns into an error when the size reaches it. Meeting it needs a third removal (for example each field's `value_repr`, which repeats `value`) or fewer fields per candidate. That is a decision, not made here. The result also travels twice (structured content and one text block), which the client may count.
+`analyse` now removes exactly three things (`core.agent_sized`): every candidate's `render.data_b64`, the top-level `spec` (`emit_spec` returns it), and `value_repr` from every field record, in candidates and in rejected hypotheses. `value_repr` is `repr(tuple(value))`, a repetition of `value`. `test_value_repr_is_a_repetition_of_value_on_all_92_files` rebuilds it exactly from `value` for all 2,610 field records on the 92 files (749 in candidates, 1,861 in rejected hypotheses), and it ran before the removal. The web payload is unchanged.
+
+Every status, candidate, field name, offset, format and value, rejection and reason is the engine's and in the engine's order. Dropping fields or candidates and a wrapper-written summary were rejected: they would remove or invent engine output.
+
+Measured after the change, over every corpus file within the limit: `mystery_d` is **25,890 characters**, `mystery_f` 9,283, `mystery_i` 8,172. Only `mystery_d` was over 30,000 before. `test_analyse_on_every_in_limit_file_is_under_kiros_30000_character_limit` asserts all 82 are under 30,000. The figure for `mystery_d` moves by a few characters with `engine_ms`. The result also travels twice (structured content and one text block), which Kiro may count; at 25,890 either way it is under the limit for one copy.
 
 ## Registration
 
@@ -97,7 +103,7 @@ powers/necropsy/
 
 ## Limits
 
-- **Not shown from outside Kiro:** that Kiro's installer accepts the folder, that Kiro activates the skill on its keywords, and that Kiro calls the tool. The Kiro chat check in Requirement 5 covers the call and is recorded when done.
-- **Payload size.** `analyse` omits the pixel buffers and the spec and is still about 32,000 characters for `mystery_d` (see "Size").
+- **Checked in Kiro, as measured:** the Power installed from `powers/necropsy` into a separate empty workspace (so this repository's `mcp.json` was not loaded), Kiro activating it, reading the `unknown-file` skill and calling `analyse` (recorded in `docs/KIRO-LOG.md`). What is not shown is Kiro's installer on other machines.
+- **Payload size.** `analyse` is 25,890 characters for `mystery_d`, the largest corpus file, which is under Kiro's 30,000 limit. A larger file could still exceed it; the skill tells the agent to read the saved full output when a result arrives truncated.
 - **A file's path is read from the server's machine.** The server is local, over stdio, with no network. It reads the file the agent names and nothing else.
 - **`python` must be on the PATH Kiro uses**, with `mcp==2.3.0` installed.

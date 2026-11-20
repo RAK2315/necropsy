@@ -550,3 +550,16 @@ Acceptance by `tools/acceptance.py`: each beat in a fresh 1280x720 headless Edge
 Also against the live URL (`NECROPSY_BASE_URL`): all 46 browser tests in `tests/ui` passed (strip, downloads, multidrop, errors, a11y, spec panel, visual rules).
 
 Finding, not fixed: the browser's default light scrollbars render on the dark page, in the hex pane and in the replay log (visible in the captures). Earlier screenshots used `--hide-scrollbars` and hid this. A fix is one line of CSS (`color-scheme: dark`), outside task 16; left for the user's decision.
+| 2026-11-20 16:47:12Z | PostFileCreate | `scratch.py` | `b1a810d` |
+| 2026-11-20 16:47:12Z | PostFileSave | `scratch.py` | `b1a810d` |
+| 2026-11-20 16:47:21Z | PostFileSave | `tests/test_mcp_server.py` | `b1a810d` |
+| 2026-11-20 16:47:45Z | PostFileSave | `powers/necropsy/skills/unknown-file/SKILL.md` | `b1a810d` |
+| 2026-11-20 16:49:51Z | PostFileCreate | `scratch.py` | `b1a810d` |
+| 2026-11-20 16:49:52Z | PostFileSave | `scratch.py` | `b1a810d` |
+| 2026-11-20 16:50:26Z | PostFileSave | `scratch.py` | `b1a810d` |
+## NECROPSY MCP: the Power installed in a separate workspace (2026-11-20)
+Recorded as reported by the builder; the raw tool text was not captured, so only the measured facts are stated.
+1. **Power installed from `powers/necropsy` in an empty workspace, `D:\Projects\power-check`**, so this repository's `.kiro/settings/mcp.json` was not loaded. Kiro activated the Power, read the `unknown-file` skill and called `analyse`. On `mystery_b` the result was `RESOLVED`: pcx, 8x8, 8-bit, header 128, `rle_pcx`, data [128, 186), `pcx_palette_256` trailer, 955 bytes. The 7x7 readings were rejected with `decoder_unconsumed`, and 8x8 came from the `inclusive_bounds` revision.
+2. **`analyse` on `mystery_d`: 32,236 characters, truncated by Kiro at 30,000.** Kiro shows a result over 30,000 characters as its first and last 500 only and saves the full output to a file, so 1 of the 18 candidates was visible. This caused the next change: `analyse` also drops `value_repr` from every field (rebuilt exactly from `value` on all 92 files before it was removed), and the 20,000-character test became Kiro's own 30,000 limit. After the change `mystery_d` measures 25,890 characters in the stdio test, and it was the only corpus file over 30,000.
+The skill `unknown-file` now says: if a tool result arrives truncated, read the saved full output before answering, and never report candidates from a truncated view.
+Spec task 6 (install the Power in Kiro) is marked done on the strength of item 1.
