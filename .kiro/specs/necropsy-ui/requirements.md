@@ -458,6 +458,7 @@ This screen shows the honesty mechanic. It is a success.
 5. EVERY canvas SHALL have an accessible name stating its width, height and bit depth, taken from the payload, for example `Recovered image, 64 × 48, 8-bit`.
 6. STATUS text SHALL be announced to assistive technology (`role="status"` or `aria-live`): the drop-zone message, `Analysing…`, the several-files statement, the replay counter, outcome-strip tile progress and errors, and the spec download status.
 7. EVERY visible, enabled text SHALL have a contrast ratio of at least 4.5:1 against its effective background, computed with the WCAG 2 relative-luminance formula from computed styles. Disabled controls are exempt, as WCAG allows. Fixing a failure SHALL change only the values of the colour tokens in `:root`, never the accent colour. IF it would need anything else, THEN the change SHALL stop for the user's decision.
+8. THE page SHALL declare its colour scheme as dark (`color-scheme: dark` on the root element), so that native controls the browser draws itself, including scrollbars, render in the dark scheme. Without it the browser draws light defaults on the dark page.
 ## Accepted Decisions and Remaining Open Items
 
 Accepted by the user, and not to be reopened in design:

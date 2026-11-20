@@ -126,6 +126,12 @@ Rules for every task:
   - Stop if contrast cannot be fixed by token values alone, or would change the accent.
   - _Requirements: 20_
 
+- [ ] 22. Dark colour scheme for native controls
+  - Add `color-scheme: dark` to `:root` in `public/app.css`. Nothing else.
+  - Test in a real browser: the computed `colorScheme` of the root is `dark` on the start, result and spec screens. Removing the line must be caught by tools/break_check.py. The rendered contrast pairs must not change; stop if they do.
+  - Capture the hex pane before and after with scrollbars shown. Redeploy through tools/deploy.ps1 and re-run tools/acceptance.py on the live URL.
+  - _Requirements: 20.8_
+
 - [x] 16. Final deploy and acceptance (run last, after 17 to 21)
   - Redeploy, run each Requirement 13.5 beat on the public URL at 1280×720, record a screen capture and time for each. Schedule the 15 December and weekly cold-hit checks in `docs/KIRO-LOG.md`.
   - Also run the Requirement 16 to 20 behaviours on the public URL.
