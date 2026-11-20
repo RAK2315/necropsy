@@ -109,7 +109,7 @@ Rules for every task:
   - Test in a real browser: the PNG decodes to exactly the pixel buffer at native size; the data region equals the file's bytes `[data_start, data_end)`. Break and restore, and report both.
   - _Requirements: 17_
 
-- [ ] 19. Several files dropped at once
+- [x] 19. Several files dropped at once
   - Examine the first, state which one and name the ignored ones; handle empty drops.
   - Test in a real browser: a three-file drop shows the statement and the result is the first file's. Break and restore, and report both.
   - _Requirements: 18_

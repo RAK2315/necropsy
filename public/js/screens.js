@@ -261,6 +261,11 @@ function stepView(step) {
 
 export function renderResult(root, payload, bytes, opts = {}) {
   root.replaceChildren();
+  if (opts.notice) {
+    const n = el('p', 'notice', opts.notice);
+    n.setAttribute('role', 'status');
+    root.append(n);
+  }
   const target = views(root, payload, bytes);
   const base = inputBase(opts.name);
   if (payload.status === 'UNRESOLVED_AMBIGUITY') { ambiguityScreen(target, payload, bytes, base).start(); return; }

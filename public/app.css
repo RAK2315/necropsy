@@ -220,3 +220,6 @@ ol.strip-rej li { white-space: nowrap; overflow: hidden; text-overflow: ellipsis
 .dl-btn { background: none; border: 1px solid var(--line); border-radius: 3px; padding: 1px 8px; color: var(--muted); font-size: 12px; }
 .dl-btn:hover:not(:disabled) { color: var(--text); border-color: var(--faint); }
 .dl-btn:disabled { opacity: .4; cursor: default; }
+
+/* several files dropped */
+.notice { max-width: 1352px; margin: 12px auto 0; padding: 8px 14px; border: 1px solid var(--line); border-left: 2px solid var(--text); border-radius: 3px; background: var(--panel); color: var(--text); font-size: 13px; }

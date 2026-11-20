@@ -297,3 +297,12 @@ export function downloadNames(base, c) {
   const g = `${base}_${c.width}x${c.height}_${c.bit_depth}bit`;
   return { png: `${g}.png`, data: `${g}_data_${c.data_start}-${c.data_end}.bin` };
 }
+
+// ---- Several files dropped (Requirement 18) ----
+
+/** null for a single file; otherwise the statement naming the examined file and every ignored one. */
+export function multiDropNotice(names) {
+  if (!names || names.length < 2) return null;
+  const k = names.length, rest = names.slice(1);
+  return `${k} files were dropped. NECROPSY examines one file at a time: it examined ${names[0]} and ignored ${k - 1} other${k - 1 === 1 ? '' : 's'}: ${rest.join(', ')}.`;
+}

@@ -1,5 +1,6 @@
 import { renderResult } from './screens.js';
 import { stripElement } from './strip.js';
+import { multiDropNotice } from './logic.js';
 
 const MAX_UPLOAD = 65536;
 const view = document.getElementById('view');
@@ -45,21 +46,26 @@ async function showStart(message = '') {
   view.replaceChildren(start);
 
   const refuse = (text) => { msg.textContent = text; msg.classList.add('bad'); };
-  const take = (file) => {
-    if (!file) return;
+  const take = (files) => {
+    const list = [...(files || [])];
+    if (!list.length) { refuse('Nothing to examine: drop a file.'); return; }
+    const file = list[0];
+    const notice = multiDropNotice(list.map((f) => f.name));
     if (file.size > MAX_UPLOAD) {
-      refuse(`That file is ${fmt(file.size)} bytes. The limit is ${fmt(MAX_UPLOAD)} bytes.`);
+      refuse(`That file is ${fmt(file.size)} bytes. The limit is ${fmt(MAX_UPLOAD)} bytes.`
+        + (list.length > 1 ? ` The other ${list.length - 1} dropped file${list.length > 2 ? 's were' : ' was'} not examined.` : ''));
       return;
     }
-    file.arrayBuffer().then((buf) => analyse(new Uint8Array(buf), file.name));
-  };  drop.addEventListener('click', () => input.click());
-  input.addEventListener('change', () => take(input.files[0]));
+    file.arrayBuffer().then((buf) => analyse(new Uint8Array(buf), file.name, notice));
+  };
+  drop.addEventListener('click', () => input.click());
+  input.addEventListener('change', () => take(input.files));
   for (const ev of ['dragenter', 'dragover']) drop.addEventListener(ev, (e) => { e.preventDefault(); drop.classList.add('over'); });
   for (const ev of ['dragleave', 'drop']) drop.addEventListener(ev, (e) => { e.preventDefault(); drop.classList.remove('over'); });
-  drop.addEventListener('drop', (e) => { e.stopPropagation(); take(e.dataTransfer.files[0]); });
+  drop.addEventListener('drop', (e) => { e.stopPropagation(); take(e.dataTransfer.files); });
   // a file dropped anywhere on the start screen still counts
   window.ondragover = (e) => e.preventDefault();
-  window.ondrop = (e) => { e.preventDefault(); if (document.querySelector('.drop')) take(e.dataTransfer.files[0]); };
+  window.ondrop = (e) => { e.preventDefault(); if (document.querySelector('.drop')) take(e.dataTransfer.files); };
 
   try {
     const index = await (await fetch('/samples/index.json')).json();
