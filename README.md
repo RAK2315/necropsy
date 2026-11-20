@@ -230,7 +230,7 @@ Everything here can be checked in [`.kiro/`](.kiro), [`docs/KIRO-LOG.md`](docs/K
 | [`structure-inference-engine`](.kiro/specs/structure-inference-engine) | 12 | 18 (82 checklist items with sub-tasks) | all checked |
 | [`necropsy-ui`](.kiro/specs/necropsy-ui) | 20 | 22 | all checked |
 | [`gate-adversary`](.kiro/specs/gate-adversary) | 3 | 3 | all checked |
-| [`real-corpus`](.kiro/specs/real-corpus) | 6 | 4 | 3 checked; the fourth tracks the in-scope failures, fixed since in the engine spec |
+| [`real-corpus`](.kiro/specs/real-corpus) | 6 | 4 | all checked |
 | [`necropsy-mcp`](.kiro/specs/necropsy-mcp) | 6 | 8 | all checked |
 
 The engine requirements open with a 22-item Decision Record. Each entry is a design reversal with the measurement that forced it. Its design states 16 numbered correctness properties.

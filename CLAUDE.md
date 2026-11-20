@@ -71,7 +71,7 @@ own homework. Check it independently.
 ## Project state (20 Nov 2026, evening: build complete)
 - Five Kiro specs in `.kiro/specs/`: `structure-inference-engine`,
   `necropsy-ui`, `gate-adversary`, `real-corpus`, `necropsy-mcp`.
-  Every task is checked except real-corpus task 4, a stale tracker.
+  Every task in every spec is checked.
 - Engine: four probes (PCX, TGA, PBM, TIFF), three revision strategies,
   generic search for headerless files, a closure gate on the decoded
   stream, ambiguity reporting instead of guessing, and spec emission.
