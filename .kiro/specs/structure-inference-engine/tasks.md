@@ -713,7 +713,7 @@ Rules for every task:
       - a test asserts the reader's source still imports nothing from `necropsy`.
     - _Requirements: 9.23, 9.24, 9.25, 9.16, 1.16_
 
-  - [-] 18.5 Generic Search records its footer rejections
+  - [x] 18.5 Generic Search records its footer rejections
     - Write the test first, from Requirement 1.15 and the design, and confirm it fails on the current code. Input: a crafted headerless file of 90 bytes: 64 zero bytes of data, then a 26-byte TGA 2.0 footer (`<I` extension_area_offset = 70, which lies inside the footer [64, 90); `<I` developer_area_offset = 0; then `TRUEVISION-XFILE.\x00`). Expected, derived from Requirement 1.15 and Requirement 4's header lengths (4 to 256 step 4, those below the file length): the result is FAILED; for each header length L in 4..64 (those with L <= F = 64, where the footer entry matches) exactly one RejectionEntry with reason `field_out_of_bounds`, source `generic`, hypothesis None, whose detail is `header_length <L>: extension_area_offset = 70 not in [<L>, 64)`; 16 such entries; no other rejection entries; the budget's checks count is 0 for those entries. Confirm first that no probe matches this file; if one does, report it instead of changing the input.
     - Fix `necropsy/engine/generic.py` (and a shared internal evaluation in `necropsy/engine/trailers.py`) as the design states.
     - _Requirements: 1.15_
