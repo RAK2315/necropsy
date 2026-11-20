@@ -106,8 +106,10 @@ def check_closure(h, data: bytes) -> ClosureVerdict:
                 return _reject("field_out_of_bounds")
             end, trailer = h.data_end, None
         else:
-            from .trailers import match_trailer
-            end, trailer = match_trailer(data, h.header_size, h.probe_name)
+            from .trailers import trailer_data_end
+            end, trailer, t_err = trailer_data_end(data, h.header_size, h.probe_name)
+            if t_err:
+                return _reject(t_err)
         # Requirement 12: header fields and the data region are disjoint
         # (half-open ranges). A malformed fmt cannot raise out of here.
         if end > h.header_size:

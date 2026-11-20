@@ -71,7 +71,7 @@ Design, decisions and limits: `.kiro/specs/real-corpus/design.md`.
 | `pillow_odd_stride.pcx` | PCX | in | RESOLVED | decodes (mode P) 371x150 | match |  |
 | `pillow_old-style-jpeg-compression.tif` | TIFF | out | FAILED (exhausted) | decodes (mode RGB) 4160x870 | n/a | compression OJPEG |
 | `pillow_ossfuzz-4836216264589312.pcx` | PCX | out, invalid by construction | RESOLVED | refuses (OSError) | n/a | Invalid by construction, and RESOLVED by design. The PCX probe recognised the signature and declined because the encoding byte 0x20 has no reading (engine Requirement 2.10), recording one probe_precondition_failed. Generic Search then found that 129 bytes admit a 128-byte header plus one data byte: a 2x1 1-bit image. That is a literal statement about the byte arithmetic, not a recovery claim. No PCX claim is made: the emitted spec has layout kind `file` and says it describes this one file only. |
-| `pillow_p_16.tga` | TGA | in | FAILED (exhausted) | decodes (mode P) 128x128 | n/a | Open: in scope, valid, and FAILED. Under diagnosis in another session; row left as measured. |
+| `pillow_p_16.tga` | TGA | in | RESOLVED | decodes (mode P) 128x128 | match |  |
 | `pillow_p_4_planes.pcx` | PCX | out | FAILED (exhausted) | decodes (mode P) 1x1 | n/a | 4 planes |
 | `pillow_p_8.tga` | TGA | in, invalid by construction | FAILED (exhausted) | refuses (UnidentifiedImageError) | n/a |  |
 | `pillow_pil184.pcx` | PCX | in | RESOLVED | decodes (mode 1) 447x144 | match |  |

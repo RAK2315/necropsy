@@ -1368,6 +1368,61 @@
         "chatSessionId": "sess_adc10a50-7555-4556-944a-4698b367e060",
         "timestamp": 1795163193513
       }
+    ],
+    "18.1 Implement declared offsets in the Trailer Registry and use them in closure and Generic Search": [
+      {
+        "executionId": "b917e2eb-889e-441e-baf1-c9d0d4e01ab5",
+        "chatSessionId": "sess_adc10a50-7555-4556-944a-4698b367e060",
+        "timestamp": 1795163998322
+      },
+      {
+        "executionId": "b917e2eb-889e-441e-baf1-c9d0d4e01ab5",
+        "chatSessionId": "sess_adc10a50-7555-4556-944a-4698b367e060",
+        "timestamp": 1795164255424
+      }
+    ],
+    "18.4 Write property test for declared trailer offsets": [
+      {
+        "executionId": "b917e2eb-889e-441e-baf1-c9d0d4e01ab5",
+        "chatSessionId": "sess_adc10a50-7555-4556-944a-4698b367e060",
+        "timestamp": 1795164262530
+      },
+      {
+        "executionId": "b917e2eb-889e-441e-baf1-c9d0d4e01ab5",
+        "chatSessionId": "sess_adc10a50-7555-4556-944a-4698b367e060",
+        "timestamp": 1795164409618
+      }
+    ],
+    "18.3 Emit the declared offsets and apply them in the reference reader": [
+      {
+        "executionId": "b917e2eb-889e-441e-baf1-c9d0d4e01ab5",
+        "chatSessionId": "sess_adc10a50-7555-4556-944a-4698b367e060",
+        "timestamp": 1795164410023
+      },
+      {
+        "executionId": "b917e2eb-889e-441e-baf1-c9d0d4e01ab5",
+        "chatSessionId": "sess_adc10a50-7555-4556-944a-4698b367e060",
+        "timestamp": 1795164793708
+      }
+    ],
+    "18.2 Real corpus: pillow_p_16.tga resolves, pillow_rgb32rle.tga is unchanged": [
+      {
+        "executionId": "b917e2eb-889e-441e-baf1-c9d0d4e01ab5",
+        "chatSessionId": "sess_adc10a50-7555-4556-944a-4698b367e060",
+        "timestamp": 1795164794401
+      },
+      {
+        "executionId": "b917e2eb-889e-441e-baf1-c9d0d4e01ab5",
+        "chatSessionId": "sess_adc10a50-7555-4556-944a-4698b367e060",
+        "timestamp": 1795164970187
+      }
+    ],
+    "18. TGA 2.0 footer declared offsets (Decision Record item 22)": [
+      {
+        "executionId": "b917e2eb-889e-441e-baf1-c9d0d4e01ab5",
+        "chatSessionId": "sess_adc10a50-7555-4556-944a-4698b367e060",
+        "timestamp": 1795164970510
+      }
     ]
   }
 }

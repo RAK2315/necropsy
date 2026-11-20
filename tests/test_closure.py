@@ -524,3 +524,98 @@ def test_req12_tiff_without_stripoffsets_no_longer_resolves_overlapping():
     r = Engine().run(data)
     assert not (r.status == "RESOLVED"
                 and (r.candidate.data_start, r.candidate.data_end) == (0, 64))
+
+
+# --- Requirement 1.15 / 1.16: TGA 2.0 footer declared offsets -------------------
+# Layout (all little-endian): type-3 TGA header, 18 bytes: id_length=0 @0, colour_map_type=0 @1,
+# image_type=3 @2, colour map spec (5 bytes) @3, x/y origin @8..12, width <H @12, height <H @14,
+# bit_depth @16, descriptor @17. Pixels: 64 bytes at [18, 82). Footer: 26 bytes
+# (extension_area_offset <I @0, developer_area_offset <I @4, "TRUEVISION-XFILE.\0" @8).
+# Extension area: 495 bytes, extension_size <H @0, colour_correction_offset <I @482,
+# postage_stamp_offset <I @486, scan_line_offset <I @490.
+
+import struct as _struct
+
+_TGA_HEADER = bytes([0, 0, 3]) + bytes(5) + bytes(4) + _struct.pack("<HH", 8, 8) + bytes([8, 0])
+_TGA_PIXELS = bytes((i * 7 + 3) % 256 for i in range(64))
+_SIG = b"TRUEVISION-XFILE.\x00"
+
+
+def _tga2(ext_off=0, dev_off=0, middle=b"", ext=None):
+    """header + pixels + middle + (extension area) + footer; offsets are as given, not computed."""
+    footer = _struct.pack("<II", ext_off, dev_off) + _SIG
+    return _TGA_HEADER + _TGA_PIXELS + middle + (ext or b"") + footer
+
+
+def _ext(size=495, colour=0, postage=0, scan=0):
+    b = bytearray(495)
+    _struct.pack_into("<H", b, 0, size)
+    _struct.pack_into("<I", b, 482, colour)
+    _struct.pack_into("<I", b, 486, postage)
+    _struct.pack_into("<I", b, 490, scan)
+    return bytes(b)
+
+
+def _assert_tga_resolved(data, length):
+    assert len(data) == length
+    r = Engine().run(data)
+    assert r.status == "RESOLVED"
+    assert (r.candidate.data_start, r.candidate.data_end) == (18, 82)
+    assert r.candidate.decoded == _TGA_PIXELS
+
+
+def _assert_tga_oob(data, length):
+    assert len(data) == length
+    r = Engine().run(data)
+    assert r.status != "RESOLVED"
+    assert any(e.reason == "field_out_of_bounds" and e.source == "tga" for e in r.rejections)
+
+
+def test_tga2_both_offsets_zero_req_1_16():
+    _assert_tga_resolved(_tga2(), 108)
+
+
+def test_tga2_developer_offset_req_1_16():
+    _assert_tga_resolved(_tga2(dev_off=82, middle=bytes(10)), 118)
+
+
+def test_tga2_extension_postage_stamp_req_1_16():
+    _assert_tga_resolved(_tga2(ext_off=94, middle=bytes(12), ext=_ext(postage=82)), 615)
+
+
+def test_tga2_extension_scan_line_req_1_16():
+    _assert_tga_resolved(_tga2(ext_off=94, middle=bytes(12), ext=_ext(scan=82)), 615)
+
+
+def test_tga2_extension_colour_correction_req_1_16():
+    _assert_tga_resolved(_tga2(ext_off=94, middle=bytes(12), ext=_ext(colour=82)), 615)
+
+
+def test_tga2_extension_offset_is_minimum_req_1_16():
+    _assert_tga_resolved(_tga2(ext_off=82, ext=_ext()), 603)
+
+
+def test_tga2_developer_offset_below_header_req_1_16():
+    _assert_tga_oob(_tga2(dev_off=10), 108)
+
+
+def test_tga2_developer_offset_equals_footer_start_req_1_16():
+    _assert_tga_oob(_tga2(dev_off=82), 108)  # F = 82
+
+
+def test_tga2_extension_size_494_req_1_16():
+    _assert_tga_oob(_tga2(ext_off=82, ext=_ext(size=494)), 603)
+
+
+def test_tga2_extension_size_496_overruns_footer_req_1_16():
+    _assert_tga_oob(_tga2(ext_off=82, ext=_ext(size=496)), 603)  # 82 + 496 > 577
+
+
+def test_tga2_postage_stamp_below_header_req_1_16():
+    _assert_tga_oob(_tga2(ext_off=94, middle=bytes(12), ext=_ext(postage=10)), 615)
+
+
+def test_trailer_data_end_never_raises_on_junk_req_1_15():
+    from necropsy.engine.trailers import trailer_data_end
+    assert trailer_data_end(b"", 0, "tga") == (0, None, None)
+    assert trailer_data_end(_tga2(), 18, "pcx") == (108, None, None)

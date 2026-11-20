@@ -427,6 +427,42 @@ def test_tga_layout_lists_tga2_footer_with_signature():
     assert footer[0]["signature_offset"] == 8
 
 
+TGA2_DECLARED = [{"name": "extension_area_offset", "at": 0, "fmt": "<I"},
+                 {"name": "developer_area_offset", "at": 4, "fmt": "<I"}]
+TGA2_AREA = {"base": "extension_area_offset", "size_at": 0, "size_fmt": "<H", "min_size": 495,
+             "offsets": [{"name": "colour_correction_offset", "at": 482, "fmt": "<I"},
+                         {"name": "postage_stamp_offset", "at": 486, "fmt": "<I"},
+                         {"name": "scan_line_offset", "at": 490, "fmt": "<I"}]}
+
+
+def test_tga_layout_carries_declared_offsets_and_area():
+    # Req 9.23; design.md "Layout schema"
+    layout = _layout("mystery_c")
+    footer = [t for t in layout["data"]["trailers"] if t["name"] == "tga2_footer"][0]
+    assert footer["declared_offsets"] == TGA2_DECLARED
+    assert footer["area"] == TGA2_AREA
+    assert json.loads(json.dumps(layout)) == layout
+
+
+def test_pcx_layout_trailer_is_unchanged():
+    # Req 9.23: pcx_palette_256 declares nothing, so neither key appears
+    layout = _layout("mystery_b")
+    assert layout["data"]["trailers"] == [
+        {"name": "pcx_palette_256", "length": 769, "signature": "0c", "signature_offset": 0}]
+
+
+def test_reference_reader_imports_only_json_re_struct():
+    # design.md "Reference reader"
+    src = (Path(__file__).parent / "support" / "reference_reader.py").read_text(encoding="utf-8")
+    mods = set()
+    for node in ast.walk(ast.parse(src)):
+        if isinstance(node, ast.Import):
+            mods.update(a.name.split(".")[0] for a in node.names)
+        elif isinstance(node, ast.ImportFrom):
+            mods.add((node.module or "").split(".")[0])
+    assert mods == {"json", "re", "struct"}
+
+
 def test_reference_reader_reproduces_external_b_from_emitted_requirements():
     data = _external_b()
     result = Engine().run(data)

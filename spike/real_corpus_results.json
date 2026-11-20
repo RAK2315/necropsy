@@ -1814,13 +1814,26 @@
   "scope": "in",
   "scope_reason": "uncompressed TGA (image type 1)",
   "invalid_by_construction": false,
-  "our_status": "FAILED",
-  "stage": null,
-  "termination": "exhausted",
-  "checks": 3,
-  "candidates": [],
+  "our_status": "RESOLVED",
+  "stage": "probe",
+  "termination": null,
+  "checks": 1,
+  "candidates": [
+   {
+    "width": 128,
+    "height": 128,
+    "bit_depth": 8,
+    "header_size": 560,
+    "row_alignment": 1,
+    "encoding": "none",
+    "probe": "tga",
+    "path": [],
+    "data_start": 560,
+    "data_end": 16944
+   }
+  ],
   "expected_status": "RESOLVED",
-  "note": "Open: in scope, valid, and FAILED. Under diagnosis in another session; row left as measured.",
+  "note": "",
   "pillow_error": null,
   "pillow_decodes": true,
   "pillow_mode": "P",
@@ -1828,8 +1841,10 @@
    128,
    128
   ],
-  "pixel_verdicts": [],
-  "pillow_pixels_sha256": null
+  "pixel_verdicts": [
+   "match"
+  ],
+  "pillow_pixels_sha256": "e91df318e8f2619e198ce7bf41917f4444a5b407ba89d3e97ac65627c901a4da"
  },
  {
   "file": "pillow_p_4_planes.pcx",

@@ -107,6 +107,62 @@ def _read_array(data, arr, ent, typ, cnt, vfmt, voff, prefix, fields):
     return vals
 
 
+def _trailer_match(data, tr, start):
+    """Return the trailer start when its signature matches, else None. Only this check may skip."""
+    try:
+        pos = len(data) - tr["length"]
+        sig = bytes.fromhex(tr["signature"])
+        at = pos + tr["signature_offset"]
+        if (pos >= start and pos >= 0 and at >= 0
+                and data[at:at + len(sig)] == sig and len(sig) > 0):
+            return pos
+    except Exception:
+        pass
+    return None
+
+
+def _read_declared(data, base, items, names, lo, hi, out):
+    """Read each {"name", "at", "fmt"} at base + at; 0 is absent; nonzero must lie in [lo, hi)."""
+    if not isinstance(items, list):
+        raise _Err("malformed trailer declaration")
+    for it in items:
+        if not isinstance(it, dict) or not isinstance(it.get("name"), str) or not _is_int(it.get("at")):
+            raise _Err("malformed trailer declaration")
+        v = _read(data, base + it["at"], _fmt(it.get("fmt"), None))[0]
+        if not _is_int(v):
+            raise _Err("malformed trailer declaration")
+        names[it["name"]] = v
+        if v != 0:
+            if not (lo <= v < hi):
+                raise _Err("declared offset out of range: " + it["name"])
+            out.append(v)
+
+
+def _trailer_end(data, tr, pos, start):
+    """Data end for a matching trailer at `pos`, applying its declared offsets (Req 9.25)."""
+    if "declared_offsets" not in tr and "area" not in tr:
+        return pos
+    ends = [pos]
+    names = {}
+    _read_declared(data, pos, tr.get("declared_offsets"), names, start, pos, ends)
+    area = tr.get("area")
+    if area is not None:
+        if not isinstance(area, dict) or area.get("base") not in names:
+            raise _Err("malformed trailer declaration")
+        base = names[area["base"]]
+        if base != 0:
+            min_size = area.get("min_size")
+            if not _is_int(min_size) or not _is_int(area.get("size_at")):
+                raise _Err("malformed trailer declaration")
+            size = _read(data, base + area["size_at"], _fmt(area.get("size_fmt"), None))[0]
+            if not _is_int(size):
+                raise _Err("malformed trailer declaration")
+            if size < min_size or base + size > pos:
+                raise _Err("declared area invalid")
+            _read_declared(data, base, area.get("offsets"), {}, start, pos, ends)
+    return min(ends)
+
+
 def _parse(layout, data):
     if not isinstance(layout, dict):
         raise _Err("layout is not an object")
@@ -196,16 +252,11 @@ def _parse(layout, data):
     else:
         end = len(data)
         for tr in d.get("trailers") or []:
-            try:
-                pos = len(data) - tr["length"]
-                sig = bytes.fromhex(tr["signature"])
-                at = pos + tr["signature_offset"]
-                if (pos >= start and pos >= 0 and at >= 0
-                        and data[at:at + len(sig)] == sig and len(sig) > 0):
-                    end = pos
-                    break
-            except Exception:
+            pos = _trailer_match(data, tr, start)   # signature check only; may skip
+            if pos is None:
                 continue
+            end = _trailer_end(data, tr, pos, start)   # an invalid declaration raises _Err
+            break
 
     enc = d["encoding"]
     if isinstance(enc, dict):

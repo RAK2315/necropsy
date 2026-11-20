@@ -120,6 +120,11 @@ def test_in_scope_pixels_equal_pillows(name):
     assert hashlib.sha256(ours[0]).hexdigest() == committed
 
 
+def test_no_open_in_scope_failures_are_recorded():
+    # The xfail machinery below stays for future entries; an empty set must be stated, not silently skipped.
+    assert OPEN == set()
+
+
 @pytest.mark.parametrize("name", sorted(OPEN))
 @pytest.mark.xfail(strict=True, reason="in scope, valid, FAILED today; under diagnosis in another session")
 def test_open_in_scope_failures(name):

@@ -74,13 +74,26 @@ def _slug_for(probes: set, data: bytes) -> str:
     return "unknown-" + hashlib.sha256(data).hexdigest()[:8]
 
 
+def _named(items) -> list:
+    return [{"name": n, "at": at, "fmt": f} for n, at, f in items]
+
+
 def _trailers(origin: str) -> list:
-    return [
-        {"name": t.name, "length": t.length, "signature": t.signature.hex(),
-         "signature_offset": t.signature_offset}
-        for t in TRAILER_REGISTRY
-        if origin in t.applies_to
-    ]
+    out = []
+    for t in TRAILER_REGISTRY:
+        if origin not in t.applies_to:
+            continue
+        d = {"name": t.name, "length": t.length, "signature": t.signature.hex(),
+             "signature_offset": t.signature_offset}
+        # Requirement 9.23: both keys are omitted when the entry declares nothing.
+        if t.declared_offsets:
+            d["declared_offsets"] = _named(t.declared_offsets)
+        a = t.declared_area
+        if a is not None:
+            d["area"] = {"base": a.base, "size_at": a.size_at, "size_fmt": a.size_fmt,
+                         "min_size": a.min_size, "offsets": _named(a.offsets)}
+        out.append(d)
+    return out
 
 
 def _fixed_fields(spec) -> list:

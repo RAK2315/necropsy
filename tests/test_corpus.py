@@ -176,3 +176,38 @@ def test_external_b_resolves_with_tga2_footer_req_7_12():
             i = (y * w + x) * 3
             expected += bytes((rgb[i + 2], rgb[i + 1], rgb[i]))
     assert bytes(c.decoded) == bytes(expected)
+
+
+# --- real files: pillow_p_16.tga and pillow_rgb32rle.tga (Requirements 7.16, 7.17) ---
+def test_pillow_p_16_tga_resolves_req_7_16():
+    from tests.conftest import SAMPLES_DIR
+    path = SAMPLES_DIR / "real" / "pillow_p_16.tga"
+    data = path.read_bytes()
+    r = Engine().run(data)
+    assert r.status == "RESOLVED"
+    assert r.stage == "probe"
+    c = r.candidate
+    hy = c.hypothesis
+    assert hy.probe_name == "tga"
+    assert (hy.width, hy.height, hy.bit_depth, hy.header_size) == (128, 128, 8, 560)
+    assert (c.data_start, c.data_end) == (560, 16944)
+    assert c.data_end - c.data_start == 16384
+    assert c.trailer == "tga2_footer"
+    # Pillow is imported only here; for a palette image its raw bytes are the pixel indices.
+    from PIL import Image
+    with Image.open(path) as im:
+        im.load()
+        expected = im.tobytes()
+    assert len(expected) == 16384
+    assert bytes(c.decoded) == expected
+
+
+def test_pillow_rgb32rle_tga_not_resolved_req_7_17():
+    from tests.conftest import SAMPLES_DIR
+    data = (SAMPLES_DIR / "real" / "pillow_rgb32rle.tga").read_bytes()
+    r = Engine().run(data)
+    assert r.status != "RESOLVED"
+    tga = [e for e in r.rejections
+           if e.source == "tga" and e.hypothesis is not None and e.hypothesis.probe_name == "tga"]
+    assert tga, "the TGA seed must appear among the rejections"
+    assert all(e.reason == "unsupported_encoding" for e in tga)

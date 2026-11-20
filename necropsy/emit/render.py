@@ -218,6 +218,44 @@ def _fields(lay: dict) -> list:
     return out
 
 
+def _declared(t: dict) -> list:
+    """Criteria for a trailer's declared offsets (Requirements 9.23, 9.24)."""
+    decl = t.get("declared_offsets")
+    if not decl:
+        return []
+    out = []
+    for o in decl:
+        out.append(
+            "THE parser SHALL read declared offset `%s` at position %s from the start of trailer "
+            "`%s` using struct format `%s` (%s)."
+            % (o["name"], _hex(o["at"]), t["name"], o["fmt"], _describe_fmt(o["fmt"]))
+        )
+    area = t.get("area")
+    third = ("WHERE a trailer declares an offset, THE parser SHALL end the data region at the "
+             "minimum of the trailer start and every valid nonzero declared offset")
+    fourth = ("IF a nonzero declared offset is not valid, or the area it locates has a size field "
+              "below %s or extends past the trailer start, THEN THE parser SHALL reject the file "
+              "and SHALL read no offset inside that area.")
+    if area:
+        inner = ", ".join("`%s` at position %s (`%s`)" % (o["name"], _hex(o["at"]), o["fmt"])
+                          for o in area.get("offsets") or [])
+        third += (", including the inner offsets of the area located by `%s`: %s, each position "
+                  "counted from the start of that area" % (area["base"], inner))
+        fourth = fourth % area["min_size"]
+        fourth = fourth[:-1] + (
+            ". The area starts at the declared offset `%s`; its size field is read using `%s` at "
+            "position %s from the area start, and the inner offsets are read only after the area "
+            "is accepted." % (area["base"], area["size_fmt"], _hex(area["size_at"])))
+    else:
+        fourth = fourth % "its minimum size"
+    out.append("WHERE a trailer declares an offset, THE parser SHALL treat an offset of 0 as the area being absent.")
+    out.append("WHERE a trailer declares an offset, THE parser SHALL treat a nonzero offset as valid "
+               "if and only if it lies in [header_size, trailer_start).")
+    out.append(third + ".")
+    out.append(fourth)
+    return out
+
+
 def _data(lay: dict, cand, origin: str) -> list:
     out = []
     d = lay.get("data") or {}
@@ -242,13 +280,18 @@ def _data(lay: dict, cand, origin: str) -> list:
         out.append("THE parser SHALL end the data region at the end of the file, unless a trailer applies.")
     trailers = d.get("trailers") or []
     for t in trailers:
+        tail = "end the data region at offset (file length - %d)." % t["length"]
+        if t.get("declared_offsets"):
+            tail = ("end the data region at offset (file length - %d) or at the earliest "
+                    "valid declared offset below, whichever comes first." % t["length"])
         out.append(
             "WHEN offset (file length - %d) is at or after the data start and the bytes starting "
             "%d %s after that offset equal the signature 0x%s, THE parser SHALL treat the "
-            "trailing %s as trailer `%s` and end the data region at offset (file length - %d)."
+            "trailing %s as trailer `%s` and %s"
             % (t["length"], t["signature_offset"], _plural(t["signature_offset"], "byte"),
-               t["signature"].upper(), _plural(t["length"], "byte"), t["name"], t["length"])
+               t["signature"].upper(), _plural(t["length"], "byte"), t["name"], tail)
         )
+        out.extend(_declared(t))
     if not trailers:
         out.append("THE parser SHALL NOT strip any trailer from the data region.")
     out.append("THE parser SHALL decode the data region using encoding %s." % _encoding_text(d.get("encoding")))

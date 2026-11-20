@@ -30,9 +30,7 @@ INVALID_BY_CONSTRUCTION = (
 )
 
 
-OPEN_IN_SCOPE_FAILURES = (   # in scope, valid, FAILED; under diagnosis elsewhere, rows left as measured
-    "pillow_p_16.tga",
-)
+OPEN_IN_SCOPE_FAILURES = ()   # in scope, valid, FAILED; under diagnosis elsewhere, rows left as measured (none today)
 NOTES = {
     "pillow_ossfuzz-4836216264589312.pcx": (
         "Invalid by construction, and RESOLVED by design. The PCX probe recognised the signature and declined "
