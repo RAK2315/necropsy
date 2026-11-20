@@ -563,3 +563,11 @@ Recorded as reported by the builder; the raw tool text was not captured, so only
 2. **`analyse` on `mystery_d`: 32,236 characters, truncated by Kiro at 30,000.** Kiro shows a result over 30,000 characters as its first and last 500 only and saves the full output to a file, so 1 of the 18 candidates was visible. This caused the next change: `analyse` also drops `value_repr` from every field (rebuilt exactly from `value` on all 92 files before it was removed), and the 20,000-character test became Kiro's own 30,000 limit. After the change `mystery_d` measures 25,890 characters in the stdio test, and it was the only corpus file over 30,000.
 The skill `unknown-file` now says: if a tool result arrives truncated, read the saved full output before answering, and never report candidates from a truncated view.
 Spec task 6 (install the Power in Kiro) is marked done on the strength of item 1.
+## NECROPSY MCP: the Power re-tested after b1d654e (2026-11-20)
+Recorded as reported by the builder; the raw tool text was not captured, so only the measured facts are stated.
+After commit `b1d654e` the Power was removed and re-imported from `powers/necropsy` in the `power-check` workspace, and `analyse` was called on `mystery_d` in a new chat.
+- **The result arrived complete.** It ended at `"rejection_counts":{}}` with no truncation marker. The earlier call (32,236 characters) had been cut to the first and last 500.
+- **Status:** `UNRESOLVED_AMBIGUITY`, 104 bytes. Kiro counted 18 candidates, all generic, encoding none, row alignment 1, and listed all 18 (header sizes 40, 64, 72, 76, 96).
+- **Kiro chose none** and said something outside the bytes would have to decide. No files were written.
+- **Size:** 25,890 characters is the correct figure (stdio test). The builder's earlier 26,071 counted non-ASCII characters escaped as `\u00b7`.
+This closes the change that made `analyse` agent-sized: the result that was truncated at 32,236 characters now arrives whole at 25,890 and Kiro reports all 18 candidates. All tasks in the `necropsy-mcp` spec are done; none was left open.
