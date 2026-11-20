@@ -114,11 +114,16 @@ This is the hero moment. The engine returns `decoded` bytes and the geometry. It
    | 1 | `bit = (d[r×S + x//8] >> (7 − x%8)) & 1` (most significant bit first) | `grey8`: see criterion 4 |
    | 4 | `byte = d[r×S + x//2]`; `v = byte >> 4` when `x` is even, `byte & 0x0F` when `x` is odd | `grey8` with `v × 17` |
    | 8 | `i = d[r×S + x]` | with a palette: `rgb8` as `(P[3i], P[3i+1], P[3i+2])`, where `P` is the palette (criterion 7). Without: `grey8`, `i` as the grey level |
-   | 24 | `o = r×S + 3x`; `B = d[o]`, `G = d[o+1]`, `R = d[o+2]` | `rgb8` as `(R, G, B)` |
-   | 32 | `o = r×S + 4x`; `B = d[o]`, `G = d[o+1]`, `R = d[o+2]`; `d[o+3]` is not used | `rgb8` as `(R, G, B)`, opaque |
+   | 24 | `o = r×S + 3x`; three bytes in the channel order of criterion 5 | `rgb8` as `(R, G, B)` |
+   | 32 | `o = r×S + 4x`; the first three bytes in the channel order of criterion 5; `d[o+3]` is not used | `rgb8` as `(R, G, B)`, opaque |
 
 4. FOR bit depth 1, THE decoder SHALL map bit value 0 to grey 0 and 1 to grey 255, except that WHEN `probe_name == "pbm"` it SHALL map 1 to grey 0 and 0 to grey 255, because PBM declares 1 as black. The rule SHALL be the same for every candidate of one result.
-5. THE decoder SHALL apply BGR byte order to every 24-bit and 32-bit candidate whatever its `probe_name`. The TGA probe's format declares BGR. The engine's Generic Search cannot know the channel order of a headerless file, and the corpus's headerless 24-bit file (`mystery_g`) stores BGR.
+   - WHEN a candidate has a `FieldRecord` named `photometric_interpretation` with value 0 (WhiteIsZero), THE decoder SHALL invert every grey level at 1, 4 and 8 bits, so that 0 is white. Value 1 (BlackIsZero) renders as stored. The Render note SHALL say `WhiteIsZero (photometric 0)` or `BlackIsZero (photometric 1)`.
+   - WHEN a TIFF candidate at 1, 4 or 8 bits declares no photometric interpretation, THE decoder SHALL render BlackIsZero and the Render note SHALL say `no photometric interpretation declared; shown as BlackIsZero (0 = black)`. Other readers may choose differently (Pillow shows such a file as WhiteIsZero), so the note names the convention.
+5. THE decoder SHALL apply the channel order the format declares (amended: it was B,G,R for every candidate):
+   - TGA: B, G, R, the format's fixed pixel layout. The Render note says `BGR→RGB`.
+   - TIFF: R, G, B, as PhotometricInterpretation 2 stores it. The Render note says `RGB as stored`.
+   - Generic Search candidates declare no channel order. THE decoder SHALL keep B, G, R, and the Render note SHALL say `BGR→RGB (a convention: the file declares no channel order)`. The corpus's headerless 24-bit file (`mystery_g`) stores B, G, R.
 6. **Row orientation.** THE decoder SHALL render rows in the order stored, row 0 at the top, and the Render note SHALL state `rows shown in stored order`, except as follows.
    - WHEN a candidate has a `FieldRecord` named `image_descriptor` (the engine records one at offset `0x11` of a TGA seed), THE serialiser SHALL read bit 5 of its value, `(value[0] >> 5) & 1`, as the file's declared origin. Set means top-left: rows are rendered as stored and the note is unchanged. Clear means bottom-left: the serialiser SHALL pass `bottom_left = True`, THE decoder SHALL emit rows bottom to top (output row `y` is stored row `height - 1 - y`) at every bit depth, and the Render note SHALL say `rows flipped: file declares bottom-left origin`.
    - A record whose value is not a one-element tuple holding an integer SHALL be ignored, and the rows rendered as stored.
@@ -145,6 +150,11 @@ This is the hero moment. The engine returns `decoded` bytes and the geometry. It
     - `mystery_a` (PBM, 4×4): pixel `(x, y)` is black where `scene(4, 4)[y][x] < 128` and white elsewhere. This proves the PBM polarity.
     - 4-bit and 32-bit: a synthetic `decoded` buffer built in the test, with a padded stride, with odd width for 4-bit. No corpus file has these depths.
 15. THE decoder SHALL be applied to every candidate of an `UNRESOLVED_AMBIGUITY` result, including those that are not preferred by any measure, with the same conventions for all.
+16. **TGA colour map.** WHEN a TGA candidate at 8 bits declares `color_map_type` 1, THE serialiser SHALL read the colour map from the header: it starts at `18 + id_length` and holds `color_map_length` entries of `color_map_entry_size` bits; the first entry's index is the `uint16` at offset `0x03` (`<H`), which the probe does not record, so the serialiser reads it and the Render note names it. Pixel value `i` maps to entry `i − first`. Entry sizes:
+   - 15 or 16 bits: a little-endian `uint16` holding 5-bit B (bits 0–4), G (5–9) and R (10–14); the top bit is ignored. Each 5-bit value `v` becomes `(v × 255) // 31`.
+   - 24 bits: B, G, R. 32 bits: B, G, R, A, with A dropped.
+   - WHEN the entry size is any other value, the map does not fit inside the file, or any pixel value falls outside the map, THE decoder SHALL render the indices as grey and the Render note SHALL say why the map was not applied. A short or partial map SHALL NOT be padded or partly applied.
+17. **Differential check.** THE render SHALL be tested against Pillow on every `RESOLVED` file in `spike/samples`, `spike/samples/external` and `spike/samples/real` that Pillow decodes, pixel for pixel. A file that cannot be compared SHALL be listed by name with its reason, and the test SHALL assert that reason still holds. Exceptions SHALL NOT be added to make the test pass.
 
 ### Requirement 4: Recovered Image Display
 
@@ -271,6 +281,7 @@ This screen shows the honesty mechanic. It is a success.
 
 1. THE screen SHALL show the status `FAILED` and the termination reason in plain words:
    - `exhausted`: `Every hypothesis within the search axes was tried and none closed.`
+     WHEN the rejections show a probe stage and no generic stage, the probe's declarations bounded the search and Generic Search did not run (engine Decision Record 25). THE screen SHALL then say instead `The bytes matched the {PROBE} probe, so only readings under its declarations were tried. Generic search did not run.`, with the probe's name in capitals. (Amended: the sentence above implied that Generic Search ran.)
    - `no_hypothesis_checked`: `No hypothesis reached the closure gate.` When generic search ran, the screen SHALL add that no combination of header length, width, height and bit depth fitted the file's size, so nothing was closure-checked, and that this does not mean the file has no layout. (Added when the engine split this case out of `exhausted`, which had claimed checks that never ran.)
    - `deadline_exceeded`: `The search stopped at the {deadline} second deadline.`
    - `search_cap_exceeded`: `The search stopped at the 10,000 closure-check cap.`
