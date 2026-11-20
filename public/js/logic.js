@@ -306,3 +306,36 @@ export function multiDropNotice(names) {
   const k = names.length, rest = names.slice(1);
   return `${k} files were dropped. NECROPSY examines one file at a time: it examined ${names[0]} and ignored ${k - 1} other${k - 1 === 1 ? '' : 's'}: ${rest.join(', ')}.`;
 }
+// ---- Error copy (Requirement 19): what happened and what to do next, from the actual cause ----
+
+export const LIMIT_BYTES = 65536;
+const n = (v) => Number(v).toLocaleString('en-US');
+
+export const sizeMessage = (size) =>
+  `That file is ${n(size)} bytes. The limit is ${n(LIMIT_BYTES)} bytes. Try a smaller file or a fragment of it.`;
+
+export const emptyMessage = (name) =>
+  `${name || 'The file'} is empty (0 bytes). There is nothing to examine. Choose a file that has content.`;
+
+/** The sentence for the other files of a multi-file drop whose first file was refused (Requirement 18.3). */
+export const othersNotExamined = (k) =>
+  k > 1 ? ` The other ${k - 1} dropped file${k > 2 ? 's were' : ' was'} not examined.` : '';
+
+export const serviceStatusMessage = (status) =>
+  `The analysis service answered with HTTP ${status}. Your file was not examined. Try again.`;
+
+export const UNREACHABLE_MESSAGE =
+  'The analysis service could not be reached, so your file was not examined. Check your connection and try again.';
+
+/** status: an HTTP status, or 0 when there was no connection. */
+export const sampleFailMessage = (name, status) =>
+  `The sample ${name} could not be loaded (${status ? `HTTP ${status}` : 'no connection'}). Try again, or drop a file of your own.`;
+
+export const SAMPLE_LIST_FAIL = 'The sample list could not be loaded. You can still drop a file of your own.';
+
+export const zipFailMessage = (status) => status
+  ? `The download failed: the service answered with HTTP ${status}. Try again.`
+  : 'The download failed: the service could not be reached. Try again.';
+
+export const STOPPED_AT_LIMIT =
+  'The search stopped at its limit before it could try everything. That does not mean no layout exists. The rejections below show what was tried before it stopped.';

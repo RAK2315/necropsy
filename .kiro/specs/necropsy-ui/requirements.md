@@ -301,7 +301,7 @@ This screen shows the honesty mechanic. It is a success.
 7. THE samples SHALL be served as static files. THE UI SHALL NOT carry a copy of any sample's expected result.
 8. THE UI SHALL state in one line what the tool does with an arbitrary file: it reads PCX, TGA, PBM and TIFF declarations and otherwise searches for headerless raster layouts. THE UI SHALL NOT claim to open arbitrary formats.
 9. WHEN a user drops a non-image file, THE UI SHALL show the engine's FAILED screen (Requirement 10). That behaviour SHALL be reachable in under 20 seconds from the first screen.
-10. WHEN a dropped file exceeds 65,536 bytes, THE UI SHALL refuse it in the drop zone with a message that states the limit and SHALL NOT upload it.
+10. WHEN a dropped or chosen file exceeds 65,536 bytes, THE UI SHALL refuse it in the drop zone and SHALL NOT upload it. The message SHALL be `That file is {size} bytes. The limit is 65,536 bytes. Try a smaller file or a fragment of it.`, followed by Requirement 18.3's sentence when other files were dropped with it. (Amended by Requirement 19.2, which added the next step.)
 11. WHILE an analysis request is in flight, THE UI SHALL show a plain `Analysing…` state with no progress percentage and no animation that implies engine steps.
 12. THE analysis result for any sample SHALL be identical to the result for the same bytes dropped as a file whose name is changed to anything else. A test SHALL assert this for every sample.
 13. **External samples.** THE project SHALL include at least two external samples, written by Pillow (the Python imaging library) and committed unmodified in `spike/samples/external/`, named `external_a` and `external_b` with no extension:

@@ -1,5 +1,5 @@
 // Outcome strip on the first screen (Requirement 16): three real results, requested as the page loads.
-import { outcomeLine, terminationText, rejectionLine } from './logic.js';
+import { outcomeLine, terminationText, rejectionLine, sampleFailMessage } from './logic.js';
 import { paint } from './image.js';
 
 function el(tag, cls, text) {
@@ -16,9 +16,12 @@ const INPUTS = [
   { label: 'mystery_b, first 300 bytes', name: 'mystery_b_first300', bytes: async () => (await fetchSample('mystery_b')).slice(0, 300) },
 ];
 
+class SampleError extends Error { constructor(name, status) { super(sampleFailMessage(name, status)); } }
+
 async function fetchSample(name) {
-  const r = await fetch('/samples/' + name);
-  if (!r.ok) throw new Error('sample ' + name);
+  let r;
+  try { r = await fetch('/samples/' + name); } catch (e) { throw new SampleError(name, 0); }
+  if (!r.ok) throw new SampleError(name, r.status);
   return new Uint8Array(await r.arrayBuffer());
 }
 
@@ -32,7 +35,7 @@ export function loadStrip(requestAnalysis) {
         const bytes = await input.bytes();
         return { input, bytes, result: await requestAnalysis(bytes) };
       } catch (e) {
-        return { input, bytes: null, result: { error: true, message: 'The sample could not be loaded.' } };
+        return { input, bytes: null, result: { error: true, message: e instanceof SampleError ? e.message : sampleFailMessage(input.name, 0) } };
       }
     });
   }
@@ -79,11 +82,12 @@ export function stripElement(requestAnalysis, open) {
     tile.dataset.slot = String(i);
     const name = el('p', 'strip-input mono', INPUTS[i].label);
     const body = el('div', 'strip-body');
+    body.setAttribute('aria-live', 'polite');
     body.append(el('p', 'strip-wait', 'Analysing…'));
     tile.append(name, body);
     row.append(tile);
     pending.then(({ input, bytes, result }) => {
-      if (result.error) { body.replaceChildren(el('p', 'strip-wait', result.message)); return; }
+      if (result.error) { body.replaceChildren(el('p', 'strip-wait strip-error', result.message)); return; }
       const p = result.payload;
       const kids = p.status === 'RESOLVED' ? resolvedBody(p) : p.status === 'UNRESOLVED_AMBIGUITY' ? ambiguityBody(p) : failedBody(p);
       body.replaceChildren(...kids);

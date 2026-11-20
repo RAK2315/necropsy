@@ -76,6 +76,6 @@ def test_oversized_first_file_and_empty_drop_are_stated(base_url):
   return JSON.stringify({ big, stayed, empty, still: !!document.querySelector('.drop') });
 })()
 """)
-    assert got["big"] == "That file is 70,000 bytes. The limit is 65,536 bytes. The other 1 dropped file was not examined."
+    assert got["big"] == "That file is 70,000 bytes. The limit is 65,536 bytes. Try a smaller file or a fragment of it. The other 1 dropped file was not examined."
     assert got["stayed"] and got["still"]
     assert got["empty"] == "Nothing to examine: drop a file."

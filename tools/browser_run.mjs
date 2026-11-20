@@ -1,7 +1,8 @@
 // Test support: run one scenario in a real headless Edge or Chrome page and print its JSON result.
-// node tools/browser_run.mjs <url> <scenario.js> [--rewrite <rewrite.js>] [--reduced-motion]
+// node tools/browser_run.mjs <url> <scenario.js> [--rewrite <rewrite.js>] [--prelude <prelude.js>] [--reduced-motion]
 //   scenario.js  an async expression evaluated in the page after load; it must return a JSON string
 //   rewrite.js   a JS function source `(payload) => payload`, applied in the browser to every /api/analyze response
+//   prelude.js   extra JS run in the page before any page script (for example a window.fetch fault for one URL)
 // Downloads made with URL.createObjectURL are captured: window.__blobs is an array of {name, type, b64}.
 import { spawn } from 'node:child_process';
 import { existsSync, mkdtempSync, readFileSync } from 'node:fs';
@@ -12,6 +13,7 @@ const args = process.argv.slice(2);
 const [url, scenarioPath] = args;
 const opt = (k) => { const i = args.indexOf(k); return i >= 0 ? args[i + 1] : null; };
 const rewritePath = opt('--rewrite');
+const preludePath = opt('--prelude');
 const reduced = args.includes('--reduced-motion');
 const EXES = ['C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe', 'C:/Program Files/Google/Chrome/Application/chrome.exe',
   '/usr/bin/google-chrome', '/usr/bin/chromium', '/usr/bin/chromium-browser'];
@@ -70,7 +72,7 @@ try {
   await send('Emulation.setDeviceMetricsOverride', { width: 1280, height: 720, deviceScaleFactor: 1, mobile: false });
   if (reduced) await send('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-reduced-motion', value: 'reduce' }] });
   if (rewrite) await send('Fetch.enable', { patterns: [{ urlPattern: '*/api/analyze', requestStage: 'Response' }] });
-  await send('Page.addScriptToEvaluateOnNewDocument', { source: PRELUDE });
+  await send('Page.addScriptToEvaluateOnNewDocument', { source: PRELUDE + (preludePath ? readFileSync(preludePath, 'utf8') : '') });
   await send('Page.navigate', { url });
   for (let i = 0; i < 400 && !events.includes('Page.loadEventFired'); i++) await sleep(25);
   const r = await send('Runtime.evaluate', { expression: readFileSync(scenarioPath, 'utf8'), awaitPromise: true, returnByValue: true });

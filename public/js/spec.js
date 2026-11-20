@@ -1,5 +1,7 @@
 // Emitted spec panel (Requirement 12). Shows the engine's emitted files as text and downloads them as a ZIP.
 
+import { zipFailMessage } from './logic.js';
+
 export const FRAMING = 'NECROPSY was built with spec-driven development, and it produces spec-driven development.';
 
 function el(tag, cls, text) {
@@ -14,8 +16,11 @@ async function download(bytes, slug, button, status) {
   status.textContent = 'Preparing…';
   try {
     // The server holds nothing, so the browser sends the same bytes again and the server emits again.
-    const r = await fetch('/api/spec.zip', { method: 'POST', body: bytes, headers: { 'Content-Type': 'application/octet-stream' } });
-    if (!r.ok) throw new Error(String(r.status));
+    let r;
+    try {
+      r = await fetch('/api/spec.zip', { method: 'POST', body: bytes, headers: { 'Content-Type': 'application/octet-stream' } });
+    } catch (e) { status.textContent = zipFailMessage(0); return; }
+    if (!r.ok) { status.textContent = zipFailMessage(r.status); return; }
     const url = URL.createObjectURL(await r.blob());
     const a = el('a');
     a.href = url;
@@ -26,7 +31,7 @@ async function download(bytes, slug, button, status) {
     setTimeout(() => URL.revokeObjectURL(url), 10000);
     status.textContent = `Downloaded ${slug}.zip`;
   } catch (e) {
-    status.textContent = 'The download failed. Try again.';
+    status.textContent = zipFailMessage(0);
   } finally {
     button.disabled = false;
   }

@@ -1,8 +1,11 @@
 import { renderResult } from './screens.js';
 import { stripElement } from './strip.js';
-import { multiDropNotice } from './logic.js';
+import {
+  multiDropNotice, sizeMessage, emptyMessage, othersNotExamined, serviceStatusMessage, UNREACHABLE_MESSAGE,
+  sampleFailMessage, SAMPLE_LIST_FAIL, LIMIT_BYTES,
+} from './logic.js';
 
-const MAX_UPLOAD = 65536;
+const MAX_UPLOAD = LIMIT_BYTES;
 const view = document.getElementById('view');
 const againBtn = document.getElementById('again');
 
@@ -21,11 +24,11 @@ const fmt = (n) => n.toLocaleString('en-US');
 async function requestAnalysis(bytes) {
   try {
     const r = await fetch('/api/analyze', { method: 'POST', body: bytes, headers: { 'Content-Type': 'application/octet-stream' } });
-    if (r.status === 413) return { error: true, status: 413, message: `That file is larger than the ${fmt(MAX_UPLOAD)} byte limit.` };
-    if (!r.ok) return { error: true, status: r.status, message: 'The analysis service did not answer. Try again.' };
+    if (r.status === 413) return { error: true, status: 413, message: sizeMessage(bytes.length) };
+    if (!r.ok) return { error: true, status: r.status, message: serviceStatusMessage(r.status) };
     return { payload: await r.json() };
   } catch (e) {
-    return { error: true, status: 0, message: 'The analysis service could not be reached. Try again.' };
+    return { error: true, status: 0, message: UNREACHABLE_MESSAGE };
   }
 }
 
@@ -38,7 +41,7 @@ async function showStart(message = '') {
   againBtn.hidden = true;
   const input = el('input', { type: 'file', hidden: '' });
   const drop = el('button', { class: 'drop', type: 'button', text: 'Drop in a file nothing can open.' });
-  const msg = el('p', { class: 'drop-msg', role: 'status', 'aria-live': 'polite', text: message });
+  const msg = el('p', { class: 'drop-msg' + (message ? ' bad' : ''), role: 'status', 'aria-live': 'polite', text: message });
   const samples = el('section', { class: 'samples' }, el('h2', { text: 'No file to hand? Try one of these.' }));
   const start = el('div', { class: 'start' }, stripElement(requestAnalysis, open), drop, input, msg,
     el('p', { class: 'scope', text: 'NECROPSY reads PCX, TGA, PBM and TIFF declarations, and otherwise searches for headerless raster layouts.' }),
@@ -51,11 +54,8 @@ async function showStart(message = '') {
     if (!list.length) { refuse('Nothing to examine: drop a file.'); return; }
     const file = list[0];
     const notice = multiDropNotice(list.map((f) => f.name));
-    if (file.size > MAX_UPLOAD) {
-      refuse(`That file is ${fmt(file.size)} bytes. The limit is ${fmt(MAX_UPLOAD)} bytes.`
-        + (list.length > 1 ? ` The other ${list.length - 1} dropped file${list.length > 2 ? 's were' : ' was'} not examined.` : ''));
-      return;
-    }
+    if (file.size === 0) { refuse(emptyMessage(file.name) + othersNotExamined(list.length)); return; }
+    if (file.size > MAX_UPLOAD) { refuse(sizeMessage(file.size) + othersNotExamined(list.length)); return; }
     file.arrayBuffer().then((buf) => analyse(new Uint8Array(buf), file.name, notice));
   };
   drop.addEventListener('click', () => input.click());
@@ -68,13 +68,17 @@ async function showStart(message = '') {
   window.ondrop = (e) => { e.preventDefault(); if (document.querySelector('.drop')) take(e.dataTransfer.files); };
 
   try {
-    const index = await (await fetch('/samples/index.json')).json();
+    const r = await fetch('/samples/index.json');
+    if (!r.ok) throw new Error(String(r.status));
+    const index = await r.json();
     const list = el('ul');
     for (const s of index) {
       const pick = el('button', { class: 'pick', type: 'button', text: s.name });
       // a sample takes exactly the path a dropped file takes: bytes in, analyse(bytes)
       pick.addEventListener('click', async () => {
-        const r = await fetch('/samples/' + s.name);
+        let r;
+        try { r = await fetch('/samples/' + s.name); } catch (e) { showStart(sampleFailMessage(s.name, 0)); return; }
+        if (!r.ok) { showStart(sampleFailMessage(s.name, r.status)); return; }   // never analyse an error page
         analyse(new Uint8Array(await r.arrayBuffer()), s.name);
       });
       const li = el('li', {}, pick, el('span', { class: 'size', text: `${fmt(s.size)} bytes` }),
@@ -84,7 +88,7 @@ async function showStart(message = '') {
     }
     samples.append(list);
   } catch (e) {
-    samples.hidden = true;
+    samples.append(el('p', { class: 'drop-msg bad', role: 'status', text: SAMPLE_LIST_FAIL }));
   }
 }
 

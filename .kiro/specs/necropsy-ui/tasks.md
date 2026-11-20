@@ -114,7 +114,7 @@ Rules for every task:
   - Test in a real browser: a three-file drop shows the statement and the result is the first file's. Break and restore, and report both.
   - _Requirements: 18_
 
-- [ ] 20. Error copy
+- [x] 20. Error copy
   - Every failure path states what happened and what to do next, filled from the cause: oversize, empty file, service non-200 and unreachable, sample fetch, sample list, strip tile, spec ZIP, FAILED by deadline or cap. Copy and routing only.
   - Test in a real browser, with the network answers faked in the browser. One break per criterion with tools/break_check.py.
   - Stop if any wording would contradict Requirement 10.1.

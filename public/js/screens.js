@@ -1,7 +1,7 @@
 // Result screens: RESOLVED, UNRESOLVED_AMBIGUITY and FAILED.
 import {
   closureLine, declaredVsActual, revisionDiffs, changeText, ambiguityStatement, COHERENCE_NOTE, cardsHTML, cardTitle,
-  terminationText, failureGroups, rejectionLine, hypothesisLine, stageOf, inputBase,
+  terminationText, failureGroups, rejectionLine, hypothesisLine, stageOf, inputBase, STOPPED_AT_LIMIT,
 } from './logic.js';
 import { createPane, fieldTable } from './pane.js';
 import { paint } from './image.js';
@@ -174,6 +174,9 @@ function failedPanel(payload) {
   const generic = !stages.size || stages.has('generic');
   if (payload.termination === 'exhausted' && generic) {
     side.append(el('p', 'fail-scope', 'No probe signature matched, so generic search ran. No closing layout was found within its stated axes and budget. That does not mean the file has no layout.'));
+  }
+  if (payload.termination === 'deadline_exceeded' || payload.termination === 'search_cap_exceeded') {
+    side.append(el('p', 'fail-scope fail-limit', STOPPED_AT_LIMIT));
   }
   if (payload.termination === 'no_hypothesis_checked') {
     side.append(el('p', 'fail-scope', generic
