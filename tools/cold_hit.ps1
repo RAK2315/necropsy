@@ -1,18 +1,27 @@
-# Time the first screen and one analyse request against the deployed URL.
-# Usage: powershell -File tools/cold_hit.ps1 -Url https://example.vercel.app
-# Run it after the deployment has had no requests for 24 hours. Record the output in docs/KIRO-LOG.md.
+# Time the first screen and one analyse request against a deployed URL, once, with curl's own timers.
+# Usage: powershell -File tools/cold_hit.ps1 -Url https://example.vercel.app [-Out result.txt]
+# For the host gate, run it once after the deployment has had no requests for 24 hours, then record the
+# output in docs/KIRO-LOG.md. curl reports a timing even when a request fails, so a single shot is never lost.
 param(
     [Parameter(Mandatory = $true)][string]$Url,
-    [string]$Sample = "spike/samples/mystery_a"
+    [string]$Sample = "",
+    [string]$Out = ""
 )
+$repo = (Resolve-Path "$PSScriptRoot\..").Path
+if (-not $Sample) { $Sample = Join-Path $repo "spike\samples\mystery_a" }
 $Url = $Url.TrimEnd("/")
-$bytes = [IO.File]::ReadAllBytes((Resolve-Path $Sample))
-$page = Measure-Command { $r1 = Invoke-WebRequest -Uri "$Url/" -UseBasicParsing }
-$api = Measure-Command {
-    $r2 = Invoke-WebRequest -Uri "$Url/api/analyze" -Method Post -Body $bytes `
-        -ContentType "application/octet-stream" -UseBasicParsing
-}
-"date_utc:        {0:u}" -f (Get-Date).ToUniversalTime()
-"first_screen:    HTTP {0} in {1:N2} s" -f $r1.StatusCode, $page.TotalSeconds
-"analyse(sample): HTTP {0} in {1:N2} s" -f $r2.StatusCode, $api.TotalSeconds
-"body:            $($r2.Content)"
+$fmt = "HTTP %{http_code} connect %{time_connect}s first_byte %{time_starttransfer}s total %{time_total}s"
+$started = (Get-Date).ToUniversalTime()
+$page = curl.exe -s -o NUL -m 120 -w $fmt "$Url/"
+$body = Join-Path $env:TEMP "cold_hit_body.json"
+$api = curl.exe -s -o $body -m 120 -w $fmt -X POST --data-binary "@$Sample" `
+    -H "Content-Type: application/octet-stream" "$Url/api/analyze"
+$lines = @(
+    "url:             $Url",
+    ("started_utc:     {0:u}" -f $started),
+    "first_screen:    $page",
+    "analyse(sample): $api",
+    "body (first 300 chars): $(if (Test-Path $body) { $t = Get-Content $body -Raw; $t.Substring(0, [Math]::Min(300, $t.Length)) } else { '(none)' })"
+)
+if ($Out) { $lines | Set-Content -Path $Out -Encoding utf8 }
+$lines
