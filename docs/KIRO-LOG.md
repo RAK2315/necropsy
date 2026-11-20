@@ -495,3 +495,20 @@ The canary has now been requested and is no longer an idle canary. The 15 Decemb
 | 2026-11-20 13:56:35Z | PostFileSave | `.kiro/specs/necropsy-mcp/design.md` | `c1da12e` |
 | 2026-11-20 13:56:38Z | PostFileCreate | `.kiro/specs/necropsy-mcp/tasks.md` | `c1da12e` |
 | 2026-11-20 13:56:39Z | PostFileSave | `.kiro/specs/necropsy-mcp/tasks.md` | `c1da12e` |
+| 2026-11-20 14:43:36Z | PostFileCreate | `C:/Users/rehtr/AppData/Local/Temp/t21/test_a11y.py` | `fa8cdaf` |
+| 2026-11-20 14:43:36Z | PostFileSave | `C:/Users/rehtr/AppData/Local/Temp/t21/test_a11y.py` | `fa8cdaf` |
+| 2026-11-20 14:45:00Z | PostFileCreate | `C:/Users/rehtr/AppData/Local/Temp/t21/apply21.py` | `fa8cdaf` |
+| 2026-11-20 14:45:00Z | PostFileSave | `C:/Users/rehtr/AppData/Local/Temp/t21/apply21.py` | `fa8cdaf` |
+| 2026-11-20 16:22:39Z | PostFileSave | `necropsy_mcp/core.py` | `5abf20b` |
+| 2026-11-20 16:22:39Z | PostFileSave | `necropsy_mcp/core.py` | `5abf20b` |
+
+
+## Tasks 20 and 21: error copy, keyboard and contrast (2026-11-20)
+
+Task 20 (`5abf20b`): every failure path states what happened and what to do next, from the actual cause. 11 breaks, one or more per criterion of Requirement 19, all caught and restored byte-identical. The intermittent failure of `test_service_failure_says_which[500]` was a race in the test, not the copy: `showStart()` re-fetches `samples/index.json` on every redraw, and the test counted buttons before the list returned. Delaying only that fetch by 400 ms made all three cases fail every time; waiting for the list to settle fixed it. Then 20 of 20 full-suite runs passed, `test_errors.py` 14/14 each time.
+
+Task 21 (`df1fb8c`): keyboard and contrast, tested with real key presses through CDP and the WCAG formula on rendered pairs.
+
+- `--muted` is kept at `#959ca6` as extra margin, not as a fix: `#8a929d` passed every rendered pair (worst 4.85:1 on `#1f262f`, the selected field-table row).
+- The break that set `--muted` back to `#8a929d` was wrong: it targeted the hex highlight `#3a2c1c`, where `--muted` never renders (highlighted cells are drawn in `#f5c48a`, 8.44:1). The test was correct not to flag it. The 4.29:1 figure behind it paired every token with every background, not with what renders.
+- Replacement break: `--muted` = `#7f8792`, caught at 4.20:1 on `#1f262f` (also 4.31:1 on the header tint and 4.48:1 on the trailer tint). One offset back on `--faint` caught at 2.91:1. A no-change control passed.
