@@ -254,7 +254,7 @@ function stepView(step) {
   return { cands: h ? [{ fields: h.fields }] : [], regions: null };
 }
 
-export function renderResult(root, payload, bytes) {
+export function renderResult(root, payload, bytes, opts = {}) {
   root.replaceChildren();
   const target = views(root, payload, bytes);
   if (payload.status === 'UNRESOLVED_AMBIGUITY') { ambiguityScreen(target, payload, bytes).start(); return; }

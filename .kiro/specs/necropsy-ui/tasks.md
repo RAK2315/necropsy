@@ -98,7 +98,7 @@ Rules for every task:
   - If the cold analyse time is over 5 seconds or the terms fail, stop and ask the user to choose a new host now. Do not continue UI work on a failed host.
   - _Requirements: 14.2 to 14.4_
 
-- [ ] 17. Outcome strip on the first screen
+- [x] 17. Outcome strip on the first screen
   - Three tiles above the drop zone from live `/api/analyze` calls: `external_a` (RESOLVED), `mystery_d` (ambiguity), first 300 bytes of `mystery_b` (FAILED). Lines filled from the payload. Click opens the held payload.
   - Test in a real browser: tile contents equal the engine's output; with the ambiguity response rewritten in the browser, the tile follows the response, so a hard-coded line fails. Break and restore, and report both.
   - Must be visible: all three tiles and the drop zone at 1280×720 without scrolling.

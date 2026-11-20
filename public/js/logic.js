@@ -273,3 +273,12 @@ export function hypothesisLine(h) {
   if (!h) return '';
   return `${h.width} × ${h.height} · ${h.bit_depth}-bit · header ${h.header_size} · align ${h.row_alignment} · ${h.encoding}`;
 }
+// ---- Outcome strip (Requirement 16) ----
+
+/** The one line under a strip tile, filled from the payload. */
+export function outcomeLine(payload) {
+  if (payload.status === 'RESOLVED') return 'One layout closes.';
+  if (payload.status === 'UNRESOLVED_AMBIGUITY') return `${payload.candidates.length} readings fit, so NECROPSY does not choose.`;
+  return 'Nothing closed, and here is why.';
+}
+

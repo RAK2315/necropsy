@@ -6,52 +6,16 @@ renderer or a placeholder would pass a screenshot; it does not pass this.
 import base64
 import io
 import json
-import shutil
-import socket
 import subprocess
-import threading
-import time
 import zipfile
 
 import pytest
-import uvicorn
-from fastapi import FastAPI
-from fastapi.staticfiles import StaticFiles
 
 from necropsy.emit import emit_spec
 from necropsy.engine import Engine
 from tests.conftest import REPO_ROOT, corpus_bytes
 
-import app as service
-
 PROBE = REPO_ROOT / "tools" / "panel_probe.mjs"
-
-
-def _free_port() -> int:
-    with socket.socket() as s:
-        s.bind(("127.0.0.1", 0))
-        return s.getsockname()[1]
-
-
-@pytest.fixture(scope="module")
-def base_url():
-    if shutil.which("node") is None:
-        pytest.skip("node is not installed; the panel check needs it to drive a browser")
-    site = FastAPI()
-    for route in service.app.routes:          # the real API endpoints, unchanged
-        site.router.routes.append(route)
-    site.mount("/", StaticFiles(directory=REPO_ROOT / "public", html=True), name="public")
-    port = _free_port()
-    server = uvicorn.Server(uvicorn.Config(site, host="127.0.0.1", port=port, log_level="error"))
-    thread = threading.Thread(target=server.run, daemon=True)
-    thread.start()
-    for _ in range(200):
-        if server.started:
-            break
-        time.sleep(0.025)
-    yield f"http://127.0.0.1:{port}/"
-    server.should_exit = True
-    thread.join(timeout=5)
 
 
 def probe(base_url, sample):

@@ -14,7 +14,6 @@ from urllib.parse import urlparse
 import pytest
 
 from tests.conftest import REPO_ROOT
-from tests.ui.test_spec_panel import base_url  # noqa: F401  (the real app on a local port)
 
 PUBLIC = REPO_ROOT / "public"
 PROBE = REPO_ROOT / "tools" / "visual_probe.mjs"
