@@ -19,11 +19,13 @@
   - Layout read from Kiro's documentation first. Bundle generated and checked; schemas and skill rules validated; server started from the Power's own `mcp.json` in an installed copy.
   - _Requirements: 6.1 to 6.6_
 
-- [ ] 5. Kiro chat check
-  - In a fresh Kiro session, with `.kiro/settings/mcp.json` loaded, ask Kiro to call `analyse` on `spike/samples/mystery_d`. Expect 18 candidates and no choice.
-  - Record the exact call and response in `docs/KIRO-LOG.md`.
-  - Not done: the session that built this spec already listed a `necropsy` server before these files existed, so a call from it cannot be attributed to this server.
+- [x] 5. Kiro chat check
+  - Both checks recorded as measured in `docs/KIRO-LOG.md` (section "NECROPSY MCP: checks in a fresh Kiro session"): `analyse` on `mystery_d` (UNRESOLVED_AMBIGUITY, 18 candidates, none chosen, 235,254 characters, truncated by the client) and `emit_spec` on `mystery_e` (slug `tiff`).
   - _Requirements: 5.1, 5.2_
+
+- [x] 5a. Agent-sized `analyse`
+  - Removed `render.data_b64` and `spec`; sweep equals `to_payload` minus those keys; two more break checks caught. Size 32,236 for `mystery_d`: the under-20,000 test is a strict expected failure pending a decision.
+  - _Requirements: 1.1, 1.3, 4.2, 4.6, 4.7_
 
 - [ ] 6. Install the Power in Kiro
   - Powers panel, Add Custom Power, Import power from a folder, `powers/necropsy`. Confirm the tools appear and the skill activates.

@@ -34,7 +34,7 @@ def to_result(obj: dict, is_error: bool) -> CallToolResult:
     name="analyse",
     description=(
         "Infer the structure of a file from its bytes. Returns the analysis payload the NECROPSY web "
-        "service returns: status RESOLVED (one layout closes), UNRESOLVED_AMBIGUITY (several layouts close; "
+        "service returns, without the pixel buffers and the emitted spec (`emit_spec` returns the spec): status RESOLVED (one layout closes), UNRESOLVED_AMBIGUITY (several layouts close; "
         "the bytes cannot separate them, so report every candidate and choose none) or FAILED (nothing "
         "closed; the payload says what was tried and why the search stopped). " + _INPUT
     ),

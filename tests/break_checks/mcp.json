@@ -9,8 +9,8 @@
   {
     "name": "wrapper reorders candidates",
     "file": "necropsy_mcp/core.py",
-    "old": "        return to_payload(result, data, engine_ms), False",
-    "new": "        p = to_payload(result, data, engine_ms)\n        if \"candidates\" in p:\n            p[\"candidates\"] = p[\"candidates\"][::-1]\n        return p, False",
+    "old": "        return agent_sized(to_payload(result, data, engine_ms)), False",
+    "new": "        p = agent_sized(to_payload(result, data, engine_ms))\n        if \"candidates\" in p:\n            p[\"candidates\"] = p[\"candidates\"][::-1]\n        return p, False",
     "test": "tests/test_mcp_server.py -k analyse_equals_the_engine"
   },
   {
@@ -19,5 +19,19 @@
     "old": "        spec = _emit_spec(result, data)",
     "new": "        spec = _emit_spec.__globals__.setdefault(\"_stale\", _emit_spec(result, data))",
     "test": "tests/test_mcp_server.py -k emit_spec_equals_the_engine"
+  },
+  {
+    "name": "wrapper also drops a candidate's fields",
+    "file": "necropsy_mcp/core.py",
+    "old": "    return {**candidate, \"render\": {k: v for k, v in render.items() if k != \"data_b64\"}}",
+    "new": "    return {**candidate, \"fields\": [], \"render\": {k: v for k, v in render.items() if k != \"data_b64\"}}",
+    "test": "tests/test_mcp_server.py -k analyse_equals_the_engine"
+  },
+  {
+    "name": "wrapper keeps the pixel buffers",
+    "file": "necropsy_mcp/core.py",
+    "old": "    return {**candidate, \"render\": {k: v for k, v in render.items() if k != \"data_b64\"}}",
+    "new": "    return candidate",
+    "test": "tests/test_mcp_server.py -k \"analyse_equals_the_engine or agent_sized\""
   }
 ]

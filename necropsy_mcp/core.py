@@ -64,8 +64,28 @@ def load(path, data_base64) -> bytes | dict:
         return error("internal_error", f"{type(exc).__name__}")
 
 
+def agent_sized(payload: dict) -> dict:
+    """The payload with exactly two things removed: every candidate's `render.data_b64` and the top-level `spec`.
+
+    Nothing is added, summarised, reordered or rewritten. The pixel buffers and the emitted spec made the
+    payload too large for an agent to read (235,254 characters for mystery_d). `emit_spec` returns the spec.
+    """
+    out = {k: v for k, v in payload.items() if k != "spec"}
+    for list_key in ("candidates", "partial_candidates"):
+        if isinstance(out.get(list_key), list):
+            out[list_key] = [_without_pixels(c) for c in out[list_key]]
+    return out
+
+
+def _without_pixels(candidate: dict) -> dict:
+    render = candidate.get("render")
+    if not isinstance(render, dict):
+        return candidate
+    return {**candidate, "render": {k: v for k, v in render.items() if k != "data_b64"}}
+
+
 def analyse(path=None, data_base64=None) -> tuple[dict, bool]:
-    """(payload or structured error, is_error)."""
+    """(agent-sized payload or structured error, is_error)."""
     data = load(path, data_base64)
     if isinstance(data, dict):
         return data, True
@@ -73,7 +93,7 @@ def analyse(path=None, data_base64=None) -> tuple[dict, bool]:
         start = time.perf_counter()
         result = Engine(deadline_seconds=DEADLINE_SECONDS).run(data)
         engine_ms = (time.perf_counter() - start) * 1000.0
-        return to_payload(result, data, engine_ms), False
+        return agent_sized(to_payload(result, data, engine_ms)), False
     except Exception as exc:
         return error("internal_error", f"{type(exc).__name__}"), True
 

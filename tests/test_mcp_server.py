@@ -70,6 +70,16 @@ def expected_field(f) -> dict:
             "value": [{"bytes": bytes(v).hex()} if isinstance(v, (bytes, bytearray)) else v for v in f.value]}
 
 
+def remove_two_keys(payload: dict) -> dict:
+    """to_payload output without the top-level `spec` and without every candidate's `render.data_b64`."""
+    out = json.loads(json.dumps(payload))
+    out.pop("spec", None)
+    for k in ("candidates", "partial_candidates"):
+        for c in out.get(k, []):
+            c["render"].pop("data_b64", None)
+    return out
+
+
 def candidates_of(result) -> list:
     if result.status == "RESOLVED":
         return [result.candidate]
@@ -110,10 +120,10 @@ def test_analyse_equals_the_engine_on_every_file_within_the_limit(results):
                     problems.append((key(p), "fields"))
                 if not g["fields"] and c.hypothesis.fields:
                     problems.append((key(p), "fields missing"))
-        # Byte-identical to the web serialiser, once the measured time is the same.
-        theirs = to_payload(engine, data, sc["engine_ms"])
+        # Byte-identical to the web serialiser with exactly two things removed, once the measured time is the same.
+        theirs = remove_two_keys(to_payload(engine, data, sc["engine_ms"]))
         if json.dumps(theirs) != json.dumps(sc):
-            problems.append((key(p), "payload differs from web.serialise.to_payload"))
+            problems.append((key(p), "payload differs from to_payload minus spec and data_b64"))
         if r.content[0].text != JSONResponse(sc).body.decode("utf-8"):
             problems.append((key(p), "text differs from the web service's rendering"))
     assert not problems, problems
@@ -167,6 +177,32 @@ def test_mystery_d_reports_18_candidates_and_the_tool_chooses_none(results):
     sc = results["spike/samples/mystery_d"]["analyse"].structured_content
     assert sc["status"] == "UNRESOLVED_AMBIGUITY" and len(sc["candidates"]) == 18
     assert "chosen" not in sc and "selected" not in sc
+
+
+AGENT_LIMIT = 20_000
+
+
+@pytest.mark.xfail(strict=True, reason="measured 32,236 characters with only the two keys removed; the 20,000 limit 's decision is open")
+def test_analyse_on_mystery_d_is_under_20000_characters(results):
+    size = len(results["spike/samples/mystery_d"]["analyse"].content[0].text)
+    assert size < AGENT_LIMIT, size
+
+
+def test_analyse_on_mystery_d_is_much_smaller_than_the_web_payload(results):
+    size = len(results["spike/samples/mystery_d"]["analyse"].content[0].text)
+    data = (REPO_ROOT / "spike" / "samples" / "mystery_d").read_bytes()
+    full = len(json.dumps(to_payload(Engine().run(data), data, 0.0), separators=(",", ":")))
+    assert full > 200_000 and size < full / 6, (size, full)   # the reason for the change
+
+
+def test_analyse_removes_only_the_pixel_buffers_and_the_spec(results):
+    for p in WITHIN:
+        sc = results[key(p)]["analyse"].structured_content
+        assert "spec" not in sc
+        for k in ("candidates", "partial_candidates"):
+            for c in sc.get(k, []):
+                assert "data_b64" not in c["render"]
+                assert set(c["render"]) >= ({"failure"} if "failure" in c["render"] else {"width", "height", "channels", "note"})
 
 
 def test_tool_descriptions_tell_an_agent_to_choose_none():

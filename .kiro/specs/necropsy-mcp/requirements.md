@@ -25,9 +25,9 @@ Not in scope: a hand-written JSON-RPC layer (the SDK is the reference implementa
 
 #### Acceptance Criteria
 
-1. THE Server SHALL expose a tool `analyse` taking an Input, and returning the Analysis payload for the file's bytes.
+1. THE Server SHALL expose a tool `analyse` taking an Input, and returning the Analysis payload for the file's bytes with exactly two things removed: every candidate's `render.data_b64`, and the top-level `spec`. Width, height, channels and note of each `render` stay. Nothing else is removed, added, summarised or reordered. (Measured in a fresh Kiro session, the full payload for `mystery_d` was 235,254 characters and the client truncated it.)
 2. THE Server SHALL expose a tool `emit_spec` taking an Input, and returning `{"slug": ..., "files": {name: text}}` for a recovered result, or `{"error": "nothing_recovered", "message": <EmitError.message>}` when the engine's result is FAILED.
-3. THE `analyse` payload SHALL be produced by `web.serialise.to_payload` with the same engine and deadline as the web service. THE Server SHALL NOT build any part of it.
+3. THE `analyse` payload SHALL be produced by `web.serialise.to_payload` with the same engine and deadline as the web service, then pass through a function that only deletes those two keys. THE Server SHALL NOT build, summarise or reword any part of it.
 4. THE `emit_spec` files SHALL come from `necropsy.emit.emit_spec` run on the result of the same engine call.
 5. THE tool results SHALL carry the payload as structured content and as one text block holding the same JSON rendered as the web service renders it.
 6. THE descriptions of both tools SHALL tell an agent that the result may list several candidates, that all of them close, and that none is to be chosen from the result alone.
@@ -63,12 +63,13 @@ Not in scope: a hand-written JSON-RPC layer (the SDK is the reference implementa
 #### Acceptance Criteria
 
 1. A test SHALL start the server as a subprocess over stdio, connect with the SDK's client, and call both tools on all 11 samples and on all 81 real-corpus files.
-2. FOR EACH file within the limit, THE result's status, candidate count and fields SHALL equal `Engine().run` on the same bytes, and the payload SHALL be byte-identical to `to_payload` output once `engine_ms` is set to the same value.
+2. FOR EACH file within the limit, THE result's status, candidate count and fields SHALL equal `Engine().run` on the same bytes, and the payload SHALL be byte-identical to `to_payload` output with those two keys removed, once `engine_ms` is set to the same value.
 3. FOR EACH real-corpus file over the limit, THE result SHALL be the structured error the web service's 413 body states.
 4. THE `emit_spec` files SHALL equal `emit_spec(Engine().run(data), data)`.
 5. A Hypothesis property test SHALL show `analyse` never raises on `st.binary(max_size=65536)` and returns a valid payload or a structured error.
-6. THE break checks SHALL show the tests catch: the wrapper truncating the input, the wrapper reordering candidates, and `emit_spec` returning a stale spec.
-7. IF any file's MCP result differs from the engine's, THEN the builder SHALL stop and report. IF the SDK requires Python above 3.10, THEN the builder SHALL stop and report.
+6. THE break checks SHALL show the tests catch: the wrapper truncating the input, the wrapper reordering candidates, `emit_spec` returning a stale spec, the wrapper also dropping a candidate's fields, and the wrapper keeping the pixel buffers.
+7. THE `analyse` result for `mystery_d` SHALL be under 20,000 characters. (Open: measured 32,236 with only the two keys removed. See design.md, "Size".)
+8. IF any file's MCP result differs from the engine's, THEN the builder SHALL stop and report. IF the SDK requires Python above 3.10, THEN the builder SHALL stop and report.
 
 ### Requirement 5: Use from Kiro chat
 

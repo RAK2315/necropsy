@@ -514,3 +514,9 @@ Task 21 (`df1fb8c`): keyboard and contrast, tested with real key presses through
 - Replacement break: `--muted` = `#7f8792`, caught at 4.20:1 on `#1f262f` (also 4.31:1 on the header tint and 4.48:1 on the trailer tint). One offset back on `--faint` caught at 2.91:1. A no-change control passed.
 | 2026-11-20 16:24:30Z | PostFileCreate | `scratch.py` | `4320797` |
 | 2026-11-20 16:24:30Z | PostFileSave | `scratch.py` | `4320797` |
+## NECROPSY MCP: checks in a fresh Kiro session (2026-11-20)
+Both checks were run by the builder in a fresh Kiro session with `.kiro/settings/mcp.json` loaded, and are recorded here as reported to the session that wrote this entry. The raw tool-call text was not captured by that session, so only the measured facts are stated.
+1. **`analyse` on `spike/samples/mystery_d`.** Kiro called `analyse` on that file. Result: `UNRESOLVED_AMBIGUITY`, 18 candidates, none chosen. The response was **235,254 characters** and the client **truncated** it. That is the reason for the change recorded in the `necropsy-mcp` spec, design.md "Size": `analyse` now omits every candidate's `render.data_b64` and the top-level `spec`. After that change the same call is about 32,236 characters (measured by the stdio test).
+2. **`emit_spec` on `spike/samples/mystery_e`.** Result: slug `tiff`; files `requirements.md`, `design.md` and `test_tiff.py`, returned inline. Nothing was written to disk.
+Note: Kiro's first tool listing wrongly said `analyse` was the only tool. Kiro corrected this, and both tools (`analyse`, `emit_spec`) were then listed.
+Spec task 5 (Kiro chat check) is marked done on the strength of these two checks.
