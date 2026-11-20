@@ -1,5 +1,6 @@
 """Shared fixtures for UI tests: the real app plus public/ on a local port, and a real-browser runner."""
 import json
+import os
 import shutil
 import socket
 import subprocess
@@ -28,6 +29,10 @@ def _free_port() -> int:
 def base_url():
     if shutil.which("node") is None:
         pytest.skip("node is not installed; browser checks need it")
+    live = os.environ.get("NECROPSY_BASE_URL")   # acceptance against a deployed URL instead of a local server
+    if live:
+        yield live.rstrip("/") + "/"
+        return
     import app as service
 
     site = FastAPI()

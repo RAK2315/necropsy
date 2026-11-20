@@ -520,3 +520,33 @@ Both checks were run by the builder in a fresh Kiro session with `.kiro/settings
 2. **`emit_spec` on `spike/samples/mystery_e`.** Result: slug `tiff`; files `requirements.md`, `design.md` and `test_tiff.py`, returned inline. Nothing was written to disk.
 Note: Kiro's first tool listing wrongly said `analyse` was the only tool. Kiro corrected this, and both tools (`analyse`, `emit_spec`) were then listed.
 Spec task 5 (Kiro chat check) is marked done on the strength of these two checks.
+| 2026-11-20 16:40:11Z | PostFileCreate | `tools/acceptance.py` | `9258e49` |
+| 2026-11-20 16:40:11Z | PostFileSave | `tools/acceptance.py` | `9258e49` |
+| 2026-11-20 16:42:18Z | PostFileCreate | `C:/Users/rehtr/AppData/Local/Temp/fixacc.py` | `9258e49` |
+| 2026-11-20 16:42:18Z | PostFileSave | `C:/Users/rehtr/AppData/Local/Temp/fixacc.py` | `9258e49` |
+| 2026-11-20 16:44:22Z | PostFileSave | `tests/test_mcp_server.py` | `9258e49` |
+| 2026-11-20 16:44:23Z | PostFileSave | `tests/test_mcp_server.py` | `9258e49` |
+
+
+## Task 16: final deploy and acceptance (2026-11-20)
+
+Deployed with `tools/deploy.ps1` from a clean clone of `9258e49` to https://necropsy.vercel.app (ready in 20 s). `necropsy-coldtest` was not touched.
+
+Acceptance by `tools/acceptance.py`: each beat in a fresh 1280x720 headless Edge page on the live URL, replay left running at 1x, time taken when the beat's state is on screen, measured from page load. Every beat passed in under 20 s. Table and captures: `docs/acceptance/results.md`.
+
+| Req | Beat | Time |
+|---|---|---|
+| 13.5 | RESOLVED with recovered image (`external_a`) | 2.5 s |
+| 13.5 | declared vs actual, in the viewport (`mystery_i`) | 6.7 s (10 replay steps at 1x) |
+| 13.5 | ambiguity, 18 identical cards (`mystery_d`) | 0.7 s |
+| 13.5 | FAILED for a text file (`no_hypothesis_checked`) | 0.7 s |
+| 13.5 | spec panel and `tiff.zip` download (`mystery_e`) | 1.0 s |
+| 16 | outcome strip, three live results, drop zone in view | 0.9 s |
+| 17 | PNG (64x48) and data region [128, 393) downloads | 2.6 s |
+| 18 | three files dropped, first examined, others named | 2.6 s |
+| 19 | over-limit message with the next step | 0.4 s |
+| 20 | Tab to a tile (2 presses, focus ring), Enter, Escape back | 0.8 s |
+
+Also against the live URL (`NECROPSY_BASE_URL`): all 46 browser tests in `tests/ui` passed (strip, downloads, multidrop, errors, a11y, spec panel, visual rules).
+
+Finding, not fixed: the browser's default light scrollbars render on the dark page, in the hex pane and in the replay log (visible in the captures). Earlier screenshots used `--hide-scrollbars` and hid this. A fix is one line of CSS (`color-scheme: dark`), outside task 16; left for the user's decision.

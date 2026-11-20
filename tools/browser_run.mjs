@@ -1,5 +1,5 @@
 // Test support: run one scenario in a real headless Edge or Chrome page and print its JSON result.
-// node tools/browser_run.mjs <url> <scenario.js> [--rewrite <rewrite.js>] [--prelude <prelude.js>] [--reduced-motion]
+// node tools/browser_run.mjs <url> <scenario.js> [--rewrite <rewrite.js>] [--prelude <prelude.js>] [--reduced-motion] [--shot <out.png>]
 //   scenario.js  an async expression evaluated in the page after load; it must return a JSON string
 //   rewrite.js   a JS function source `(payload) => payload`, applied in the browser to every /api/analyze response
 //   prelude.js   extra JS run in the page before any page script (for example a window.fetch fault for one URL)
@@ -7,7 +7,7 @@
 // Real key presses: `await __key('Tab' | 'Enter' | 'Space' | 'Escape', shift)` dispatches the key through CDP
 // (Input.dispatchKeyEvent, so focus really moves) and resolves once the page has handled it.
 import { spawn } from 'node:child_process';
-import { existsSync, mkdtempSync, readFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -16,6 +16,7 @@ const [url, scenarioPath] = args;
 const opt = (k) => { const i = args.indexOf(k); return i >= 0 ? args[i + 1] : null; };
 const rewritePath = opt('--rewrite');
 const preludePath = opt('--prelude');
+const shotPath = opt('--shot');
 const reduced = args.includes('--reduced-motion');
 const EXES = ['C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe', 'C:/Program Files/Google/Chrome/Application/chrome.exe',
   '/usr/bin/google-chrome', '/usr/bin/chromium', '/usr/bin/chromium-browser'];
@@ -98,6 +99,7 @@ try {
   const r = await send('Runtime.evaluate', { expression: readFileSync(scenarioPath, 'utf8'), awaitPromise: true, returnByValue: true });
   if (r.result.exceptionDetails) console.log(JSON.stringify({ error: r.result.exceptionDetails.exception?.description ?? 'page error' }));
   else console.log(r.result.result.value);
+  if (shotPath) { const s = await send('Page.captureScreenshot', { format: 'png' }); writeFileSync(shotPath, Buffer.from(s.result.data, 'base64')); }
   ws.close();
 } catch (e) {
   console.log(JSON.stringify({ error: String((e && e.message) || e) }));

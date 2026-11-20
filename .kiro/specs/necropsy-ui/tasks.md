@@ -126,7 +126,7 @@ Rules for every task:
   - Stop if contrast cannot be fixed by token values alone, or would change the accent.
   - _Requirements: 20_
 
-- [ ] 16. Final deploy and acceptance (run last, after 17 to 21)
+- [x] 16. Final deploy and acceptance (run last, after 17 to 21)
   - Redeploy, run each Requirement 13.5 beat on the public URL at 1280×720, record a screen capture and time for each. Schedule the 15 December and weekly cold-hit checks in `docs/KIRO-LOG.md`.
   - Also run the Requirement 16 to 20 behaviours on the public URL.
   - _Requirements: 13.5, 14.5, 15.7, 16, 17, 18, 19, 20_
