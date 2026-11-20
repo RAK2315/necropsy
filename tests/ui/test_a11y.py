@@ -382,3 +382,23 @@ def test_the_contrast_probe_saw_every_screen(rendered_pairs):
     screens = {p["screen"] for p in rendered_pairs}
     assert screens == {"start", "start-error", "resolved", "replay-mid", "hex-highlight", "hex-tooltip", "spec", "ambiguity", "failed"}
     assert len(rendered_pairs) > 300
+
+
+# ---- 20.8: the page declares a dark colour scheme, so native controls (scrollbars included) render dark ----
+
+def test_colour_scheme_is_dark_on_every_screen(base_url):
+    got = run(base_url, r"""
+(async () => {
+  const scheme = () => getComputedStyle(document.documentElement).colorScheme;
+  await __start();
+  const out = { start: scheme() };
+  [...document.querySelectorAll('.pick')].find(b => b.textContent === 'mystery_i').click();
+  await __until(() => document.querySelector('.exam-right:not(.pending) canvas'), 'result');
+  out.result = scheme();
+  [...document.querySelectorAll('.vtab')].find(b => b.textContent === 'Emitted spec').click();
+  await __until(() => document.querySelector('.spec-text'), 'spec');
+  out.spec = scheme();
+  return JSON.stringify(out);
+})()
+""", reduced_motion=True)
+    assert got == {"start": "dark", "result": "dark", "spec": "dark"}

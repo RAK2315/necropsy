@@ -1,4 +1,5 @@
 :root {
+  color-scheme: dark;          /* native controls, scrollbars included, are drawn dark (Requirement 20.8) */
   --bg: #12161b;
   --panel: #181d23;
   --line: #2a313a;
