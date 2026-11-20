@@ -114,7 +114,19 @@ Rules for every task:
   - Test in a real browser: a three-file drop shows the statement and the result is the first file's. Break and restore, and report both.
   - _Requirements: 18_
 
-- [ ] 16. Final deploy and acceptance (run last, after 17 to 19)
+- [ ] 20. Error copy
+  - Every failure path states what happened and what to do next, filled from the cause: oversize, empty file, service non-200 and unreachable, sample fetch, sample list, strip tile, spec ZIP, FAILED by deadline or cap. Copy and routing only.
+  - Test in a real browser, with the network answers faked in the browser. One break per criterion with tools/break_check.py.
+  - Stop if any wording would contradict Requirement 10.1.
+  - _Requirements: 19_
+
+- [ ] 21. Keyboard and contrast
+  - Tab order reaches every control, Enter and Space act alike, visible focus, no trap, Escape returns to the start, canvas names, announced status, 4.5:1 contrast from computed styles.
+  - Test in a real browser with real Tab key events and the WCAG formula in the test. One break per criterion with tools/break_check.py.
+  - Stop if contrast cannot be fixed by token values alone, or would change the accent.
+  - _Requirements: 20_
+
+- [ ] 16. Final deploy and acceptance (run last, after 17 to 21)
   - Redeploy, run each Requirement 13.5 beat on the public URL at 1280×720, record a screen capture and time for each. Schedule the 15 December and weekly cold-hit checks in `docs/KIRO-LOG.md`.
-  - Also run the Requirement 16, 17 and 18 behaviours on the public URL.
-  - _Requirements: 13.5, 14.5, 15.7, 16, 17, 18_
+  - Also run the Requirement 16 to 20 behaviours on the public URL.
+  - _Requirements: 13.5, 14.5, 15.7, 16, 17, 18, 19, 20_

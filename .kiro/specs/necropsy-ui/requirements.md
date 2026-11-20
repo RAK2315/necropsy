@@ -381,7 +381,7 @@ This screen shows the honesty mechanic. It is a success.
 7. THE UI SHALL be accepted only after each screen in Requirement 13.5 has been run against the deployed URL and recorded as a screen capture, with the time it took.
 8. THE frontend's pure logic (region computation, field byte ranges, replay step list, step batching) SHALL be written as functions separate from the DOM, so that they can be tested. THE choice of JavaScript test tool belongs to the design.
 9. THE UI work SHALL add no feature, format, option or export beyond those stated in this spec.
-10. EACH browser-observable claim (Requirements 12.4, 13, 16, 17, 18) SHALL be checked by a test that drives the real page, and each such test SHALL have been seen to fail against a deliberate break of the claim before it is relied on.
+10. EACH browser-observable claim (Requirements 12.4, 13, 16, 17, 18, 19, 20) SHALL be checked by a test that drives the real page, and each such test SHALL have been seen to fail against a deliberate break of the claim before it is relied on.
 
 ### Requirement 16: Outcome Strip on the First Screen
 
@@ -428,6 +428,36 @@ This screen shows the honesty mechanic. It is a success.
 3. WHEN the first file is over the size limit, THE UI SHALL refuse it as Requirement 11.10 states and SHALL also state that the others were not examined.
 4. WHEN a drop carries no file (for example dragged text), THE UI SHALL say `Nothing to examine: drop a file.` and stay on the first screen.
 5. THE file picker SHALL accept one file.
+### Requirement 19: Error Copy
+
+**User Story:** As a user whose file did not go through, I want to be told what happened and what to do next, so that I am never left guessing.
+
+#### Acceptance Criteria
+
+1. EVERY message the UI shows for something that went wrong SHALL state what happened and what to do next, filled from the actual cause. No message SHALL be a constant written for a different cause.
+2. WHEN a chosen or dropped file is over 65,536 bytes, THE UI SHALL refuse it before any request and SHALL say `That file is {size} bytes. The limit is 65,536 bytes. Try a smaller file or a fragment of it.`, with the file's real size. Requirement 18.3's sentence about other dropped files follows it when it applies. (This amends the wording of Requirement 11.10.)
+3. WHEN a chosen or dropped file is 0 bytes, THE UI SHALL refuse it before any request and SHALL say `{name} is empty (0 bytes). There is nothing to examine. Choose a file that has content.` A file of 1 or 2 bytes is still sent, and the engine's `input_too_short` result is shown (Requirement 10.1).
+4. WHEN the Analysis service answers with a status other than 200 or 413, THE UI SHALL say `The analysis service answered with HTTP {status}. Your file was not examined. Try again.` WHEN the service cannot be reached, THE UI SHALL say `The analysis service could not be reached, so your file was not examined. Check your connection and try again.` WHEN it answers 413, THE UI SHALL use criterion 2's sentence with the size the browser holds.
+5. WHEN a sample file cannot be fetched, THE UI SHALL NOT analyse whatever came back. It SHALL say `The sample {name} could not be loaded (HTTP {status}). Try again, or drop a file of your own.`, or `(no connection)` in place of the status.
+6. WHEN the sample list cannot be loaded, THE UI SHALL say so in place of the list: `The sample list could not be loaded. You can still drop a file of your own.`
+7. WHEN an outcome-strip tile's sample cannot be loaded, or its analysis fails, THE tile SHALL say which sample and what failed, filled as in criteria 4 and 5, and SHALL NOT be clickable.
+8. WHEN the spec ZIP download fails, THE panel SHALL say whether the service answered with an HTTP status (and which) or could not be reached, and to try again.
+9. WHEN a FAILED result's termination is `deadline_exceeded` or `search_cap_exceeded`, read from the payload, THE FAILED screen SHALL keep Requirement 10.1's sentence and SHALL add: `The search stopped at its limit before it could try everything. That does not mean no layout exists. The rejections below show what was tried before it stopped.`
+10. ERROR copy SHALL use only the existing message slots (the drop-zone message, the tile body, the panel status line, the FAILED screen's explanatory text). No retry button, toast or new screen SHALL be added.
+
+### Requirement 20: Keyboard and Contrast
+
+**User Story:** As a user who works from the keyboard or needs readable contrast, I want every control reachable and every text legible, so that the product works for me.
+
+#### Acceptance Criteria
+
+1. EVERY control SHALL be reachable with Tab and operable by keyboard alone, with Enter and Space doing the same thing: outcome-strip tiles, the drop zone (which opens the file picker), sample buttons and their download links, view tabs, ambiguity cards, PNG and data-region downloads, replay controls, spec tabs and the spec ZIP download.
+2. EVERY control SHALL show a visible focus indicator when focused from the keyboard.
+3. FOCUS SHALL NOT be trapped: repeated Tab SHALL leave every region and return to the start of the page.
+4. WHILE a result is shown, Escape SHALL return to the first screen, as `Examine another file` does.
+5. EVERY canvas SHALL have an accessible name stating its width, height and bit depth, taken from the payload, for example `Recovered image, 64 × 48, 8-bit`.
+6. STATUS text SHALL be announced to assistive technology (`role="status"` or `aria-live`): the drop-zone message, `Analysing…`, the several-files statement, the replay counter, outcome-strip tile progress and errors, and the spec download status.
+7. EVERY visible, enabled text SHALL have a contrast ratio of at least 4.5:1 against its effective background, computed with the WCAG 2 relative-luminance formula from computed styles. Disabled controls are exempt, as WCAG allows. Fixing a failure SHALL change only the values of the colour tokens in `:root`, never the accent colour. IF it would need anything else, THEN the change SHALL stop for the user's decision.
 ## Accepted Decisions and Remaining Open Items
 
 Accepted by the user, and not to be reopened in design:
