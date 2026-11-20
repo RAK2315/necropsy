@@ -18,19 +18,25 @@ is coherent, and recovers the contents.
 
 ## Who does what
 - Rehaan decides. Everything goes through him.
-- A Claude chat session (not Claude Code) governs. It researches the
-  event, rules and competitors, makes architecture and scope decisions,
-  reviews Kiro's output, and writes the prompts Rehaan pastes into Kiro
-  and into Claude Code. It writes no project code.
-- Kiro builds everything that ships: all engine and UI code, specs and
-  tests. This is deliberate. Technological Implementation is 20% of the
-  score and here means depth of Kiro usage, judged from `.kiro/` and the
+- Kiro builds everything that ships, through its spec workflow
+  (requirements, design, tasks in EARS form, each task citing its
+  requirement IDs): all engine and UI code, the specs and the tests.
+  This is deliberate. Technological Implementation is 20% of the score
+  and here means depth of Kiro usage, judged from `.kiro/` and the
   submission write-up.
-- Claude Code (you) does everything unscored: scaffolding, git, repo
-  hygiene, deploy config, docs, the README, and independent verification
-  of Kiro's work.
-- Never write engine or UI code. If asked to, stop and say it belongs
-  in Kiro.
+- Claude Code researches, diagnoses, writes documentation and tooling,
+  and writes the prompts Rehaan gives to Kiro. It also does git, CI,
+  deploy config and the README, and verifies Kiro's work independently.
+  A diagnosed defect goes to Kiro as a requirement or a task, never as
+  a pasted diff.
+- Until 20 Nov 2026 a separate Claude chat session wrote Kiro's prompts.
+  Claude Code took that over on 20 Nov.
+- Claude Code never writes engine or UI code. If asked to, it stops and
+  says the work belongs in Kiro.
+- Questions about the engine's principles go to Rehaan before they are
+  settled: whether something is a declaration or format knowledge,
+  whether a rejection rule is derivable or a threshold, whether a result
+  is a defect or correct behaviour.
 
 ## Verification is the most valuable role
 Kiro writes the spec, the implementation and the tests, so it grades its
@@ -62,31 +68,38 @@ own homework. Check it independently.
 5. No CRT, scanline or horror styling. The look is forensic examination.
 6. No Streamlit or Gradio.
 
-## Project state (19 Nov 2026)
-- Engine: complete. 263 tests passed at commit `38bbbbc`. Four probes
-  (PCX, TGA, PBM, TIFF), three revision strategies, generic search for
-  headerless files, a closure gate on the decoded stream, ambiguity
-  reporting instead of guessing, and spec emission for every format
-  recovered.
-- UI: spec written, tasks 1 to 5 of 16 done. Deployed at
-  https://necropsy.vercel.app. A second, untouched Vercel project,
-  `necropsy-coldtest`, is the canary for a 24-hour cold-start test due
-  20 Nov 19:03 IST.
-- External samples: a Pillow-written PCX resolves with pixels byte-equal
-  to its source. A Pillow-written TGA fails on a 26-byte TGA 2.0 footer.
-  The engine is being amended to add that trailer entry. The failing test
-  (`tests/ui/test_external.py`) is a strict xfail, so it will turn into
-  an error when the amendment lands and must then be un-marked.
-- Known open bug: `tests/test_emit.py::test_property_12_emitted_layout_reproduces_engine`
-  has a Hypothesis-found failing input (a malformed TIFF, 5x8 at 7 bpp)
-  that the reference reader does not reproduce. Kiro to fix.
+## Project state (20 Nov 2026)
+- Four Kiro specs in `.kiro/specs/`: `structure-inference-engine`,
+  `necropsy-ui`, `gate-adversary`, `real-corpus`.
+- Engine: four probes (PCX, TGA, PBM, TIFF), three revision strategies,
+  generic search for headerless files, a closure gate on the decoded
+  stream, ambiguity reporting instead of guessing, and spec emission.
+  The Decision Record has 22 items. The spec was reopened three times:
+  item 20 (the TIFF probe reads the BitsPerSample array), item 21 (a
+  probe can say a declaration is impossible) and item 22 (the TGA 2.0
+  footer's offsets end the data region).
+- Tests in CI at `76feacb`: 769 Python passed, 1 skipped (the
+  open-failures test, whose list is now empty), 22 front-end passed.
+  CI installs Pillow so the pixel comparisons run.
+- Real corpus: 81 files from six upstream decoder test suites in
+  `spike/samples/real/`. 25 RESOLVED and 56 FAILED as committed in
+  `docs/REAL-CORPUS-RESULTS.md`, with pixels compared to Pillow 12.2.0.
+  Scope comes only from `manifest.json`.
+- UI: tasks 1 to 15 and 17 to 19 done. The host gate passed on
+  20 Nov: cold analyse 1.44 s on the idle canary. 16 (final deploy and
+  acceptance) runs last. Live at https://necropsy.vercel.app.
+  `necropsy-coldtest` has been used for its one cold hit: never
+  redeploy it.
+- The Hypothesis-found property-12 failure (a malformed TIFF) was
+  addressed by Decision Record item 16: a file that broke its format's
+  rules emits as a one-file layout.
 
 ## Still open
-- UI tasks 6 to 16.
-- The cold-start gate.
-- Demo video, under 3 minutes.
-- The Kiro usage write-up.
-- Devpost submission.
+- Demo video, under 3 minutes, public on YouTube.
+- The Kiro usage write-up and the Devpost submission.
+- UI task 16, last.
+- Revoke the Vercel protection bypass secret on both projects.
+- Pre-submission checklist: `notes/submit.md` (gitignored).
 
 ## Conventions
 - Parsers never raise on malformed input; they return structured errors.
