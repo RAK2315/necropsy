@@ -1,21 +1,15 @@
 // Test support: drive the real page in headless Edge or Chrome through every screen and report, as JSON,
 //   accent:   every element whose computed colour, background, border or outline is the accent colour, per screen
 //   requests: every URL the page requested
+import { findBrowser, launch } from './headless.mjs';
 //   reduced:  what the RESOLVED screen looks like on first paint when the browser prefers reduced motion
 // node tools/visual_probe.mjs <base-url>
-import { spawn } from 'node:child_process';
-import { existsSync, mkdtempSync } from 'node:fs';
-import { tmpdir } from 'node:os';
-import { join } from 'node:path';
 
 const [base] = process.argv.slice(2);
-const EXES = ['C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe', 'C:/Program Files/Google/Chrome/Application/chrome.exe',
-  '/usr/bin/google-chrome', '/usr/bin/chromium', '/usr/bin/chromium-browser'];
-const exe = EXES.find(existsSync);
-if (!exe) { console.log(JSON.stringify({ error: 'no browser' })); process.exit(0); }
-const port = 9950 + Math.floor(Math.random() * 40);
-const proc = spawn(exe, ['--headless=new', `--remote-debugging-port=${port}`, `--user-data-dir=${mkdtempSync(join(tmpdir(), 'vprobe-'))}`,
-  '--no-first-run', '--disable-gpu', '--window-size=1280,720', 'about:blank'], { stdio: 'ignore' });
+if (!findBrowser()) { console.log(JSON.stringify({ error: 'no browser' })); process.exit(0); }
+// Downloads denied and profile removed afterwards: see tools/headless.mjs.
+const browser = await launch('vprobe-', ['--window-size=1280,720'], { timeoutMs: 170000 });
+const { port } = browser;
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 // In-page helpers, injected before each scenario.
@@ -105,4 +99,4 @@ try {
   ws.close();
 } catch (e) {
   console.log(JSON.stringify({ error: String(e && e.message || e) }));
-} finally { proc.kill(); }
+} finally { await browser.close(); }

@@ -1,20 +1,13 @@
 // Test support: open the real page in headless Edge or Chrome, click a sample, open the Emitted spec view,
 // read every tab's displayed text and capture the downloaded ZIP. Prints one JSON object on stdout.
 // node tools/panel_probe.mjs <base-url> <sample-name>
-import { spawn } from 'node:child_process';
-import { existsSync, mkdtempSync } from 'node:fs';
-import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { findBrowser, launch } from './headless.mjs';
 
 const [base, sample] = process.argv.slice(2);
-const EXES = ['C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe', 'C:/Program Files/Google/Chrome/Application/chrome.exe',
-  '/usr/bin/google-chrome', '/usr/bin/chromium', '/usr/bin/chromium-browser'];
-const exe = EXES.find(existsSync);
-if (!exe) { console.log(JSON.stringify({ error: 'no browser' })); process.exit(0); }
-
-const port = 9800 + Math.floor(Math.random() * 150);
-const proc = spawn(exe, ['--headless=new', `--remote-debugging-port=${port}`, `--user-data-dir=${mkdtempSync(join(tmpdir(), 'probe-'))}`,
-  '--no-first-run', '--disable-gpu', 'about:blank'], { stdio: 'ignore' });
+if (!findBrowser()) { console.log(JSON.stringify({ error: 'no browser' })); process.exit(0); }
+// Downloads denied and profile removed afterwards: see tools/headless.mjs.
+const browser = await launch('probe-', [], { timeoutMs: 85000 });
+const { port } = browser;
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 // Runs in the page. Every wait polls for a condition, never a fixed delay.
@@ -56,4 +49,4 @@ try {
   if (r.result.exceptionDetails) console.log(JSON.stringify({ error: r.result.exceptionDetails.exception?.description ?? 'page error' }));
   else console.log(r.result.result.value);
   ws.close();
-} finally { proc.kill(); }
+} finally { await browser.close(); }

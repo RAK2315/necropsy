@@ -722,3 +722,20 @@ Cause: the page never declared its colour scheme, so the browser drew light nati
 | 2026-11-20 20:59:05Z | PostFileSave | `necropsy/emit/layout.py` | `a90f840` |
 | 2026-11-20 20:59:05Z | PostFileSave | `necropsy/emit/layout.py` | `a90f840` |
 | 2026-11-20 20:59:06Z | PostFileSave | `necropsy/emit/layout.py` | `a90f840` |
+| 2026-11-20 21:18:02Z | PostFileCreate | `C:/Users/rehtr/AppData/Local/Temp/who22.ps1` | `0538896` |
+| 2026-11-20 21:18:02Z | PostFileSave | `C:/Users/rehtr/AppData/Local/Temp/who22.ps1` | `0538896` |
+| 2026-11-20 21:21:16Z | PostFileCreate | `C:/Users/rehtr/AppData/Local/Temp/copies22.ps1` | `0538896` |
+| 2026-11-20 21:21:16Z | PostFileSave | `C:/Users/rehtr/AppData/Local/Temp/copies22.ps1` | `0538896` |
+
+
+## Test browsers no longer write outside their temp profile (2026-11-20)
+
+Cause: the test browser let each captured blob download for real into the system Downloads folder, and never removed its `mkdtempSync` profile. Fix: `tools/headless.mjs`, used by `browser_run.mjs`, `screenshot.mjs`, `panel_probe.mjs` and `visual_probe.mjs`.
+
+- Downloads denied with `Browser.setDownloadBehavior` on the browser target before any page opens. The first version closed that connection at once, and Chrome then reset the behaviour: a smoke-test download still landed. The connection is now held open until the browser closes. A refusal is an error.
+- The profile is removed after exit, also on error and on a watchdog timeout set below each caller's subprocess timeout. Under suite load, killing only the parent `msedge` left child processes holding the profile, so removal failed silently (12 profiles left in one run). Now: graceful `Browser.close`, then `taskkill /T /F` of the whole tree if needed, then removal with retries; a failure is written to stderr, never swallowed.
+- The browser chooses its own debugging port (`--remote-debugging-port=0`, read from `DevToolsActivePort`), so two test browsers at once cannot reach each other's DevTools.
+
+Proof, full suite with no other test run overlapping (checked every 5 s): 907 passed, 1 skipped; Downloads 130 -> 130 files; `brun-`/`shot-`/`probe-`/`vprobe-` dirs in %TEMP% 1,820 -> 1,820, no new entry in either. Nothing pre-existing was deleted. Two 5-byte files my own smoke test downloaded before the fix (`leaktest.bin`, `leaktest (1).bin`) were removed.
+
+Still leaking: the other session's worktree `%TEMP%\nd23` (detached at `9ba71b5`) has the old `browser_run.mjs`. Runs from it downloaded into Downloads and left profiles while my measurements overlapped them. It stops when that worktree moves to a commit with this fix.

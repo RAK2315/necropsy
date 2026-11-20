@@ -6,10 +6,8 @@
 // Downloads made with URL.createObjectURL are captured: window.__blobs is an array of {name, type, b64}.
 // Real key presses: `await __key('Tab' | 'Enter' | 'Space' | 'Escape', shift)` dispatches the key through CDP
 // (Input.dispatchKeyEvent, so focus really moves) and resolves once the page has handled it.
-import { spawn } from 'node:child_process';
-import { existsSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { findBrowser, launch } from './headless.mjs';
+import { readFileSync, writeFileSync } from 'node:fs';
 
 const args = process.argv.slice(2);
 const [url, scenarioPath] = args;
@@ -18,14 +16,10 @@ const rewritePath = opt('--rewrite');
 const preludePath = opt('--prelude');
 const shotPath = opt('--shot');
 const reduced = args.includes('--reduced-motion');
-const EXES = ['C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe', 'C:/Program Files/Google/Chrome/Application/chrome.exe',
-  '/usr/bin/google-chrome', '/usr/bin/chromium', '/usr/bin/chromium-browser'];
-const exe = EXES.find(existsSync);
-if (!exe) { console.log(JSON.stringify({ error: 'no browser' })); process.exit(0); }
-
-const port = 10100 + Math.floor(Math.random() * 400);
-const proc = spawn(exe, ['--headless=new', `--remote-debugging-port=${port}`, `--user-data-dir=${mkdtempSync(join(tmpdir(), 'brun-'))}`,
-  '--no-first-run', '--disable-gpu', '--window-size=1280,720', 'about:blank'], { stdio: 'ignore' });
+if (!findBrowser()) { console.log(JSON.stringify({ error: 'no browser' })); process.exit(0); }
+// Downloads denied and profile removed afterwards: see tools/headless.mjs.
+const browser = await launch('brun-', ['--window-size=1280,720'], { timeoutMs: 110000 });
+const { port } = browser;
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 // Injected before any page script runs.
@@ -103,4 +97,4 @@ try {
   ws.close();
 } catch (e) {
   console.log(JSON.stringify({ error: String((e && e.message) || e) }));
-} finally { proc.kill(); }
+} finally { await browser.close(); }
