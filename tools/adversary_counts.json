@@ -1,0 +1,447 @@
+{
+  "samples": {
+    "mystery_a": {
+      "size": 11,
+      "status": "RESOLVED",
+      "reported_candidates": 1,
+      "generated": 198892,
+      "excluded_reported": 4,
+      "tried": 198888,
+      "closed": 1700,
+      "closed_rate": 0.0085,
+      "respelled_candidate": 0,
+      "closed_examples": [
+        {
+          "width": 1,
+          "height": 1,
+          "bit_depth": 1,
+          "header_size": 10,
+          "row_alignment": 1,
+          "encoding": "none",
+          "data_end": null
+        },
+        {
+          "width": 1,
+          "height": 1,
+          "bit_depth": 1,
+          "header_size": 9,
+          "row_alignment": 2,
+          "encoding": "none",
+          "data_end": null
+        },
+        {
+          "width": 1,
+          "height": 1,
+          "bit_depth": 1,
+          "header_size": 7,
+          "row_alignment": 4,
+          "encoding": "none",
+          "data_end": null
+        }
+      ]
+    },
+    "mystery_b": {
+      "size": 955,
+      "status": "RESOLVED",
+      "reported_candidates": 1,
+      "generated": 982836,
+      "excluded_reported": 4,
+      "tried": 982832,
+      "closed": 21641,
+      "closed_rate": 0.022,
+      "respelled_candidate": 7,
+      "closed_examples": [
+        {
+          "width": 1,
+          "height": 1,
+          "bit_depth": 1,
+          "header_size": 185,
+          "row_alignment": 1,
+          "encoding": "none",
+          "data_end": null
+        },
+        {
+          "width": 1,
+          "height": 1,
+          "bit_depth": 1,
+          "header_size": 954,
+          "row_alignment": 1,
+          "encoding": "none",
+          "data_end": null
+        },
+        {
+          "width": 1,
+          "height": 1,
+          "bit_depth": 1,
+          "header_size": 184,
+          "row_alignment": 1,
+          "encoding": "rle_pcx",
+          "data_end": null
+        }
+      ]
+    },
+    "mystery_c": {
+      "size": 786,
+      "status": "RESOLVED",
+      "reported_candidates": 1,
+      "generated": 938148,
+      "excluded_reported": 1,
+      "tried": 938147,
+      "closed": 20820,
+      "closed_rate": 0.0222,
+      "respelled_candidate": 2,
+      "closed_examples": [
+        {
+          "width": 1,
+          "height": 1,
+          "bit_depth": 1,
+          "header_size": 785,
+          "row_alignment": 1,
+          "encoding": "none",
+          "data_end": null
+        },
+        {
+          "width": 1,
+          "height": 1,
+          "bit_depth": 1,
+          "header_size": 785,
+          "row_alignment": 1,
+          "encoding": "rle_pcx",
+          "data_end": null
+        },
+        {
+          "width": 1,
+          "height": 1,
+          "bit_depth": 1,
+          "header_size": 784,
+          "row_alignment": 2,
+          "encoding": "none",
+          "data_end": null
+        }
+      ]
+    },
+    "mystery_d": {
+      "size": 104,
+      "status": "UNRESOLVED_AMBIGUITY",
+      "reported_candidates": 18,
+      "generated": 693096,
+      "excluded_reported": 23,
+      "tried": 693073,
+      "closed": 10564,
+      "closed_rate": 0.0152,
+      "respelled_candidate": 20,
+      "closed_examples": [
+        {
+          "width": 1,
+          "height": 1,
+          "bit_depth": 1,
+          "header_size": 103,
+          "row_alignment": 1,
+          "encoding": "none",
+          "data_end": null
+        },
+        {
+          "width": 1,
+          "height": 1,
+          "bit_depth": 1,
+          "header_size": 103,
+          "row_alignment": 1,
+          "encoding": "rle_pcx",
+          "data_end": null
+        },
+        {
+          "width": 1,
+          "height": 1,
+          "bit_depth": 1,
+          "header_size": 102,
+          "row_alignment": 2,
+          "encoding": "none",
+          "data_end": null
+        }
+      ]
+    },
+    "mystery_e": {
+      "size": 150,
+      "status": "RESOLVED",
+      "reported_candidates": 1,
+      "generated": 828176,
+      "excluded_reported": 0,
+      "tried": 828176,
+      "closed": 10200,
+      "closed_rate": 0.0123,
+      "respelled_candidate": 12,
+      "closed_examples": [
+        {
+          "width": 1,
+          "height": 1,
+          "bit_depth": 1,
+          "header_size": 149,
+          "row_alignment": 1,
+          "encoding": "none",
+          "data_end": null
+        },
+        {
+          "width": 1,
+          "height": 1,
+          "bit_depth": 1,
+          "header_size": 149,
+          "row_alignment": 1,
+          "encoding": "rle_pcx",
+          "data_end": null
+        },
+        {
+          "width": 1,
+          "height": 1,
+          "bit_depth": 1,
+          "header_size": 148,
+          "row_alignment": 2,
+          "encoding": "none",
+          "data_end": null
+        }
+      ]
+    },
+    "mystery_f": {
+      "size": 132,
+      "status": "UNRESOLVED_AMBIGUITY",
+      "reported_candidates": 8,
+      "generated": 795092,
+      "excluded_reported": 8,
+      "tried": 795084,
+      "closed": 12504,
+      "closed_rate": 0.0157,
+      "respelled_candidate": 13,
+      "closed_examples": [
+        {
+          "width": 1,
+          "height": 1,
+          "bit_depth": 1,
+          "header_size": 131,
+          "row_alignment": 1,
+          "encoding": "none",
+          "data_end": null
+        },
+        {
+          "width": 1,
+          "height": 1,
+          "bit_depth": 1,
+          "header_size": 131,
+          "row_alignment": 1,
+          "encoding": "rle_pcx",
+          "data_end": null
+        },
+        {
+          "width": 1,
+          "height": 1,
+          "bit_depth": 1,
+          "header_size": 130,
+          "row_alignment": 2,
+          "encoding": "none",
+          "data_end": null
+        }
+      ]
+    },
+    "mystery_g": {
+      "size": 212,
+      "status": "UNRESOLVED_AMBIGUITY",
+      "reported_candidates": 8,
+      "generated": 864298,
+      "excluded_reported": 8,
+      "tried": 864290,
+      "closed": 14066,
+      "closed_rate": 0.0163,
+      "respelled_candidate": 8,
+      "closed_examples": [
+        {
+          "width": 1,
+          "height": 1,
+          "bit_depth": 1,
+          "header_size": 211,
+          "row_alignment": 1,
+          "encoding": "none",
+          "data_end": null
+        },
+        {
+          "width": 1,
+          "height": 1,
+          "bit_depth": 1,
+          "header_size": 211,
+          "row_alignment": 1,
+          "encoding": "rle_pcx",
+          "data_end": null
+        },
+        {
+          "width": 1,
+          "height": 1,
+          "bit_depth": 1,
+          "header_size": 210,
+          "row_alignment": 2,
+          "encoding": "none",
+          "data_end": null
+        }
+      ]
+    },
+    "mystery_h": {
+      "size": 176,
+      "status": "RESOLVED",
+      "reported_candidates": 1,
+      "generated": 850026,
+      "excluded_reported": 4,
+      "tried": 850022,
+      "closed": 10688,
+      "closed_rate": 0.0126,
+      "respelled_candidate": 0,
+      "closed_examples": [
+        {
+          "width": 1,
+          "height": 1,
+          "bit_depth": 1,
+          "header_size": 175,
+          "row_alignment": 1,
+          "encoding": "none",
+          "data_end": null
+        },
+        {
+          "width": 1,
+          "height": 1,
+          "bit_depth": 1,
+          "header_size": 175,
+          "row_alignment": 1,
+          "encoding": "rle_pcx",
+          "data_end": null
+        },
+        {
+          "width": 1,
+          "height": 1,
+          "bit_depth": 1,
+          "header_size": 174,
+          "row_alignment": 2,
+          "encoding": "none",
+          "data_end": null
+        }
+      ]
+    },
+    "mystery_i": {
+      "size": 955,
+      "status": "RESOLVED",
+      "reported_candidates": 1,
+      "generated": 982836,
+      "excluded_reported": 4,
+      "tried": 982832,
+      "closed": 21641,
+      "closed_rate": 0.022,
+      "respelled_candidate": 7,
+      "closed_examples": [
+        {
+          "width": 1,
+          "height": 1,
+          "bit_depth": 1,
+          "header_size": 185,
+          "row_alignment": 1,
+          "encoding": "none",
+          "data_end": null
+        },
+        {
+          "width": 1,
+          "height": 1,
+          "bit_depth": 1,
+          "header_size": 954,
+          "row_alignment": 1,
+          "encoding": "none",
+          "data_end": null
+        },
+        {
+          "width": 1,
+          "height": 1,
+          "bit_depth": 1,
+          "header_size": 184,
+          "row_alignment": 1,
+          "encoding": "rle_pcx",
+          "data_end": null
+        }
+      ]
+    },
+    "external_a": {
+      "size": 1162,
+      "status": "RESOLVED",
+      "reported_candidates": 1,
+      "generated": 999122,
+      "excluded_reported": 0,
+      "tried": 999122,
+      "closed": 31491,
+      "closed_rate": 0.0315,
+      "respelled_candidate": 0,
+      "closed_examples": [
+        {
+          "width": 1,
+          "height": 1,
+          "bit_depth": 1,
+          "header_size": 392,
+          "row_alignment": 1,
+          "encoding": "none",
+          "data_end": null
+        },
+        {
+          "width": 1,
+          "height": 1,
+          "bit_depth": 1,
+          "header_size": 1161,
+          "row_alignment": 1,
+          "encoding": "none",
+          "data_end": null
+        },
+        {
+          "width": 1,
+          "height": 1,
+          "bit_depth": 1,
+          "header_size": 392,
+          "row_alignment": 1,
+          "encoding": "rle_pcx",
+          "data_end": null
+        }
+      ]
+    },
+    "external_b": {
+      "size": 9260,
+      "status": "RESOLVED",
+      "reported_candidates": 1,
+      "generated": 1020180,
+      "excluded_reported": 0,
+      "tried": 1020180,
+      "closed": 27263,
+      "closed_rate": 0.0267,
+      "respelled_candidate": 0,
+      "closed_examples": [
+        {
+          "width": 1,
+          "height": 1,
+          "bit_depth": 1,
+          "header_size": 9233,
+          "row_alignment": 1,
+          "encoding": "none",
+          "data_end": null
+        },
+        {
+          "width": 1,
+          "height": 1,
+          "bit_depth": 1,
+          "header_size": 9259,
+          "row_alignment": 1,
+          "encoding": "none",
+          "data_end": null
+        },
+        {
+          "width": 1,
+          "height": 1,
+          "bit_depth": 1,
+          "header_size": 9233,
+          "row_alignment": 1,
+          "encoding": "rle_pcx",
+          "data_end": null
+        }
+      ]
+    }
+  },
+  "total_tried": 9152646,
+  "total_closed": 182578,
+  "total_closed_rate": 0.0199
+}
