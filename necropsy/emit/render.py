@@ -174,8 +174,8 @@ def _fields(lay: dict) -> list:
             "chosen by the entry type: %s." % (_hex(tt["value_offset"]), vf)
         )
         out.append(
-            "IF a tag entry has a count other than %s or a type not listed, "
-            "THEN THE parser SHALL return an error." % tt.get("require_count")
+            "IF a tag entry that is not an array entry has a count other than %s or a type not "
+            "listed, THEN THE parser SHALL return an error." % tt.get("require_count")
         )
         for ent in tt.get("entries") or []:
             default = ent.get("default")
@@ -186,6 +186,33 @@ def _fields(lay: dict) -> list:
                 "value offset %s of that entry. %s."
                 % (ent["name"], ent["tag"], _hex(tt["value_offset"]), rule)
             )
+            arr = ent.get("array")
+            if arr:
+                sizes = ", ".join("type %s is %d bytes" % (k, v)
+                                  for k, v in arr["type_sizes"].items())
+                out.append(
+                    "IF the count of tag entry `%s` is below 1 or above %d, THEN THE parser SHALL "
+                    "return an error." % (ent["name"], arr["max_count"])
+                )
+                out.append(
+                    "WHEN count multiplied by the value size (%s) of tag entry `%s` is at most %d, "
+                    "THE parser SHALL read the values consecutively from value offset %s of that "
+                    "entry; OTHERWISE THE parser SHALL read an offset using `%s` (%s) at that "
+                    "value offset and read the values consecutively from that offset, each using "
+                    "the struct format chosen by the entry type."
+                    % (sizes, ent["name"], arr["value_field_size"], _hex(tt["value_offset"]),
+                       arr["pointer_fmt"], _describe_fmt(arr["pointer_fmt"]))
+                )
+                out.append(
+                    "IF the values of tag entry `%s` are not all equal, THEN THE parser SHALL "
+                    "return an error; OTHERWISE the value of `%s` SHALL be the common value."
+                    % (ent["name"], ent["name"])
+                )
+            if ent.get("expect") is not None:
+                out.append(
+                    "IF the value of tag entry `%s` is not %d, THEN THE parser SHALL return an "
+                    "error." % (ent["name"], ent["expect"])
+                )
     if not out:
         out.append("THE parser SHALL read no header fields: this layout declares none.")
     return out

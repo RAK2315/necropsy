@@ -86,6 +86,27 @@ def _eval(expr, env):
     raise _Err("bad expression")
 
 
+def _read_array(data, arr, ent, typ, cnt, vfmt, voff, prefix, fields):
+    """Read an array entry's values; append one fields tuple per value; return the values."""
+    name = str(ent["name"])
+    size = arr["type_sizes"].get(str(typ))
+    if not _is_int(size) or size <= 0:
+        raise _Err("unsupported array type for " + name)
+    if not _is_int(cnt) or cnt < 1 or cnt > arr["max_count"]:
+        raise _Err("array count out of range for " + name)
+    if cnt * size <= arr["value_field_size"]:
+        base = voff
+    else:
+        base = _read(data, voff, _fmt(arr["pointer_fmt"], prefix))[0]
+    vals = []
+    for i in range(cnt):
+        off = base + i * size
+        val = _read(data, off, vfmt)
+        fields.append((name, off, vfmt, val))
+        vals.append(val[0])
+    return vals
+
+
 def _parse(layout, data):
     if not isinstance(layout, dict):
         raise _Err("layout is not an object")
@@ -140,13 +161,23 @@ def _parse(layout, data):
             vfmt = tt["value_fmt_by_type"].get(str(typ))
             if vfmt is None:
                 raise _Err("unsupported tag type for " + str(ent["name"]))
-            if tt.get("require_count") is not None and cnt != tt["require_count"]:
-                raise _Err("tag count mismatch for " + str(ent["name"]))
             vfmt = _fmt(vfmt, prefix)
             voff = eo + tt["value_offset"]
-            val = _read(data, voff, vfmt)
-            env[ent["name"]] = val[0]
-            fields.append((ent["name"], voff, vfmt, val))
+            arr = ent.get("array")
+            if arr is not None:
+                vals = _read_array(data, arr, ent, typ, cnt, vfmt, voff, prefix, fields)
+                if any(v != vals[0] for v in vals):
+                    raise _Err("values not all equal for " + str(ent["name"]))
+                value = vals[0]
+            else:
+                if tt.get("require_count") is not None and cnt != tt["require_count"]:
+                    raise _Err("tag count mismatch for " + str(ent["name"]))
+                val = _read(data, voff, vfmt)
+                value = val[0]
+                fields.append((ent["name"], voff, vfmt, val))
+            if ent.get("expect") is not None and value != ent["expect"]:
+                raise _Err("expect failed for " + str(ent["name"]))
+            env[ent["name"]] = value
 
     img = layout["image"]
     width = _eval(img["width"], env)

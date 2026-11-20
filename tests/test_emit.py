@@ -368,11 +368,11 @@ def test_property_12_emitted_layout_reproduces_engine(data):
 
 # --- Rule-breaking probe results are file layouts (Req 9.20) ----------------
 
-def _craft_tiff_spp2():
+def _craft_tiff_planar2():
     import struct
-    n = 8 * 8  # 8 x 8, bits_per_sample 4 * samples_per_pixel 2 = 8 bits per pixel
-    entries = [(256, 4, 8), (257, 4, 8), (258, 3, 4), (259, 3, 1), (273, 4, 8),
-               (277, 3, 2), (279, 4, n)]
+    n = 8 * 8  # 8 x 8, 8 bits per pixel; planar_configuration 2 breaks the TIFF rule (tag 284 must be 1)
+    entries = [(256, 4, 8), (257, 4, 8), (258, 3, 8), (259, 3, 1), (273, 4, 8),
+               (277, 3, 1), (279, 4, n), (284, 3, 2)]
     data = b"II*\x00" + struct.pack("<I", 8 + n) + bytes((i * 7 + 3) % 256 for i in range(n))
     data += struct.pack("<H", len(entries))
     for tag, typ, val in entries:
@@ -381,7 +381,7 @@ def _craft_tiff_spp2():
 
 
 def test_rule_breaking_tiff_emits_file_layout_for_one_file_only():
-    data = _craft_tiff_spp2()
+    data = _craft_tiff_planar2()
     result = Engine().run(data)
     assert result.status == "RESOLVED"
     assert any(r.source == "tiff" and r.reason == "probe_precondition_failed"
@@ -443,3 +443,76 @@ def test_reference_reader_reproduces_external_b_from_emitted_requirements():
     assert (p["width"], p["height"], p["bit_depth"]) == (64, 48, 24)
     assert (p["data_start"], p["data_end"]) == (18, 9234)
     assert p["pixels"] == bytes(result.candidate.decoded)
+
+
+# --- TIFF BitsPerSample array and planar_configuration (Req 9.21, 9.22, 7.13) ---
+
+REAL_TIFFS = {
+    "goimage_no_compress.tiff": (16, 15, 32, 8, 968),
+    "goimage_no_rps.tiff": (16, 15, 32, 8, 968),
+    "goimage_video-001-uncompressed.tiff": (150, 103, 24, 8, 46358),
+    "sdlimage_sample.tif": (23, 42, 24, 8, 2906),
+}
+
+
+def _real_tiff(name):
+    from tests.conftest import SAMPLES_DIR
+    return (SAMPLES_DIR / "real" / name).read_bytes()
+
+
+@pytest.mark.parametrize("name", sorted(REAL_TIFFS))
+def test_real_tiff_array_layout_reproduced_and_emitted_suite_passes(name, tmp_path):
+    import subprocess
+    import sys
+    from tests.support.reference_reader import make_parser_module, parse
+    width, height, depth, start, end = REAL_TIFFS[name]
+    data = _real_tiff(name)
+    result = Engine().run(data)
+    assert result.status == "RESOLVED"
+    spec = emit_spec(result, data)
+    assert isinstance(spec, EmittedSpec)
+    req = _file(spec, "requirements.md")
+    layout = extract_layout(req)
+    assert layout["kind"] == "format"
+    assert "all equal" in req and "planar_configuration" in req
+    assert re.search(r"planar_configuration.{0,60}is not 1", req)
+    p = parse(layout, data)
+    assert p["ok"], p
+    assert (p["width"], p["height"], p["bit_depth"], p["data_start"], p["data_end"]) == (
+        width, height, depth, start, end)
+    assert p["pixels"] == bytes(result.candidate.decoded) == data[start:end]
+    for fname, text in spec.files:
+        (tmp_path / fname).write_text(text, encoding="utf-8")
+    (tmp_path / "parser_tiff.py").write_text(make_parser_module(req), encoding="utf-8")
+    proc = subprocess.run([sys.executable, "-m", "pytest", str(tmp_path), "-q"],
+                          cwd=str(tmp_path), capture_output=True, text=True, timeout=600)
+    assert proc.returncode == 0, proc.stdout + proc.stderr
+
+
+def _tiff_with(entries, extra=b""):
+    import struct
+    body = b"II*\x00" + struct.pack("<I", 8 + len(extra))
+    body += extra + struct.pack("<H", len(entries))
+    for tag, typ, cnt, val in entries:
+        body += struct.pack("<HHII", tag, typ, cnt, val)
+    return body + struct.pack("<I", 0)
+
+
+def test_reference_reader_array_and_expect_rules():
+    from tests.support.reference_reader import parse
+    layout = _layout("mystery_e")
+    data = _real_tiff("sdlimage_sample.tif")
+    assert parse(layout, data)["ok"]
+    # 3 SHORT values at a pointer: equal -> ok, unequal -> error.
+    def build(vals, planar):
+        pix = bytes(8 * 8 * 3)
+        extra = pix + b"".join(v.to_bytes(2, "little") for v in vals)
+        ptr = 8 + len(pix)
+        return _tiff_with([(256, 4, 1, 8), (257, 4, 1, 8), (258, 3, 3, ptr), (259, 3, 1, 1),
+                           (273, 4, 1, 8), (277, 3, 1, 3), (279, 4, 1, len(pix)),
+                           (284, 3, 1, planar)], extra)
+    ok = parse(layout, build([8, 8, 8], 1))
+    assert ok["ok"] and ok["bit_depth"] == 24
+    assert [f for f in ok["fields"] if f[0] == "bits_per_sample"].__len__() == 3
+    assert not parse(layout, build([8, 8, 4], 1))["ok"]
+    assert not parse(layout, build([8, 8, 8], 2))["ok"]

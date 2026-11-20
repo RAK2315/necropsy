@@ -46,7 +46,18 @@ _TIFF_ENTRIES = (
     ("strip_offset", 273, None),
     ("samples_per_pixel", 277, 1),
     ("strip_byte_count", 279, None),
+    ("planar_configuration", 284, 1),
 )
+
+_TIFF_BITS_ARRAY = {"max_count": 32, "value_field_size": 4, "pointer_fmt": "@I",
+                    "type_sizes": {"3": 2, "4": 4}, "require": "all_equal"}
+
+
+def _tiff_entry(name: str, tag: int, default) -> dict:
+    # Only the tag-table entries named here carry an array rule or an expected value.
+    return {"name": name, "tag": tag, "default": default,
+            "expect": 1 if name == "planar_configuration" else None,
+            "array": dict(_TIFF_BITS_ARRAY) if name == "bits_per_sample" else None}
 
 
 def _error(message: str) -> dict:
@@ -180,7 +191,7 @@ def _candidate_layout(cand, slug: str, rejections=()) -> dict:
             "tag_offset": 0, "tag_fmt": "@H", "type_offset": 2, "type_fmt": "@H",
             "count_offset": 4, "count_fmt_entry": "@I", "value_offset": 8,
             "value_fmt_by_type": {"3": "@H", "4": "@I"}, "require_count": 1,
-            "entries": [{"name": n, "tag": t, "default": d} for n, t, d in _TIFF_ENTRIES],
+            "entries": [_tiff_entry(n, t, d) for n, t, d in _TIFF_ENTRIES],
         }
         out["image"] = {"width": "width", "height": "height",
                         "bit_depth": {"mul": ["bits_per_sample", "samples_per_pixel"]},
