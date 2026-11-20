@@ -419,3 +419,33 @@ Deployed with `tools/deploy.ps1` from a clean clone of `9294826`. The script com
 | 2026-11-20 08:56:55Z | PostFileSave | `.kiro/specs/real-corpus/design.md` | `d6519b3` |
 | 2026-11-20 08:56:55Z | PostFileSave | `.kiro/specs/real-corpus/design.md` | `d6519b3` |
 | 2026-11-20 08:56:56Z | PostFileSave | `.kiro/specs/real-corpus/design.md` | `d6519b3` |
+| 2026-11-20 13:10:28Z | PostFileCreate | `tests/ui/test_strip.py` | `1f26f4d` |
+| 2026-11-20 13:10:28Z | PostFileSave | `tests/ui/test_strip.py` | `1f26f4d` |
+| 2026-11-20 13:11:03Z | PostFileCreate | `tools/break_check.py` | `1f26f4d` |
+| 2026-11-20 13:11:03Z | PostFileSave | `tools/break_check.py` | `1f26f4d` |
+| 2026-11-20 13:17:34Z | PostFileCreate | `tests/ui/test_downloads.py` | `4276f06` |
+| 2026-11-20 13:17:35Z | PostFileSave | `tests/ui/test_downloads.py` | `4276f06` |
+| 2026-11-20 13:28:51Z | PostFileCreate | `tests/ui/test_multidrop.py` | `89abd4a` |
+| 2026-11-20 13:28:51Z | PostFileSave | `tests/ui/test_multidrop.py` | `89abd4a` |
+
+
+## Task 15: host gate cold hit on necropsy-coldtest (2026-11-20)
+
+Run once by a one-shot waiter at 13:33:30Z, `tools/cold_hit.ps1` (curl timers), against https://necropsy-coldtest.vercel.app. The canary had received no request since its deploy.
+
+| Measure | Value |
+|---|---|
+| Started | 2026-11-20 13:33:43Z |
+| Idle time | 23 h 59 min 45 s after the deploy log's last write (2026-11-19 13:33:58Z); about 24 h 0 min after the deploy started (13:33Z) |
+| First screen | HTTP 200, first byte 0.90 s, total 0.90 s |
+| Cold analyse (`mystery_a`) | HTTP 200, connect 0.016 s, first byte 1.44 s, total 1.44 s |
+| Page then analyse, end to end | 2.34 s |
+| Body | `{"status":"RESOLVED","total_checks":1,"engine_ms":0.18}` |
+
+Result: **pass**. The gate is a cold analyse within 5 s; it took 1.44 s, and the static first screen was served without waiting for the function.
+
+Caveat: measured from the moment the deploy finished, the idle period was 15 s short of 24 hours. Vercel functions go cold within minutes of the last request, so 15 s does not change what was measured; the user decides whether it counts.
+
+Plan terms, read 2026-11-20 (vercel.com/docs/plans/hobby and /docs/limits/fair-use-guidelines, both last updated 2026-11-12): Hobby is free, with monthly included usage of 1,000,000 function invocations, 4 CPU-hours of active CPU, 360 GB-hours of provisioned memory, 100 GB fast data transfer and 1,000,000 CDN requests. Exceeding a limit pauses the feature for 30 days. A judging period's traffic is far below every figure. The pages fetched did not show the commercial-use wording; NECROPSY is a non-commercial hackathon entry.
+
+The canary has now been requested and is no longer an idle canary. The 15 December and weekly re-checks (Requirement 14.5) run against https://necropsy.vercel.app, or against a fresh canary if the user wants another 24-hour idle measurement.

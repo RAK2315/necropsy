@@ -93,7 +93,7 @@ Rules for every task:
   - Must be visible: each screen looks finished, and none uses the accent on anything other than recovered data.
   - _Requirements: 13_
 
-- [ ] 15. Host gate
+- [x] 15. Host gate
   - At least 24 hours after task 2, run `tools/cold_hit.ps1` against the deployed URL. Record the date, the idle time, the first-screen time and the cold analyse time in `docs/KIRO-LOG.md`, and read the plan's current terms.
   - If the cold analyse time is over 5 seconds or the terms fail, stop and ask the user to choose a new host now. Do not continue UI work on a failed host.
   - _Requirements: 14.2 to 14.4_
