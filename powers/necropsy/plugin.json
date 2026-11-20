@@ -1,0 +1,10 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "necropsy",
+  "version": "1.0.0",
+  "description": "Infer the structure of an unknown image file from its bytes. Reports every candidate layout that closes and chooses none when the bytes cannot separate them.",
+  "author": {
+    "name": "NECROPSY"
+  },
+  "keywords": ["unknown file", "mystery file", "file format", "no extension", "reverse engineering", "binary", "image", "pcx", "tga", "tiff", "pbm", "necropsy"]
+}

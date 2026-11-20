@@ -1,0 +1,11 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json",
+  "mcpServers": {
+    "necropsy": {
+      "type": "stdio",
+      "command": "python",
+      "args": ["-m", "necropsy_mcp"],
+      "cwd": "${PLUGIN_ROOT}"
+    }
+  }
+}

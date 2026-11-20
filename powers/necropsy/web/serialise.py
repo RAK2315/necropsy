@@ -1,0 +1,171 @@
+"""Turn an EngineResult into the JSON payload the frontend draws from (Requirement 2).
+
+to_payload is a pure function of the result, the source bytes and the measured engine time.
+It never raises.
+"""
+import base64
+import json
+
+from necropsy.emit import EmittedSpec, emit_spec
+
+from web.pixels import PixelBuffer, decode
+
+PIXEL_BUDGET = 500_000        # pixels converted per payload (Requirement 2.9)
+SIZE_BUDGET = 4_000_000       # serialised bytes (Requirement 2.6)
+NOT_RENDERED = "not rendered: payload limit"
+PROBES = ("pcx", "tga", "pbm", "tiff")
+
+
+def stage_of(source: str) -> str:
+    if source in PROBES:
+        return "probe"
+    if source.startswith("revision:"):
+        return "revision"
+    if source == "generic":
+        return "generic"
+    return "engine"
+
+
+def palette_for(cand, data):
+    """The 768 bytes after the 0x0C marker of a pcx_palette_256 trailer, or None."""
+    if cand.trailer != "pcx_palette_256" or cand.hypothesis.bit_depth != 8:
+        return None
+    start = cand.data_end + 1                      # data_end is the marker's offset
+    return data[start:start + 768] if start + 768 <= len(data) else None
+
+
+def bottom_left_for(cand) -> bool:
+    """True when the candidate's image_descriptor record declares a bottom-left origin."""
+    for f in cand.hypothesis.fields:
+        if f.name == "image_descriptor":
+            v = f.value
+            if isinstance(v, tuple) and len(v) == 1 and isinstance(v[0], int) and not isinstance(v[0], bool):
+                return ((v[0] >> 5) & 1) == 0      # bit 5 clear: bottom-left
+            return False
+    return False
+
+
+def _json_value(v):
+    if isinstance(v, (bytes, bytearray)):
+        return {"bytes": bytes(v).hex()}
+    return v
+
+
+def _field(f) -> dict:
+    return {"name": f.name, "offset": f.offset, "fmt": f.fmt,
+            "value": [_json_value(x) for x in f.value], "value_repr": repr(f.value)}
+
+
+def _hypothesis(h) -> dict:
+    return {
+        "width": h.width, "height": h.height, "bit_depth": h.bit_depth, "header_size": h.header_size,
+        "row_alignment": h.row_alignment, "encoding": h.encoding, "declared_data_end": h.data_end,
+        "probe_name": h.probe_name, "bounds": list(h.bounds) if h.bounds else None,
+        "revision_path": list(h.revision_path), "fields": [_field(f) for f in h.fields],
+    }
+
+
+def _candidate(c, data, budget: dict) -> dict:
+    h = c.hypothesis
+    pixels = h.width * h.height if h.width > 0 and h.height > 0 else 0
+    if budget["spent"] + pixels > PIXEL_BUDGET:
+        budget["spent"] = PIXEL_BUDGET + 1                      # nothing later is converted either
+        render = {"failure": NOT_RENDERED}
+    else:
+        out = decode(c.decoded, h.width, h.height, h.bit_depth, c.row_stride, h.probe_name,
+                     palette_for(c, data), bottom_left_for(c))
+        if isinstance(out, PixelBuffer):
+            budget["spent"] += pixels
+            render = {"width": out.width, "height": out.height, "channels": out.channels,
+                      "data_b64": base64.b64encode(out.data).decode("ascii"), "note": out.note}
+        else:
+            render = {"failure": out.reason}
+    d = _hypothesis(h)
+    d.update({
+        "row_stride": c.row_stride, "expected_decoded_bytes": c.expected_decoded_bytes,
+        "data_start": c.data_start, "data_end": c.data_end, "trailer": c.trailer,
+        "coherence_score": c.coherence_score, "coherence_status": c.coherence_status,
+        "coherence_method": c.coherence_method,
+        "alternative_paths": [list(p) for p in c.alternative_paths],
+        "render": render,
+    })
+    return d
+
+
+def _rejection(r) -> dict:
+    return {"reason": r.reason, "source": r.source, "stage": stage_of(r.source),
+            "discrepancy": r.discrepancy, "detail": r.detail,
+            "hypothesis": _hypothesis(r.hypothesis) if r.hypothesis is not None else None}
+
+
+def _size(obj) -> int:
+    return len(json.dumps(obj, separators=(",", ":")))
+
+
+def _spec(result, data) -> dict:
+    spec = emit_spec(result, data)
+    if isinstance(spec, EmittedSpec):
+        return {"slug": spec.slug, "files": {n: t for n, t in spec.files}}
+    return {"error": getattr(spec, "message", "nothing recovered")}
+
+
+def _build(result, data, engine_ms) -> dict:
+    budget = {"spent": 0}
+    p = {"status": result.status, "total_checks": result.total_checks,
+         "total_file_size": result.total_file_size, "engine_ms": round(engine_ms, 2)}
+    if result.status == "RESOLVED":
+        p["stage"] = result.stage
+        cands = [result.candidate]
+    elif result.status == "UNRESOLVED_AMBIGUITY":
+        p["stage"] = result.stage
+        p["reason"] = result.reason
+        p["coherence_gap"] = result.coherence_gap
+        cands = list(result.candidates)
+    else:
+        p["termination"] = result.termination
+        cands = list(result.partial_candidates)
+    key = "partial_candidates" if result.status == "FAILED" else "candidates"
+    p[key] = [_candidate(c, data, budget) for c in cands]
+    p["spec"] = _spec(result, data)
+
+    # Size budget. Shrink the least important parts first: rejections (below), spec text, then pixel buffers.
+    base = _size(p)
+    if base > SIZE_BUDGET and "files" in p["spec"]:
+        p["spec"] = {"slug": p["spec"]["slug"], "files": None, "too_large": True}
+        base = _size(p)
+    for cand in reversed(p[key]):
+        if base <= SIZE_BUDGET:
+            break
+        if "data_b64" in cand["render"]:
+            base -= len(cand["render"]["data_b64"])
+            cand["render"] = {"failure": NOT_RENDERED}
+
+    counts: dict = {}
+    for r in result.rejections:
+        by_reason = counts.setdefault(stage_of(r.source), {})
+        by_reason[r.reason] = by_reason.get(r.reason, 0) + 1
+    kept, used = [], base + 200
+    for r in result.rejections:
+        item = _rejection(r)
+        used += _size(item) + 1
+        if used > SIZE_BUDGET:
+            break
+        kept.append(item)
+    p["rejections"] = kept
+    p["rejections_omitted"] = len(result.rejections) - len(kept)
+    p["rejection_counts"] = counts
+    return p
+
+
+def to_payload(result, data, engine_ms) -> dict:
+    """The Result payload. Never raises; an internal failure becomes a FAILED payload."""
+    try:
+        return _build(result, bytes(data), float(engine_ms))
+    except Exception as exc:
+        return {"status": "FAILED", "termination": "internal_error", "total_checks": 0,
+                "total_file_size": len(data) if isinstance(data, (bytes, bytearray)) else 0,
+                "engine_ms": 0.0, "partial_candidates": [], "rejections": [
+                    {"reason": "internal_error", "source": "engine", "stage": "engine", "discrepancy": None,
+                     "detail": f"{type(exc).__name__}", "hypothesis": None}],
+                "rejections_omitted": 0, "rejection_counts": {"engine": {"internal_error": 1}},
+                "spec": {"error": "nothing recovered: FAILED/internal_error"}}

@@ -9,9 +9,9 @@ from mcp.types import CallToolResult, TextContent
 from necropsy_mcp import core
 
 INSTRUCTIONS = (
-    "NECROPSY infers the structure of an unknown image file from its bytes. Call `analyse` on a file "
-    "you cannot open instead of guessing its layout. A result may list several candidates; every one "
-    "of them closes, and the bytes cannot choose between them. Report all candidates and do not pick one."
+    "Use these tools when you hold a file whose layout you do not know. `analyse` infers the structure "
+    "from the bytes and checks it by arithmetic. When more than one layout closes, the bytes cannot "
+    "separate them: report all of them and choose none."
 )
 _INPUT = (
     "Give exactly one of `path` (a file on this machine) or `data_base64` (the bytes, base64). "
@@ -49,7 +49,7 @@ def analyse(path: str | None = None, data_base64: str | None = None) -> CallTool
     description=(
         "Emit the spec files (requirements.md, design.md and an acceptance test) that describe a recovered "
         "file's layout. Returns {slug, files}, or {error: nothing_recovered, message} when the result is "
-        "FAILED. When several candidates close, the spec is for the file as a whole and chooses none. " + _INPUT
+        "FAILED. When several candidates close, the spec lists every candidate and chooses none. " + _INPUT
     ),
 )
 def emit_spec(path: str | None = None, data_base64: str | None = None) -> CallToolResult:
