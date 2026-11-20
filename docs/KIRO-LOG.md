@@ -571,3 +571,8 @@ After commit `b1d654e` the Power was removed and re-imported from `powers/necrop
 - **Kiro chose none** and said something outside the bytes would have to decide. No files were written.
 - **Size:** 25,890 characters is the correct figure (stdio test). The builder's earlier 26,071 counted non-ASCII characters escaped as `\u00b7`.
 This closes the change that made `analyse` agent-sized: the result that was truncated at 32,236 characters now arrives whole at 25,890 and Kiro reports all 18 candidates. All tasks in the `necropsy-mcp` spec are done; none was left open.
+| 2026-11-20 17:28:26Z | PostFileCreate | `C:/Users/rehtr/AppData/Local/Temp/spec22.py` | `e35a362` |
+| 2026-11-20 17:28:26Z | PostFileSave | `C:/Users/rehtr/AppData/Local/Temp/spec22.py` | `e35a362` |
+| 2026-11-20 17:29:07Z | PostFileCreate | `C:/Users/rehtr/AppData/Local/Temp/baseline22.py` | `c9949d1` |
+| 2026-11-20 17:29:07Z | PostFileSave | `C:/Users/rehtr/AppData/Local/Temp/baseline22.py` | `c9949d1` |
+| 2026-11-20 17:30:22Z | PostFileSave | `tests/ui/test_a11y.py` | `c9949d1` |
