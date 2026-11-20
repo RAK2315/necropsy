@@ -11,7 +11,7 @@ function decodeB64(s) {
 export const prefersReducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 /** Fill an ImageData from a grey8 or rgb8 buffer. */
-function toImageData(render) {
+export function toImageData(render) {
   const { width: w, height: h, channels } = render;
   const src = decodeB64(render.data_b64);
   const img = new ImageData(w, h);

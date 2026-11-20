@@ -120,7 +120,7 @@ figcaption .note { color: var(--faint); font-size: 12px; }
 .sticky { position: sticky; top: 12px; align-self: start; }
 .pane-note { margin: 0; color: var(--faint); font-size: 12px; }
 .cards { display: grid; grid-template-columns: repeat(auto-fill, 208px); gap: 12px; }
-.card { width: 208px; height: 372px; display: flex; flex-direction: column; gap: 2px; padding: 11px; border: 1px solid var(--line);
+.card { width: 208px; height: 400px; display: flex; flex-direction: column; gap: 2px; padding: 11px; border: 1px solid var(--line);
         border-radius: 4px; background: var(--panel); cursor: pointer; overflow: hidden; }
 .card:hover { border-color: var(--faint); }
 .card:focus-visible { border-color: var(--faint); outline: 2px solid var(--text); outline-offset: 2px; }
@@ -215,3 +215,8 @@ ol.strip-rej { margin: 0; padding-left: 20px; font-size: 11px; color: var(--mute
 ol.strip-rej li { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .strip-more { margin: 0; color: var(--faint); font-size: 11.5px; }
 .strip-line { margin: 0; color: var(--text); font-size: 14px; }
+/* downloads */
+.card-dl { display: flex; gap: 6px; margin-top: 6px; }
+.dl-btn { background: none; border: 1px solid var(--line); border-radius: 3px; padding: 1px 8px; color: var(--muted); font-size: 12px; }
+.dl-btn:hover:not(:disabled) { color: var(--text); border-color: var(--faint); }
+.dl-btn:disabled { opacity: .4; cursor: default; }

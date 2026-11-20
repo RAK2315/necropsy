@@ -81,3 +81,18 @@ test('termination text never claims the file has no valid layout', () => {
     assert.ok(!/no valid layout|not an image|cannot be (read|opened)/i.test(L.terminationText(t)), t);
   }
 });
+test('a render-failure card keeps both download controls, with PNG disabled (Requirement 17.6)', () => {
+  const ok = L.cardHTML(L.cardModel(cand(8, 8, 8, 40, scored[0]), 0));
+  const bad = L.cardHTML(L.cardModel({ ...cand(8, 8, 16, 40, scored[0]), render: { failure: 'no renderer for 16-bit pixels' } }, 0));
+  assert.match(ok, /<button type="button" class="dl-btn" data-act="png" data-index="0">PNG<\/button>/);
+  assert.match(bad, /<button type="button" class="dl-btn" data-act="png" data-index="0" disabled title="no image to save">PNG<\/button>/);
+  for (const h of [ok, bad]) assert.match(h, /data-act="data" data-index="0">data region<\/button>/);
+});
+
+test('download names (Requirement 17.5)', () => {
+  const c = { width: 64, height: 48, bit_depth: 8, data_start: 128, data_end: 393 };
+  assert.deepEqual(L.downloadNames(L.inputBase('external_a'), c), { png: 'external_a_64x48_8bit.png', data: 'external_a_64x48_8bit_data_128-393.bin' });
+  assert.equal(L.inputBase('Holiday Photo (1).PCX'), 'Holiday_Photo_1');
+  assert.equal(L.inputBase(''), 'file');
+  assert.equal(L.inputBase(undefined), 'file');
+});

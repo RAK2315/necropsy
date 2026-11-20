@@ -3,7 +3,7 @@
 python tools/break_check.py <breaks.json>
 
 breaks.json: a list of {"name", "file", "old", "new", "test"}. `old` must occur exactly once in `file`.
-`test` is a pytest node id or "path -k expr". For each break: the file's SHA-256 before, the test result with
+`test` is a pytest node id or "path -k expr", or "node:<test file>" for a node --test file. For each break: the file's SHA-256 before, the test result with
 the break applied, and the SHA-256 after restoring. A break whose test still passes is reported as NOT CAUGHT.
 The file is restored in a finally block, even if pytest crashes.
 """
@@ -22,6 +22,7 @@ def sha(p: Path) -> str:
 
 
 def main(spec_path: str) -> int:
+    sys.stdout.reconfigure(encoding="utf-8")
     breaks = json.loads(Path(spec_path).read_text(encoding="utf-8"))
     missed = 0
     for b in breaks:
@@ -36,13 +37,16 @@ def main(spec_path: str) -> int:
             continue
         p.write_bytes(text.replace(b["old"], b["new"]).encode("utf-8"))
         try:
-            r = subprocess.run([sys.executable, "-m", "pytest", *shlex.split(b["test"]), "-q", "--tb=line", "-p", "no:warnings"],
-                               cwd=ROOT, capture_output=True, text=True, encoding="utf-8")
+            if b["test"].startswith("node:"):
+                cmd = ["node", "--test", *shlex.split(b["test"][5:])]
+            else:
+                cmd = [sys.executable, "-m", "pytest", *shlex.split(b["test"]), "-q", "--tb=line", "-p", "no:warnings"]
+            r = subprocess.run(cmd, cwd=ROOT, capture_output=True, text=True, encoding="utf-8")
         finally:
             p.write_bytes(original)
         after = sha(p)
         lines = r.stdout.splitlines()
-        summary = next((l.strip() for l in reversed(lines) if " passed" in l or " failed" in l or " error" in l), "?")
+        summary = next((l.strip() for l in reversed(lines) if " passed" in l or " failed" in l or " error" in l or l.lstrip("ℹ ").startswith("fail ")), "?")
         why = next((l.strip() for l in lines if "Error" in l or "assert" in l.lower()), "")
         caught = r.returncode != 0
         missed += not caught

@@ -1,12 +1,13 @@
 // Result screens: RESOLVED, UNRESOLVED_AMBIGUITY and FAILED.
 import {
   closureLine, declaredVsActual, revisionDiffs, changeText, ambiguityStatement, COHERENCE_NOTE, cardsHTML, cardTitle,
-  terminationText, failureGroups, rejectionLine, hypothesisLine, stageOf,
+  terminationText, failureGroups, rejectionLine, hypothesisLine, stageOf, inputBase,
 } from './logic.js';
 import { createPane, fieldTable } from './pane.js';
 import { paint } from './image.js';
 import { specPanel } from './spec.js';
 import { createReplay } from './replay.js';
+import { downloadRow, savePNG, saveData } from './downloads.js';
 
 function el(tag, cls, text) {
   const e = document.createElement(tag);
@@ -49,7 +50,7 @@ function kv(label, value, cls = '') {
   return row;
 }
 
-function resolvedPanel(payload) {
+function resolvedPanel(payload, bytes, base) {
   const c = payload.candidates[0];
   const side = el('div', 'exam-right');
   const head = el('div', 'result-head');
@@ -57,7 +58,7 @@ function resolvedPanel(payload) {
   side.append(head);
 
   const { frame, done } = imageFrame(c, 264, { reveal: true });
-  side.append(frame);
+  side.append(frame, downloadRow(c, bytes, base));
 
   const dva = declaredVsActual(payload);
   if (dva) {
@@ -93,7 +94,7 @@ function resolvedPanel(payload) {
 
 const CARD_BOX = 184;
 
-function ambiguityScreen(root, payload, bytes) {
+function ambiguityScreen(root, payload, bytes, base) {
   const cands = payload.candidates;
   const n = cands.length;
   const lead = el('section', 'amb-lead');
@@ -138,8 +139,12 @@ function ambiguityScreen(root, payload, bytes) {
       card.classList.add('open');
       tableSlot.replaceChildren(el('p', 'pane-note', `Fields of ${cardTitle(cands[i])}`), fieldTable(cands[i], records, pane));
     };
-    card.addEventListener('click', select);
-    card.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); select(); } });
+    card.addEventListener('click', (e) => {
+      const b = e.target.closest('.dl-btn');
+      if (b) { e.stopPropagation(); if (b.dataset.act === 'png') savePNG(cands[i], base); else saveData(cands[i], bytes, base); return; }
+      select();
+    });
+    card.addEventListener('keydown', (e) => { if (e.target === card && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); select(); } });
   }
   const right = el('div', 'exam-right pending');
   right.append(grid);
@@ -257,7 +262,8 @@ function stepView(step) {
 export function renderResult(root, payload, bytes, opts = {}) {
   root.replaceChildren();
   const target = views(root, payload, bytes);
-  if (payload.status === 'UNRESOLVED_AMBIGUITY') { ambiguityScreen(target, payload, bytes).start(); return; }
+  const base = inputBase(opts.name);
+  if (payload.status === 'UNRESOLVED_AMBIGUITY') { ambiguityScreen(target, payload, bytes, base).start(); return; }
   const pane = createPane(bytes);
   const wrap = el('div', 'exam');
   const left = el('div', 'exam-left');
@@ -268,7 +274,7 @@ export function renderResult(root, payload, bytes, opts = {}) {
   if (payload.status === 'RESOLVED') {
     const c = payload.candidates[0];
     finalView = { cands: [c], regions: c };
-    buildRight = () => right.replaceChildren(...resolvedPanel(payload).side.childNodes);   // built at the final step, so the image reveal starts then
+    buildRight = () => right.replaceChildren(...resolvedPanel(payload, bytes, base).side.childNodes);   // built at the final step, so the image reveal starts then
   } else {
     finalView = { cands: [], regions: null };
     buildRight = () => right.replaceChildren(...failedPanel(payload).childNodes);

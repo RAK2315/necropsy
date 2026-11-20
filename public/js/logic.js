@@ -224,6 +224,8 @@ export function cardHTML(m) {
     + m.lines.map((l) => `<p class="card-line mono">${escapeHTML(l)}</p>`).join('')
     + `<p class="card-note">${escapeHTML(m.note)}</p>`
     + `<p class="card-coh mono">${escapeHTML(m.coherence)}</p>`
+    + `<div class="card-dl"><button type="button" class="dl-btn" data-act="png" data-index="${m.index}"${m.failure ? ' disabled title="no image to save"' : ''}>PNG</button>`
+    + `<button type="button" class="dl-btn" data-act="data" data-index="${m.index}">data region</button></div>`
     + `</article>`;
 }
 
@@ -282,3 +284,16 @@ export function outcomeLine(payload) {
   return 'Nothing closed, and here is why.';
 }
 
+
+// ---- Downloads (Requirement 17) ----
+
+/** Base name for downloads: the sample name, or the dropped file's name without extension, reduced to [A-Za-z0-9._-]. */
+export function inputBase(name) {
+  const stem = String(name || 'file').replace(/\.[^.]*$/, '') || 'file';
+  return stem.replace(/[^A-Za-z0-9._-]+/g, '_').replace(/^_+|_+$/g, '') || 'file';
+}
+
+export function downloadNames(base, c) {
+  const g = `${base}_${c.width}x${c.height}_${c.bit_depth}bit`;
+  return { png: `${g}.png`, data: `${g}_data_${c.data_start}-${c.data_end}.bin` };
+}

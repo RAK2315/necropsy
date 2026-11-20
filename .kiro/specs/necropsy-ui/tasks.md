@@ -104,7 +104,7 @@ Rules for every task:
   - Must be visible: all three tiles and the drop zone at 1280×720 without scrolling.
   - _Requirements: 16, 11.1_
 
-- [ ] 18. PNG and data-region downloads
+- [x] 18. PNG and data-region downloads
   - `PNG` and `data region` on the RESOLVED screen and on every ambiguity card, built in the browser.
   - Test in a real browser: the PNG decodes to exactly the pixel buffer at native size; the data region equals the file's bytes `[data_start, data_end)`. Break and restore, and report both.
   - _Requirements: 17_
