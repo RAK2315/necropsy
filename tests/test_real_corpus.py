@@ -27,7 +27,7 @@ FILES = sorted(MANIFEST)
 
 
 def scope_of(name):
-    return rc.SCOPE_OVERRIDES.get(name, MANIFEST[name]["scope"])
+    return MANIFEST[name]["scope"]
 
 
 _RUNS = {}
@@ -84,8 +84,14 @@ def test_ossfuzz_resolves_with_a_literal_reading_and_a_file_layout_spec():
     h = result.candidate.hypothesis
     assert (h.width, h.height, h.bit_depth, h.header_size, h.row_alignment, h.encoding) == (2, 1, 1, 128, 1, "none")
     assert (result.candidate.data_start, result.candidate.data_end) == (128, 129)
-    # The PCX probe did not match (encoding byte 0x20), so it recorded no precondition failure.
-    assert result.rejections == ()
+    # Engine Requirement 7.15 / real-corpus Requirement 4.3: the PCX probe recognised the signature and declined
+    # because encoding byte 0x20 has no reading, recording exactly one probe_precondition_failed.
+    assert len(result.rejections) == 1
+    rej = result.rejections[0]
+    assert rej.reason == "probe_precondition_failed"
+    assert rej.source == "pcx"
+    assert rej.hypothesis is None
+    assert "0x02" in rej.detail and "0x20" in rej.detail
     assert h.probe_name == "generic"
     # The emitted spec describes this one file, not the PCX format.
     requirements = dict(emit_spec(result, data).files)["requirements.md"]

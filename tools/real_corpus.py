@@ -30,25 +30,19 @@ INVALID_BY_CONSTRUCTION = (
 )
 
 
-# Decisions recorded in the real-corpus spec (design.md, "Decisions"). The manifest is not edited.
-SCOPE_OVERRIDES = {
-    "libtiff_test_ifd_loop_to_self.tif": "in",   # a looping IFD chain does not stop the first IFD being read
-}
 OPEN_IN_SCOPE_FAILURES = (   # in scope, valid, FAILED; under diagnosis elsewhere, rows left as measured
     "pillow_p_16.tga",
 )
 NOTES = {
     "pillow_ossfuzz-4836216264589312.pcx": (
-        "Invalid by construction, and RESOLVED by design. The PCX probe rejected the file (encoding byte 0x20) and "
-        "recorded nothing. Generic Search found that 129 bytes admit a 128-byte header plus one data byte: a 2x1 "
-        "1-bit image. That is a literal statement about the byte arithmetic, not a recovery claim. No PCX claim is "
+        "Invalid by construction, and RESOLVED by design. The PCX probe recognised the signature and declined "
+        "because the encoding byte 0x20 has no reading (engine Requirement 2.10), recording one "
+        "probe_precondition_failed. Generic Search then found that 129 bytes admit a 128-byte header plus one data "
+        "byte: a 2x1 1-bit image. That is a literal statement about the byte arithmetic, not a recovery claim. No PCX claim is "
         "made: the emitted spec has layout kind `file` and says it describes this one file only."),
     "pillow_rgba16.tga": (
         "Known interpretation difference, not a recovery error. The 5-bit colour values match. Pillow expands bit 15 "
         "as alpha (set = transparent here); the engine returns raw words and interprets no channel semantics."),
-    "libtiff_test_ifd_loop_to_self.tif": (
-        "Manifest scope was out; reclassified in scope. A looping IFD chain does not prevent the first IFD being read, "
-        "and the pixels match."),
 }
 for _n in OPEN_IN_SCOPE_FAILURES:
     NOTES[_n] = "Open: in scope, valid, and FAILED. Under diagnosis in another session; row left as measured."
@@ -207,8 +201,7 @@ def run_one(entry: dict, with_pillow: bool = True) -> dict:
     row = {
         "file": entry["file"],
         "format": entry["format"],
-        "scope": SCOPE_OVERRIDES.get(entry["file"], entry["scope"]),
-        "manifest_scope": entry["scope"],
+        "scope": entry["scope"],
         "scope_reason": entry["scope_reason"],
         "invalid_by_construction": entry["file"] in INVALID_BY_CONSTRUCTION,
         "our_status": result.status,
@@ -216,7 +209,7 @@ def run_one(entry: dict, with_pillow: bool = True) -> dict:
         "termination": getattr(result, "termination", None),
         "checks": result.total_checks,
         "candidates": [describe(c) for c in cands],
-        "expected_status": expectation(entry["file"], SCOPE_OVERRIDES.get(entry["file"], entry["scope"]),
+        "expected_status": expectation(entry["file"], entry["scope"],
                                        entry["file"] in INVALID_BY_CONSTRUCTION),
         "note": NOTES.get(entry["file"], ""),
         "pillow_error": entry["pillow"]["error"],
@@ -288,7 +281,7 @@ def write_markdown(rows: list[dict], path: Path) -> None:
         "|---|---|---|---|---|---|---|",
     ]
     for r in rows:
-        scope = r["scope"] + (" (reclassified)" if r["scope"] != r["manifest_scope"] else "")
+        scope = r["scope"]
         if r["invalid_by_construction"]:
             scope += ", invalid by construction"
         note = r["note"] or (r["scope_reason"] if r["scope"] == "out" else "")

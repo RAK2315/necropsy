@@ -648,14 +648,14 @@ Rules for every task:
     - Re-run `python -m tools.adversary` and diff `tools/adversary_counts.json`; it must not change. Run `tests/test_gate_perturbation.py` and the full suite.
     - _Requirements: 7.13, 7.14_
 
-- [ ] 17. A probe can decline an impossible declaration (Decision Record item 21)
-  - [ ] 17.1 Implement Requirement 2.10 and the PCX signature change
+- [x] 17. A probe can decline an impossible declaration (Decision Record item 21)
+  - [x] 17.1 Implement Requirement 2.10 and the PCX signature change
     - `necropsy/engine/probes.py`: `ProbeOutcome.seed` may be `None` only when the probe declines. The PCX signature is byte `0x00 == 0x0A`; an encoding byte outside `{0, 1}` declines with one `probe_precondition_failed` (source `pcx`, no hypothesis, detail naming `0x02` and the value). No other probe changes.
     - `necropsy/engine/engine.py`: a declining probe's rejection is kept; it contributes no seed, so Generic Search runs when no probe emitted a seed (Requirement 4.1).
     - Tests from Requirements 2.10 and 4.1: `tests/test_probes.py` (a crafted 128-byte PCX header with encoding byte 0x02 = 5 declines; bytes not starting with 0x0A record nothing) and `tests/test_engine.py` (a declining probe's rejection is kept and Generic Search still runs). Update the probe property test's outcome check to the amended Requirement 2.3, citing it.
     - _Requirements: 2.3, 2.5, 2.10, 4.1_
 
-  - [ ] 17.2 Real-corpus amendments and gates
+  - [x] 17.2 Real-corpus amendments and gates
     - Amend the ossfuzz test to Requirement 7.15 and real-corpus Requirement 4.3. Remove `SCOPE_OVERRIDES`, the reclassified marker and its note from `tools/real_corpus.py`; the manifest records the scope. Regenerate the table.
     - Gates before committing: the 93-file engine baseline (only ossfuzz's rejection list may change), the 81-file table (only the ossfuzz note and the `libtiff_test_ifd_loop_to_self.tif` scope cell and note may change), adversary counts byte-identical, perturbation suite, full suite.
     - _Requirements: 7.15_

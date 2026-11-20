@@ -1327,6 +1327,47 @@
         "chatSessionId": "sess_adc10a50-7555-4556-944a-4698b367e060",
         "timestamp": 1795160117000
       }
+    ],
+    "17.1 Implement Requirement 2.10 and the PCX signature change": [
+      {
+        "executionId": "b917e2eb-889e-441e-baf1-c9d0d4e01ab5",
+        "chatSessionId": "sess_adc10a50-7555-4556-944a-4698b367e060",
+        "timestamp": 1795162526765
+      },
+      {
+        "executionId": "b917e2eb-889e-441e-baf1-c9d0d4e01ab5",
+        "chatSessionId": "sess_adc10a50-7555-4556-944a-4698b367e060",
+        "timestamp": 1795162527489
+      },
+      {
+        "executionId": "b917e2eb-889e-441e-baf1-c9d0d4e01ab5",
+        "chatSessionId": "sess_adc10a50-7555-4556-944a-4698b367e060",
+        "timestamp": 1795162773407
+      }
+    ],
+    "17.2 Real-corpus amendments and gates": [
+      {
+        "executionId": "b917e2eb-889e-441e-baf1-c9d0d4e01ab5",
+        "chatSessionId": "sess_adc10a50-7555-4556-944a-4698b367e060",
+        "timestamp": 1795162526821
+      },
+      {
+        "executionId": "b917e2eb-889e-441e-baf1-c9d0d4e01ab5",
+        "chatSessionId": "sess_adc10a50-7555-4556-944a-4698b367e060",
+        "timestamp": 1795162773638
+      },
+      {
+        "executionId": "b917e2eb-889e-441e-baf1-c9d0d4e01ab5",
+        "chatSessionId": "sess_adc10a50-7555-4556-944a-4698b367e060",
+        "timestamp": 1795163193458
+      }
+    ],
+    "17. A probe can decline an impossible declaration (Decision Record item 21)": [
+      {
+        "executionId": "b917e2eb-889e-441e-baf1-c9d0d4e01ab5",
+        "chatSessionId": "sess_adc10a50-7555-4556-944a-4698b367e060",
+        "timestamp": 1795163193513
+      }
     ]
   }
 }
