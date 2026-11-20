@@ -576,3 +576,14 @@ This closes the change that made `analyse` agent-sized: the result that was trun
 | 2026-11-20 17:29:07Z | PostFileCreate | `C:/Users/rehtr/AppData/Local/Temp/baseline22.py` | `c9949d1` |
 | 2026-11-20 17:29:07Z | PostFileSave | `C:/Users/rehtr/AppData/Local/Temp/baseline22.py` | `c9949d1` |
 | 2026-11-20 17:30:22Z | PostFileSave | `tests/ui/test_a11y.py` | `c9949d1` |
+
+
+## Task 22: dark colour scheme for native controls (2026-11-20)
+
+Cause: the page never declared its colour scheme, so the browser drew light native controls on the dark page. Change: `color-scheme: dark` on `:root` in `public/app.css`, nothing else (`7c876ec`).
+
+- Test: the computed `colorScheme` of the root is `dark` on the start, result and spec screens. Break (line removed) caught: `normal` on all three. No-change control passed. Restored byte-identical.
+- Contrast: the 5,601 rendered text pairs are identical before and after the change.
+- Captures with scrollbars shown, measured in pixels, not by eye (the two crops looked alike in the viewer): the hex pane scrollbar went from track RGB 252 / thumb 139 to track 44 / thumb 159. The page's own scrollbar was already dark before the fix (44 / 159): the browser darkens the root scrollbar on a dark background by itself, so only inner scrollbars (hex pane, replay log) were light.
+- Full suite 832 passed, 1 skipped; node tests 22/22.
+- Redeployed with `tools/deploy.ps1` from a clean clone of `21dc11b`. `tools/acceptance.py` on https://necropsy.vercel.app: all ten beats pass, every one under 20 s (2.5, 6.3, 0.8, 1.0, 1.0, 0.7, 2.6, 2.5, 0.3, 0.7 s). New captures in `docs/acceptance/`.
