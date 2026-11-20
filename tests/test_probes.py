@@ -292,6 +292,187 @@ def test_tiff_bad_magic_none():
     assert probe_tiff(b"II*\x00") is None  # shorter than 8
 
 
+# ------------------------------------------- TIFF BitsPerSample array (Req 2.8)
+def tiff_raw(entries, tail=b"", order=b"II"):
+    """TIFF from raw entries (tag, type, count, 4 value-field bytes).
+
+    0..1 byte order, 2..3 magic 42, 4..7 ifd_offset 8, 8..9 entry count,
+    10.. 12-byte entries, then 4 bytes next-IFD (0), then `tail` at
+    10 + 12 * len(entries) + 4.
+    """
+    o = "<" if order == b"II" else ">"
+    buf = bytearray(order + struct.pack(o + "H", 42) + struct.pack(o + "I", 8))
+    buf += struct.pack(o + "H", len(entries))
+    for tag, typ, count, value in entries:
+        buf += struct.pack(o + "HHI", tag, typ, count) + value
+    buf += b"\x00\x00\x00\x00"
+    return bytes(buf + tail)
+
+
+def short(v, o="<"):
+    return struct.pack(o + "H", v) + b"\x00\x00"  # SHORT left-justified, 2 pad bytes
+
+
+def long_(v, o="<"):
+    return struct.pack(o + "I", v)
+
+
+def rgb_entries(bps_entry, spp=3, planar=None):
+    base = [
+        (256, 3, 1, short(2)),    # width 2
+        (257, 3, 1, short(2)),    # height 2
+        bps_entry,
+        (273, 4, 1, long_(8)),    # strip_offset 8 (value irrelevant to these tests)
+        (277, 3, 1, short(spp)),  # samples_per_pixel
+        (279, 4, 1, long_(12)),   # strip_byte_count 12 = 2 * 2 * 3
+    ]
+    if planar is not None:
+        base.append((284, 3, 1, short(planar)))
+    return base
+
+
+def test_tiff_bps_count3_short_via_pointer():
+    # 3 SHORT = 6 bytes > 4, so the value field holds an offset.
+    # Entries: 6 * 12 + 2 + 4 = 78 bytes of IFD; array starts at 8 + 78 = 86.
+    ptr = 8 + 2 + 12 * 6 + 4
+    data = tiff_raw(rgb_entries((258, 3, 3, long_(ptr))),
+                    tail=struct.pack("<3H", 8, 8, 8))  # three samples of 8 bits
+    out = probe_tiff(data)
+    assert out.rejections == ()
+    assert out.seed.bit_depth == 24  # 8 * spp 3
+    recs = field(out.seed, "bits_per_sample")
+    assert [(r.offset, r.fmt, r.value) for r in recs] == [
+        (ptr, "<H", (8,)), (ptr + 2, "<H", (8,)), (ptr + 4, "<H", (8,))]
+
+
+def test_tiff_bps_count2_short_inline():
+    # 2 SHORT = 4 bytes: values at entry+8 and entry+10 (entry 3 is at 10 + 12 * 2 = 34).
+    data = tiff_raw(rgb_entries((258, 3, 2, struct.pack("<HH", 8, 8)), spp=2))
+    out = probe_tiff(data)
+    assert out.rejections == ()
+    assert out.seed.bit_depth == 16
+    recs = field(out.seed, "bits_per_sample")
+    assert [(r.offset, r.fmt) for r in recs] == [(42, "<H"), (44, "<H")]
+
+
+def test_tiff_bps_inline_big_endian():
+    # MM order: 2 SHORT inline, values 8 and 8 big-endian.
+    o = ">"  # every entry value is packed big-endian
+    entries = [
+        (256, 3, 1, short(2, o)), (257, 3, 1, short(2, o)),
+        (258, 3, 2, struct.pack(">HH", 8, 8)),
+        (273, 4, 1, long_(8, o)), (277, 3, 1, short(2, o)), (279, 4, 1, long_(12, o)),
+    ]
+    out = probe_tiff(tiff_raw(entries, order=b"MM"))
+    assert out.rejections == ()
+    assert out.seed.bit_depth == 16
+    assert all(f.fmt == ">H" for f in field(out.seed, "bits_per_sample"))
+
+
+def test_tiff_bps_unequal_values():
+    data = tiff_raw(rgb_entries((258, 3, 2, struct.pack("<HH", 8, 16)), spp=2))
+    out = probe_tiff(data)
+    assert out.seed.bit_depth == 0  # nothing chosen: 0 * 2
+    assert reasons(out) == ["probe_precondition_failed"]
+    detail = out.rejections[0].detail
+    assert "8" in detail and "16" in detail
+    assert "missing tags" not in detail
+
+
+def test_tiff_bps_count33_not_read():
+    # 33 SHORT = 66 bytes via pointer; count alone must reject, values not read.
+    ptr = 8 + 2 + 12 * 6 + 4
+    data = tiff_raw(rgb_entries((258, 3, 33, long_(ptr))), tail=struct.pack("<33H", *[8] * 33))
+    out = probe_tiff(data)
+    assert reasons(out) == ["probe_precondition_failed"]
+    assert field(out.seed, "bits_per_sample") == []
+    assert out.seed.bit_depth == 0
+
+
+def test_tiff_bps_count32_is_read():
+    ptr = 8 + 2 + 12 * 6 + 4
+    data = tiff_raw(rgb_entries((258, 3, 32, long_(ptr)), spp=1),
+                    tail=struct.pack("<32H", *[1] * 32))
+    out = probe_tiff(data)
+    assert len(field(out.seed, "bits_per_sample")) == 32
+    assert out.seed.bit_depth == 1
+
+
+def test_tiff_bps_pointer_out_of_bounds():
+    # Pointer 10000 is far past the end of the file (about 100 bytes).
+    data = tiff_raw(rgb_entries((258, 3, 3, long_(10000))))
+    out = probe_tiff(data)
+    assert "field_out_of_bounds" in reasons(out)
+    assert field(out.seed, "bits_per_sample") == []
+    precondition = [r for r in out.rejections if r.reason == "probe_precondition_failed"]
+    assert precondition and "bits_per_sample" in precondition[0].detail  # listed as missing
+
+
+def test_tiff_bps_array_runs_off_end():
+    # Pointer 86 is the array start but the tail holds only 2 of 3 SHORT values.
+    data = tiff_raw(rgb_entries((258, 3, 3, long_(86))), tail=struct.pack("<2H", 8, 8))
+    assert "field_out_of_bounds" in reasons(probe_tiff(data))
+
+
+def test_tiff_planar_2_precondition_failed():
+    ptr = 8 + 2 + 12 * 7 + 4  # seven entries now
+    data = tiff_raw(rgb_entries((258, 3, 3, long_(ptr)), planar=2),
+                    tail=struct.pack("<3H", 8, 8, 8))
+    out = probe_tiff(data)
+    assert reasons(out) == ["probe_precondition_failed"]
+    assert "planar_configuration 2" in out.rejections[0].detail
+
+
+def test_tiff_planar_1_accepted():
+    ptr = 8 + 2 + 12 * 7 + 4
+    data = tiff_raw(rgb_entries((258, 3, 3, long_(ptr)), planar=1),
+                    tail=struct.pack("<3H", 8, 8, 8))
+    assert probe_tiff(data).rejections == ()
+
+
+def test_tiff_samples_per_pixel_3_with_bps_8_not_rejected():
+    out = probe_tiff(tiff_raw(rgb_entries((258, 3, 1, short(8)), spp=3)))
+    assert out.rejections == ()
+    assert out.seed.bit_depth == 24
+
+
+def test_tiff_bps_records_round_trip():
+    ptr = 8 + 2 + 12 * 6 + 4
+    inputs = [
+        tiff_raw(rgb_entries((258, 3, 3, long_(ptr))), tail=struct.pack("<3H", 8, 8, 8)),
+        tiff_raw(rgb_entries((258, 3, 2, struct.pack("<HH", 8, 16)), spp=2)),
+        tiff_raw(rgb_entries((258, 4, 3, long_(ptr))), tail=struct.pack("<3I", 8, 8, 8)),
+    ]
+    for data in inputs:
+        out = probe_tiff(data)
+        for hyp in [out.seed] + [r.hypothesis for r in out.rejections if r.hypothesis]:
+            for f in hyp.fields:
+                assert struct.unpack_from(f.fmt, data, f.offset) == f.value
+
+
+# Requirement 7.13: width, height, bit_depth, data region (header_size is 8).
+REAL_TIFFS = [
+    ("goimage_no_compress.tiff", 16, 15, 32, 968),
+    ("goimage_no_rps.tiff", 16, 15, 32, 968),
+    ("goimage_video-001-uncompressed.tiff", 150, 103, 24, 46358),
+    ("sdlimage_sample.tif", 23, 42, 24, 2906),
+]
+
+
+@pytest.mark.parametrize("name,w,h,depth,end", REAL_TIFFS)
+def test_tiff_real_files_seed_without_rejection(name, w, h, depth, end):
+    from pathlib import Path
+    path = Path(__file__).resolve().parent.parent / "spike" / "samples" / "real" / name
+    data = path.read_bytes()
+    out = probe_tiff(data)
+    assert out.rejections == ()
+    s = out.seed
+    assert (s.width, s.height, s.bit_depth) == (w, h, depth)
+    assert (s.header_size, s.data_end) == (8, end)
+    for f in s.fields:
+        assert struct.unpack_from(f.fmt, data, f.offset) == f.value
+
+
 # ------------------------------------------------------- order, round trips
 def test_probes_order_is_pcx_tga_pbm_tiff():
     # Req 2.1

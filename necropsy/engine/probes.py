@@ -310,9 +310,46 @@ TIFF_TAG_NAMES = {
     273: "strip_offset",
     277: "samples_per_pixel",
     279: "strip_byte_count",
+    284: "planar_configuration",
 }
+TIFF_BITS_PER_SAMPLE_TAG = 258
+TIFF_MAX_SAMPLES = 32           # largest BitsPerSample count the probe reads
+TIFF_VALUE_FIELD_SIZE = 4       # bytes in an entry's value field (entry + 8)
+TIFF_TYPE_SIZES = {3: 2, 4: 4}  # bytes per SHORT (3) and LONG (4) value
 TIFF_REQUIRED_TAGS = (256, 257, 258, 273, 279)
 TIFF_TYPE_FORMATS = {3: "H", 4: "I"}
+
+
+def _read_bits_per_sample(
+    data: bytes, order: str, entry: int, type_id: int, n: int
+) -> tuple[list[FieldRecord], str, str]:
+    """Read the BitsPerSample array. Returns (records, problem_kind, detail).
+
+    problem_kind is "" on success, "bounds" or "precondition" otherwise; records are
+    returned only on success or on the unequal-values precondition failure.
+    """
+    size = TIFF_TYPE_SIZES[type_id]
+    fmt = order + TIFF_TYPE_FORMATS[type_id]
+    if n < 1 or n > TIFF_MAX_SAMPLES:
+        return [], "precondition", (
+            f"bits_per_sample count {n} is outside 1..{TIFF_MAX_SAMPLES}; values not read"
+        )
+    start = entry + TIFF_ENTRY_VALUE_OFFSET
+    if n * size > TIFF_VALUE_FIELD_SIZE:
+        pointer = read(data, "bits_per_sample_offset", start, order + "I")
+        if pointer is None:
+            return [], "bounds", "bits_per_sample offset field runs past the end of the data"
+        start = pointer.value[0]
+    records = []
+    for i in range(n):
+        rec = read(data, "bits_per_sample", start + size * i, fmt)
+        if rec is None:
+            return [], "bounds", (
+                f"bits_per_sample value {i} of {n} at offset {start + size * i} "
+                "lies outside the data"
+            )
+        records.append(rec)
+    return records, "", ""
 
 
 def probe_tiff(data: bytes) -> ProbeOutcome | None:
@@ -340,6 +377,9 @@ def _probe_tiff(data: bytes) -> ProbeOutcome | None:
     records = [byte_order, magic, ifd]
     values: dict[int, int] = {}
     out_of_bounds = ""
+    bps_seen = False
+    bps_problems: list[str] = []
+    bps_unestablished = False
     ifd_offset = ifd.value[0]
     count_rec = read(data, "ifd_entry_count", ifd_offset, order + "H")
     if count_rec is None:
@@ -360,6 +400,30 @@ def _probe_tiff(data: bytes) -> ProbeOutcome | None:
             if tag is None or kind is None or count is None:
                 continue
             tag_id, type_id = tag.value[0], kind.value[0]
+            if tag_id == TIFF_BITS_PER_SAMPLE_TAG:
+                if bps_seen or type_id not in TIFF_TYPE_SIZES:
+                    continue
+                bps_seen = True
+                recs, kind_, detail = _read_bits_per_sample(
+                    data, order, entry, type_id, count.value[0]
+                )
+                if kind_ == "bounds":
+                    out_of_bounds = out_of_bounds or detail
+                elif kind_ == "precondition":
+                    bps_problems.append(detail)
+                    bps_unestablished = True
+                else:
+                    records.extend(recs)
+                    distinct = sorted({r.value[0] for r in recs})
+                    if len(distinct) == 1:
+                        values[tag_id] = distinct[0]
+                    else:
+                        bps_problems.append(
+                            "bits_per_sample values are not all equal: "
+                            + ", ".join(str(r.value[0]) for r in recs)
+                        )
+                        bps_unestablished = True
+                continue
             if tag_id not in TIFF_TAG_NAMES or count.value[0] != 1:
                 continue
             code = TIFF_TYPE_FORMATS.get(type_id)
@@ -373,6 +437,7 @@ def _probe_tiff(data: bytes) -> ProbeOutcome | None:
 
     compression = values.get(259, 1)
     samples = values.get(277, 1)
+    planar = values.get(284, 1)
     strip_offset = values.get(273, 0)
     seed = Hypothesis(
         width=values.get(256, 0),
@@ -392,11 +457,16 @@ def _probe_tiff(data: bytes) -> ProbeOutcome | None:
             RejectionEntry("field_out_of_bounds", "tiff", seed, detail=out_of_bounds)
         )
     problems = []
-    missing = [TIFF_TAG_NAMES[t] for t in TIFF_REQUIRED_TAGS if t not in values]
+    missing = [
+        TIFF_TAG_NAMES[t]
+        for t in TIFF_REQUIRED_TAGS
+        if t not in values and not (t == TIFF_BITS_PER_SAMPLE_TAG and bps_unestablished)
+    ]
     if missing:
         problems.append("missing tags: " + ", ".join(missing))
-    if samples != 1:
-        problems.append(f"samples_per_pixel {samples} is not 1")
+    problems.extend(bps_problems)
+    if planar != 1:
+        problems.append(f"planar_configuration {planar} is not 1")
     if problems:
         rejections.append(
             RejectionEntry("probe_precondition_failed", "tiff", seed, detail="; ".join(problems))
