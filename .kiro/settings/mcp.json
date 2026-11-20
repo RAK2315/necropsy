@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "necropsy": {
+      "command": "python",
+      "args": ["-m", "necropsy_mcp"],
+      "disabled": false
+    }
+  }
+}

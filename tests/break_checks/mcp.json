@@ -1,0 +1,23 @@
+[
+  {
+    "name": "wrapper truncates the input before the engine",
+    "file": "necropsy_mcp/core.py",
+    "old": "        result = Engine(deadline_seconds=DEADLINE_SECONDS).run(data)\n        engine_ms",
+    "new": "        data = data[:-1] if len(data) > 3 else data\n        result = Engine(deadline_seconds=DEADLINE_SECONDS).run(data)\n        engine_ms",
+    "test": "tests/test_mcp_server.py -k analyse_equals_the_engine"
+  },
+  {
+    "name": "wrapper reorders candidates",
+    "file": "necropsy_mcp/core.py",
+    "old": "        return to_payload(result, data, engine_ms), False",
+    "new": "        p = to_payload(result, data, engine_ms)\n        if \"candidates\" in p:\n            p[\"candidates\"] = p[\"candidates\"][::-1]\n        return p, False",
+    "test": "tests/test_mcp_server.py -k analyse_equals_the_engine"
+  },
+  {
+    "name": "emit_spec returns a stale spec",
+    "file": "necropsy_mcp/core.py",
+    "old": "        spec = _emit_spec(result, data)",
+    "new": "        spec = _emit_spec.__globals__.setdefault(\"_stale\", _emit_spec(result, data))",
+    "test": "tests/test_mcp_server.py -k emit_spec_equals_the_engine"
+  }
+]
