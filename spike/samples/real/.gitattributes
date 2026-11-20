@@ -1,0 +1,4 @@
+# Sample files are byte-exact copies of upstream files and are checked by SHA-256 in manifest.json.
+# Plain-text PNM files (P1, P2, P3) contain no NUL bytes, so without this git's core.autocrlf would
+# rewrite their line endings. Never convert anything in this folder.
+* -text
