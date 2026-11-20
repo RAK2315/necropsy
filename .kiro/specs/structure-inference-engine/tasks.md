@@ -717,6 +717,26 @@ Rules for every task:
     - Write the test first, from Requirement 1.15 and the design, and confirm it fails on the current code. Input: a crafted headerless file of 90 bytes: 64 zero bytes of data, then a 26-byte TGA 2.0 footer (`<I` extension_area_offset = 70, which lies inside the footer [64, 90); `<I` developer_area_offset = 0; then `TRUEVISION-XFILE.\x00`). Expected, derived from Requirement 1.15 and Requirement 4's header lengths (4 to 256 step 4, those below the file length): the result is FAILED; for each header length L in 4..64 (those with L <= F = 64, where the footer entry matches) exactly one RejectionEntry with reason `field_out_of_bounds`, source `generic`, hypothesis None, whose detail is `header_length <L>: extension_area_offset = 70 not in [<L>, 64)`; 16 such entries; no other rejection entries; the budget's checks count is 0 for those entries. Confirm first that no probe matches this file; if one does, report it instead of changing the input.
     - Fix `necropsy/engine/generic.py` (and a shared internal evaluation in `necropsy/engine/trailers.py`) as the design states.
     - _Requirements: 1.15_
+- [ ] 19. TIFF PhotometricInterpretation (Decision Record item 23)
+  - [x] 19.1 Read tag 262 in the TIFF probe
+    - Test first. Write tests from Requirements 2.8 and 7.18 and confirm they fail on the current code:
+      - for each of the seven real files in Requirement 7.18, the candidate has exactly one `photometric_interpretation` `FieldRecord` with the stated value, and its status, candidate key and data region equal the recorded baseline;
+      - `mystery_e` has no such field;
+      - a crafted `II` TIFF with tag 262 = 0 gives one field with value `(0,)`, and one without tag 262 gives none and no rejection;
+      - every `FieldRecord` round-trips through `struct.unpack_from`.
+    - Then implement in `necropsy/engine/probes.py`: add `262: "photometric_interpretation"` to `TIFF_TAG_NAMES`, read by the existing single-valued rule. Do not add it to `TIFF_REQUIRED_TAGS`, the seed or the hypothesis key.
+    - Before and after, run the engine over every file in `spike/samples/`, `spike/samples/external/` and `spike/samples/real/` and diff. The only permitted change is one extra field on TIFF candidates whose file has tag 262. Any other change stops the task.
+    - _Requirements: 2.8, 7.18_
+
+  - [ ] 19.2 Emit the optional entry and read it in the reference reader
+    - Test first. Write tests from Requirement 9.26 and confirm they fail on the current code:
+      - the emitted layout and `requirements.md` for `goimage_bw-uncompressed.tiff` contain the `photometric_interpretation` entry (after `planar_configuration`) and the EARS line;
+      - the emitted spec for `mystery_e` is byte-identical to the one emitted before this task;
+      - the reference reader reads the field from the emitted `requirements.md` alone, returns no field and does not raise when the tag is absent, and its source still imports nothing from `necropsy`.
+    - Then implement in `necropsy/emit/layout.py`, `necropsy/emit/render.py` and `tests/support/reference_reader.py`. The entry is appended only when the candidate read tag 262. The value is reported only.
+    - Run the full suite, the adversary counts diff and the real-corpus table. Only the added field and line may change.
+    - _Requirements: 9.26_
+
 ## Notes
 
 - The expected corpus values and candidate counts (18, 8 and 8) come from a reference model of these exact rules, recorded in design.md. A mismatch means the implementation and the spec disagree; report it, do not tune either.
@@ -763,7 +783,9 @@ Rules for every task:
     { "id": 31, "tasks": ["18.1"] },
     { "id": 32, "tasks": ["18.2", "18.3", "18.4"] },
     { "id": 33, "tasks": ["18.5"] },
-    { "id": 34, "tasks": ["12"] }
+    { "id": 34, "tasks": ["19.1"] },
+    { "id": 35, "tasks": ["19.2"] },
+    { "id": 36, "tasks": ["12"] }
   ]
 }
 ```

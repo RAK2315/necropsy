@@ -206,6 +206,11 @@ def _candidate_layout(cand, slug: str, rejections=()) -> dict:
             "value_fmt_by_type": {"3": "@H", "4": "@I"}, "require_count": 1,
             "entries": [_tiff_entry(n, t, d) for n, t, d in _TIFF_ENTRIES],
         }
+        # Requirement 9.26: appended only when the candidate read tag 262.
+        if any(f.name == "photometric_interpretation" for f in h.fields):
+            out["tag_table"]["entries"].append(
+                {"name": "photometric_interpretation", "tag": 262, "default": None,
+                 "expect": None, "array": None, "optional": True})
         out["image"] = {"width": "width", "height": "height",
                         "bit_depth": {"mul": ["bits_per_sample", "samples_per_pixel"]},
                         "row_alignment": h.row_alignment}

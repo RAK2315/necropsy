@@ -324,6 +324,7 @@ TIFF_TAG_NAMES = {
     257: "height",
     258: "bits_per_sample",
     259: "compression",
+    262: "photometric_interpretation",   # optional; reported only, never in the seed
     273: "strip_offset",
     277: "samples_per_pixel",
     279: "strip_byte_count",

@@ -481,6 +481,87 @@ def test_tiff_real_files_seed_without_rejection(name, w, h, depth, end):
         assert struct.unpack_from(f.fmt, data, f.offset) == f.value
 
 
+# ------------------------------- TIFF PhotometricInterpretation (Req 2.8, 7.18)
+# Requirement 7.18: file -> declared tag 262 value. Baseline (status RESOLVED, candidate
+# key, data region) is the recorded spike/real_corpus_results.json entry for each file.
+# key = (width, height, bit_depth, header_size, row_alignment, encoding, data_end).
+PHOTOMETRIC_REAL = [
+    ("goimage_bw-uncompressed.tiff", 0, (153, 55, 1, 8, 1, "none", 1108), (8, 1108)),
+    ("libtiff_miniswhite-1c-1b.tiff", 0, (157, 151, 1, 8, 1, "none", 3028), (8, 3028)),
+    ("libtiff_test_ifd_loop_to_self.tif", 1, (20, 20, 8, 8, 1, "none", 408), (8, 408)),
+    ("goimage_no_compress.tiff", 2, (16, 15, 32, 8, 1, "none", 968), (8, 968)),
+    ("goimage_no_rps.tiff", 2, (16, 15, 32, 8, 1, "none", 968), (8, 968)),
+    ("goimage_video-001-uncompressed.tiff", 2, (150, 103, 24, 8, 1, "none", 46358), (8, 46358)),
+    ("sdlimage_sample.tif", 2, (23, 42, 24, 8, 1, "none", 2906), (8, 2906)),
+]
+
+
+@pytest.mark.parametrize("name,value,key,region", PHOTOMETRIC_REAL)
+def test_tiff_real_files_photometric_interpretation(name, value, key, region):
+    from pathlib import Path
+    from necropsy.engine import Engine
+    from necropsy.engine.types import hypothesis_key
+    path = Path(__file__).resolve().parent.parent / "spike" / "samples" / "real" / name
+    data = path.read_bytes()
+    r = Engine().run(data)
+    assert r.status == "RESOLVED"
+    cand = r.candidate
+    assert hypothesis_key(cand.hypothesis) == key
+    assert (cand.data_start, cand.data_end) == region
+    fields = field(cand.hypothesis, "photometric_interpretation")
+    assert len(fields) == 1
+    assert fields[0].value == (value,)
+    for f in cand.hypothesis.fields:
+        assert struct.unpack_from(f.fmt, data, f.offset) == f.value
+
+
+def test_tiff_mystery_e_has_no_photometric_interpretation():
+    # Req 7.18: mystery_e declares no tag 262
+    assert field(probe_tiff(corpus_bytes("mystery_e")).seed, "photometric_interpretation") == []
+
+
+def _photometric_tiff(extra):
+    return tiff_raw(rgb_entries((258, 3, 1, short(8)), spp=1) + extra)
+
+
+def test_tiff_crafted_photometric_zero_is_one_field():
+    # Req 2.8: tag 262, SHORT, count 1, value at entry + 8, little-endian
+    out = probe_tiff(_photometric_tiff([(262, 3, 1, short(0))]))
+    fs = field(out.seed, "photometric_interpretation")
+    assert len(fs) == 1
+    assert fs[0].value == (0,)
+    # entry 6 starts at 10 + 12 * 6 = 82; value field at 82 + 8
+    assert (fs[0].offset, fs[0].fmt) == (90, "<H")
+    assert out.rejections == ()
+
+
+def test_tiff_crafted_without_photometric_has_no_field_and_no_rejection():
+    out = probe_tiff(_photometric_tiff([]))
+    assert field(out.seed, "photometric_interpretation") == []
+    assert out.rejections == ()
+
+
+def test_tiff_photometric_not_readable_gives_no_field_and_no_rejection():
+    # Req 2.8: count 2 is not readable under the single-value rule
+    out = probe_tiff(_photometric_tiff([(262, 3, 2, struct.pack("<HH", 0, 0))]))
+    assert field(out.seed, "photometric_interpretation") == []
+    assert out.rejections == ()
+
+
+def test_tiff_photometric_does_not_change_seed_values():
+    # Req 2.8: the value never enters the seed or the hypothesis key
+    from necropsy.engine.types import hypothesis_key
+    with_262 = probe_tiff(_photometric_tiff([(262, 3, 1, short(0))])).seed
+    without = probe_tiff(_photometric_tiff([])).seed
+    assert hypothesis_key(with_262) == hypothesis_key(without)
+
+
+def test_tiff_photometric_records_round_trip():
+    data = _photometric_tiff([(262, 3, 1, short(1))])
+    for f in probe_tiff(data).seed.fields:
+        assert struct.unpack_from(f.fmt, data, f.offset) == f.value
+
+
 # ------------------------------------------------------- order, round trips
 def test_probes_order_is_pcx_tga_pbm_tiff():
     # Req 2.1

@@ -208,6 +208,8 @@ def _parse(layout, data):
         for ent in tt.get("entries") or []:
             eo = tags.get(ent["tag"])
             if eo is None:
+                if ent.get("optional") is True:
+                    continue   # Req 9.26: an absent optional tag adds no value and no field
                 if ent.get("default") is None:
                     raise _Err("tag missing: " + str(ent["name"]))
                 env[ent["name"]] = ent["default"]

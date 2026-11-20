@@ -410,6 +410,7 @@ In the TIFF row, `o` is `<` for `II` and `>` for `MM`.
 - For each entry, the probe reads tag (`oH`, +0), type (`oH`, +2) and count (`oI`, +4).
 - A tag in `{256, 257, 259, 273, 277, 279, 284}` with type 3 or 4 and count 1 becomes a `FieldRecord` at entry + 8. SHORT values are left-justified, so `oH` at +8 is the value.
 - Tag 258 is read as an array of `n` values, `1 ≤ n ≤ TIFF_MAX_SAMPLES = 32`. When `n × size(type) ≤ 4` the values sit consecutively from entry + 8; otherwise `oI` at entry + 8 is the offset of `n` consecutive values. Every value becomes a `FieldRecord` named `bits_per_sample`. All must be equal; otherwise `probe_precondition_failed` and bits_per_sample = 0. The equal values are equivalent reads, so Property 5 holds.
+- Tag 262 `photometric_interpretation` is read by the same single-valued rule (type 3 or 4, count 1, value at entry + 8). `TIFF_TAG_NAMES` gains `262: "photometric_interpretation"`. It is optional with no default: when absent or unreadable the probe records no field and no rejection. Its `FieldRecord` is reported only; it never enters the seed, the hypothesis key, closure or `TIFF_REQUIRED_TAGS` (Decision Record item 23).
 - Defaults: compression 1, samples_per_pixel 1, planar_configuration 1. planar_configuration ≠ 1 records `probe_precondition_failed`. samples_per_pixel is not a precondition.
 
 ### Revision strategies (`engine/strategies.py`)
@@ -617,7 +618,7 @@ The emitted `requirements.md` contains exactly one fenced block whose info strin
       "count_offset": 4, "count_fmt_entry": str, "value_offset": 8,
       "value_fmt_by_type": {"3": str, "4": str}, "require_count": 1,
       "entries": [ {"name": str, "tag": int, "default": int | null,
-                    "expect": int | null,
+                    "expect": int | null, "optional": true,   // "optional" only on photometric_interpretation
                     "array": null | {"max_count": int, "value_field_size": 4, "pointer_fmt": str,
                                      "type_sizes": {"3": 2, "4": 4}, "require": "all_equal"}} ]
   },
@@ -648,7 +649,7 @@ Kind and content by origin:
 |---|---|---|
 | PCX | `format` | Width and height are `{"add": [{"sub": ["xmax", "xmin"]}, 1]}` when `inclusive_bounds` is in the path, otherwise `"xmax"` and `"ymax"`. Encoding is `{"field": "encoding", "values": {"0": "none", "1": "rle_pcx"}}`, or the literal `"rle_pcx"` when `rle_pcx` is in the path. Alignment is taken from the result. Trailers list `pcx_palette_256`. |
 | TGA | `format` | Start is `{"add": [18, "id_length", {"mul": ["color_map_type", "color_map_length", {"ceil_div": ["color_map_entry_size", 8]}]}]}`. Encoding is mapped from `image_type`. Trailers list `tga2_footer` with its `declared_offsets` and `area`. |
-| TIFF | `format` | `byte_order` is set, with the tag table as specified in Requirement 2.8. The `bits_per_sample` entry has an `array` rule (`max_count` 32, `pointer_fmt` `@I`, `require` `all_equal`); `require_count` 1 applies to every entry without one. `planar_configuration` has `default` 1 and `expect` 1. Start is `"strip_offset"`; end is `{"add": ["strip_offset", "strip_byte_count"]}`. Encoding is `{"field": "compression", "values": {"1": "none"}, "otherwise": "unsupported"}`. |
+| TIFF | `format` | `byte_order` is set, with the tag table as specified in Requirement 2.8. The `bits_per_sample` entry has an `array` rule (`max_count` 32, `pointer_fmt` `@I`, `require` `all_equal`); `require_count` 1 applies to every entry without one. `planar_configuration` has `default` 1 and `expect` 1. WHERE the candidate read tag 262, `layout.py` appends `{"name": "photometric_interpretation", "tag": 262, "default": null, "expect": null, "array": null, "optional": true}` after `planar_configuration`; otherwise the tag table is unchanged. Start is `"strip_offset"`; end is `{"add": ["strip_offset", "strip_byte_count"]}`. Encoding is `{"field": "compression", "values": {"1": "none"}, "otherwise": "unsupported"}`. |
 | PBM | `file` | The token offsets are this file's. The prose states the text-header rules. |
 | Any probe that recorded `probe_precondition_failed` or `field_out_of_bounds` | `file` | This file's literal values for image, data region and encoding; the fields it read are listed with `expect: null`. The prose states that the file broke the format's rules and the document describes this one file only (Requirement 9.20). |
 | Generic | `file` | The first equivalent read of each field is used as the field; all reads appear in `equivalent_reads`. The prose states that this is one file's layout, not a format. |
@@ -659,7 +660,7 @@ The emitted file uses the Kiro headings `# Requirements Document`, `## Introduct
 
 1. **Signature and byte order.** One criterion per `expect` field, and one for the byte-order rule.
 2. **Fields.** One criterion per field and tag entry. Example: `THE parser SHALL read \`width\` at offset 0x000C using struct format \`<H\` (little-endian, 2 bytes).` For `@` formats, the endianness is described as "declared by bytes 0x00–0x01 (II little-endian, MM big-endian)".
-3. **Data region and encoding.** The start and end rule, trailers and encoding. WHERE a layout trailer has `declared_offsets` (Requirement 9.24), `emit/render.py` also writes one criterion per declared offset (name, position from the trailer start in hex, struct format, size) and these four EARS criteria:
+3. **Data region and encoding.** WHERE the layout's tag table has the optional `photometric_interpretation` entry, one EARS line states that WHERE tag 262 is present the parser SHALL read it as `photometric_interpretation` and that its absence adds no field. The start and end rule, trailers and encoding. WHERE a layout trailer has `declared_offsets` (Requirement 9.24), `emit/render.py` also writes one criterion per declared offset (name, position from the trailer start in hex, struct format, size) and these four EARS criteria:
     - `WHERE a trailer declares an offset, THE parser SHALL treat an offset of 0 as the area being absent.`
     - `WHERE a trailer declares an offset, THE parser SHALL treat a nonzero offset as valid if and only if it lies in [header_size, trailer_start).`
     - `WHERE a trailer declares an offset, THE parser SHALL end the data region at the minimum of the trailer start and every valid nonzero declared offset.`
@@ -750,6 +751,7 @@ The reference reader is a generic interpreter of `necropsy-layout/1` and contain
 - **Inputs and imports.** It reads the single `necropsy-layout` block from markdown text. It imports only `json`, `re` and `struct`. A test asserts that its source contains no `necropsy` import.
 - **Steps.** It resolves the byte order, then reads `fields` in order (offsets may be expressions over earlier fields), checks each `expect`, and walks `tag_table`. It then evaluates `image`, resolves `data.start` and `data.end` (falling back to `trailers`, then EOF), and resolves the encoding.
 - **Trailer declarations** (Requirement 9.25). For a matching trailer that has `declared_offsets`, it reads each at `trailer_start + at` with the stated format, using its bounds-checked reader. It treats 0 as absent, and rejects a nonzero value outside `[data.start, trailer_start)`. When the `area` base is nonzero, it reads the size field, rejects the file if the size is below `min_size` or the area runs past the trailer start, and only then reads the inner offsets. `data_end` is the minimum of the trailer start and every valid nonzero offset. A rejection returns `{"ok": False, "error": ...}` and is never swallowed by the per-trailer signature check. The code uses only the layout's names, positions and formats, so it still imports only `json`, `re` and `struct`.
+- **Optional entries** (Requirement 9.26). A tag table entry with `optional: true` whose tag is absent adds no value and no field, and never raises. When present it is read like any other entry. No rule acts on the value.
 - **Decoding.** It decodes `none` only by slicing. Any other encoding returns `{"ok": False, "error": "encoding not supported by reference reader"}`.
 - **Result.** It checks closure and returns the parser-contract dict.
 - **`make_parser_module(markdown)`** returns Python source for a `parser_<slug>` module. The module embeds the markdown text and exposes `parse` and `parse_candidates` by calling the reader. The acceptance test writes it to a temporary directory and runs `python -m pytest` on that directory, with no file argument, so the emitted `test_<module>.py` must be collected by its name.

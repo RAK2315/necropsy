@@ -178,6 +178,14 @@ def _fields(lay: dict) -> list:
             "listed, THEN THE parser SHALL return an error." % tt.get("require_count")
         )
         for ent in tt.get("entries") or []:
+            if ent.get("optional"):
+                # Requirement 9.26: reported only; absence adds no field.
+                out.append(
+                    "WHERE tag %d is present, THE parser SHALL read it as `%s` using the value "
+                    "offset and format above; its absence adds no field and is not an error."
+                    % (ent["tag"], ent["name"])
+                )
+                continue
             default = ent.get("default")
             rule = ("WHERE the tag is absent, the value SHALL be %d" % default
                     if default is not None else "IF the tag is absent, THEN THE parser SHALL return an error")
