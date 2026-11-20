@@ -787,6 +787,21 @@ Rules for every task:
     - Expected: all three are reported `caught`, with the restore hashes identical. Report any `NOT CAUGHT`.
     - _Requirements: 9.32_
 
+- [x] 22. Revision overrides emit a file layout (Decision Record item 27)
+  - [x] 22.1 Write the tests first
+    - Write these tests from Requirements 9.33 and 9.34 and confirm the first fails on the current code:
+      - the layout emitted for `mystery_i` has kind `file`, this file's literal values, the item 16 note, and a statement that the encoding declaration was overridden; its emitted suite passes plain `pytest` with the reference reader as the parser module;
+      - the layouts emitted for `mystery_b`, `external_a`, `pillow_odd_stride.pcx` and `mystery_h` stay kind `format`;
+      - a crafted result whose revision path contains only `inclusive_bounds` and `row_padding_variants` stays `format`, and one whose path contains `rle_pcx` is `file`;
+      - before any change, record the emitted spec text of every file in `spike/samples/`, `spike/samples/external/` and `spike/samples/real/` as a baseline.
+    - _Requirements: 9.33, 9.34_
+
+  - [x] 22.2 Implement the classification and verify the diff
+    - In `necropsy/emit/layout.py`, add `OVERRIDING_STRATEGIES = frozenset({"rle_pcx"})` and classify in `_candidate_layout` as design.md "Overriding strategies" states. Update `necropsy/emit/render.py` only if the note wording needs it. Rebuild the Power bundle.
+    - Diff every emitted spec against the baseline of 22.1. The only permitted change is the emitted spec of `mystery_i`. Any other change stops the task and is reported.
+    - Run the emission tests, the acceptance tests, `tools/break_check.py` with the do-nothing-parser entry (Requirement 9.32) and the full suite.
+    - _Requirements: 9.33, 9.34, 9.31, 9.32_
+
 ## Notes
 
 - The expected corpus values and candidate counts (18, 8 and 8) come from a reference model of these exact rules, recorded in design.md. A mismatch means the implementation and the spec disagree; report it, do not tune either.
@@ -840,7 +855,9 @@ Rules for every task:
     { "id": 38, "tasks": ["21.1"] },
     { "id": 39, "tasks": ["21.2"] },
     { "id": 40, "tasks": ["21.3"] },
-    { "id": 41, "tasks": ["12"] }
+    { "id": 41, "tasks": ["22.1"] },
+    { "id": 42, "tasks": ["22.2"] },
+    { "id": 43, "tasks": ["12"] }
   ]
 }
 ```

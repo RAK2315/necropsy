@@ -137,7 +137,17 @@ def _broke_rules(origin: str, rejections) -> bool:
         r.source == origin and r.reason in _BROKE_RULES for r in rejections)
 
 
-def _rule_breaking_layout(cand, slug: str) -> dict:
+OVERRIDING_STRATEGIES = frozenset({"rle_pcx"})
+_OVERRIDE_NOTE = ("This layout describes this one file only, not the format, because revision "
+                  "overrode the file's own encoding declaration: the declaration was overridden "
+                  "because only the revised reading closes.")
+
+
+def _overrides(path) -> bool:
+    return bool(OVERRIDING_STRATEGIES.intersection(path))
+
+
+def _rule_breaking_layout(cand, slug: str, note: str = _BROKE_RULES_NOTE) -> dict:
     # Requirement 9.20: this file's literal values; fields read with expect null.
     h = cand.hypothesis
     out = _base("file", slug)
@@ -150,7 +160,7 @@ def _rule_breaking_layout(cand, slug: str) -> dict:
                     "row_alignment": h.row_alignment}
     out["data"] = {"start": cand.data_start, "end": cand.data_end, "encoding": h.encoding,
                    "trailers": _trailers(h.probe_name)}
-    out["note"] = _BROKE_RULES_NOTE
+    out["note"] = note
     out["observed"] = _observed(cand)
     return out
 
@@ -161,6 +171,8 @@ def _candidate_layout(cand, slug: str, rejections=(), data_len=None) -> dict:
     path = h.revision_path
     if _broke_rules(origin, rejections):
         return _rule_breaking_layout(cand, slug)
+    if _overrides(path):
+        return _rule_breaking_layout(cand, slug, _OVERRIDE_NOTE)
     if origin == "pcx":
         out = _base("format", slug)
         out["fields"] = _fixed_fields(_PCX_FIELDS)

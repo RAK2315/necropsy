@@ -1540,6 +1540,37 @@
         "chatSessionId": "sess_adc10a50-7555-4556-944a-4698b367e060",
         "timestamp": 1795208053780
       }
+    ],
+    "22.1 Write the tests first": [
+      {
+        "executionId": "f14aa2a1-ec3e-4dbe-a92d-d38c2c94bf53",
+        "chatSessionId": "sess_adc10a50-7555-4556-944a-4698b367e060",
+        "timestamp": 1795208179873
+      },
+      {
+        "executionId": "f14aa2a1-ec3e-4dbe-a92d-d38c2c94bf53",
+        "chatSessionId": "sess_adc10a50-7555-4556-944a-4698b367e060",
+        "timestamp": 1795208279927
+      }
+    ],
+    "22.2 Implement the classification and verify the diff": [
+      {
+        "executionId": "f14aa2a1-ec3e-4dbe-a92d-d38c2c94bf53",
+        "chatSessionId": "sess_adc10a50-7555-4556-944a-4698b367e060",
+        "timestamp": 1795208294439
+      },
+      {
+        "executionId": "f14aa2a1-ec3e-4dbe-a92d-d38c2c94bf53",
+        "chatSessionId": "sess_adc10a50-7555-4556-944a-4698b367e060",
+        "timestamp": 1795209200188
+      }
+    ],
+    "22. Revision overrides emit a file layout (Decision Record item 27)": [
+      {
+        "executionId": "f14aa2a1-ec3e-4dbe-a92d-d38c2c94bf53",
+        "chatSessionId": "sess_adc10a50-7555-4556-944a-4698b367e060",
+        "timestamp": 1795209200241
+      }
     ]
   }
 }

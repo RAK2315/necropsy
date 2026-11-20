@@ -357,7 +357,7 @@ def _data(lay: dict, cand, origin: str) -> list:
         out.append("THE parser SHALL NOT strip any trailer from the data region.")
     out.append("THE parser SHALL decode the data region using encoding %s." % _encoding_text(d.get("encoding")))
     out.extend(_encoding_definitions(d.get("encoding")))
-    if "rle_pcx" in path:
+    if "rle_pcx" in path and lay.get("kind") != "file":
         out.append(
             "WHEN the file's own encoding declaration says the data is uncompressed, THE parser "
             "SHALL ignore it: the encoding declaration was overridden by revision, which found "
