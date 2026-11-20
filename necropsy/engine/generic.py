@@ -11,7 +11,7 @@ from dataclasses import dataclass
 
 from .budget import Budget
 from .closure import check_closure, rle_pcx_output_length, row_stride
-from .trailers import trailer_data_end
+from .trailers import trailer_data_end_detail
 from .types import FieldRecord, Hypothesis, hypothesis_key
 
 HEADER_LENGTHS = tuple(range(4, 257, 4))
@@ -61,8 +61,9 @@ def _search(data, budget, on_reject, found) -> GenericOutcome:
         for o in range(L):
             if data[o] in VALID_BIT_DEPTHS:
                 depths.setdefault(data[o], []).append(o)
-        end, trailer, t_err = trailer_data_end(data, L, "generic")
+        end, trailer, t_err, t_detail = trailer_data_end_detail(data, L, "generic")
         if t_err:
+            on_reject(None, None, reason=t_err, detail=t_detail)
             continue
         sizes = [("none", end - L)]
         if trailer == "pcx_palette_256":

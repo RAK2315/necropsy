@@ -99,8 +99,12 @@ class Engine:
     def _generic(self, data: bytes, budget: Budget,
                  rejections: list[RejectionEntry]) -> EngineResult:
         """Generic Search; runs only when no probe matched."""
-        def on_reject(h: Hypothesis, v: ClosureVerdict) -> None:
-            rejections.append(RejectionEntry(v.reason, "generic", h, v.discrepancy))
+        def on_reject(h: Hypothesis | None, v: ClosureVerdict | None,
+                      reason: str = "", detail: str = "") -> None:
+            if v is None:  # trailer rejection: no hypothesis, no closure check
+                rejections.append(RejectionEntry(reason, "generic", None, detail=detail))
+            else:
+                rejections.append(RejectionEntry(v.reason, "generic", h, v.discrepancy))
 
         outcome = generic_search(data, budget, on_reject)
         found = list(outcome.found)

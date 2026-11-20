@@ -310,7 +310,7 @@ def trailer_data_end(data, header_size, origin, registry=TRAILER_REGISTRY):
 
 The declared values are file-supplied, so every read is bounds-checked against `len(data)` before it happens, and no value sizes an allocation. All formats are little-endian (`<I`, `<H`). The inner offsets are read only after the extension area is validated. The declared offsets are not `FieldRecord`s and never enter the Requirement 12 check (Requirement 1.15).
 
-**Generic Search and this function.** For each header length `L`, Generic Search calls `trailer_data_end(data, L, "generic")`, and derives `S = data_end − L` from the returned `data_end`. When the returned error is set, Generic Search enumerates no sizes for that `L`: it runs no closure check, records no rejection and moves to the next `L`. A hypothesis of that header length that reached the closure gate by another route would be rejected there with `field_out_of_bounds`, because closure calls the same function with `header_size = L`. For a file whose footer's `extension_area_offset` and `developer_area_offset` are both 0, or a file with no `tga2_footer`, the returned `data_end` equals the one `match_trailer` returned, so the baseline corpus results are unchanged.
+**Generic Search and this function.** For each header length `L`, Generic Search calls `trailer_data_end(data, L, "generic")`, and derives `S = data_end − L` from the returned `data_end`. When the returned error is set, Generic Search enumerates no sizes for that `L`: it runs no closure check, records exactly one `RejectionEntry` with reason `field_out_of_bounds`, source `"generic"`, hypothesis `None`, and does not charge the budget (no closure check runs), then moves to the next `L`. The detail is `"header_length <L>: <offset_name> = <value> not in [<L>, <F>)"` for an out-of-range offset, and `"header_length <L>: extension area at <E> has size <size>; requires size >= 495 and <E> + size <= <F>"` for an invalid extension area (`<size>` is `unreadable` when the size field lies outside the file). The entry is recorded at the point in the `L` loop where the error occurs, so it sits in the rejection list in header-length order, interleaved with that loop's closure rejections. The public contract of `trailer_data_end`, `(data_end, trailer_name, error)`, is unchanged, and closure is unchanged; the detail comes from one shared internal evaluation in `trailers.py` that `trailer_data_end` and Generic Search both use, so the rule has one implementation. The 93-file baseline is expected unchanged, because no corpus file reaches this path. A hypothesis of that header length that reached the closure gate by another route would be rejected there with `field_out_of_bounds`, because closure calls the same function with `header_size = L`. For a file whose footer's `extension_area_offset` and `developer_area_offset` are both 0, or a file with no `tga2_footer`, the returned `data_end` equals the one `match_trailer` returned, so the baseline corpus results are unchanged.
 
 ### Closure (`engine/closure.py`)
 
@@ -501,7 +501,9 @@ def generic_search(data, budget, on_reject):
         for o in range(L):
             if data[o] in VALID_BIT_DEPTHS: depths.setdefault(data[o], []).append(o)
         end, trailer, err = trailer_data_end(data, L, "generic")
-        if err: continue                                  # invalid declarations: no sizes for this L; nothing recorded
+        if err:                                           # invalid declarations: no sizes for this L, no closure check, no charge
+            on_reject(None, RejectionEntry("field_out_of_bounds", "generic", None, detail=err_detail))
+            continue
         sizes = [("none", end - L)]
         if trailer == "pcx_palette_256":
             n = rle_pcx_output_length(data, L, end)

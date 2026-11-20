@@ -665,7 +665,7 @@ Rules for every task:
     - In `necropsy/engine/trailers.py`, add `DeclaredArea(base, size_at, size_fmt, min_size, offsets)` and the `TrailerEntry` fields `declared_offsets` and `declared_area` (both defaulted, so `pcx_palette_256` is unchanged). Give `tga2_footer` the values in design.md "Trailer Registry": `extension_area_offset` at 0 and `developer_area_offset` at 4 (`<I`); area base `extension_area_offset`, size at 0 as `<H`, `min_size` 495, inner offsets `colour_correction_offset` at 482, `postage_stamp_offset` at 486, `scan_line_offset` at 490 (`<I`).
     - Add `trailer_data_end(data, header_size, origin, registry=TRAILER_REGISTRY) -> (data_end, trailer_name, error)` exactly as in design.md. Keep `match_trailer` unchanged; `trailer_data_end` calls it. Every read is bounds-checked, no file-supplied value sizes an allocation, and an invalid offset or extension area returns `error = "field_out_of_bounds"` with no inner offset read.
     - `necropsy/engine/closure.py`: when the hypothesis declares no `data_end`, call `trailer_data_end` instead of `match_trailer`, and reject with the returned error. The declared offsets are not `FieldRecord`s and do not enter the Requirement 12 check.
-    - `necropsy/engine/generic.py`: call `trailer_data_end(data, L, "generic")` per header length. On an error, enumerate no sizes for that `L`, run no closure check, record no rejection, and continue to the next `L`. Generic Search's `rle_pcx` rule still depends on the trailer name being `pcx_palette_256`.
+    - `necropsy/engine/generic.py`: call `trailer_data_end(data, L, "generic")` per header length. On an error, enumerate no sizes for that `L`, run no closure check, record no rejection, and continue to the next `L`. Generic Search's `rle_pcx` rule still depends on the trailer name being `pcx_palette_256`. (superseded by 18.5)
     - Tests in `tests/test_closure.py`, with inputs built in code from the byte layout in Requirement 1.16 (type-3 TGA, 8×8, 8 bpp, `id_length = 0`, `H = 18`, 64 pixel bytes at `[18, 82)`, 26-byte footer, extension area of 495 bytes). Expected values are the ones the requirement states, never taken from running the code. One test per branch:
       - both offsets 0, length 108: RESOLVED, region `[18, 82)`;
       - `developer_area_offset = 82`, 10 developer bytes, length 118: RESOLVED, `[18, 82)`;
@@ -713,6 +713,10 @@ Rules for every task:
       - a test asserts the reader's source still imports nothing from `necropsy`.
     - _Requirements: 9.23, 9.24, 9.25, 9.16, 1.16_
 
+  - [-] 18.5 Generic Search records its footer rejections
+    - Write the test first, from Requirement 1.15 and the design, and confirm it fails on the current code. Input: a crafted headerless file of 90 bytes: 64 zero bytes of data, then a 26-byte TGA 2.0 footer (`<I` extension_area_offset = 70, which lies inside the footer [64, 90); `<I` developer_area_offset = 0; then `TRUEVISION-XFILE.\x00`). Expected, derived from Requirement 1.15 and Requirement 4's header lengths (4 to 256 step 4, those below the file length): the result is FAILED; for each header length L in 4..64 (those with L <= F = 64, where the footer entry matches) exactly one RejectionEntry with reason `field_out_of_bounds`, source `generic`, hypothesis None, whose detail is `header_length <L>: extension_area_offset = 70 not in [<L>, 64)`; 16 such entries; no other rejection entries; the budget's checks count is 0 for those entries. Confirm first that no probe matches this file; if one does, report it instead of changing the input.
+    - Fix `necropsy/engine/generic.py` (and a shared internal evaluation in `necropsy/engine/trailers.py`) as the design states.
+    - _Requirements: 1.15_
 ## Notes
 
 - The expected corpus values and candidate counts (18, 8 and 8) come from a reference model of these exact rules, recorded in design.md. A mismatch means the implementation and the spec disagree; report it, do not tune either.
@@ -758,7 +762,8 @@ Rules for every task:
     { "id": 30, "tasks": ["17.2"] },
     { "id": 31, "tasks": ["18.1"] },
     { "id": 32, "tasks": ["18.2", "18.3", "18.4"] },
-    { "id": 33, "tasks": ["12"] }
+    { "id": 33, "tasks": ["18.5"] },
+    { "id": 34, "tasks": ["12"] }
   ]
 }
 ```

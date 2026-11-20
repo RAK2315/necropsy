@@ -619,3 +619,32 @@ def test_trailer_data_end_never_raises_on_junk_req_1_15():
     from necropsy.engine.trailers import trailer_data_end
     assert trailer_data_end(b"", 0, "tga") == (0, None, None)
     assert trailer_data_end(_tga2(), 18, "pcx") == (108, None, None)
+
+
+# ------------------------------------- Req 1.15 / task 18.5: Generic Search records footer rejections
+# Headerless 90-byte file: 64 zero data bytes [0, 64), then a 26-byte TGA 2.0 footer at F = 64:
+# extension_area_offset <I @64 = 70 (inside the footer [64, 90)), developer_area_offset <I @68 = 0,
+# "TRUEVISION-XFILE.\0" @72. Header lengths are 4..256 step 4 below the file length; those with
+# L <= 64 (4, 8, ..., 64: 16 values) match the footer entry and fail on the offset.
+
+def test_generic_records_footer_rejections_req_1_15():
+    data = bytes(64) + _struct.pack("<II", 70, 0) + _SIG
+    assert len(data) == 90
+    from necropsy.engine.probes import PROBES
+    for _name, probe in PROBES:  # no probe may match this file
+        o = probe(data)
+        assert o is None or (o.seed is None and o.rejections == ())
+    r = Engine().run(data)
+    assert r.status == "FAILED"
+    expected = [
+        f"header_length {L}: extension_area_offset = 70 not in [{L}, 64)"
+        for L in range(4, 65, 4)
+    ]
+    assert len(expected) == 16
+    assert len(r.rejections) == 16
+    for e, detail in zip(r.rejections, expected):
+        assert e.reason == "field_out_of_bounds"
+        assert e.source == "generic"
+        assert e.hypothesis is None
+        assert e.detail == detail
+    assert r.total_checks == 0
