@@ -660,6 +660,59 @@ Rules for every task:
     - Gates before committing: the 93-file engine baseline (only ossfuzz's rejection list may change), the 81-file table (only the ossfuzz note and the `libtiff_test_ifd_loop_to_self.tif` scope cell and note may change), adversary counts byte-identical, perturbation suite, full suite.
     - _Requirements: 7.15_
 
+- [ ] 18. TGA 2.0 footer declared offsets (Decision Record item 22)
+  - [ ] 18.1 Implement declared offsets in the Trailer Registry and use them in closure and Generic Search
+    - In `necropsy/engine/trailers.py`, add `DeclaredArea(base, size_at, size_fmt, min_size, offsets)` and the `TrailerEntry` fields `declared_offsets` and `declared_area` (both defaulted, so `pcx_palette_256` is unchanged). Give `tga2_footer` the values in design.md "Trailer Registry": `extension_area_offset` at 0 and `developer_area_offset` at 4 (`<I`); area base `extension_area_offset`, size at 0 as `<H`, `min_size` 495, inner offsets `colour_correction_offset` at 482, `postage_stamp_offset` at 486, `scan_line_offset` at 490 (`<I`).
+    - Add `trailer_data_end(data, header_size, origin, registry=TRAILER_REGISTRY) -> (data_end, trailer_name, error)` exactly as in design.md. Keep `match_trailer` unchanged; `trailer_data_end` calls it. Every read is bounds-checked, no file-supplied value sizes an allocation, and an invalid offset or extension area returns `error = "field_out_of_bounds"` with no inner offset read.
+    - `necropsy/engine/closure.py`: when the hypothesis declares no `data_end`, call `trailer_data_end` instead of `match_trailer`, and reject with the returned error. The declared offsets are not `FieldRecord`s and do not enter the Requirement 12 check.
+    - `necropsy/engine/generic.py`: call `trailer_data_end(data, L, "generic")` per header length. On an error, enumerate no sizes for that `L`, run no closure check, record no rejection, and continue to the next `L`. Generic Search's `rle_pcx` rule still depends on the trailer name being `pcx_palette_256`.
+    - Tests in `tests/test_closure.py`, with inputs built in code from the byte layout in Requirement 1.16 (type-3 TGA, 8×8, 8 bpp, `id_length = 0`, `H = 18`, 64 pixel bytes at `[18, 82)`, 26-byte footer, extension area of 495 bytes). Expected values are the ones the requirement states, never taken from running the code. One test per branch:
+      - both offsets 0, length 108: RESOLVED, region `[18, 82)`;
+      - `developer_area_offset = 82`, 10 developer bytes, length 118: RESOLVED, `[18, 82)`;
+      - `extension_area_offset = 94`, 12-byte gap, `postage_stamp_offset = 82`, length 615: RESOLVED, `[18, 82)`;
+      - the same with `postage_stamp_offset = 0` and `scan_line_offset = 82`: RESOLVED, `[18, 82)`;
+      - the same with `postage_stamp_offset = 0` and `colour_correction_offset = 82`: RESOLVED, `[18, 82)`;
+      - `extension_area_offset = 82`, inner offsets 0, length 603: RESOLVED, `[18, 82)`;
+      - `developer_area_offset = 10`: `field_out_of_bounds`;
+      - `developer_area_offset = F`: `field_out_of_bounds`;
+      - `extension_area_offset = 82` with `extension_size = 494`: `field_out_of_bounds`;
+      - `extension_area_offset = 82` with `extension_size = 496`, length 603: `field_out_of_bounds`;
+      - a valid extension area whose `postage_stamp_offset` is below `H`: `field_out_of_bounds`.
+    - Confirm that the existing PCX trailer tests, the nine `mystery_*` results and `external_b` (both footer offsets 0) are unchanged.
+    - _Requirements: 1.3, 1.5, 1.6, 1.15, 1.16, 4.5, 12.3_
+
+  - [ ] 18.4 Write property test for declared trailer offsets
+    - **Property 16: Declared trailer offsets are total and minimal**
+    - **Validates: Requirements 1.3, 1.15, 6.4**
+    - In `tests/test_closure.py`, using `@settings(max_examples=100, deadline=None)`:
+      - Over `st.binary(max_size=65536)`, any `header_size` and origins from `{"pcx", "tga", "generic", "pbm", "tiff"}`, `trailer_data_end` never raises and returns `(data_end, name, error)` with `error` in `{None, "field_out_of_bounds"}`. When `name` is `None`, `data_end == len(data)`. For an entry without declared offsets, `data_end` equals `match_trailer`'s result.
+      - A second generator builds a prefix, an optional extension area and a 26-byte footer with arbitrary offset values. It uses an independent model of the rule in Requirement 1.15 (written in the test from the spec, not copied from the implementation). When `error` is `None`, assert `header_size ≤ data_end ≤ F` and that `data_end` is the minimum of `F` and every nonzero declared offset, including inner offsets of a valid area. When the model says the file is invalid, assert `field_out_of_bounds`.
+    - Confirm the existing never-raises tests (`check_closure`, `generic_search`, Engine Property 1) still pass.
+    - Tag: `Feature: structure-inference-engine, Property 16: Declared trailer offsets are total and minimal`
+
+  - [ ] 18.2 Real corpus: pillow_p_16.tga resolves, pillow_rgb32rle.tga is unchanged
+    - Before the change, record the engine's result for every file in `spike/samples/`, `spike/samples/external/` and `spike/samples/real/`. After it, diff. Permitted changes: `pillow_p_16.tga` becoming RESOLVED, and nothing else. Any other change stops the task and is reported.
+    - Tests in `tests/test_real_corpus.py` (or the file that holds the real-corpus assertions):
+      - `pillow_p_16.tga` (Requirement 7.16): RESOLVED from the TGA probe, 128×128, 8 bpp, `header_size = 560`, data region `[560, 16944)` (16,384 bytes), trailer `tga2_footer`. The decoded bytes equal the pixel bytes Pillow decodes for that file; Pillow is imported only inside the test.
+      - `pillow_rgb32rle.tga` (Requirement 7.17): not RESOLVED, with the TGA seed rejected with `unsupported_encoding`, as before.
+    - Remove `pillow_p_16.tga` from `OPEN_IN_SCOPE_FAILURES` in `tools/real_corpus.py`, so the strict xfail in `tests/test_real_corpus.py` no longer applies; remove the xfail marker or entry that referred to it.
+    - Regenerate `spike/real_corpus_results.json` and `docs/REAL-CORPUS-RESULTS.md` with `python -m tools.real_corpus`, and update the real-corpus spec's counts and the decision that listed this file as an open failure.
+    - Re-run `python -m tools.adversary` and diff `tools/adversary_counts.json`; it must not change. Run `tests/test_gate_perturbation.py` and the full suite.
+    - _Requirements: 7.16, 7.17, 1.15_
+
+  - [ ] 18.3 Emit the declared offsets and apply them in the reference reader
+    - `necropsy/emit/layout.py`: `_trailers(origin)` copies the registry entry's declarations into the trailer dict under `declared_offsets` (`[{"name", "at", "fmt"}]`, `at` relative to the trailer start) and `area` (`base`, `size_at`, `size_fmt`, `min_size`, `offsets` with `at` relative to the area start), exactly as design.md "Layout schema" states. Both keys are omitted when the entry has none, so the `pcx_palette_256` trailer JSON is byte-identical to before.
+    - `necropsy/emit/render.py`: for a layout trailer with `declared_offsets`, write one criterion per declared offset (name, position from the trailer start in hex, struct format, size) and the four EARS criteria from design.md "Emitted requirements.md" item 3. The last two name the `area` base, size field and inner offsets from the layout.
+    - `tests/support/reference_reader.py`: apply the rule from the layout alone, as in design.md "Reference reader". Read each declared offset with the bounds-checked reader; treat 0 as absent; reject a nonzero value outside `[data.start, trailer_start)`; when the `area` base is nonzero, read the size field, reject a size below `min_size` or an area past the trailer start, and only then read the inner offsets; `data_end` is the minimum of the trailer start and every valid nonzero offset. A rejection returns `{"ok": False, "error": ...}` and is not swallowed by the per-trailer signature check. The reader still imports only `json`, `re` and `struct`.
+    - Tests in `tests/test_emit.py` and `tests/test_emit_acceptance.py`:
+      - the layout JSON for a TGA result carries `declared_offsets` and `area` with the values in design.md, and round-trips through `json`;
+      - the emitted `requirements.md` for `pillow_p_16.tga` contains the four EARS criteria;
+      - the spec emitted for `pillow_p_16.tga`, given to the reference reader alone, yields data region `[560, 16944)`;
+      - the crafted invalid inputs of Requirement 1.16 are rejected by the reference reader from the emitted layout, using the same expected outcomes;
+      - the layout trailer JSON for a PCX result is unchanged (no `declared_offsets` or `area` key);
+      - a test asserts the reader's source still imports nothing from `necropsy`.
+    - _Requirements: 9.23, 9.24, 9.25, 9.16, 1.16_
+
 ## Notes
 
 - The expected corpus values and candidate counts (18, 8 and 8) come from a reference model of these exact rules, recorded in design.md. A mismatch means the implementation and the spec disagree; report it, do not tune either.
@@ -703,7 +756,9 @@ Rules for every task:
     { "id": 28, "tasks": ["16.3"] },
     { "id": 29, "tasks": ["17.1"] },
     { "id": 30, "tasks": ["17.2"] },
-    { "id": 31, "tasks": ["12"] }
+    { "id": 31, "tasks": ["18.1"] },
+    { "id": 32, "tasks": ["18.2", "18.3", "18.4"] },
+    { "id": 33, "tasks": ["12"] }
   ]
 }
 ```

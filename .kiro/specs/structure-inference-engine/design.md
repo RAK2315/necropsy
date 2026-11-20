@@ -55,7 +55,7 @@ necropsy/
         __init__.py          exports Engine, result types, Budget
         types.py             dataclasses and hypothesis_key
         budget.py            deadline and shared closure-check cap
-        trailers.py          TrailerEntry, TRAILER_REGISTRY, match_trailer
+        trailers.py          TrailerEntry, DeclaredArea, TRAILER_REGISTRY, match_trailer, trailer_data_end
         closure.py           row_stride, RLE decoder, check_closure
         probes.py            probe_pcx, probe_tga, probe_pbm, probe_tiff
         strategies.py        inclusive_bounds, rle_pcx, row_padding_variants
@@ -118,7 +118,7 @@ flowchart LR
 |---|---|
 | `engine/types.py` | `FieldRecord`, `Hypothesis`, `hypothesis_key`, `RejectionEntry`, `Candidate`, `VerifiedHypothesis`, `AmbiguousResult`, `FailureReport`, `EngineResult`, `REASONS`, `TERMINATIONS` |
 | `engine/budget.py` | `Budget(deadline_seconds, cap=10_000, clock=time.monotonic)` with `stop_reason() -> str \| None`, `charge() -> str \| None`, `checks: int` |
-| `engine/trailers.py` | `TrailerEntry`, `TRAILER_REGISTRY`, `match_trailer(data, header_size, origin, registry=TRAILER_REGISTRY) -> tuple[int, str \| None]` |
+| `engine/trailers.py` | `TrailerEntry`, `DeclaredArea`, `TRAILER_REGISTRY`, `match_trailer(data, header_size, origin, registry=TRAILER_REGISTRY) -> tuple[int, str \| None]` (unchanged), `trailer_data_end(data, header_size, origin, registry=TRAILER_REGISTRY) -> tuple[int, str \| None, str \| None]` |
 | `engine/closure.py` | `row_stride(width, bit_depth, row_alignment) -> int`, `RleResult`, `rle_pcx_decode(data, start, end, max_output_bytes) -> RleResult`, `rle_pcx_output_length(data, start, end) -> int \| None`, `ClosureVerdict`, `check_closure(h, data) -> ClosureVerdict` |
 | `engine/probes.py` | `ProbeOutcome`, `probe_pcx`, `probe_tga`, `probe_pbm`, `probe_tiff`, each `(data) -> ProbeOutcome \| None`; `PROBES` |
 | `engine/strategies.py` | `inclusive_bounds`, `rle_pcx`, `row_padding_variants`, each `(h) -> tuple[Hypothesis, ...]`; `STRATEGIES` |
@@ -248,10 +248,18 @@ One `Budget` is created per `run()` call. It is passed to every phase, so the de
 ### Trailer Registry (`engine/trailers.py`)
 
 ```
-TrailerEntry(name: str, length: int, signature: bytes, signature_offset: int, applies_to: frozenset[str])
+DeclaredArea(base: str, size_at: int, size_fmt: str, min_size: int, offsets: tuple[tuple[str, int, str], ...])
+TrailerEntry(name: str, length: int, signature: bytes, signature_offset: int, applies_to: frozenset[str],
+             declared_offsets: tuple[tuple[str, int, str], ...] = (),   # (name, position from trailer start, fmt)
+             declared_area: DeclaredArea | None = None)                 # nested area; offsets are (name, position from area start, fmt)
 TRAILER_REGISTRY = (
     TrailerEntry("pcx_palette_256", 769, b"\x0c", 0, frozenset({"pcx", "generic"})),
-    TrailerEntry("tga2_footer", 26, b"TRUEVISION-XFILE.\x00", 8, frozenset({"tga", "generic"})),
+    TrailerEntry("tga2_footer", 26, b"TRUEVISION-XFILE.\x00", 8, frozenset({"tga", "generic"}),
+                 declared_offsets=(("extension_area_offset", 0, "<I"), ("developer_area_offset", 4, "<I")),
+                 declared_area=DeclaredArea("extension_area_offset", 0, "<H", 495,
+                                            (("colour_correction_offset", 482, "<I"),
+                                             ("postage_stamp_offset", 486, "<I"),
+                                             ("scan_line_offset", 490, "<I")))),
 )
 def match_trailer(data, header_size, origin, registry=TRAILER_REGISTRY):
     n = len(data)
@@ -262,7 +270,47 @@ def match_trailer(data, header_size, origin, registry=TRAILER_REGISTRY):
     return n, None
 ```
 
-The `applies_to` scope keeps the one-byte PCX signature from cutting the tail off TGA, PBM or TIFF hypotheses. The 18-byte TGA footer signature is safe to apply to Generic Search too. TIFF hypotheses declare their own `data_end`, so the registry never applies to them. Adding `tga2_footer` needed no change to `check_closure`; a future GIF trailer is one more entry.
+The `applies_to` scope keeps the one-byte PCX signature from cutting the tail off TGA, PBM or TIFF hypotheses. The 18-byte TGA footer signature is safe to apply to Generic Search too. TIFF hypotheses declare their own `data_end`, so the registry never applies to them. Adding `tga2_footer` (Requirement 1.15, Decision Record item 22) changes `check_closure` only in which function it calls (below); the declared-offset rule is data on the entry, so a future GIF trailer is still one more entry. `pcx_palette_256` sets no declared offsets and behaves exactly as before.
+
+**`trailer_data_end`** (Requirements 1.3, 1.15) is the one function that decides `data_end` when a hypothesis declares none. `match_trailer` is kept unchanged, and `trailer_data_end` calls it to find the matching entry (looked up by name), so signature matching has one implementation. Closure and Generic Search both call `trailer_data_end`; neither calls `match_trailer` directly any more.
+
+```
+def trailer_data_end(data, header_size, origin, registry=TRAILER_REGISTRY):
+    """Never raises. Returns (data_end, trailer_name, error); error is None or "field_out_of_bounds".
+    When error is set, data_end is the trailer start and callers must not use it."""
+    start, name = match_trailer(data, header_size, origin, registry)     # start = F, the trailer start
+    if name is None: return len(data), None, None
+    e = next(x for x in registry if x.name == name); F = start; n = len(data)
+    def u(fmt, at):                                   # explicit "<" formats; None when outside data
+        if at < 0 or at + struct.calcsize(fmt) > n: return None
+        return struct.unpack_from(fmt, data, at)[0]
+    fail = (F, name, "field_out_of_bounds")
+    if not e.declared_offsets: return F, name, None   # pcx_palette_256: unchanged behaviour
+    decl = {}
+    for nm, pos, fmt in e.declared_offsets:
+        v = u(fmt, F + pos)
+        if v is None: return fail
+        decl[nm] = v
+    ends = [F]
+    def take(v):                                      # a nonzero declared offset is valid iff header_size <= v < F
+        if v == 0: return True                        # 0 means the area is absent
+        if not (header_size <= v < F): return False
+        ends.append(v); return True
+    if not all(take(v) for v in decl.values()): return fail
+    a = e.declared_area
+    if a is not None and decl[a.base] != 0:
+        E = decl[a.base]
+        size = u(a.size_fmt, E + a.size_at)
+        if size is None or size < a.min_size or E + size > F: return fail   # no inner offset is read
+        for nm, pos, fmt in a.offsets:                # pos + size(fmt) <= min_size <= size, so in bounds
+            v = u(fmt, E + pos)
+            if v is None or not take(v): return fail
+    return min(ends), name, None
+```
+
+The declared values are file-supplied, so every read is bounds-checked against `len(data)` before it happens, and no value sizes an allocation. All formats are little-endian (`<I`, `<H`). The inner offsets are read only after the extension area is validated. The declared offsets are not `FieldRecord`s and never enter the Requirement 12 check (Requirement 1.15).
+
+**Generic Search and this function.** For each header length `L`, Generic Search calls `trailer_data_end(data, L, "generic")`, and derives `S = data_end − L` from the returned `data_end`. When the returned error is set, Generic Search enumerates no sizes for that `L`: it runs no closure check, records no rejection and moves to the next `L`. A hypothesis of that header length that reached the closure gate by another route would be rejected there with `field_out_of_bounds`, because closure calls the same function with `header_size = L`. For a file whose footer's `extension_area_offset` and `developer_area_offset` are both 0, or a file with no `tga2_footer`, the returned `data_end` equals the one `match_trailer` returned, so the baseline corpus results are unchanged.
 
 ### Closure (`engine/closure.py`)
 
@@ -317,7 +365,8 @@ def check_closure(h, data):
         if h.data_end > len(data) or h.data_end < h.header_size: return reject("field_out_of_bounds")
         end, trailer = h.data_end, None
     else:
-        end, trailer = match_trailer(data, h.header_size, h.probe_name)
+        end, trailer, err = trailer_data_end(data, h.header_size, h.probe_name)   # Requirements 1.3, 1.15
+        if err: return reject(err)                        # "field_out_of_bounds": invalid declared offset or extension area
     for fr in h.fields:                                  # Requirement 12: header and data are disjoint
         f_end = fr.offset + struct.calcsize(fr.fmt)
         if fr.offset < end and h.header_size < f_end and end > h.header_size:
@@ -451,7 +500,8 @@ def generic_search(data, budget, on_reject):
         depths = {}                                   # value -> [offset]
         for o in range(L):
             if data[o] in VALID_BIT_DEPTHS: depths.setdefault(data[o], []).append(o)
-        end, trailer = match_trailer(data, L, "generic")
+        end, trailer, err = trailer_data_end(data, L, "generic")
+        if err: continue                                  # invalid declarations: no sizes for this L; nothing recorded
         sizes = [("none", end - L)]
         if trailer == "pcx_palette_256":
             n = rle_pcx_output_length(data, L, end)
@@ -571,7 +621,10 @@ The emitted `requirements.md` contains exactly one fenced block whose info strin
   },
   "image": {"width": <expr>, "height": <expr>, "bit_depth": <expr>, "row_alignment": 1 | 2 | 4},
   "data": {"start": <expr>, "end": <expr> | null, "encoding": <encoding>,
-           "trailers": [ {"name": str, "length": int, "signature": "<hex>", "signature_offset": int} ]},
+           "trailers": [ {"name": str, "length": int, "signature": "<hex>", "signature_offset": int,
+                          "declared_offsets": [ {"name": str, "at": int, "fmt": str} ],        // optional
+                          "area": {"base": str, "size_at": int, "size_fmt": str, "min_size": int,
+                                   "offsets": [ {"name": str, "at": int, "fmt": str} ]} } ]},  // optional
   "equivalent_reads": { "<field>": [[fmt, offset], ...] },
   "observed": { "<name>": int, ... },
   "candidates": [ <layout without "candidates">, ... ]
@@ -584,6 +637,7 @@ The schema's building blocks:
 - **Byte order.** In any format string, `@` is replaced by the resolved byte-order prefix.
 - **Encoding.** `<encoding>` is either a literal string, or `{"field": name, "values": {"<int>": str}, "otherwise": str}`.
 - **Data end.** When `data.end` is `null`, a reader applies the first matching trailer, otherwise it uses the file end.
+- **Trailer declared offsets** (Requirement 9.23). `_trailers(origin)` in `emit/layout.py` copies the registry entry's declarations into the trailer dict under two optional keys, omitted when the entry has none (so `pcx_palette_256` serialises exactly as before). `declared_offsets` lists `{"name", "at", "fmt"}` with `at` relative to the trailer start. `area` holds `base` (the name of the declared offset that locates the area), `size_at` and `size_fmt` (the size field, relative to the area start), `min_size`, and `offsets`, a list of `{"name", "at", "fmt"}` with `at` relative to the area start. Every `fmt` is explicit little-endian (`<I`, `<H`). For `tga2_footer` the values are `extension_area_offset` at 0 and `developer_area_offset` at 4; area base `extension_area_offset`, size at 0 as `<H`, `min_size` 495, offsets `colour_correction_offset` at 482, `postage_stamp_offset` at 486 and `scan_line_offset` at 490.
 - **Kind `ambiguous`.** Only `schema`, `kind`, `slug` and `candidates` are set; each candidate is a `file` or `format` layout.
 
 Kind and content by origin:
@@ -591,7 +645,7 @@ Kind and content by origin:
 | Origin | Kind | Notes |
 |---|---|---|
 | PCX | `format` | Width and height are `{"add": [{"sub": ["xmax", "xmin"]}, 1]}` when `inclusive_bounds` is in the path, otherwise `"xmax"` and `"ymax"`. Encoding is `{"field": "encoding", "values": {"0": "none", "1": "rle_pcx"}}`, or the literal `"rle_pcx"` when `rle_pcx` is in the path. Alignment is taken from the result. Trailers list `pcx_palette_256`. |
-| TGA | `format` | Start is `{"add": [18, "id_length", {"mul": ["color_map_type", "color_map_length", {"ceil_div": ["color_map_entry_size", 8]}]}]}`. Encoding is mapped from `image_type`. Trailers list `tga2_footer`. |
+| TGA | `format` | Start is `{"add": [18, "id_length", {"mul": ["color_map_type", "color_map_length", {"ceil_div": ["color_map_entry_size", 8]}]}]}`. Encoding is mapped from `image_type`. Trailers list `tga2_footer` with its `declared_offsets` and `area`. |
 | TIFF | `format` | `byte_order` is set, with the tag table as specified in Requirement 2.8. The `bits_per_sample` entry has an `array` rule (`max_count` 32, `pointer_fmt` `@I`, `require` `all_equal`); `require_count` 1 applies to every entry without one. `planar_configuration` has `default` 1 and `expect` 1. Start is `"strip_offset"`; end is `{"add": ["strip_offset", "strip_byte_count"]}`. Encoding is `{"field": "compression", "values": {"1": "none"}, "otherwise": "unsupported"}`. |
 | PBM | `file` | The token offsets are this file's. The prose states the text-header rules. |
 | Any probe that recorded `probe_precondition_failed` or `field_out_of_bounds` | `file` | This file's literal values for image, data region and encoding; the fields it read are listed with `expect: null`. The prose states that the file broke the format's rules and the document describes this one file only (Requirement 9.20). |
@@ -603,7 +657,12 @@ The emitted file uses the Kiro headings `# Requirements Document`, `## Introduct
 
 1. **Signature and byte order.** One criterion per `expect` field, and one for the byte-order rule.
 2. **Fields.** One criterion per field and tag entry. Example: `THE parser SHALL read \`width\` at offset 0x000C using struct format \`<H\` (little-endian, 2 bytes).` For `@` formats, the endianness is described as "declared by bytes 0x00–0x01 (II little-endian, MM big-endian)".
-3. **Data region and encoding.** The start and end rule, trailers and encoding.
+3. **Data region and encoding.** The start and end rule, trailers and encoding. WHERE a layout trailer has `declared_offsets` (Requirement 9.24), `emit/render.py` also writes one criterion per declared offset (name, position from the trailer start in hex, struct format, size) and these four EARS criteria:
+    - `WHERE a trailer declares an offset, THE parser SHALL treat an offset of 0 as the area being absent.`
+    - `WHERE a trailer declares an offset, THE parser SHALL treat a nonzero offset as valid if and only if it lies in [header_size, trailer_start).`
+    - `WHERE a trailer declares an offset, THE parser SHALL end the data region at the minimum of the trailer start and every valid nonzero declared offset.`
+    - `IF a nonzero declared offset is not valid, or the area it locates has a size field below <min_size> or extends past the trailer start, THEN THE parser SHALL reject the file and SHALL read no offset inside that area.`
+   The last two name the `area` entry's base, size field and inner offsets from the layout, so the criteria and the layout block state the same rule.
 4. **Closure.** The closure rule, and the statement that the source file satisfied it with the observed numbers.
 5. **Observed values.** `WHEN parsing the source file, THE parser SHALL return <name> = <value>`.
 
@@ -688,6 +747,7 @@ The reference reader is a generic interpreter of `necropsy-layout/1` and contain
 
 - **Inputs and imports.** It reads the single `necropsy-layout` block from markdown text. It imports only `json`, `re` and `struct`. A test asserts that its source contains no `necropsy` import.
 - **Steps.** It resolves the byte order, then reads `fields` in order (offsets may be expressions over earlier fields), checks each `expect`, and walks `tag_table`. It then evaluates `image`, resolves `data.start` and `data.end` (falling back to `trailers`, then EOF), and resolves the encoding.
+- **Trailer declarations** (Requirement 9.25). For a matching trailer that has `declared_offsets`, it reads each at `trailer_start + at` with the stated format, using its bounds-checked reader. It treats 0 as absent, and rejects a nonzero value outside `[data.start, trailer_start)`. When the `area` base is nonzero, it reads the size field, rejects the file if the size is below `min_size` or the area runs past the trailer start, and only then reads the inner offsets. `data_end` is the minimum of the trailer start and every valid nonzero offset. A rejection returns `{"ok": False, "error": ...}` and is never swallowed by the per-trailer signature check. The code uses only the layout's names, positions and formats, so it still imports only `json`, `re` and `struct`.
 - **Decoding.** It decodes `none` only by slicing. Any other encoding returns `{"ok": False, "error": "encoding not supported by reference reader"}`.
 - **Result.** It checks closure and returns the parser-contract dict.
 - **`make_parser_module(markdown)`** returns Python source for a `parser_<slug>` module. The module embeds the markdown text and exposes `parse` and `parse_candidates` by calling the reader. The acceptance test writes it to a temporary directory and runs `python -m pytest` on that directory, with no file argument, so the emitted `test_<module>.py` must be collected by its name.
@@ -712,6 +772,18 @@ Two details from the trace:
 
 - **mystery_b and the TGA probe.** mystery_b matched the TGA probe in an earlier draft, because byte `0x02 = 1` is a valid TGA image type. It no longer matches, because byte `0x01 = 5` is not a valid TGA colour-map type.
 - **Field round-trip.** Every `FieldRecord` of every candidate round-tripped through `struct.unpack_from`, with 0 failures across the corpus.
+
+## TGA Footer Declarations (measured)
+
+Hand-checked against the rule in `trailer_data_end` (Requirements 1.15, 7.16, 7.17):
+
+| File | Footer start F | Declared offsets | `data_end` | Outcome |
+|---|---|---|---|---|
+| `pillow_p_16.tga` (21,563 bytes, header 560) | 21537 | extension 21042 (valid), postage stamp 16944 (valid) | min(21537, 21042, 16944) = 16944 | RESOLVED, region [560, 16944), 16944 − 560 = 16384 = 128 × 128 |
+| `pillow_rgb32rle.tga` | 129777 | extension 128486 with size 495 (128486 + 495 = 128981 ≤ F), scan-line 128981, all valid | 128486 | TGA seed rejected `unsupported_encoding` (the encoding check follows `data_end`), not RESOLVED, as before |
+| `external_b` | 9234 | both 0 | 9234 | unchanged (Requirement 7.12) |
+
+The crafted inputs of Requirement 1.16 cover every branch of the rule.
 
 ## Measured Performance
 
@@ -827,6 +899,12 @@ For every candidate, every entry of `alternative_paths` has the same length as `
 
 **Validates: Requirements 3.6, 3.9, 3.10**
 
+### Property 16: Declared trailer offsets are total and minimal
+
+For any bytes, any `header_size` and any origin, `trailer_data_end` never raises and returns `(data_end, name, error)` where `error` is `None` or `"field_out_of_bounds"`. When `error` is `None` and `name` is `"tga2_footer"`, `header_size ≤ data_end ≤ F` where `F = len(data) − 26`, and `data_end` equals the minimum of `F` and every nonzero declared offset (all of which lie in `[header_size, F)`), including the inner offsets of a valid extension area. When `name` is `None`, `data_end == len(data)`. When the entry has no declared offsets, `data_end` equals `match_trailer`'s result.
+
+**Validates: Requirements 1.3, 1.15, 6.4**
+
 ## Error Handling
 
 - **Public entry points.** `Engine.run`, every probe, every strategy, `check_closure`, `rle_pcx_decode`, `generic_search`, `row_coherence`, `render`, `emit_spec` and `write_spec` return structured values. Each has a last-resort `try/except Exception` that converts to its error value. Inner code bounds-checks every read and must not rely on the wrapper.
@@ -835,6 +913,7 @@ For every candidate, every entry of `alternative_paths` has the same length as `
   - Coherence is capped at 262,144 bytes.
   - Generic Search reads only inside the header length.
 - **Termination.** The deadline is checked before each probe, before each closure check, at the start of each Generic Search header length and before each coherence call. The cap is checked before each closure check. Both stop the run with a `FailureReport` that keeps the rejections and partial candidates.
+- **Declared offsets.** Offsets and sizes read from a trailer are file-supplied. Each is bounds-checked before use, none sizes an allocation, and an invalid one returns `field_out_of_bounds` instead of being ignored (Decision Record item 22).
 - **File writing.** Only `write_spec` writes files, only inside the given directory and only for a valid slug. It never overwrites unless asked.
 
 ## Testing Strategy
@@ -847,3 +926,4 @@ For every candidate, every entry of `alternative_paths` has the same length as `
 - **Deadline tests.** These use an injected clock, so no test depends on wall-clock timing. The one exception is Property 2, whose 0.25-second margin is stated.
 - **Property tags.** Each property test is tagged `Feature: structure-inference-engine, Property N: <title>`.
 - **Emitted-spec acceptance.** This runs `python -m pytest` on the directory holding the parser module and the emitted `test_<module>.py`, with no file argument, in a subprocess with that directory on `PYTHONPATH`. The final checkpoint validates the emitted `requirements.md` and `design.md` for mystery_e and mystery_d with Kiro's spec format validator.
+- **TGA footer declarations.** Requirement 1.16's crafted inputs are built in code from the stated byte layout (18-byte header, 64 pixel bytes, 26-byte footer, 495-byte extension area) and assert the exact outcome of each branch. Property 16 needs an independent model of the rule: its generator builds a prefix, an optional extension area and a footer with arbitrary offset values, plus plain `st.binary()` for the never-raises half. `pillow_p_16.tga` and `pillow_rgb32rle.tga` are asserted as in Requirements 7.16 and 7.17, and the pixel comparison for `pillow_p_16.tga` uses Pillow only inside the test. The emitted-layout check (Requirements 9.23 to 9.25) round-trips the layout JSON, then runs the reference reader on the spec emitted for `pillow_p_16.tga` and expects [560, 16944); a test asserts that the reader's source still imports nothing from `necropsy`.
