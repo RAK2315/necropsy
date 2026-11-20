@@ -20,7 +20,7 @@ Engine over all 81 files, default 5 s deadline. No run hit the deadline. No resu
 | Out of scope, invalid by construction | 1 | RESOLVED, literal reading (`pillow_ossfuzz-4836216264589312.pcx`) |
 | **Total** | **81** | 25 RESOLVED, 56 FAILED |
 
-In scope is 26 files after Decision 3 (25 by the manifest), out of scope is 55. The table with every file is `docs/REAL-CORPUS-RESULTS.md`.
+In scope is 26 files and out of scope is 55, as the manifest records them (Decision 3). All counts above were checked against `docs/REAL-CORPUS-RESULTS.md` row by row. The table with every file is `docs/REAL-CORPUS-RESULTS.md`.
 
 The 14 `no_hypothesis_checked` refusals are all PNM files: every PNM file except the five binary PBM (`P4`) files. The 40 `exhausted` refusals are the TIFF, TGA and PCX files outside the stated scope (compression, RLE TGA, several strips, tiles, planar, several PCX planes) and the invalid ones. The reason for each is in the table's note column, taken from the manifest's scope reason.
 
@@ -55,6 +55,6 @@ Palette images are compared as indices. Palettes are not recovered or compared.
 - **Palettes.** The engine recovers no palette semantics (the UI reads the 769-byte PCX trailer separately). Palette images are compared as index bytes, so a wrong palette would not be seen here.
 - **The comparer handles the formats listed above.** A recovered result in a form it does not handle is recorded as "not comparable" with the reason, and is not counted as a match. None of the 81 files hit this path.
 - **Pillow is one reference.** A byte match shows that two independent readings agree, not that either is right. The files carry no other ground truth.
-- **Scope is the builder's stated scope.** The manifest assigns it from header bytes, and Decision 3 corrects one assignment. Files outside it were included on purpose, so the refusals are visible.
+- **Scope is the builder's stated scope.** The manifest assigns it from header bytes, and Decision 3 records the one assignment that was corrected. Files outside it were included on purpose, so the refusals are visible.
 - **The corpus is one pass over six test suites.** It is evidence about these 81 files. It is not a measure of accuracy on files in general.
 - **Results depend on the engine today.** The strict expected failures and the live-versus-committed test are there so a change to the engine shows up here.
