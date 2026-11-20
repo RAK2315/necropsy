@@ -350,7 +350,7 @@ A probe returns `None` only for a signature mismatch or a file shorter than its 
 | PCX | 128 | `0x00 == 0x0A`, `0x02 ∈ {0,1}` | encoding 0x02 `B`; bit_depth 0x03 `B`; xmin 0x04 `<H`; ymin 0x06 `<H`; xmax 0x08 `<H`; ymax 0x0A `<H`; planes 0x41 `B`; bytes_per_line 0x42 `<H` | width = xmax, height = ymax, header 128, alignment 1, encoding none (0x00) or rle_pcx (0x01), bounds set |
 | TGA | 18 | `0x01 ∈ {0,1}`, `0x02 ∈ {1,2,3,9,10,11}` | id_length 0x00 `B`; color_map_type 0x01 `B`; image_type 0x02 `B`; color_map_length 0x05 `<H`; color_map_entry_size 0x07 `B`; width 0x0C `<H`; height 0x0E `<H`; bit_depth 0x10 `B`; image_descriptor 0x11 `B` (bit 5 set = top-left origin; reported, not acted on) | header = 18 + id_length + color_map_type × color_map_length × ceil(entry_size / 8); encoding none for 1–3, rle_tga for 9–11 |
 | PBM | 7 | `0x00..0x02 == b"P4\n"` | magic 0x00 `3s`; width at token offset `<n>s`; height at token offset `<n>s` | bit_depth 1, alignment 1, header = offset after dimensions line |
-| TIFF | 8 | `0x00..0x01 ∈ {II, MM}` and magic 42 in that order | byte_order 0x00 `2s`; magic 0x02 `oH`; ifd_offset 0x04 `oI`; ifd_entry_count at ifd_offset `oH`; tag values at entry + 8 (`oH` for SHORT, `oI` for LONG) | width, height, bit_depth = bps × spp, header = strip_offset, data_end = strip_offset + strip_byte_count, encoding none if compression 1 |
+| TIFF | 8 | `0x00..0x01 ∈ {II, MM}` and magic 42 in that order | byte_order 0x00 `2s`; magic 0x02 `oH`; ifd_offset 0x04 `oI`; ifd_entry_count at ifd_offset `oH`; tag values at entry + 8 (`oH` for SHORT, `oI` for LONG) | width, height, bit_depth = bps × spp (bps from the BitsPerSample array, all entries equal), header = strip_offset, data_end = strip_offset + strip_byte_count, encoding none if compression 1; planar_configuration must be 1 |
 
 In the TIFF row, `o` is `<` for `II` and `>` for `MM`.
 
@@ -359,8 +359,9 @@ In the TIFF row, `o` is `<` for `II` and `>` for `MM`.
 **TIFF walk.**
 - Entries are read at `ifd_offset + 2 + 12k` for `k < ifd_entry_count`, stopping at the first entry that does not fit. The stop records `field_out_of_bounds`.
 - For each entry, the probe reads tag (`oH`, +0), type (`oH`, +2) and count (`oI`, +4).
-- A tag in `{256, 257, 258, 259, 273, 277, 279}` with type 3 or 4 and count 1 becomes a `FieldRecord` at entry + 8. SHORT values are left-justified, so `oH` at +8 is the value.
-- Defaults: compression 1, samples_per_pixel 1.
+- A tag in `{256, 257, 259, 273, 277, 279, 284}` with type 3 or 4 and count 1 becomes a `FieldRecord` at entry + 8. SHORT values are left-justified, so `oH` at +8 is the value.
+- Tag 258 is read as an array of `n` values, `1 ≤ n ≤ TIFF_MAX_SAMPLES = 32`. When `n × size(type) ≤ 4` the values sit consecutively from entry + 8; otherwise `oI` at entry + 8 is the offset of `n` consecutive values. Every value becomes a `FieldRecord` named `bits_per_sample`. All must be equal; otherwise `probe_precondition_failed` and bits_per_sample = 0. The equal values are equivalent reads, so Property 5 holds.
+- Defaults: compression 1, samples_per_pixel 1, planar_configuration 1. planar_configuration ≠ 1 records `probe_precondition_failed`. samples_per_pixel is not a precondition.
 
 ### Revision strategies (`engine/strategies.py`)
 
@@ -563,7 +564,10 @@ The emitted `requirements.md` contains exactly one fenced block whose info strin
       "tag_offset": 0, "tag_fmt": str, "type_offset": 2, "type_fmt": str,
       "count_offset": 4, "count_fmt_entry": str, "value_offset": 8,
       "value_fmt_by_type": {"3": str, "4": str}, "require_count": 1,
-      "entries": [ {"name": str, "tag": int, "default": int | null} ]
+      "entries": [ {"name": str, "tag": int, "default": int | null,
+                    "expect": int | null,
+                    "array": null | {"max_count": int, "value_field_size": 4, "pointer_fmt": str,
+                                     "type_sizes": {"3": 2, "4": 4}, "require": "all_equal"}} ]
   },
   "image": {"width": <expr>, "height": <expr>, "bit_depth": <expr>, "row_alignment": 1 | 2 | 4},
   "data": {"start": <expr>, "end": <expr> | null, "encoding": <encoding>,
@@ -588,7 +592,7 @@ Kind and content by origin:
 |---|---|---|
 | PCX | `format` | Width and height are `{"add": [{"sub": ["xmax", "xmin"]}, 1]}` when `inclusive_bounds` is in the path, otherwise `"xmax"` and `"ymax"`. Encoding is `{"field": "encoding", "values": {"0": "none", "1": "rle_pcx"}}`, or the literal `"rle_pcx"` when `rle_pcx` is in the path. Alignment is taken from the result. Trailers list `pcx_palette_256`. |
 | TGA | `format` | Start is `{"add": [18, "id_length", {"mul": ["color_map_type", "color_map_length", {"ceil_div": ["color_map_entry_size", 8]}]}]}`. Encoding is mapped from `image_type`. Trailers list `tga2_footer`. |
-| TIFF | `format` | `byte_order` is set, with the tag table as specified in Requirement 2.8. Start is `"strip_offset"`; end is `{"add": ["strip_offset", "strip_byte_count"]}`. Encoding is `{"field": "compression", "values": {"1": "none"}, "otherwise": "unsupported"}`. |
+| TIFF | `format` | `byte_order` is set, with the tag table as specified in Requirement 2.8. The `bits_per_sample` entry has an `array` rule (`max_count` 32, `pointer_fmt` `@I`, `require` `all_equal`); `require_count` 1 applies to every entry without one. `planar_configuration` has `default` 1 and `expect` 1. Start is `"strip_offset"`; end is `{"add": ["strip_offset", "strip_byte_count"]}`. Encoding is `{"field": "compression", "values": {"1": "none"}, "otherwise": "unsupported"}`. |
 | PBM | `file` | The token offsets are this file's. The prose states the text-header rules. |
 | Any probe that recorded `probe_precondition_failed` or `field_out_of_bounds` | `file` | This file's literal values for image, data region and encoding; the fields it read are listed with `expect: null`. The prose states that the file broke the format's rules and the document describes this one file only (Requirement 9.20). |
 | Generic | `file` | The first equivalent read of each field is used as the field; all reads appear in `equivalent_reads`. The prose states that this is one file's layout, not a format. |

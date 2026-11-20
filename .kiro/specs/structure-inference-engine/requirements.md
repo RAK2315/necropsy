@@ -68,6 +68,7 @@ These decisions are final. Each is recorded with its reason so later work does n
 17. **Header fields and pixel data are disjoint.** An 82-byte big-endian TIFF with no StripOffsets tag resolved with data region [0, 64), so the engine asserted that the same bytes were both header fields it parsed and pixel data it decoded. That is not a format convention; it is internal self-contradiction, derivable from the engine's own output with no format knowledge. The closure arithmetic already treats header and data as disjoint, and Requirement 12 makes every hypothesis agree with it. The rule tests overlap with each field's byte range rather than "data starts after the last field", because a TIFF may legally place its IFD after the image data.
 18. **A run that checked nothing does not say it tried everything.** `exhausted` states that hypotheses within the search axes were checked and none closed. For an input such as a text file, Generic Search can finish with 0 closure checks, and `exhausted` would then claim work that never happened. `no_hypothesis_checked` says only that no hypothesis reached the closure gate. `input_too_short` is the precedent for a termination that names its specific case.
 19. **Cross-reference: closure alone admits about 2% of arbitrary layouts.** Measured in the `gate-adversary` spec (`.kiro/specs/gate-adversary/design.md`, "Finding"): the gate's strength comes from where hypotheses come from, not from closure in isolation. Documentation only; no requirement here changes.
+20. **The TIFF probe reads the BitsPerSample array.** The probe discarded any tag whose count was not 1. For RGB and RGBA files BitsPerSample has one entry per sample (3 or 4), so it was recorded as missing even though the file declares it, and the probe then rejected `samples_per_pixel ≠ 1`. Four real files from upstream decoder suites failed as a result: `goimage_no_compress.tiff`, `goimage_no_rps.tiff`, `goimage_video-001-uncompressed.tiff` and `sdlimage_sample.tif`. This violated Decision Record item 2 and Requirement 2.4, that probes read the file's declarations. It was not a scope limit: the file states its bits per sample, and the probe threw the statement away. The fix reads the array, requires every entry to be equal (and records `probe_precondition_failed` rather than choosing one when they differ), drops the `samples_per_pixel` rejection, and accepts PlanarConfiguration 1 only, because planar configuration 2 is a different layout that the file declares. The arithmetic that confirmed it, each product equal to the declared StripByteCount of the file's single uncompressed strip at offset 8: 16 × 15 × 4 = 960 for both 16×15 files, 150 × 103 × 3 = 46350, and 23 × 42 × 3 = 2898.
 
 ## Requirements
 
@@ -169,7 +170,14 @@ These decisions are final. Each is recorded with its reason so later work does n
      - Layout: tag at `+0` as `oH`, type at `+2` as `oH`, count at `+4` as `oI`, value at `+8`.
      - A type 3 (SHORT) value is read as `oH` at `+8`. It is left-justified in the 4-byte value field.
      - A type 4 (LONG) value is read as `oI` at `+8`.
-     - A tag is used only when its type is 3 or 4 and its count is 1.
+     - A tag is used only when its type is 3 or 4 and its count is 1, except tag 258 (`bits_per_sample`), which is read as an array.
+   - BitsPerSample array (tag 258):
+     - The count `n` SHALL satisfy `1 ≤ n ≤ 32` (`TIFF_MAX_SAMPLES`). A larger count SHALL record `probe_precondition_failed` and the values SHALL NOT be read.
+     - WHEN `n × size(type) ≤ 4` (size 2 for SHORT, 4 for LONG), the `n` values SHALL be read consecutively from `+8`, left-justified in the value field. Otherwise the value field SHALL be read as `oI` at `+8`, and the `n` values SHALL be read consecutively from that offset.
+     - EACH value SHALL be recorded as a `FieldRecord` named `bits_per_sample` at its own offset, with format `oH` (SHORT) or `oI` (LONG).
+     - IF any value lies outside the file, THEN the probe SHALL record `field_out_of_bounds`, and `bits_per_sample` SHALL be treated as not read.
+     - IF the values are not all equal, THEN the probe SHALL record `probe_precondition_failed` naming the values, and `bits_per_sample` SHALL be treated as not established (0). The probe SHALL NOT choose one of the values.
+     - Otherwise `bits_per_sample` SHALL be the common value.
    - Tags used:
      - 256 `width`
      - 257 `height`
@@ -178,9 +186,12 @@ These decisions are final. Each is recorded with its reason so later work does n
      - 273 `strip_offset`
      - 277 `samples_per_pixel` (default 1)
      - 279 `strip_byte_count`
+     - 284 `planar_configuration` (default 1)
    - Seed: `bit_depth = bits_per_sample × samples_per_pixel`, `header_size = strip_offset`, declared `data_end = strip_offset + strip_byte_count`, `row_alignment = 1`. `encoding = "none"` when `compression == 1`, otherwise `"tiff_compression_<n>"`.
    - IF `ifd_offset + 2 > len(data)`, or the entry table runs past the end of the file, THEN the probe SHALL record `field_out_of_bounds` and emit the seed from the values read so far.
-   - IF any of tags 256, 257, 258, 273 or 279 is missing, or `samples_per_pixel ≠ 1`, THEN the probe SHALL record `probe_precondition_failed`.
+   - IF any of tags 256, 257, 258, 273 or 279 is missing, THEN the probe SHALL record `probe_precondition_failed`.
+   - IF `planar_configuration ≠ 1`, THEN the probe SHALL record `probe_precondition_failed`. Planar configuration 2 stores each channel separately, which is a different layout, and the file declares which one it uses.
+   - `samples_per_pixel` SHALL NOT be a precondition. It is read and multiplies `bits_per_sample` to give `bit_depth`.
    - Only single-strip TIFF files are in scope.
 9. WHEN exactly one distinct seed closes, THE Engine SHALL return `RESOLVED` with `revision_path = []`. WHEN more than one distinct seed closes, THE Engine SHALL return `UNRESOLVED_AMBIGUITY` with stage `probe`. WHEN no seed closes and at least one seed exists, THE Engine SHALL enter the revision phase with every seed as the seed pool.
 
@@ -310,6 +321,12 @@ These decisions are final. Each is recorded with its reason so later work does n
 10. FOR every `RESOLVED` corpus file, THE corpus test SHALL compare the decoded pixel bytes exactly with the pixel content that `spike/make_samples.py` writes.
 11. THE Engine SHALL return `FAILED` for none of the nine corpus files.
 12. WHEN given `spike/samples/external/external_b` (TGA 2.0 written by Pillow, 24 bpp, 9,260 bytes), THE Engine SHALL return `RESOLVED` from the TGA probe with `width = 64`, `height = 48`, `bit_depth = 24`, `header_size = 18`, `revision_path = []`, trailer `tga2_footer`, and data region `[18, 9234)`, which excludes the 26-byte footer. Its `image_descriptor` SHALL be `0x00` (bottom-left origin). Its decoded bytes SHALL equal the pixels of `spike/samples/external/source.ppm` stored bottom row first, in BGR order.
+13. WHEN given each of these files from `spike/samples/real/`, THE Engine SHALL return `RESOLVED` from the TIFF probe with `revision_path = []`, `encoding = "none"`, `header_size = 8` and the values below. Each data region equals the declared strip, and its length equals `width × height × bit_depth / 8`:
+    - `goimage_no_compress.tiff`: 16×15, `bit_depth = 32` (4 samples of 8 bits), data region `[8, 968)`;
+    - `goimage_no_rps.tiff`: 16×15, `bit_depth = 32`, data region `[8, 968)`;
+    - `goimage_video-001-uncompressed.tiff`: 150×103, `bit_depth = 24` (3 samples of 8 bits), data region `[8, 46358)`;
+    - `sdlimage_sample.tif`: 23×42, `bit_depth = 24`, data region `[8, 2906)`.
+14. WHEN given `spike/samples/real/pillow_tiff_strip_planar_raw.tif` (PlanarConfiguration 2), THE Engine SHALL return `FAILED`, and the TIFF probe SHALL have recorded `probe_precondition_failed` naming the planar configuration.
 
 ### Requirement 8: Field Integrity and Rendering
 
@@ -391,6 +408,8 @@ These decisions are final. Each is recorded with its reason so later work does n
 18. WHEN the spec emitted for `mystery_d` is given to the reference reader, THE reference reader SHALL enumerate candidates that include the true layout.
 19. THE emitted `requirements.md` and `design.md` for `mystery_e` and `mystery_d` SHALL pass Kiro's spec format validation.
 20. WHEN a probe produced the result and that probe recorded `probe_precondition_failed` or `field_out_of_bounds` (a `RejectionEntry` whose source is the probe's name and whose reason is one of those two), THE emitted spec SHALL have layout kind `file` with this file's literal values for the image dimensions, bit depth, alignment, data region and encoding, and SHALL state explicitly that it describes this one file only and not the format, because the file broke the format's own rules. This criterion takes precedence over criterion 7. For an `AmbiguousResult` it applies to each candidate separately.
+21. WHERE the TIFF layout's tag table has an array entry (`bits_per_sample`), THE emitted `requirements.md` SHALL state its rules: the count range, where the values are read (inline when they fit the 4-byte value field, otherwise at the offset held in it), that every value must be equal, and that the field's value is that common value. THE reference reader SHALL apply those rules from the layout alone.
+22. WHERE a tag table entry declares an expected value (`planar_configuration` = 1), THE emitted `requirements.md` SHALL state it, and THE reference reader SHALL return an error when the value read differs.
 
 ### Requirement 10: Outcomes and Ambiguity
 
