@@ -119,7 +119,7 @@ flowchart LR
 | `engine/types.py` | `FieldRecord`, `Hypothesis`, `hypothesis_key`, `RejectionEntry`, `Candidate`, `VerifiedHypothesis`, `AmbiguousResult`, `FailureReport`, `EngineResult`, `REASONS`, `TERMINATIONS` |
 | `engine/budget.py` | `Budget(deadline_seconds, cap=10_000, clock=time.monotonic)` with `stop_reason() -> str \| None`, `charge() -> str \| None`, `checks: int` |
 | `engine/trailers.py` | `TrailerEntry`, `DeclaredArea`, `TRAILER_REGISTRY`, `match_trailer(data, header_size, origin, registry=TRAILER_REGISTRY) -> tuple[int, str \| None]` (unchanged), `trailer_data_end(data, header_size, origin, registry=TRAILER_REGISTRY) -> tuple[int, str \| None, str \| None]` |
-| `engine/closure.py` | `row_stride(width, bit_depth, row_alignment) -> int`, `RleResult`, `rle_pcx_decode(data, start, end, max_output_bytes) -> RleResult`, `rle_pcx_output_length(data, start, end) -> int \| None`, `ClosureVerdict`, `check_closure(h, data) -> ClosureVerdict` |
+| `engine/closure.py` | `row_stride(width, bit_depth, row_alignment) -> int`, `RleResult`, `rle_pcx_decode(data, start, end, max_output_bytes) -> RleResult`, `rle_pcx_output_length(data, start, end) -> int \| None`, `ClosureVerdict`, `check_closure(h, data) -> ClosureVerdict`, `readings(h, data) -> tuple[Hypothesis, ...]` |
 | `engine/probes.py` | `ProbeOutcome`, `probe_pcx`, `probe_tga`, `probe_pbm`, `probe_tiff`, each `(data) -> ProbeOutcome \| None`; `PROBES` |
 | `engine/strategies.py` | `inclusive_bounds`, `rle_pcx`, `row_padding_variants`, each `(h) -> tuple[Hypothesis, ...]`; `STRATEGIES` |
 | `engine/generic.py` | `HEADER_LENGTHS`, `WIDTH_HEIGHT_FORMATS`, `VALID_BIT_DEPTHS`, `GenericOutcome`, `generic_search(data, budget, on_reject) -> GenericOutcome` |
@@ -382,6 +382,39 @@ def check_closure(h, data):
 ```
 
 `check_closure` is wrapped in `try/except Exception`, and an exception becomes `reject("internal_error")`. This is a last line of defence; inner code bounds-checks every read.
+
+### Trailer readings (`engine/closure.py`, Requirement 1.17, Decision Record item 24)
+
+A matched trailer is a reading, not a fact. One helper in `closure.py` (not `engine.py`, so Generic Search and the engine share it) lists the readings of a hypothesis. `check_closure` is unchanged.
+
+```
+def readings(h, data):
+    """Never raises. Trailer reading first, then end-of-file reading. Never ranks."""
+    if h.data_end is not None: return (h,)                       # TIFF, or an end-of-file reading: one reading
+    _, name = match_trailer(data, h.header_size, h.probe_name)
+    if name is None: return (h,)                                 # no entry matches: one reading, as before
+    return (h, replace(h, data_end=len(data)))                   # trailer reading (data_end None), then end-of-file
+```
+
+The end-of-file reading is the same hypothesis with `data_end = len(data)`. `check_closure` uses it directly, reports trailer none, and its key differs from the trailer reading's key, so deduplication treats each reading separately. `readings` is applied to every registry entry with no condition on signature length and no special case for any entry. It catches any exception and returns `(h,)`.
+
+- **Probe phase.** For each seed, every reading is charged (`budget.charge()`) and checked. Closers become winners in order (trailer reading, then end-of-file). A failed reading is a `RejectionEntry` with the probe's name as source. The `seeds` list kept for revision holds the base seed (`data_end None`) only.
+- **Revision phase.** For each child a strategy produces, every reading of the child is deduplicated by its own key against `seen`, charged and checked. A failed base child (`data_end None`) enters the next frontier once, as today. An end-of-file reading is never expanded separately, because its base child is. The `seen` map starts with every reading key of every seed at depth 0. A skipped same-depth duplicate adds an alternative path for its own key as before.
+- **Generic Search.** Per header length `L`, the trailer reading's sizes are enumerated as today, with `rle_pcx` only for the `pcx_palette_256` trailer reading (Decision Record item 15 unchanged). When a trailer matched, the end-of-file reading follows, sized `len(data) − L` with encoding `none`; its hypotheses carry `data_end = len(data)`.
+
+```
+# in _search, per L, after computing (end, trailer, t_err, t_detail) = trailer_data_end_detail(data, L, "generic")
+matched = match_trailer(data, L, "generic")[1] is not None
+if t_err:
+    on_reject(None, None, reason=t_err, detail=t_detail)         # as today (task 18.5); no continue
+    trailer_sizes = []
+else:
+    trailer_sizes = [("none", end - L, None)] + ([("rle_pcx", n, None)] if trailer == "pcx_palette_256" and n else [])
+sizes = trailer_sizes + ([("none", len(data) - L, len(data))] if matched else [])   # trailer reading first
+# each size entry builds Hypothesis(..., data_end=<third element>); every check is budget.charge()d
+```
+
+The discovery order is the trailer reading's sizes, then the end-of-file reading, at every header length. The order only fixes the discovery order of candidates; it never ranks them.
 
 ### Probes (`engine/probes.py`)
 
@@ -654,6 +687,8 @@ Kind and content by origin:
 | Any probe that recorded `probe_precondition_failed` or `field_out_of_bounds` | `file` | This file's literal values for image, data region and encoding; the fields it read are listed with `expect: null`. The prose states that the file broke the format's rules and the document describes this one file only (Requirement 9.20). |
 | Generic | `file` | The first equivalent read of each field is used as the field; all reads appear in `equivalent_reads`. The prose states that this is one file's layout, not a format. |
 
+**End-of-file readings** (Requirement 9.27). A candidate whose hypothesis has `data_end = len(data)` and whose origin is `pcx`, `tga` or `generic` is an end-of-file reading. `emit/layout.py` emits it with `data.end` equal to `null` and `data.trailers` equal to `[]`, so the reference reader runs the region to the end of the file (the existing "first matching trailer, otherwise file end" rule finds no trailer). Its `requirements.md` states that no trailer is stripped, using the existing "THE parser SHALL NOT strip any trailer" line. The rest of the layout (fields, image, encoding) follows the per-origin table. Other candidates, including TIFF candidates with a declared `data_end`, emit as before. The reference reader needs no change for this rule; the acceptance test asserts it reproduces the crafted file of Requirement 7.19.
+
 #### Emitted `requirements.md`
 
 The emitted file uses the Kiro headings `# Requirements Document`, `## Introduction`, `## Glossary`, `## Requirements`, `### Requirement N: …`, `**User Story:**` and `#### Acceptance Criteria`. Its requirements are:
@@ -909,6 +944,12 @@ For any bytes, any `header_size` and any origin, `trailer_data_end` never raises
 
 **Validates: Requirements 1.3, 1.15, 6.4**
 
+### Property 17: Readings are complete
+
+For any bytes and any hypothesis with no declared `data_end` whose trailer matches (`match_trailer` returns a name for its origin), `readings(h, data)` returns exactly two hypotheses, the trailer reading (`data_end None`) first and the end-of-file reading (`data_end = len(data)`) second. A run on such bytes closure-checks both readings of every such hypothesis it examines, unless the budget stops it (deadline or cap), and each check is charged. When no entry matches, or `data_end` is declared, `readings` returns one hypothesis. `readings` never raises. A trailer reading rejected as `field_out_of_bounds` does not prevent the end-of-file reading from being checked.
+
+**Validates: Requirements 1.17, 4.10, 6.4**
+
 ## Error Handling
 
 - **Public entry points.** `Engine.run`, every probe, every strategy, `check_closure`, `rle_pcx_decode`, `generic_search`, `row_coherence`, `render`, `emit_spec` and `write_spec` return structured values. Each has a last-resort `try/except Exception` that converts to its error value. Inner code bounds-checks every read and must not rely on the wrapper.
@@ -930,4 +971,5 @@ For any bytes, any `header_size` and any origin, `trailer_data_end` never raises
 - **Deadline tests.** These use an injected clock, so no test depends on wall-clock timing. The one exception is Property 2, whose 0.25-second margin is stated.
 - **Property tags.** Each property test is tagged `Feature: structure-inference-engine, Property N: <title>`.
 - **Emitted-spec acceptance.** This runs `python -m pytest` on the directory holding the parser module and the emitted `test_<module>.py`, with no file argument, in a subprocess with that directory on `PYTHONPATH`. The final checkpoint validates the emitted `requirements.md` and `design.md` for mystery_e and mystery_d with Kiro's spec format validator.
+- **Trailer readings.** The crafted 1,036-byte file of Requirement 7.19 is built in code (header `struct.pack('<III', 32, 32, 8)`, 1,024 pixel bytes `(x*7+y*3)%200+20`, optional `0x0C` at 267). A probe-path test uses a crafted PCX or TGA whose trailer reading fails and whose end-of-file reading closes; a revision-path test uses a PCX that closes only after a strategy. Expected values come from Requirement 1.17, never from running the code. Property 17 uses an independent model: it builds bytes with and without a matching trailer signature and asserts the number and order of readings and the number of charged checks.
 - **TGA footer declarations.** Requirement 1.16's crafted inputs are built in code from the stated byte layout (18-byte header, 64 pixel bytes, 26-byte footer, 495-byte extension area) and assert the exact outcome of each branch. Property 16 needs an independent model of the rule: its generator builds a prefix, an optional extension area and a footer with arbitrary offset values, plus plain `st.binary()` for the never-raises half. `pillow_p_16.tga` and `pillow_rgb32rle.tga` are asserted as in Requirements 7.16 and 7.17, and the pixel comparison for `pillow_p_16.tga` uses Pillow only inside the test. The emitted-layout check (Requirements 9.23 to 9.25) round-trips the layout JSON, then runs the reference reader on the spec emitted for `pillow_p_16.tga` and expects [560, 16944); a test asserts that the reader's source still imports nothing from `necropsy`.

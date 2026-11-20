@@ -627,6 +627,48 @@ def test_trailer_data_end_never_raises_on_junk_req_1_15():
 # "TRUEVISION-XFILE.\0" @72. Header lengths are 4..256 step 4 below the file length; those with
 # L <= 64 (4, 8, ..., 64: 16 values) match the footer entry and fail on the offset.
 
+# Feature: structure-inference-engine, Property 17: Readings are complete
+# **Validates: Requirements 1.17, 4.10, 6.4**
+@st.composite
+def _readings_inputs(draw):
+    body = draw(st.binary(max_size=900))
+    plant = draw(st.sampled_from(["none", "pcx", "tga"]))
+    if plant == "pcx":
+        body += b"\x0c" + draw(st.binary(min_size=768, max_size=768))
+    elif plant == "tga":
+        body += draw(st.binary(min_size=8, max_size=8)) + b"TRUEVISION-XFILE.\x00"
+    header_size = draw(st.integers(-5, 1000))
+    origin = draw(st.sampled_from(["pcx", "tga", "pbm", "tiff", "generic"]))
+    data_end = draw(st.one_of(st.none(), st.integers(-5, 3000)))
+    return body, header_size, origin, data_end
+
+
+@settings(max_examples=100, deadline=None)
+@given(_readings_inputs())
+def test_property_17_readings_are_complete(args):
+    from dataclasses import replace
+    from necropsy.engine.closure import readings
+    data, header_size, origin, data_end = args
+    h = Hypothesis(width=4, height=4, bit_depth=8, header_size=header_size,
+                   data_end=data_end, probe_name=origin)
+    out = readings(h, data)
+    matched = match_trailer(data, header_size, origin)[1] is not None
+    if data_end is None and matched:
+        assert out == (h, replace(h, data_end=len(data)))
+        assert out[0].data_end is None
+    else:
+        assert out == (h,)
+
+
+@settings(max_examples=100, deadline=None)
+@given(st.binary(max_size=2000), st.integers(), st.sampled_from(["pcx", "tga", "generic", "x"]))
+def test_property_17_readings_never_raises_on_arbitrary_bytes(data, header_size, origin):
+    from necropsy.engine.closure import readings
+    h = Hypothesis(width=4, height=4, bit_depth=8, header_size=header_size, probe_name=origin)
+    out = readings(h, data)
+    assert isinstance(out, tuple) and out[0] == h and len(out) in (1, 2)
+
+
 def test_generic_records_footer_rejections_req_1_15():
     data = bytes(64) + _struct.pack("<II", 70, 0) + _SIG
     assert len(data) == 90

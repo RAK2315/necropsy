@@ -67,7 +67,7 @@ def test_no_third_party_requests(report, base_url):  # noqa: F811
 
 def test_reduced_motion_opens_at_the_final_step_with_the_image_drawn(report):
     r = report["reduced"]
-    assert r["counter"] == "step 10 of 10"
+    assert r["counter"] == "steps 19\u201320 of 20"
     assert r["outcome"] == "visible"
     assert r["bottomRowAlpha"] == 255
 

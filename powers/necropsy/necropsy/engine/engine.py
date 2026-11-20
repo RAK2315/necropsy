@@ -6,7 +6,7 @@ import time
 from typing import Callable
 
 from necropsy.engine.budget import Budget
-from necropsy.engine.closure import ClosureVerdict, check_closure, row_stride
+from necropsy.engine.closure import ClosureVerdict, check_closure, readings, row_stride
 from necropsy.engine.coherence import coherence_gap, row_coherence
 from necropsy.engine.generic import generic_search
 from necropsy.engine.probes import PROBES
@@ -73,15 +73,16 @@ class Engine:
             if outcome.seed is None:  # Requirement 2.10: declined; no seed, no check
                 continue
             seeds.append(outcome.seed)
-            stop = budget.charge()
-            if stop:
-                return self._failure(stop, data, budget, rejections, winners)
-            verdict = check_closure(outcome.seed, data)
-            if verdict.ok:
-                winners.append((outcome.seed, verdict))
-            else:
-                rejections.append(RejectionEntry(
-                    verdict.reason, name, outcome.seed, verdict.discrepancy))
+            for reading in readings(outcome.seed, data):  # trailer reading, then end of file
+                stop = budget.charge()
+                if stop:
+                    return self._failure(stop, data, budget, rejections, winners)
+                verdict = check_closure(reading, data)
+                if verdict.ok:
+                    winners.append((reading, verdict))
+                else:
+                    rejections.append(RejectionEntry(
+                        verdict.reason, name, reading, verdict.discrepancy))
 
         if winners:
             candidates: list[Candidate] = []
@@ -123,7 +124,8 @@ class Engine:
     def _revise(self, seeds: list[Hypothesis], data: bytes, budget: Budget,
                 rejections: list[RejectionEntry]) -> EngineResult:
         """Breadth-first revision to depth 3. Stops at the first closing depth."""
-        seen: dict[tuple, int] = {hypothesis_key(s): 0 for s in seeds}
+        seen: dict[tuple, int] = {
+            hypothesis_key(r): 0 for s in seeds for r in readings(s, data)}
         alternatives: dict[tuple, list[tuple[str, ...]]] = {}
         frontier = list(seeds)
         for depth in REVISION_DEPTHS:
@@ -131,24 +133,27 @@ class Engine:
             next_frontier: list[Hypothesis] = []
             for h in frontier:
                 for _name, fn in STRATEGIES:
-                    for c in fn(h):
-                        k = hypothesis_key(c)
-                        if k in seen:
-                            if seen[k] == depth:
-                                alternatives.setdefault(k, []).append(c.revision_path)
-                            continue
-                        seen[k] = depth
-                        stop = budget.charge()
-                        if stop:
-                            return self._failure(stop, data, budget, rejections, winners)
-                        v = check_closure(c, data)
-                        if v.ok:
-                            winners.append((c, v))
-                        else:
-                            rejections.append(RejectionEntry(
-                                v.reason, "revision:" + "->".join(c.revision_path),
-                                c, v.discrepancy))
-                            next_frontier.append(c)
+                    for child in fn(h):
+                        for c in readings(child, data):
+                            k = hypothesis_key(c)
+                            if k in seen:
+                                if seen[k] == depth:
+                                    alternatives.setdefault(k, []).append(c.revision_path)
+                                continue
+                            seen[k] = depth
+                            stop = budget.charge()
+                            if stop:
+                                return self._failure(stop, data, budget, rejections, winners)
+                            v = check_closure(c, data)
+                            if v.ok:
+                                winners.append((c, v))
+                            else:
+                                rejections.append(RejectionEntry(
+                                    v.reason, "revision:" + "->".join(c.revision_path),
+                                    c, v.discrepancy))
+                                # An end-of-file reading is never expanded: its base child is.
+                                if c is child:
+                                    next_frontier.append(c)
             if winners:
                 candidates: list[Candidate] = []
                 for c, v in winners:

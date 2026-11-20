@@ -199,7 +199,7 @@ def test_result_controls_enter_space(base_url):
   return JSON.stringify(out);
 })()
 """, reduced_motion=True)
-    assert got["counters"] == ["step 10 of 10", "step 9 of 10", "step 8 of 10"]
+    assert got["counters"] == ["steps 19\u201320 of 20", "steps 17\u201318 of 20", "steps 15\u201316 of 20"]
     assert got["pngs"] == 2
     assert got["specShown"] and got["examShown"]
     assert got["tab1"] == "design.md" and got["tab2"].startswith("test_")

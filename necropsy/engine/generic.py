@@ -11,7 +11,7 @@ from dataclasses import dataclass
 
 from .budget import Budget
 from .closure import check_closure, rle_pcx_output_length, row_stride
-from .trailers import trailer_data_end_detail
+from .trailers import match_trailer, trailer_data_end_detail
 from .types import FieldRecord, Hypothesis, hypothesis_key
 
 HEADER_LENGTHS = tuple(range(4, 257, 4))
@@ -62,15 +62,19 @@ def _search(data, budget, on_reject, found) -> GenericOutcome:
             if data[o] in VALID_BIT_DEPTHS:
                 depths.setdefault(data[o], []).append(o)
         end, trailer, t_err, t_detail = trailer_data_end_detail(data, L, "generic")
+        matched = match_trailer(data, L, "generic")[1] is not None
         if t_err:
             on_reject(None, None, reason=t_err, detail=t_detail)
-            continue
-        sizes = [("none", end - L)]
-        if trailer == "pcx_palette_256":
-            n = rle_pcx_output_length(data, L, end)
-            if n:
-                sizes.append(("rle_pcx", n))
-        for enc, S in sizes:
+            sizes = []
+        else:
+            sizes = [("none", end - L, None)]
+            if trailer == "pcx_palette_256":
+                n = rle_pcx_output_length(data, L, end)
+                if n:
+                    sizes.append(("rle_pcx", n, None))
+        if matched:  # end-of-file reading follows the trailer reading (Requirement 1.17)
+            sizes.append(("none", len(data) - L, len(data)))
+        for enc, S, declared_end in sizes:
             if S <= 0:
                 continue
             for W, w_reads in reads.items():
@@ -82,7 +86,7 @@ def _search(data, budget, on_reject, found) -> GenericOutcome:
                     h_reads = reads.get(Hh)
                     if not h_reads or not any(a[1] != b[1] for a in w_reads for b in h_reads):
                         continue
-                    h = Hypothesis(W, Hh, B, L, 1, enc, None,
+                    h = Hypothesis(W, Hh, B, L, 1, enc, declared_end,
                                    _fields(w_reads, h_reads, depths[B], data, B), "generic")
                     key = hypothesis_key(h)
                     if key in found:

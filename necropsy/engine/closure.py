@@ -93,6 +93,26 @@ def _accept(decoded: bytes, start: int, end: int, trailer: Optional[str]) -> Clo
     return ClosureVerdict(True, "", None, decoded, start, end, trailer)
 
 
+def readings(h, data: bytes) -> tuple:
+    """Readings of a hypothesis: the trailer reading first, then the end-of-file reading.
+
+    A matched trailer is a reading, not a fact (Requirement 1.17). A hypothesis with a
+    declared data_end, or with no matching registry entry, has one reading. Never
+    raises and never ranks.
+    """
+    try:
+        from dataclasses import replace
+        from .trailers import match_trailer
+        if h.data_end is not None:
+            return (h,)
+        _, name = match_trailer(data, h.header_size, h.probe_name)
+        if name is None:
+            return (h,)
+        return (h, replace(h, data_end=len(data)))
+    except Exception:
+        return (h,)
+
+
 def check_closure(h, data: bytes) -> ClosureVerdict:
     """Closure gate: decode [header_size, data_end) and require exact length and full consumption."""
     try:

@@ -155,7 +155,7 @@ def _rule_breaking_layout(cand, slug: str) -> dict:
     return out
 
 
-def _candidate_layout(cand, slug: str, rejections=()) -> dict:
+def _candidate_layout(cand, slug: str, rejections=(), data_len=None) -> dict:
     h = cand.hypothesis
     origin = h.probe_name
     path = h.revision_path
@@ -250,6 +250,11 @@ def _candidate_layout(cand, slug: str, rejections=()) -> dict:
         out["data"] = {"start": h.header_size, "end": None, "encoding": h.encoding,
                        "trailers": _trailers("generic")}
         out["equivalent_reads"] = reads
+    # Requirement 9.27: an end-of-file reading (data_end = len(data)) of a pcx, tga or
+    # generic candidate strips no trailer, so the reference reader runs to the file end.
+    if origin in ("pcx", "tga", "generic") and data_len is not None and cand.hypothesis.data_end == data_len:
+        out["data"]["end"] = None
+        out["data"]["trailers"] = []
     out["observed"] = _observed(cand)
     return out
 
@@ -262,7 +267,7 @@ def build_layout(result, data) -> dict:
         if status == "RESOLVED":
             cand = result.candidate
             slug = _slug_for({cand.hypothesis.probe_name}, data)
-            return _candidate_layout(cand, slug, getattr(result, "rejections", ()))
+            return _candidate_layout(cand, slug, getattr(result, "rejections", ()), len(data))
         if status == "UNRESOLVED_AMBIGUITY":
             probes = {c.hypothesis.probe_name for c in result.candidates}
             slug = _slug_for(probes, data)
@@ -270,7 +275,7 @@ def build_layout(result, data) -> dict:
                 "schema": SCHEMA,
                 "kind": "ambiguous",
                 "slug": slug,
-                "candidates": [_candidate_layout(c, slug, getattr(result, "rejections", ())) for c in result.candidates],
+                "candidates": [_candidate_layout(c, slug, getattr(result, "rejections", ()), len(data)) for c in result.candidates],
             }
         if status == "FAILED":
             return _error("nothing recovered: FAILED/" + str(getattr(result, "termination", "")))

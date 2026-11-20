@@ -717,7 +717,7 @@ Rules for every task:
     - Write the test first, from Requirement 1.15 and the design, and confirm it fails on the current code. Input: a crafted headerless file of 90 bytes: 64 zero bytes of data, then a 26-byte TGA 2.0 footer (`<I` extension_area_offset = 70, which lies inside the footer [64, 90); `<I` developer_area_offset = 0; then `TRUEVISION-XFILE.\x00`). Expected, derived from Requirement 1.15 and Requirement 4's header lengths (4 to 256 step 4, those below the file length): the result is FAILED; for each header length L in 4..64 (those with L <= F = 64, where the footer entry matches) exactly one RejectionEntry with reason `field_out_of_bounds`, source `generic`, hypothesis None, whose detail is `header_length <L>: extension_area_offset = 70 not in [<L>, 64)`; 16 such entries; no other rejection entries; the budget's checks count is 0 for those entries. Confirm first that no probe matches this file; if one does, report it instead of changing the input.
     - Fix `necropsy/engine/generic.py` (and a shared internal evaluation in `necropsy/engine/trailers.py`) as the design states.
     - _Requirements: 1.15_
-- [ ] 19. TIFF PhotometricInterpretation (Decision Record item 23)
+- [x] 19. TIFF PhotometricInterpretation (Decision Record item 23)
   - [x] 19.1 Read tag 262 in the TIFF probe
     - Test first. Write tests from Requirements 2.8 and 7.18 and confirm they fail on the current code:
       - for each of the seven real files in Requirement 7.18, the candidate has exactly one `photometric_interpretation` `FieldRecord` with the stated value, and its status, candidate key and data region equal the recorded baseline;
@@ -728,7 +728,7 @@ Rules for every task:
     - Before and after, run the engine over every file in `spike/samples/`, `spike/samples/external/` and `spike/samples/real/` and diff. The only permitted change is one extra field on TIFF candidates whose file has tag 262. Any other change stops the task.
     - _Requirements: 2.8, 7.18_
 
-  - [ ] 19.2 Emit the optional entry and read it in the reference reader
+  - [x] 19.2 Emit the optional entry and read it in the reference reader
     - Test first. Write tests from Requirement 9.26 and confirm they fail on the current code:
       - the emitted layout and `requirements.md` for `goimage_bw-uncompressed.tiff` contain the `photometric_interpretation` entry (after `planar_configuration`) and the EARS line;
       - the emitted spec for `mystery_e` is byte-identical to the one emitted before this task;
@@ -736,6 +736,33 @@ Rules for every task:
     - Then implement in `necropsy/emit/layout.py`, `necropsy/emit/render.py` and `tests/support/reference_reader.py`. The entry is appended only when the candidate read tag 262. The value is reported only.
     - Run the full suite, the adversary counts diff and the real-corpus table. Only the added field and line may change.
     - _Requirements: 9.26_
+
+- [x] 20. Trailer readings (Decision Record item 24)
+  - [x] 20.1 Check both data ends when a trailer matches
+    - Test first. Write these tests from Requirements 1.17, 4.10, 7.19 and 7.20 and confirm they fail on the current code, with inputs built in code:
+      - the crafted 1,036-byte file (`struct.pack('<III', 32, 32, 8)` + 1,024 pixel bytes `(x*7+y*3)%200+20`) with `0x0C` at byte 267: `UNRESOLVED_AMBIGUITY`, stage `generic`, exactly the candidates 32×8×32, 32×32×8 and 8×32×32, header 12, region `[12, 1036)`, trailer none; the same file without `0x0C`: the same three candidates and 3 checks;
+      - a probe-path test: a crafted PCX or TGA whose trailer reading fails and whose end-of-file reading closes, resolved at stage `probe` with data region ending at `len(data)`, and the failed trailer reading kept as a rejection with the probe's name as source;
+      - a revision-path test: a crafted PCX whose end-of-file reading closes only after a strategy, with the trailer reading rejected;
+      - both readings closing gives `UNRESOLVED_AMBIGUITY`, trailer reading first;
+      - a trailer reading rejected as `field_out_of_bounds` (crafted TGA footer) still leaves the end-of-file reading checked, in Generic Search and in the probe path;
+      - every extra reading is charged: with the cap monkeypatched to 1 on the probe-path input, the run gives `search_cap_exceeded`.
+    - Implement as design.md "Trailer readings" states: `readings(h, data)` in `necropsy/engine/closure.py`; the probe, revision and Generic Search changes in `necropsy/engine/engine.py` and `necropsy/engine/generic.py`. `check_closure` is unchanged. No signature-length threshold and no special case for any registry entry.
+    - **Property 17: Readings are complete**
+    - **Validates: Requirements 1.17, 4.10, 6.4**
+    - In `tests/test_closure.py`, with `@settings(max_examples=100, deadline=None)`, over arbitrary bytes, header sizes and origins, with and without a matching signature planted by the generator: `readings` never raises, returns two hypotheses (trailer reading first, `data_end = len(data)` second) when `match_trailer` names an entry and `data_end` is undeclared, and one otherwise. Add an engine-level check that both readings are closure-checked when the budget does not stop the run.
+    - Tag: `Feature: structure-inference-engine, Property 17: Readings are complete`
+    - Before and after, run the engine over every file in `spike/samples/`, `spike/samples/external/` and `spike/samples/real/` and diff. Status and candidate sets must not change (Requirement 7.20). Check counts and rejection lists may change only for files with a matched registry trailer; report each change. Any other change stops the task.
+    - Re-run `python -m tools.adversary` and diff `tools/adversary_counts.json`; report any difference. Run `tests/test_gate_perturbation.py` and the full suite.
+    - _Requirements: 1.17, 4.10, 7.19, 7.20_
+
+  - [x] 20.2 Emit end-of-file readings and reproduce them in the reference reader
+    - Test first. Write tests from Requirement 9.27 and confirm they fail on the current code:
+      - the layout of an end-of-file candidate (origin `pcx`, `tga` or `generic`, `data_end = len(data)`) has `data.end` equal to `null` and `data.trailers` equal to `[]`, and its `requirements.md` states that no trailer is stripped;
+      - for the crafted file of Requirement 7.19 (with `0x0C` at 267), the reference reader, given only the emitted `requirements.md`, reproduces each of the three candidates with data region `[12, 1036)` and pixels equal to the engine's;
+      - the emission of every other candidate (a TIFF candidate, a candidate with a matched trailer) is byte-identical to before.
+    - Then implement in `necropsy/emit/layout.py` and `necropsy/emit/render.py`. The reference reader in `tests/support/reference_reader.py` is expected to need no change; if it does, report why. It still imports only `json`, `re` and `struct`.
+    - Run the emission tests, the acceptance tests and the full suite.
+    - _Requirements: 9.27, 9.16_
 
 ## Notes
 
@@ -785,7 +812,9 @@ Rules for every task:
     { "id": 33, "tasks": ["18.5"] },
     { "id": 34, "tasks": ["19.1"] },
     { "id": 35, "tasks": ["19.2"] },
-    { "id": 36, "tasks": ["12"] }
+    { "id": 36, "tasks": ["20.1"] },
+    { "id": 37, "tasks": ["20.2"] },
+    { "id": 38, "tasks": ["12"] }
   ]
 }
 ```
