@@ -1,0 +1,148 @@
+"""Differential test over spike/samples/real/ (real-corpus spec).
+
+Expectations are stated here, not read from the engine:
+- every out-of-scope file is FAILED, with its termination recorded;
+- of the six invalid-by-construction files, five FAIL and ossfuzz RESOLVES with a literal two-pixel reading;
+- every in-scope valid file RESOLVES and its pixels equal Pillow's.
+Five in-scope files do not meet the last expectation today. They are strict xfails under diagnosis elsewhere;
+they flip to errors when fixed, which is the cue to regenerate the table.
+
+Pillow is not needed in CI: the committed results hold Pillow's canonical pixel hash. With Pillow installed, a
+separate test checks those hashes against a live decode.
+"""
+import hashlib
+import json
+
+import pytest
+
+from necropsy.emit import emit_spec
+from necropsy.engine import Engine
+from tools import real_corpus as rc
+
+MANIFEST = {e["file"]: e for e in rc.load_manifest()}
+COMMITTED = {r["file"]: r for r in json.loads(rc.OUT.read_text(encoding="utf-8"))}
+OSSFUZZ = "pillow_ossfuzz-4836216264589312.pcx"
+RGBA16 = "pillow_rgba16.tga"
+FILES = sorted(MANIFEST)
+
+
+def scope_of(name):
+    return rc.SCOPE_OVERRIDES.get(name, MANIFEST[name]["scope"])
+
+
+_RUNS = {}
+
+
+def run(name):
+    if name not in _RUNS:
+        data = (rc.REAL / name).read_bytes()
+        _RUNS[name] = (data, Engine().run(data))
+    return _RUNS[name]
+
+
+def test_corpus_is_all_81_files_and_unmodified():
+    assert len(MANIFEST) == 81
+    for name, e in MANIFEST.items():
+        assert hashlib.sha256((rc.REAL / name).read_bytes()).hexdigest() == e["sha256"], name
+
+
+def test_scope_counts():
+    scopes = [scope_of(n) for n in FILES]
+    assert scopes.count("in") == 26 and scopes.count("out") == 55
+    assert len(rc.INVALID_BY_CONSTRUCTION) == 6
+
+
+@pytest.mark.parametrize("name", FILES)
+def test_committed_results_match_a_live_run(name):
+    data, result = run(name)
+    row = COMMITTED[name]
+    assert row["our_status"] == result.status
+    assert row["termination"] == getattr(result, "termination", None)
+    assert row["checks"] == result.total_checks
+    assert row["candidates"] == [rc.describe(c) for c in rc.candidates_of(result)]
+
+
+OUT_OF_SCOPE = [n for n in FILES if scope_of(n) == "out" and n != OSSFUZZ]
+
+
+@pytest.mark.parametrize("name", OUT_OF_SCOPE)
+def test_out_of_scope_is_a_stated_refusal(name):
+    _, result = run(name)
+    assert result.status == "FAILED", f"{name} returned {result.status}"
+    assert result.termination in ("exhausted", "no_hypothesis_checked")
+
+
+@pytest.mark.parametrize("name", [n for n in rc.INVALID_BY_CONSTRUCTION if n != OSSFUZZ])
+def test_five_invalid_files_fail(name):
+    assert run(name)[1].status == "FAILED"
+
+
+def test_ossfuzz_resolves_with_a_literal_reading_and_a_file_layout_spec():
+    data, result = run(OSSFUZZ)
+    assert len(data) == 129 and data[0] == 0x0A and data[2] == 0x20
+    assert result.status == "RESOLVED" and result.stage == "generic"
+    h = result.candidate.hypothesis
+    assert (h.width, h.height, h.bit_depth, h.header_size, h.row_alignment, h.encoding) == (2, 1, 1, 128, 1, "none")
+    assert (result.candidate.data_start, result.candidate.data_end) == (128, 129)
+    # The PCX probe did not match (encoding byte 0x20), so it recorded no precondition failure.
+    assert result.rejections == ()
+    assert h.probe_name == "generic"
+    # The emitted spec describes this one file, not the PCX format.
+    requirements = dict(emit_spec(result, data).files)["requirements.md"]
+    assert 'layout kind `file`' in requirements
+    assert "this one file only" in requirements.lower() or "This is the layout of this one file only" in requirements
+
+
+IN_SCOPE_VALID = [n for n in FILES if scope_of(n) == "in" and n not in rc.INVALID_BY_CONSTRUCTION]
+OPEN = set(rc.OPEN_IN_SCOPE_FAILURES)
+RECOVERABLE = [n for n in IN_SCOPE_VALID if n not in OPEN and n != RGBA16]
+
+
+def canon(name):
+    data, result = run(name)
+    assert result.status == "RESOLVED", f"{name} returned {result.status}"
+    ours = rc.ours_canonical(MANIFEST[name], data, result.candidate)
+    assert isinstance(ours, tuple), ours
+    return ours
+
+
+@pytest.mark.parametrize("name", RECOVERABLE)
+def test_in_scope_pixels_equal_pillows(name):
+    ours = canon(name)
+    committed = COMMITTED[name]["pillow_pixels_sha256"]
+    assert committed is not None
+    assert hashlib.sha256(ours[0]).hexdigest() == committed
+
+
+@pytest.mark.parametrize("name", sorted(OPEN))
+@pytest.mark.xfail(strict=True, reason="in scope, valid, FAILED today; under diagnosis in another session")
+def test_open_in_scope_failures(name):
+    assert run(name)[1].status == "RESOLVED"
+
+
+def test_rgba16_differs_only_in_the_alpha_interpretation():
+    ours = canon(RGBA16)[0]
+    theirs = rc.pillow_canonical(rc.REAL / RGBA16, MANIFEST[RGBA16]) if rc_has_pillow() else None
+    # Canonical form here is (r5, g5, b5, alpha bit) per pixel. Colour bits agree; the alpha bit is inverted.
+    assert len(ours) == 8
+    if theirs is not None:
+        assert isinstance(theirs, tuple)
+        assert all(a == b for i, (a, b) in enumerate(zip(ours, theirs[0])) if i % 4 != 3)
+        assert all(a != b for i, (a, b) in enumerate(zip(ours, theirs[0])) if i % 4 == 3)
+    assert COMMITTED[RGBA16]["pixel_verdicts"] == ["mismatch: 2 of 8 canonical bytes differ"]
+
+
+def rc_has_pillow():
+    try:
+        import PIL  # noqa: F401
+        return True
+    except ImportError:
+        return False
+
+
+@pytest.mark.skipif(not rc_has_pillow(), reason="Pillow not installed")
+@pytest.mark.parametrize("name", [n for n in IN_SCOPE_VALID if COMMITTED[n]["pillow_pixels_sha256"]])
+def test_committed_pillow_hashes_hold_with_a_live_decode(name):
+    theirs = rc.pillow_canonical(rc.REAL / name, MANIFEST[name])
+    assert isinstance(theirs, tuple)
+    assert hashlib.sha256(theirs[0]).hexdigest() == COMMITTED[name]["pillow_pixels_sha256"]
