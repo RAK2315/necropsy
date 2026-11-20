@@ -68,9 +68,10 @@ own homework. Check it independently.
 5. No CRT, scanline or horror styling. The look is forensic examination.
 6. No Streamlit or Gradio.
 
-## Project state (20 Nov 2026)
-- Four Kiro specs in `.kiro/specs/`: `structure-inference-engine`,
-  `necropsy-ui`, `gate-adversary`, `real-corpus`.
+## Project state (20 Nov 2026, evening: build complete)
+- Five Kiro specs in `.kiro/specs/`: `structure-inference-engine`,
+  `necropsy-ui`, `gate-adversary`, `real-corpus`, `necropsy-mcp`.
+  Every task is checked except real-corpus task 4, a stale tracker.
 - Engine: four probes (PCX, TGA, PBM, TIFF), three revision strategies,
   generic search for headerless files, a closure gate on the decoded
   stream, ambiguity reporting instead of guessing, and spec emission.
@@ -78,16 +79,22 @@ own homework. Check it independently.
   item 20 (the TIFF probe reads the BitsPerSample array), item 21 (a
   probe can say a declaration is impossible) and item 22 (the TGA 2.0
   footer's offsets end the data region).
-- Tests in CI at `76feacb`: 769 Python passed, 1 skipped (the
+- Tests in CI at `93e20bb`: 832 Python passed, 1 skipped (the
   open-failures test, whose list is now empty), 22 front-end passed.
-  CI installs Pillow so the pixel comparisons run.
+  CI installs Pillow and mcp so the pixel comparisons and MCP tests run.
+- MCP server `necropsy_mcp/` (analyse, emit_spec) and the Kiro Power
+  `powers/necropsy/`, both checked from inside Kiro. analyse drops
+  pixel buffers, the spec and value_repr; Kiro truncates tool results
+  over 30,000 characters; largest corpus result is 25,890.
 - Real corpus: 81 files from six upstream decoder test suites in
   `spike/samples/real/`. 25 RESOLVED and 56 FAILED as committed in
   `docs/REAL-CORPUS-RESULTS.md`, with pixels compared to Pillow 12.2.0.
   Scope comes only from `manifest.json`.
-- UI: tasks 1 to 15 and 17 to 19 done. The host gate passed on
-  20 Nov: cold analyse 1.44 s on the idle canary. 16 (final deploy and
-  acceptance) runs last. Live at https://necropsy.vercel.app.
+- UI: all 22 tasks done, including keyboard and contrast (21) and the
+  dark colour scheme (22). The host gate passed on 20 Nov: cold analyse
+  1.44 s on the idle canary. Final acceptance (task 16) passed on the
+  live URL; `21dc11b` is deployed at https://necropsy.vercel.app.
+  Captures in `docs/acceptance/`.
   `necropsy-coldtest` has been used for its one cold hit: never
   redeploy it.
 - The Hypothesis-found property-12 failure (a malformed TIFF) was
@@ -97,7 +104,6 @@ own homework. Check it independently.
 ## Still open
 - Demo video, under 3 minutes, public on YouTube.
 - The Kiro usage write-up and the Devpost submission.
-- UI task 16, last.
 - Revoke the Vercel protection bypass secret on both projects.
 - Pre-submission checklist: `notes/submit.md` (gitignored).
 
