@@ -340,14 +340,14 @@ Every read goes through one helper. The helper returns `None` instead of raising
 
 ```
 def read(data, name, offset, fmt) -> FieldRecord | None
-ProbeOutcome(seed: Hypothesis, rejections: tuple[RejectionEntry, ...])
+ProbeOutcome(seed: Hypothesis | None, rejections: tuple[RejectionEntry, ...])   # seed None only when the probe declines (Requirement 2.10)
 ```
 
 A probe returns `None` only for a signature mismatch or a file shorter than its minimum length. After a signature match, it always returns a `ProbeOutcome`. Values it cannot read are 0, and it attaches `field_out_of_bounds` or `probe_precondition_failed` entries.
 
 | Probe | Min length | Signature | Fields (offset, format) | Seed |
 |---|---|---|---|---|
-| PCX | 128 | `0x00 == 0x0A`, `0x02 ∈ {0,1}` | encoding 0x02 `B`; bit_depth 0x03 `B`; xmin 0x04 `<H`; ymin 0x06 `<H`; xmax 0x08 `<H`; ymax 0x0A `<H`; planes 0x41 `B`; bytes_per_line 0x42 `<H` | width = xmax, height = ymax, header 128, alignment 1, encoding none (0x00) or rle_pcx (0x01), bounds set |
+| PCX | 128 | `0x00 == 0x0A` (encoding byte `0x02 ∉ {0,1}` declines: no seed, one `probe_precondition_failed`, Requirement 2.10) | encoding 0x02 `B`; bit_depth 0x03 `B`; xmin 0x04 `<H`; ymin 0x06 `<H`; xmax 0x08 `<H`; ymax 0x0A `<H`; planes 0x41 `B`; bytes_per_line 0x42 `<H` | width = xmax, height = ymax, header 128, alignment 1, encoding none (0x00) or rle_pcx (0x01), bounds set |
 | TGA | 18 | `0x01 ∈ {0,1}`, `0x02 ∈ {1,2,3,9,10,11}` | id_length 0x00 `B`; color_map_type 0x01 `B`; image_type 0x02 `B`; color_map_length 0x05 `<H`; color_map_entry_size 0x07 `B`; width 0x0C `<H`; height 0x0E `<H`; bit_depth 0x10 `B`; image_descriptor 0x11 `B` (bit 5 set = top-left origin; reported, not acted on) | header = 18 + id_length + color_map_type × color_map_length × ceil(entry_size / 8); encoding none for 1–3, rle_tga for 9–11 |
 | PBM | 7 | `0x00..0x02 == b"P4\n"` | magic 0x00 `3s`; width at token offset `<n>s`; height at token offset `<n>s` | bit_depth 1, alignment 1, header = offset after dimensions line |
 | TIFF | 8 | `0x00..0x01 ∈ {II, MM}` and magic 42 in that order | byte_order 0x00 `2s`; magic 0x02 `oH`; ifd_offset 0x04 `oI`; ifd_entry_count at ifd_offset `oH`; tag values at entry + 8 (`oH` for SHORT, `oI` for LONG) | width, height, bit_depth = bps × spp (bps from the BitsPerSample array, all entries equal), header = strip_offset, data_end = strip_offset + strip_byte_count, encoding none if compression 1; planar_configuration must be 1 |

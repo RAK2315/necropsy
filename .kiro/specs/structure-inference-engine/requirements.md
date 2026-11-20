@@ -51,7 +51,7 @@ These decisions are final. Each is recorded with its reason so later work does n
 
 1. **Closure is a hard gate.** A hypothesis that does not close is rejected. No plausibility score can admit it.
 2. **Probes read declarations and never apply conventions.** A probe that reads a byte saying "RLE compressed", ignores it, fails closure and then has a revision strategy guess RLE would be theatre. A probe applies its format's fixed layout (offsets, field widths, header length, byte order) and reads declarations. Value conventions such as inclusive bounds are left to revision.
-3. **A signature match always emits a seed.** Revision can only operate on seeds. A probe that matches but emits nothing would make every damaged file of that format unrecoverable. This is a general rule, not a TIFF special case.
+3. **A signature match always emits a seed, unless the declaration needed to build it is impossible.** (Amended by item 21.) Revision can only operate on seeds. A probe that matches but emits nothing would make every damaged file of that format unrecoverable. This is a general rule, not a TIFF special case.
 4. **Closure consumes the whole data region.** The earlier decoder stopped when its output was full and never checked for leftover input, so wrong, smaller images closed. On mystery_b, 224 of 1,521 (width, height) pairs below 40 closed, including the naive 7×7. Closure now requires both an exact output length and full consumption of `[header_size, data_end)`. Trailers are handled by a registry of self-declaring trailers, not by format special cases.
 5. **Three revision strategies, each with a corpus case.** `endianness_flip`, `field_width_variants` and `header_length_scan` were deleted from revision. Every probe knows its byte order, field widths and header length from its format specification (PCX 128, TGA 18 + id_length + colour map, PBM parsed from text, TIFF from tag 273), so none has an honest probe-revision case. They remain generic-search axes. `header_length_scan` also produced wrong closing answers on mystery_i.
 6. **Every phase collects all closers.** Under the deleted four-strategy design, the correct answer for mystery_i surfaced only because `inclusive_bounds` happened to be listed first. Ordering is not evidence. The probe phase, the revision phase and generic search each collect every closing hypothesis at their stage, and more than one is an unresolved ambiguity.
@@ -69,6 +69,7 @@ These decisions are final. Each is recorded with its reason so later work does n
 18. **A run that checked nothing does not say it tried everything.** `exhausted` states that hypotheses within the search axes were checked and none closed. For an input such as a text file, Generic Search can finish with 0 closure checks, and `exhausted` would then claim work that never happened. `no_hypothesis_checked` says only that no hypothesis reached the closure gate. `input_too_short` is the precedent for a termination that names its specific case.
 19. **Cross-reference: closure alone admits about 2% of arbitrary layouts.** Measured in the `gate-adversary` spec (`.kiro/specs/gate-adversary/design.md`, "Finding"): the gate's strength comes from where hypotheses come from, not from closure in isolation. Documentation only; no requirement here changes.
 20. **The TIFF probe reads the BitsPerSample array.** The probe discarded any tag whose count was not 1. For RGB and RGBA files BitsPerSample has one entry per sample (3 or 4), so it was recorded as missing even though the file declares it, and the probe then rejected `samples_per_pixel ≠ 1`. Four real files from upstream decoder suites failed as a result: `goimage_no_compress.tiff`, `goimage_no_rps.tiff`, `goimage_video-001-uncompressed.tiff` and `sdlimage_sample.tif`. This violated Decision Record item 2 and Requirement 2.4, that probes read the file's declarations. It was not a scope limit: the file states its bits per sample, and the probe threw the statement away. The fix reads the array, requires every entry to be equal (and records `probe_precondition_failed` rather than choosing one when they differ), drops the `samples_per_pixel` rejection, and accepts PlanarConfiguration 1 only, because planar configuration 2 is a different layout that the file declares. The arithmetic that confirmed it, each product equal to the declared StripByteCount of the file's single uncompressed strip at offset 8: 16 × 15 × 4 = 960 for both 16×15 files, 150 × 103 × 3 = 46350, and 23 × 42 × 3 = 2898.
+21. **A probe can say that a file's declaration is impossible.** Item 3 is amended as a general rule: a signature match emits a seed unless a declared field required to construct that seed holds a value the probe has no reading for. In that case the probe records `probe_precondition_failed` with no seed, and Generic Search proceeds. The case that raised it is `pillow_ossfuzz-4836216264589312.pcx`: byte 0 is the PCX signature, and its encoding byte `0x20` has no meaning in PCX. Before this rule the probe returned silently and left no trace, so the failure screen and the replay could not show that PCX was considered. Building a seed would have meant guessing an encoding the file does not declare, which item 2 forbids, and it would have blocked Generic Search for every file starting with `0x0A`. The rule is not PCX-specific: it gives the engine a statement it could not make before, "I recognise what this file claims to be, and the declaration is impossible", which matters for a project about damaged files. A value the probe can name but cannot decode, such as a TIFF compression code, is still a reading and still produces a seed.
 
 ## Requirements
 
@@ -110,11 +111,12 @@ These decisions are final. Each is recorded with its reason so later work does n
 
 1. THE Engine SHALL run the four probes in the order PCX, TGA, PBM, TIFF, and SHALL run every probe even after an earlier probe's seed closes.
 2. IF a file is shorter than a probe's minimum length, or a probe's signature does not match, THEN THE probe SHALL emit no seed and record no `RejectionEntry`.
-3. WHEN a probe's signature matches, THE probe SHALL emit exactly one seed carrying the values as read. Values that cannot be read SHALL be 0. WHERE a field is out of bounds, a precondition fails or the header cannot be parsed, THE probe SHALL additionally record a `RejectionEntry` with reason `field_out_of_bounds` or `probe_precondition_failed`.
+3. WHEN a probe's signature matches, THE probe SHALL emit exactly one seed carrying the values as read, UNLESS criterion 10 applies. Values that cannot be read SHALL be 0. WHERE a field is out of bounds, a precondition fails or the header cannot be parsed, THE probe SHALL additionally record a `RejectionEntry` with reason `field_out_of_bounds` or `probe_precondition_failed`.
 4. THE probes SHALL apply only their format's fixed layout (field offsets, field widths, header length rules, byte order) and the file's declarations. THE probes SHALL NOT apply value conventions, including inclusive bounds.
 5. **PCX probe.**
    - Minimum length: 128 bytes.
-   - Signature: byte `0x00 == 0x0A` and byte `0x02 ∈ {0x00, 0x01}`.
+   - Signature: byte `0x00 == 0x0A`.
+   - The encoding byte `0x02` is a declared field required to construct the seed. The probe has a reading for `0x00` and `0x01` only; any other value falls under criterion 10.
    - Fields:
      - `encoding` at `0x02` as `B`
      - `bit_depth` at `0x03` as `B`
@@ -194,6 +196,7 @@ These decisions are final. Each is recorded with its reason so later work does n
    - `samples_per_pixel` SHALL NOT be a precondition. It is read and multiplies `bits_per_sample` to give `bit_depth`.
    - Only single-strip TIFF files are in scope.
 9. WHEN exactly one distinct seed closes, THE Engine SHALL return `RESOLVED` with `revision_path = []`. WHEN more than one distinct seed closes, THE Engine SHALL return `UNRESOLVED_AMBIGUITY` with stage `probe`. WHEN no seed closes and at least one seed exists, THE Engine SHALL enter the revision phase with every seed as the seed pool.
+10. WHERE a probe's signature matches but a declared field required to construct that probe's seed holds a value the probe has no reading for, THE probe SHALL emit no seed and SHALL record exactly one `RejectionEntry` with reason `probe_precondition_failed`, source the probe's name, no hypothesis, and a detail naming the field, its offset and its value. This criterion does not change which bytes form any probe's signature. A value the probe can name but the closure gate cannot decode (for example TIFF compression 5, read as `tiff_compression_5`) is a reading, not this case.
 
 ### Requirement 3: Revision Strategies
 
@@ -221,7 +224,7 @@ These decisions are final. Each is recorded with its reason so later work does n
 
 #### Acceptance Criteria
 
-1. WHEN no probe signature matches, THE Engine SHALL run Generic Search.
+1. WHEN no probe emitted a seed, THE Engine SHALL run Generic Search. This includes a probe that declined under Requirement 2.10; its rejection entry is kept.
 2. THE Generic Search SHALL try header lengths `L ∈ {4, 8, 12, …, 256}`, every multiple of 4 from 4 to 256 inclusive, in ascending order, and only those with `L < len(data)`. This set already contains every power of 2 from 4 to 256.
 3. FOR each header length `L`, THE Generic Search SHALL collect every read of width or height values: every pair of format `f ∈ {<H, >H, <I, >I, <i, >i}` and offset `o` with `o + size(f) ≤ L` whose value is greater than 0, grouped by value. `size` is 2 for `H` formats and 4 for `I` and `i` formats.
 4. FOR each header length `L`, THE Generic Search SHALL collect every bit-depth read: every offset `o < L` whose byte is in `{1, 4, 8, 16, 24, 32}`, read as `B`, grouped by value.
@@ -327,6 +330,7 @@ These decisions are final. Each is recorded with its reason so later work does n
     - `goimage_video-001-uncompressed.tiff`: 150×103, `bit_depth = 24` (3 samples of 8 bits), data region `[8, 46358)`;
     - `sdlimage_sample.tif`: 23×42, `bit_depth = 24`, data region `[8, 2906)`.
 14. WHEN given `spike/samples/real/pillow_tiff_strip_planar_raw.tif` (PlanarConfiguration 2), THE Engine SHALL return `FAILED`, and the TIFF probe SHALL have recorded `probe_precondition_failed` naming the planar configuration.
+15. WHEN given `spike/samples/real/pillow_ossfuzz-4836216264589312.pcx` (129 bytes, byte `0x00 = 0x0A`, encoding byte `0x02 = 0x20`), THE Engine SHALL return `RESOLVED` from Generic Search as a 2×1, 1-bit literal reading with header 128 and data region `[128, 129)`, and its rejection list SHALL contain exactly one entry: `probe_precondition_failed`, source `pcx`, no hypothesis, with a detail naming the encoding byte at `0x02` and its value `0x20`.
 
 ### Requirement 8: Field Integrity and Rendering
 
