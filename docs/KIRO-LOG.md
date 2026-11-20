@@ -512,3 +512,5 @@ Task 21 (`df1fb8c`): keyboard and contrast, tested with real key presses through
 - `--muted` is kept at `#959ca6` as extra margin, not as a fix: `#8a929d` passed every rendered pair (worst 4.85:1 on `#1f262f`, the selected field-table row).
 - The break that set `--muted` back to `#8a929d` was wrong: it targeted the hex highlight `#3a2c1c`, where `--muted` never renders (highlighted cells are drawn in `#f5c48a`, 8.44:1). The test was correct not to flag it. The 4.29:1 figure behind it paired every token with every background, not with what renders.
 - Replacement break: `--muted` = `#7f8792`, caught at 4.20:1 on `#1f262f` (also 4.31:1 on the header tint and 4.48:1 on the trailer tint). One offset back on `--faint` caught at 2.91:1. A no-change control passed.
+| 2026-11-20 16:24:30Z | PostFileCreate | `scratch.py` | `4320797` |
+| 2026-11-20 16:24:30Z | PostFileSave | `scratch.py` | `4320797` |
