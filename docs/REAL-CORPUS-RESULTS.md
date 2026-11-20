@@ -12,13 +12,13 @@ Design, decisions and limits: `.kiro/specs/real-corpus/design.md`.
 | `goimage_bw-packbits.tiff` | TIFF | out | FAILED (exhausted) | decodes (mode 1) 153x55 | n/a | compression PackBits |
 | `goimage_bw-uncompressed.tiff` | TIFF | in | RESOLVED | decodes (mode 1) 153x55 | match |  |
 | `goimage_invalid-palette-ref.tiff` | TIFF | out, invalid by construction | FAILED (exhausted) | refuses (UnidentifiedImageError) | n/a | compression Adobe Deflate, 2 strips |
-| `goimage_no_compress.tiff` | TIFF | in | FAILED (exhausted) | decodes (mode RGBA) 16x15 | n/a | Open: in scope, valid, and FAILED. Under diagnosis in another session; row left as measured. |
-| `goimage_no_rps.tiff` | TIFF | in | FAILED (exhausted) | decodes (mode RGBA) 16x15 | n/a | Open: in scope, valid, and FAILED. Under diagnosis in another session; row left as measured. |
+| `goimage_no_compress.tiff` | TIFF | in | RESOLVED | decodes (mode RGBA) 16x15 | match |  |
+| `goimage_no_rps.tiff` | TIFF | in | RESOLVED | decodes (mode RGBA) 16x15 | match |  |
 | `goimage_video-001-gray.tiff` | TIFF | out | FAILED (exhausted) | decodes (mode L) 150x103 | n/a | 2 strips |
 | `goimage_video-001-paletted.tiff` | TIFF | out | FAILED (exhausted) | decodes (mode P) 150x103 | n/a | compression Adobe Deflate, 2 strips |
 | `goimage_video-001-strip-64.tiff` | TIFF | out | FAILED (exhausted) | decodes (mode RGB) 150x103 | n/a | compression Adobe Deflate, 2 strips |
 | `goimage_video-001-tile-64x64.tiff` | TIFF | out | FAILED (exhausted) | decodes (mode RGB) 150x103 | n/a | compression Adobe Deflate, tiled |
-| `goimage_video-001-uncompressed.tiff` | TIFF | in | FAILED (exhausted) | decodes (mode RGB) 150x103 | n/a | Open: in scope, valid, and FAILED. Under diagnosis in another session; row left as measured. |
+| `goimage_video-001-uncompressed.tiff` | TIFF | in | RESOLVED | decodes (mode RGB) 150x103 | match |  |
 | `imagemagick_input.pcx` | PCX | out | FAILED (exhausted) | decodes (mode RGB) 70x46 | n/a | 3 planes |
 | `imagemagick_input.tga` | TGA | in | RESOLVED | decodes (mode RGB) 70x46 | match |  |
 | `imagemagick_input_p1.pbm` | PNM | out | FAILED (no_hypothesis_checked) | decodes (mode 1) 70x46 | n/a | P1 (only binary PBM, P4, has a probe) |
@@ -85,4 +85,4 @@ Design, decisions and limits: `.kiro/specs/real-corpus/design.md`.
 | `sdlimage_sample.pcx` | PCX | out | FAILED (exhausted) | decodes (mode RGB) 23x42 | n/a | 3 planes |
 | `sdlimage_sample.pnm` | PNM | out | FAILED (no_hypothesis_checked) | decodes (mode RGB) 23x42 | n/a | P6 (only binary PBM, P4, has a probe) |
 | `sdlimage_sample.tga` | TGA | out | FAILED (exhausted) | decodes (mode RGB) 23x42 | n/a | RLE TGA (image type 10) |
-| `sdlimage_sample.tif` | TIFF | in | FAILED (exhausted) | decodes (mode RGB) 23x42 | n/a | Open: in scope, valid, and FAILED. Under diagnosis in another session; row left as measured. |
+| `sdlimage_sample.tif` | TIFF | in | RESOLVED | decodes (mode RGB) 23x42 | match |  |

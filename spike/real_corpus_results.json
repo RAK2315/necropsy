@@ -186,13 +186,26 @@
   "manifest_scope": "in",
   "scope_reason": "single-strip uncompressed TIFF",
   "invalid_by_construction": false,
-  "our_status": "FAILED",
-  "stage": null,
-  "termination": "exhausted",
-  "checks": 3,
-  "candidates": [],
+  "our_status": "RESOLVED",
+  "stage": "probe",
+  "termination": null,
+  "checks": 1,
+  "candidates": [
+   {
+    "width": 16,
+    "height": 15,
+    "bit_depth": 32,
+    "header_size": 8,
+    "row_alignment": 1,
+    "encoding": "none",
+    "probe": "tiff",
+    "path": [],
+    "data_start": 8,
+    "data_end": 968
+   }
+  ],
   "expected_status": "RESOLVED",
-  "note": "Open: in scope, valid, and FAILED. Under diagnosis in another session; row left as measured.",
+  "note": "",
   "pillow_error": null,
   "pillow_decodes": true,
   "pillow_mode": "RGBA",
@@ -200,8 +213,10 @@
    16,
    15
   ],
-  "pixel_verdicts": [],
-  "pillow_pixels_sha256": null
+  "pixel_verdicts": [
+   "match"
+  ],
+  "pillow_pixels_sha256": "1d343c872d944a01aa4ae70a4cb05b96c1132a22905d1a45927ff8f95471606d"
  },
  {
   "file": "goimage_no_rps.tiff",
@@ -210,13 +225,26 @@
   "manifest_scope": "in",
   "scope_reason": "single-strip uncompressed TIFF",
   "invalid_by_construction": false,
-  "our_status": "FAILED",
-  "stage": null,
-  "termination": "exhausted",
-  "checks": 3,
-  "candidates": [],
+  "our_status": "RESOLVED",
+  "stage": "probe",
+  "termination": null,
+  "checks": 1,
+  "candidates": [
+   {
+    "width": 16,
+    "height": 15,
+    "bit_depth": 32,
+    "header_size": 8,
+    "row_alignment": 1,
+    "encoding": "none",
+    "probe": "tiff",
+    "path": [],
+    "data_start": 8,
+    "data_end": 968
+   }
+  ],
   "expected_status": "RESOLVED",
-  "note": "Open: in scope, valid, and FAILED. Under diagnosis in another session; row left as measured.",
+  "note": "",
   "pillow_error": null,
   "pillow_decodes": true,
   "pillow_mode": "RGBA",
@@ -224,8 +252,10 @@
    16,
    15
   ],
-  "pixel_verdicts": [],
-  "pillow_pixels_sha256": null
+  "pixel_verdicts": [
+   "match"
+  ],
+  "pillow_pixels_sha256": "1d343c872d944a01aa4ae70a4cb05b96c1132a22905d1a45927ff8f95471606d"
  },
  {
   "file": "goimage_video-001-gray.tiff",
@@ -330,13 +360,26 @@
   "manifest_scope": "in",
   "scope_reason": "single-strip uncompressed TIFF",
   "invalid_by_construction": false,
-  "our_status": "FAILED",
-  "stage": null,
-  "termination": "exhausted",
-  "checks": 3,
-  "candidates": [],
+  "our_status": "RESOLVED",
+  "stage": "probe",
+  "termination": null,
+  "checks": 1,
+  "candidates": [
+   {
+    "width": 150,
+    "height": 103,
+    "bit_depth": 24,
+    "header_size": 8,
+    "row_alignment": 1,
+    "encoding": "none",
+    "probe": "tiff",
+    "path": [],
+    "data_start": 8,
+    "data_end": 46358
+   }
+  ],
   "expected_status": "RESOLVED",
-  "note": "Open: in scope, valid, and FAILED. Under diagnosis in another session; row left as measured.",
+  "note": "",
   "pillow_error": null,
   "pillow_decodes": true,
   "pillow_mode": "RGB",
@@ -344,8 +387,10 @@
    150,
    103
   ],
-  "pixel_verdicts": [],
-  "pillow_pixels_sha256": null
+  "pixel_verdicts": [
+   "match"
+  ],
+  "pillow_pixels_sha256": "6b981fba7b86dbcdeff21716239466cb7fc65276c241c7672be702ec07c0901a"
  },
  {
   "file": "imagemagick_input.pcx",
@@ -2214,13 +2259,26 @@
   "manifest_scope": "in",
   "scope_reason": "single-strip uncompressed TIFF",
   "invalid_by_construction": false,
-  "our_status": "FAILED",
-  "stage": null,
-  "termination": "exhausted",
-  "checks": 3,
-  "candidates": [],
+  "our_status": "RESOLVED",
+  "stage": "probe",
+  "termination": null,
+  "checks": 1,
+  "candidates": [
+   {
+    "width": 23,
+    "height": 42,
+    "bit_depth": 24,
+    "header_size": 8,
+    "row_alignment": 1,
+    "encoding": "none",
+    "probe": "tiff",
+    "path": [],
+    "data_start": 8,
+    "data_end": 2906
+   }
+  ],
   "expected_status": "RESOLVED",
-  "note": "Open: in scope, valid, and FAILED. Under diagnosis in another session; row left as measured.",
+  "note": "",
   "pillow_error": null,
   "pillow_decodes": true,
   "pillow_mode": "RGB",
@@ -2228,7 +2286,9 @@
    23,
    42
   ],
-  "pixel_verdicts": [],
-  "pillow_pixels_sha256": null
+  "pixel_verdicts": [
+   "match"
+  ],
+  "pillow_pixels_sha256": "cc52c11a41aa260d6735b1526550049ffd88ea1c0c35256375fa400d64bcbb7d"
  }
 ]

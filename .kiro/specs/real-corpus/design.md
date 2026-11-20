@@ -13,13 +13,13 @@ Engine over all 81 files, default 5 s deadline. No run hit the deadline. No resu
 
 | Group | Files | Our status |
 |---|---:|---|
-| In scope, valid, pixels equal Pillow's | 18 | RESOLVED, match |
+| In scope, valid, pixels equal Pillow's | 22 | RESOLVED, match |
 | In scope, valid, known interpretation difference | 1 | RESOLVED, alpha bit differs (`pillow_rgba16.tga`) |
-| In scope, valid, open failure | 5 | FAILED (`exhausted`) |
+| In scope, valid, open failure | 1 | FAILED (`exhausted`) |
 | In scope, invalid by construction | 2 | FAILED (`exhausted`) |
 | Out of scope | 54 | FAILED: 40 `exhausted`, 14 `no_hypothesis_checked` |
 | Out of scope, invalid by construction | 1 | RESOLVED, literal reading (`pillow_ossfuzz-4836216264589312.pcx`) |
-| **Total** | **81** | 20 RESOLVED, 61 FAILED |
+| **Total** | **81** | 24 RESOLVED, 57 FAILED |
 
 In scope is 26 files after Decision 3 (25 by the manifest), out of scope is 55. The table with every file is `docs/REAL-CORPUS-RESULTS.md`.
 
@@ -37,7 +37,7 @@ These were made by the builder after the first measurement. They are recorded so
 
 3. **`libtiff_test_ifd_loop_to_self.tif` is in scope.** The manifest marked it out of scope because its IFD chain loops. A loop does not prevent the first IFD being read, and the engine recovers 20×20, 8-bit pixels that match Pillow. The manifest is not edited. `SCOPE_OVERRIDES` in the tool records the reclassification, and the table shows "in (reclassified)".
 
-4. **The five in-scope failures are not investigated here.** `goimage_no_compress.tiff`, `goimage_no_rps.tiff`, `goimage_video-001-uncompressed.tiff`, `sdlimage_sample.tif` and `pillow_p_16.tga` are in scope, valid, decodable by Pillow, and FAILED with `exhausted`. They are under diagnosis in another session. Their rows are as measured. In the test suite they are strict expected failures that keep the expectation (RESOLVED), so a fix turns each into an error that says to regenerate the table.
+4. **Four of the five in-scope failures were fixed by the engine; one stays open.** `goimage_no_compress.tiff`, `goimage_no_rps.tiff`, `goimage_video-001-uncompressed.tiff` and `sdlimage_sample.tif` were in scope, valid, decodable by Pillow, and FAILED with `exhausted`. The engine's Decision Record item 20 (the TIFF probe reads the BitsPerSample array) fixed them: all four now RESOLVE through the TIFF probe and their pixels match Pillow's. `pillow_p_16.tga` is in scope, valid, decodable by Pillow, and still FAILED with `exhausted`; it is not investigated here, its row is as measured, and in the test suite it is a strict expected failure that keeps the expectation (RESOLVED), so a fix turns it into an error that says to regenerate the table.
 
 ## Comparison
 

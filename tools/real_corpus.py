@@ -35,11 +35,7 @@ SCOPE_OVERRIDES = {
     "libtiff_test_ifd_loop_to_self.tif": "in",   # a looping IFD chain does not stop the first IFD being read
 }
 OPEN_IN_SCOPE_FAILURES = (   # in scope, valid, FAILED; under diagnosis elsewhere, rows left as measured
-    "goimage_no_compress.tiff",
-    "goimage_no_rps.tiff",
-    "goimage_video-001-uncompressed.tiff",
     "pillow_p_16.tga",
-    "sdlimage_sample.tif",
 )
 NOTES = {
     "pillow_ossfuzz-4836216264589312.pcx": (

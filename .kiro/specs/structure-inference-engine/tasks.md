@@ -631,18 +631,18 @@ Rules for every task:
     - Time them once with nothing else running and report against design.md "Measured Performance". Do not optimise.
     - _Requirements: 5.4_
 
-- [ ] 16. TIFF BitsPerSample array (Decision Record item 20)
-  - [ ] 16.1 Read the BitsPerSample array and PlanarConfiguration in the TIFF probe
+- [x] 16. TIFF BitsPerSample array (Decision Record item 20)
+  - [x] 16.1 Read the BitsPerSample array and PlanarConfiguration in the TIFF probe
     - Implement the amended Requirement 2.8 in `necropsy/engine/probes.py`: tag 258 array with `TIFF_MAX_SAMPLES = 32`, inline-or-pointer value location, one `FieldRecord` per value, all-equal rule; tag 284 `planar_configuration` (default 1, must be 1); remove the `samples_per_pixel ≠ 1` precondition. Other tags, the TGA probe, the PCX probe and every trailer rule are unchanged.
     - Tests in `tests/test_probes.py` from Requirement 2.8, inputs built in code: count 3 SHORT via pointer; count 2 SHORT inline; unequal values; count 33; pointer out of bounds; planar 2; samples_per_pixel 3 no longer rejected. Every `FieldRecord` round-trips.
     - _Requirements: 2.4, 2.8_
 
-  - [ ] 16.2 Express the array and expected-value rules in emitted specs
+  - [x] 16.2 Express the array and expected-value rules in emitted specs
     - `necropsy/emit/layout.py`, `necropsy/emit/render.py` and `tests/support/reference_reader.py` implement Requirements 9.21 and 9.22 and the design.md tag-table schema. The reader stays free of format knowledge and of any `necropsy` import.
     - Tests in `tests/test_emit.py`: for the four files of Requirement 7.13, the reference reader reproduces width, height, bit depth, data region and pixels from the emitted `requirements.md` alone, and the emitted test file passes with the reader's parser beside it.
     - _Requirements: 9.16, 9.21, 9.22_
 
-  - [ ] 16.3 Corpus gates and the real-corpus table
+  - [x] 16.3 Corpus gates and the real-corpus table
     - Before and after the change, run the engine over every file in `spike/samples/`, `spike/samples/external/` and `spike/samples/real/`, and diff. The only permitted changes are the four files of Requirement 7.13 becoming RESOLVED, and the rejection details of TIFF files that stay FAILED. Any other change stops the task.
     - Remove the four files from `OPEN_IN_SCOPE_FAILURES` in `tools/real_corpus.py`, regenerate `spike/real_corpus_results.json` and `docs/REAL-CORPUS-RESULTS.md` with `python -m tools.real_corpus`, and update the real-corpus spec's counts and Decision 4. Their pixels must equal Pillow's.
     - Re-run `python -m tools.adversary` and diff `tools/adversary_counts.json`; it must not change. Run `tests/test_gate_perturbation.py` and the full suite.
