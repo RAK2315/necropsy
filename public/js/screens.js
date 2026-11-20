@@ -26,7 +26,7 @@ export function imageFrame(cand, box, opts = {}) {
   well.style.width = well.style.height = box + 'px';
   let done = Promise.resolve();
   if (cand.render && cand.render.data_b64) {
-    const p = paint(cand.render, box - 16, box - 16, opts);
+    const p = paint(cand.render, box - 16, box - 16, { ...opts, bitDepth: cand.bit_depth });
     well.append(p.canvas);
     done = p.done;
   } else {
@@ -122,7 +122,7 @@ function ambiguityScreen(root, payload, bytes, base) {
   for (const well of grid.querySelectorAll('.card-well')) {
     const c = cands[Number(well.dataset.index)];
     well.style.width = well.style.height = CARD_BOX + 'px';
-    if (c.render && c.render.data_b64) well.append(paint(c.render, CARD_BOX - 12, CARD_BOX - 12).canvas);
+    if (c.render && c.render.data_b64) well.append(paint(c.render, CARD_BOX - 12, CARD_BOX - 12, { bitDepth: c.bit_depth }).canvas);
   }
   let selected = null;
   for (const card of grid.querySelectorAll('.card')) {

@@ -45,7 +45,7 @@ export function loadStrip(requestAnalysis) {
 function resolvedBody(p) {
   const c = p.candidates[0];
   const well = el('div', 'well strip-well');
-  if (c.render && c.render.data_b64) well.append(paint(c.render, 196, 120).canvas);
+  if (c.render && c.render.data_b64) well.append(paint(c.render, 196, 120, { bitDepth: c.bit_depth }).canvas);
   return [well, el('p', 'strip-dims mono', `${c.width} × ${c.height} · ${c.bit_depth}-bit · ${c.probe_name.toUpperCase()} probe`)];
 }
 
@@ -53,7 +53,7 @@ function ambiguityBody(p) {
   const grid = el('div', 'strip-thumbs');
   for (const c of p.candidates) {
     const box = el('div', 'strip-thumb');
-    if (c.render && c.render.data_b64) box.append(paint(c.render, 28, 28).canvas);
+    if (c.render && c.render.data_b64) box.append(paint(c.render, 28, 28, { bitDepth: c.bit_depth }).canvas);
     else box.title = c.render ? c.render.failure : 'no image';
     grid.append(box);
   }

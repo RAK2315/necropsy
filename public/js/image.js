@@ -28,7 +28,7 @@ export function toImageData(render) {
  * Draw render into a new canvas sized to fit boxW × boxH. Returns { canvas, done: Promise }.
  * reveal: paint rows top to bottom over at most 2 s instead of all at once.
  */
-export function paint(render, boxW, boxH, { reveal = false } = {}) {
+export function paint(render, boxW, boxH, { reveal = false, bitDepth } = {}) {
   const { width: w, height: h } = render;
   const size = fitSize(w, h, boxW, boxH);
   const canvas = document.createElement('canvas');
@@ -36,7 +36,7 @@ export function paint(render, boxW, boxH, { reveal = false } = {}) {
   canvas.height = size.height;
   canvas.className = 'pixels';
   canvas.setAttribute('role', 'img');
-  canvas.setAttribute('aria-label', `Recovered image, ${w} by ${h} pixels`);
+  canvas.setAttribute('aria-label', `Recovered image, ${w} × ${h}, ${bitDepth}-bit`);
   const src = document.createElement('canvas');
   src.width = w; src.height = h;
   src.getContext('2d').putImageData(toImageData(render), 0, 0);

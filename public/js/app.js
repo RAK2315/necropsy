@@ -83,6 +83,8 @@ async function showStart(message = '') {
       });
       const li = el('li', {}, pick, el('span', { class: 'size', text: `${fmt(s.size)} bytes` }),
         el('a', { class: 'dl', href: '/samples/' + s.name, download: s.name, text: 'download' }));
+      const link = li.querySelector('a.dl');
+      link.addEventListener('keydown', (e) => { if (e.key === ' ') { e.preventDefault(); link.click(); } });
       if (s.provenance) li.append(el('span', { class: 'prov', text: s.provenance }));
       list.append(li);
     }
@@ -101,4 +103,7 @@ async function analyse(bytes, name, notice = null) {
 }
 
 againBtn.addEventListener('click', () => showStart());
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && !againBtn.hidden) { e.preventDefault(); showStart(); }
+});
 showStart();

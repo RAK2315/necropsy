@@ -9,6 +9,7 @@ The file is restored in a finally block, even if pytest crashes.
 """
 import hashlib
 import json
+import os
 import shlex
 import subprocess
 import sys
@@ -41,7 +42,8 @@ def main(spec_path: str) -> int:
                 cmd = ["node", "--test", *shlex.split(b["test"][5:])]
             else:
                 cmd = [sys.executable, "-m", "pytest", *shlex.split(b["test"]), "-q", "--tb=line", "-p", "no:warnings"]
-            r = subprocess.run(cmd, cwd=ROOT, capture_output=True, text=True, encoding="utf-8")
+            env = {**os.environ, "PYTHONIOENCODING": "utf-8"}
+            r = subprocess.run(cmd, cwd=ROOT, capture_output=True, text=True, encoding="utf-8", errors="replace", env=env)
         finally:
             p.write_bytes(original)
         after = sha(p)

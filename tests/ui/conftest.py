@@ -67,7 +67,7 @@ def run_in_browser(url: str, scenario: str, rewrite: str | None = None, reduced_
         out = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8", timeout=120)
     lines = out.stdout.strip().splitlines()
     result = json.loads(lines[-1]) if lines else {"error": out.stderr[-500:]}
-    if result.get("error") == "no browser":
+    if isinstance(result, dict) and result.get("error") == "no browser":
         pytest.skip("no Edge or Chrome found to drive")
-    assert "error" not in result, result
+    assert not (isinstance(result, dict) and "error" in result), result
     return result

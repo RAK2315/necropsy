@@ -4,6 +4,8 @@
 //   rewrite.js   a JS function source `(payload) => payload`, applied in the browser to every /api/analyze response
 //   prelude.js   extra JS run in the page before any page script (for example a window.fetch fault for one URL)
 // Downloads made with URL.createObjectURL are captured: window.__blobs is an array of {name, type, b64}.
+// Real key presses: `await __key('Tab' | 'Enter' | 'Space' | 'Escape', shift)` dispatches the key through CDP
+// (Input.dispatchKeyEvent, so focus really moves) and resolves once the page has handled it.
 import { spawn } from 'node:child_process';
 import { existsSync, mkdtempSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -29,6 +31,8 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const PRELUDE = `
 window.__until = async (fn, what) => { for (let i = 0; i < 800; i++) { let v; try { v = fn(); } catch (e) { v = null; } if (v) return v; await new Promise(r => setTimeout(r, 25)); } throw new Error('timed out: ' + what); };
 window.__blobs = [];
+window.__keyWaits = {}; window.__keyId = 0;
+window.__key = (key, shift = false) => new Promise((res) => { const id = ++window.__keyId; window.__keyWaits[id] = res; window.__cdpKey(JSON.stringify({ id, key, shift })); });
 (() => {
   const orig = URL.createObjectURL.bind(URL);
   URL.createObjectURL = (b) => {
@@ -42,6 +46,12 @@ window.__blobs = [];
 })();
 `;
 
+const KEYS = {
+  Tab: { key: 'Tab', code: 'Tab', windowsVirtualKeyCode: 9 },
+  Enter: { key: 'Enter', code: 'Enter', windowsVirtualKeyCode: 13, text: '\r', unmodifiedText: '\r' },
+  Space: { key: ' ', code: 'Space', windowsVirtualKeyCode: 32, text: ' ', unmodifiedText: ' ' },
+  Escape: { key: 'Escape', code: 'Escape', windowsVirtualKeyCode: 27 },
+};
 try {
   let target;
   for (let i = 0; i < 80 && !target; i++) {
@@ -66,9 +76,19 @@ try {
         responseHeaders: [{ name: 'Content-Type', value: 'application/json' }], body: Buffer.from(out, 'utf8').toString('base64') });
       return;
     }
+    if (d.method === 'Runtime.bindingCalled' && d.params.name === '__cdpKey') {
+      const { id, key, shift } = JSON.parse(d.params.payload);
+      const k = { ...KEYS[key], nativeVirtualKeyCode: KEYS[key].windowsVirtualKeyCode, modifiers: shift ? 8 : 0 };
+      await send('Input.dispatchKeyEvent', { type: 'keyDown', ...k });
+      await send('Input.dispatchKeyEvent', { type: 'keyUp', key: k.key, code: k.code, windowsVirtualKeyCode: k.windowsVirtualKeyCode, modifiers: k.modifiers });
+      await send('Runtime.evaluate', { expression: `window.__keyWaits[${id}]()` });
+      return;
+    }
     if (d.method) events.push(d.method);
   };
   await send('Page.enable');
+  await send('Runtime.enable');
+  await send('Runtime.addBinding', { name: '__cdpKey' });
   await send('Emulation.setDeviceMetricsOverride', { width: 1280, height: 720, deviceScaleFactor: 1, mobile: false });
   if (reduced) await send('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-reduced-motion', value: 'reduce' }] });
   if (rewrite) await send('Fetch.enable', { patterns: [{ urlPattern: '*/api/analyze', requestStage: 'Response' }] });

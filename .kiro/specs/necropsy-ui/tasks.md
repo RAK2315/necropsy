@@ -120,7 +120,7 @@ Rules for every task:
   - Stop if any wording would contradict Requirement 10.1.
   - _Requirements: 19_
 
-- [ ] 21. Keyboard and contrast
+- [x] 21. Keyboard and contrast
   - Tab order reaches every control, Enter and Space act alike, visible focus, no trap, Escape returns to the start, canvas names, announced status, 4.5:1 contrast from computed styles.
   - Test in a real browser with real Tab key events and the WCAG formula in the test. One break per criterion with tools/break_check.py.
   - Stop if contrast cannot be fixed by token values alone, or would change the accent.

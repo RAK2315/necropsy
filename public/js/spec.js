@@ -83,7 +83,7 @@ export function specPanel(payload, bytes) {
     return b;
   });
   function select(i) {
-    buttons.forEach((b, k) => { b.setAttribute('aria-selected', String(k === i)); b.tabIndex = k === i ? 0 : -1; });
+    buttons.forEach((b, k) => b.setAttribute('aria-selected', String(k === i)));   // every tab is a Tab stop (Requirement 20.1); arrows also move
     body.textContent = spec.files[names[i]];          // plain text: no highlighting, cost linear in length
     body.scrollTop = 0;
   }
