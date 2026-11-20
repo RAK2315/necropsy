@@ -1722,8 +1722,8 @@
    "licence": "libtiff",
    "licence_url": "https://gitlab.com/libtiff/libtiff/-/blob/master/LICENSE.md",
    "licence_note": "libtiff repository licence (libtiff, permissive). test/images/README.txt describes the naming; no per-file licence.",
-   "scope": "out",
-   "scope_reason": "IFD chain loops",
+   "scope": "in",
+   "scope_reason": "single-strip uncompressed TIFF; its IFD chain loops back to itself, which does not stop the first IFD being read",
    "header": {
     "byte_order": "little",
     "ifds": 1,

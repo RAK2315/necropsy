@@ -105,6 +105,8 @@ These are stated deliberately. The project's claim is that it never reports what
 - **Single-strip TIFF only.** The probe reads one strip offset and one strip byte count.
 - **Multi-plane PCX normally comes out `FAILED`.** The PCX seed uses bits per plane and does not model the `planes` field. A 3-plane RGB PCX written by Pillow returns `FAILED: exhausted` after 6 checks.
 - **Rows are taken as stored.** The TGA origin bit is read and reported, not acted on.
+<!-- Remove the next item when the TGA extension-area change lands in the engine. -->
+- **The TGA 2.0 extension area and postage stamp are not read.** A TGA 2.0 footer can point to an extension area, and the extension area can point to a postage stamp. The engine strips only the fixed 26-byte footer and does not follow those offsets. The data region therefore runs on into those blocks and closure fails. A TGA carrying them comes out `FAILED`. Pillow's `pillow_p_16.tga` in the real corpus fails this way with `arithmetic_mismatch`, a discrepancy of 4593 bytes. That is its 4,098-byte postage stamp plus its 495-byte extension area.
 - **Generic search is bounded, not exhaustive.** `FAILED` means nothing closed within the axes and budget above, not that the file has no valid layout.
 - **The web service accepts files up to 65,536 bytes.**
 
@@ -186,12 +188,12 @@ python -m pytest tests -q
 node --test tests/ui/js/logic.test.mjs tests/ui/js/screens.test.mjs
 ```
 
-At commit `e7f9c7f`:
+At commit `402d0e3`, in GitHub Actions (Ubuntu):
 
-- **Python suite:** 376 passed, both locally (Windows) and in GitHub Actions (Ubuntu).
+- **Python suite:** 698 passed, 23 skipped, 1 expected failure (`pillow_p_16.tga`, see [Scope limits](#scope-limits)).
 - **Front-end tests:** 20 passed.
 - **Browser checks:** tests that drive the real page in headless Chrome or Edge need Node. Without it they are skipped.
-- **Property tests:** 26 Hypothesis `@given` tests across 10 files cover the 15 numbered correctness properties in the engine design, including "Never raises", "Closure soundness", "Coherence cannot change the outcome" and "Emitted layout reproduces the engine".
+- **Property tests:** 27 Hypothesis `@given` tests across 11 files cover the 15 numbered correctness properties in the engine design, including "Never raises", "Closure soundness", "Coherence cannot change the outcome" and "Emitted layout reproduces the engine".
 
 [`.github/workflows/tests.yml`](.github/workflows/tests.yml) runs both suites on every push and pull request.
 
