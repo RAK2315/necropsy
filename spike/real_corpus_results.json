@@ -1,0 +1,1829 @@
+[
+ {
+  "file": "goimage_blue-purple-pink.lzwcompressed.tiff",
+  "format": "TIFF",
+  "scope": "out",
+  "invalid_by_construction": false,
+  "our_status": "FAILED",
+  "stage": null,
+  "termination": "exhausted",
+  "checks": 3,
+  "candidates": [],
+  "pillow_decodes": true,
+  "pillow_mode": "RGB",
+  "pillow_size": [
+   150,
+   100
+  ],
+  "pixel_verdicts": [],
+  "pillow_pixels_sha256": null
+ },
+ {
+  "file": "goimage_bw-deflate.tiff",
+  "format": "TIFF",
+  "scope": "out",
+  "invalid_by_construction": false,
+  "our_status": "FAILED",
+  "stage": null,
+  "termination": "exhausted",
+  "checks": 3,
+  "candidates": [],
+  "pillow_decodes": true,
+  "pillow_mode": "1",
+  "pillow_size": [
+   153,
+   55
+  ],
+  "pixel_verdicts": [],
+  "pillow_pixels_sha256": null
+ },
+ {
+  "file": "goimage_bw-gopher_ccittGroup3.tiff",
+  "format": "TIFF",
+  "scope": "out",
+  "invalid_by_construction": false,
+  "our_status": "FAILED",
+  "stage": null,
+  "termination": "exhausted",
+  "checks": 3,
+  "candidates": [],
+  "pillow_decodes": true,
+  "pillow_mode": "1",
+  "pillow_size": [
+   153,
+   55
+  ],
+  "pixel_verdicts": [],
+  "pillow_pixels_sha256": null
+ },
+ {
+  "file": "goimage_bw-gopher_ccittGroup4.tiff",
+  "format": "TIFF",
+  "scope": "out",
+  "invalid_by_construction": false,
+  "our_status": "FAILED",
+  "stage": null,
+  "termination": "exhausted",
+  "checks": 3,
+  "candidates": [],
+  "pillow_decodes": true,
+  "pillow_mode": "1",
+  "pillow_size": [
+   153,
+   55
+  ],
+  "pixel_verdicts": [],
+  "pillow_pixels_sha256": null
+ },
+ {
+  "file": "goimage_bw-packbits.tiff",
+  "format": "TIFF",
+  "scope": "out",
+  "invalid_by_construction": false,
+  "our_status": "FAILED",
+  "stage": null,
+  "termination": "exhausted",
+  "checks": 3,
+  "candidates": [],
+  "pillow_decodes": true,
+  "pillow_mode": "1",
+  "pillow_size": [
+   153,
+   55
+  ],
+  "pixel_verdicts": [],
+  "pillow_pixels_sha256": null
+ },
+ {
+  "file": "goimage_bw-uncompressed.tiff",
+  "format": "TIFF",
+  "scope": "in",
+  "invalid_by_construction": false,
+  "our_status": "RESOLVED",
+  "stage": "probe",
+  "termination": null,
+  "checks": 1,
+  "candidates": [
+   {
+    "width": 153,
+    "height": 55,
+    "bit_depth": 1,
+    "header_size": 8,
+    "row_alignment": 1,
+    "encoding": "none",
+    "probe": "tiff",
+    "path": [],
+    "data_start": 8,
+    "data_end": 1108
+   }
+  ],
+  "pillow_decodes": true,
+  "pillow_mode": "1",
+  "pillow_size": [
+   153,
+   55
+  ],
+  "pixel_verdicts": [
+   "match"
+  ],
+  "pillow_pixels_sha256": "f1686fc100a21243edaedc78b25638f37a4ad2d09dbf7d3e8f6b535828bdd67f"
+ },
+ {
+  "file": "goimage_invalid-palette-ref.tiff",
+  "format": "TIFF",
+  "scope": "out",
+  "invalid_by_construction": true,
+  "our_status": "FAILED",
+  "stage": null,
+  "termination": "exhausted",
+  "checks": 3,
+  "candidates": [],
+  "pillow_decodes": false,
+  "pillow_mode": null,
+  "pillow_size": null,
+  "pixel_verdicts": [],
+  "pillow_pixels_sha256": null
+ },
+ {
+  "file": "goimage_no_compress.tiff",
+  "format": "TIFF",
+  "scope": "in",
+  "invalid_by_construction": false,
+  "our_status": "FAILED",
+  "stage": null,
+  "termination": "exhausted",
+  "checks": 3,
+  "candidates": [],
+  "pillow_decodes": true,
+  "pillow_mode": "RGBA",
+  "pillow_size": [
+   16,
+   15
+  ],
+  "pixel_verdicts": [],
+  "pillow_pixels_sha256": null
+ },
+ {
+  "file": "goimage_no_rps.tiff",
+  "format": "TIFF",
+  "scope": "in",
+  "invalid_by_construction": false,
+  "our_status": "FAILED",
+  "stage": null,
+  "termination": "exhausted",
+  "checks": 3,
+  "candidates": [],
+  "pillow_decodes": true,
+  "pillow_mode": "RGBA",
+  "pillow_size": [
+   16,
+   15
+  ],
+  "pixel_verdicts": [],
+  "pillow_pixels_sha256": null
+ },
+ {
+  "file": "goimage_video-001-gray.tiff",
+  "format": "TIFF",
+  "scope": "out",
+  "invalid_by_construction": false,
+  "our_status": "FAILED",
+  "stage": null,
+  "termination": "exhausted",
+  "checks": 3,
+  "candidates": [],
+  "pillow_decodes": true,
+  "pillow_mode": "L",
+  "pillow_size": [
+   150,
+   103
+  ],
+  "pixel_verdicts": [],
+  "pillow_pixels_sha256": null
+ },
+ {
+  "file": "goimage_video-001-paletted.tiff",
+  "format": "TIFF",
+  "scope": "out",
+  "invalid_by_construction": false,
+  "our_status": "FAILED",
+  "stage": null,
+  "termination": "exhausted",
+  "checks": 3,
+  "candidates": [],
+  "pillow_decodes": true,
+  "pillow_mode": "P",
+  "pillow_size": [
+   150,
+   103
+  ],
+  "pixel_verdicts": [],
+  "pillow_pixels_sha256": null
+ },
+ {
+  "file": "goimage_video-001-strip-64.tiff",
+  "format": "TIFF",
+  "scope": "out",
+  "invalid_by_construction": false,
+  "our_status": "FAILED",
+  "stage": null,
+  "termination": "exhausted",
+  "checks": 3,
+  "candidates": [],
+  "pillow_decodes": true,
+  "pillow_mode": "RGB",
+  "pillow_size": [
+   150,
+   103
+  ],
+  "pixel_verdicts": [],
+  "pillow_pixels_sha256": null
+ },
+ {
+  "file": "goimage_video-001-tile-64x64.tiff",
+  "format": "TIFF",
+  "scope": "out",
+  "invalid_by_construction": false,
+  "our_status": "FAILED",
+  "stage": null,
+  "termination": "exhausted",
+  "checks": 3,
+  "candidates": [],
+  "pillow_decodes": true,
+  "pillow_mode": "RGB",
+  "pillow_size": [
+   150,
+   103
+  ],
+  "pixel_verdicts": [],
+  "pillow_pixels_sha256": null
+ },
+ {
+  "file": "goimage_video-001-uncompressed.tiff",
+  "format": "TIFF",
+  "scope": "in",
+  "invalid_by_construction": false,
+  "our_status": "FAILED",
+  "stage": null,
+  "termination": "exhausted",
+  "checks": 3,
+  "candidates": [],
+  "pillow_decodes": true,
+  "pillow_mode": "RGB",
+  "pillow_size": [
+   150,
+   103
+  ],
+  "pixel_verdicts": [],
+  "pillow_pixels_sha256": null
+ },
+ {
+  "file": "imagemagick_input.pcx",
+  "format": "PCX",
+  "scope": "out",
+  "invalid_by_construction": false,
+  "our_status": "FAILED",
+  "stage": null,
+  "termination": "exhausted",
+  "checks": 6,
+  "candidates": [],
+  "pillow_decodes": true,
+  "pillow_mode": "RGB",
+  "pillow_size": [
+   70,
+   46
+  ],
+  "pixel_verdicts": [],
+  "pillow_pixels_sha256": null
+ },
+ {
+  "file": "imagemagick_input.tga",
+  "format": "TGA",
+  "scope": "in",
+  "invalid_by_construction": false,
+  "our_status": "RESOLVED",
+  "stage": "probe",
+  "termination": null,
+  "checks": 1,
+  "candidates": [
+   {
+    "width": 70,
+    "height": 46,
+    "bit_depth": 24,
+    "header_size": 18,
+    "row_alignment": 1,
+    "encoding": "none",
+    "probe": "tga",
+    "path": [],
+    "data_start": 18,
+    "data_end": 9678
+   }
+  ],
+  "pillow_decodes": true,
+  "pillow_mode": "RGB",
+  "pillow_size": [
+   70,
+   46
+  ],
+  "pixel_verdicts": [
+   "match"
+  ],
+  "pillow_pixels_sha256": "0531145ece70e51693bbcff40af31e64c7ebc0d6625d4e6f3826e68931d8e462"
+ },
+ {
+  "file": "imagemagick_input_p1.pbm",
+  "format": "PNM",
+  "scope": "out",
+  "invalid_by_construction": false,
+  "our_status": "FAILED",
+  "stage": null,
+  "termination": "no_hypothesis_checked",
+  "checks": 0,
+  "candidates": [],
+  "pillow_decodes": true,
+  "pillow_mode": "1",
+  "pillow_size": [
+   70,
+   46
+  ],
+  "pixel_verdicts": [],
+  "pillow_pixels_sha256": null
+ },
+ {
+  "file": "imagemagick_input_p2.pgm",
+  "format": "PNM",
+  "scope": "out",
+  "invalid_by_construction": false,
+  "our_status": "FAILED",
+  "stage": null,
+  "termination": "no_hypothesis_checked",
+  "checks": 0,
+  "candidates": [],
+  "pillow_decodes": true,
+  "pillow_mode": "L",
+  "pillow_size": [
+   70,
+   46
+  ],
+  "pixel_verdicts": [],
+  "pillow_pixels_sha256": null
+ },
+ {
+  "file": "imagemagick_input_p3.ppm",
+  "format": "PNM",
+  "scope": "out",
+  "invalid_by_construction": false,
+  "our_status": "FAILED",
+  "stage": null,
+  "termination": "no_hypothesis_checked",
+  "checks": 0,
+  "candidates": [],
+  "pillow_decodes": true,
+  "pillow_mode": "RGB",
+  "pillow_size": [
+   70,
+   46
+  ],
+  "pixel_verdicts": [],
+  "pillow_pixels_sha256": null
+ },
+ {
+  "file": "imagemagick_input_p4.pbm",
+  "format": "PNM",
+  "scope": "in",
+  "invalid_by_construction": false,
+  "our_status": "RESOLVED",
+  "stage": "probe",
+  "termination": null,
+  "checks": 1,
+  "candidates": [
+   {
+    "width": 70,
+    "height": 46,
+    "bit_depth": 1,
+    "header_size": 9,
+    "row_alignment": 1,
+    "encoding": "none",
+    "probe": "pbm",
+    "path": [],
+    "data_start": 9,
+    "data_end": 423
+   }
+  ],
+  "pillow_decodes": true,
+  "pillow_mode": "1",
+  "pillow_size": [
+   70,
+   46
+  ],
+  "pixel_verdicts": [
+   "match"
+  ],
+  "pillow_pixels_sha256": "4a3c981806a3cfc59a8f148011e690631b4ebd5132217666f57566d779b6ee41"
+ },
+ {
+  "file": "imagemagick_input_p5.pgm",
+  "format": "PNM",
+  "scope": "out",
+  "invalid_by_construction": false,
+  "our_status": "FAILED",
+  "stage": null,
+  "termination": "no_hypothesis_checked",
+  "checks": 0,
+  "candidates": [],
+  "pillow_decodes": true,
+  "pillow_mode": "L",
+  "pillow_size": [
+   70,
+   46
+  ],
+  "pixel_verdicts": [],
+  "pillow_pixels_sha256": null
+ },
+ {
+  "file": "imagemagick_input_p6.ppm",
+  "format": "PNM",
+  "scope": "out",
+  "invalid_by_construction": false,
+  "our_status": "FAILED",
+  "stage": null,
+  "termination": "no_hypothesis_checked",
+  "checks": 0,
+  "candidates": [],
+  "pillow_decodes": true,
+  "pillow_mode": "RGB",
+  "pillow_size": [
+   70,
+   46
+  ],
+  "pixel_verdicts": [],
+  "pillow_pixels_sha256": null
+ },
+ {
+  "file": "imagers_issue-794.pbm",
+  "format": "PNM",
+  "scope": "in",
+  "invalid_by_construction": false,
+  "our_status": "RESOLVED",
+  "stage": "probe",
+  "termination": null,
+  "checks": 1,
+  "candidates": [
+   {
+    "width": 10,
+    "height": 10,
+    "bit_depth": 1,
+    "header_size": 9,
+    "row_alignment": 1,
+    "encoding": "none",
+    "probe": "pbm",
+    "path": [],
+    "data_start": 9,
+    "data_end": 29
+   }
+  ],
+  "pillow_decodes": true,
+  "pillow_mode": "1",
+  "pillow_size": [
+   10,
+   10
+  ],
+  "pixel_verdicts": [
+   "match"
+  ],
+  "pillow_pixels_sha256": "86f7aad5b083b1f29e0f841f500e0fd121b9e86c4966aaa91080b7ac3d15633c"
+ },
+ {
+  "file": "imagers_narrow.pbm",
+  "format": "PNM",
+  "scope": "in",
+  "invalid_by_construction": false,
+  "our_status": "RESOLVED",
+  "stage": "probe",
+  "termination": null,
+  "checks": 1,
+  "candidates": [
+   {
+    "width": 1,
+    "height": 9,
+    "bit_depth": 1,
+    "header_size": 7,
+    "row_alignment": 1,
+    "encoding": "none",
+    "probe": "pbm",
+    "path": [],
+    "data_start": 7,
+    "data_end": 16
+   }
+  ],
+  "pillow_decodes": true,
+  "pillow_mode": "1",
+  "pillow_size": [
+   1,
+   9
+  ],
+  "pixel_verdicts": [
+   "match"
+  ],
+  "pillow_pixels_sha256": "7a4adc0677e6641e826f11f895ac536df9c24c2c8ba2c59d645a8926e3684788"
+ },
+ {
+  "file": "libtiff_deflate-last-strip-extra-data.tiff",
+  "format": "TIFF",
+  "scope": "out",
+  "invalid_by_construction": false,
+  "our_status": "FAILED",
+  "stage": null,
+  "termination": "exhausted",
+  "checks": 3,
+  "candidates": [],
+  "pillow_decodes": true,
+  "pillow_mode": "L",
+  "pillow_size": [
+   500,
+   500
+  ],
+  "pixel_verdicts": [],
+  "pillow_pixels_sha256": null
+ },
+ {
+  "file": "libtiff_logluv-3c-16b.tiff",
+  "format": "TIFF",
+  "scope": "out",
+  "invalid_by_construction": false,
+  "our_status": "FAILED",
+  "stage": null,
+  "termination": "exhausted",
+  "checks": 3,
+  "candidates": [],
+  "pillow_decodes": false,
+  "pillow_mode": null,
+  "pillow_size": null,
+  "pixel_verdicts": [],
+  "pillow_pixels_sha256": null
+ },
+ {
+  "file": "libtiff_lzw-single-strip.tiff",
+  "format": "TIFF",
+  "scope": "out",
+  "invalid_by_construction": false,
+  "our_status": "FAILED",
+  "stage": null,
+  "termination": "exhausted",
+  "checks": 3,
+  "candidates": [],
+  "pillow_decodes": true,
+  "pillow_mode": "1",
+  "pillow_size": [
+   7795,
+   3122
+  ],
+  "pixel_verdicts": [],
+  "pillow_pixels_sha256": null
+ },
+ {
+  "file": "libtiff_minisblack-1c-8b.pgm",
+  "format": "PNM",
+  "scope": "out",
+  "invalid_by_construction": false,
+  "our_status": "FAILED",
+  "stage": null,
+  "termination": "no_hypothesis_checked",
+  "checks": 0,
+  "candidates": [],
+  "pillow_decodes": true,
+  "pillow_mode": "L",
+  "pillow_size": [
+   157,
+   151
+  ],
+  "pixel_verdicts": [],
+  "pillow_pixels_sha256": null
+ },
+ {
+  "file": "libtiff_minisblack-1c-8b.tiff",
+  "format": "TIFF",
+  "scope": "out",
+  "invalid_by_construction": false,
+  "our_status": "FAILED",
+  "stage": null,
+  "termination": "exhausted",
+  "checks": 3,
+  "candidates": [],
+  "pillow_decodes": true,
+  "pillow_mode": "L",
+  "pillow_size": [
+   157,
+   151
+  ],
+  "pixel_verdicts": [],
+  "pillow_pixels_sha256": null
+ },
+ {
+  "file": "libtiff_miniswhite-1c-1b.pbm",
+  "format": "PNM",
+  "scope": "in",
+  "invalid_by_construction": false,
+  "our_status": "RESOLVED",
+  "stage": "probe",
+  "termination": null,
+  "checks": 1,
+  "candidates": [
+   {
+    "width": 157,
+    "height": 151,
+    "bit_depth": 1,
+    "header_size": 11,
+    "row_alignment": 1,
+    "encoding": "none",
+    "probe": "pbm",
+    "path": [],
+    "data_start": 11,
+    "data_end": 3031
+   }
+  ],
+  "pillow_decodes": true,
+  "pillow_mode": "1",
+  "pillow_size": [
+   157,
+   151
+  ],
+  "pixel_verdicts": [
+   "match"
+  ],
+  "pillow_pixels_sha256": "6ae6bcc7128dc90a923cc5ac5812088859c7a1cf4bc6b83661f0ed29f316b400"
+ },
+ {
+  "file": "libtiff_miniswhite-1c-1b.tiff",
+  "format": "TIFF",
+  "scope": "in",
+  "invalid_by_construction": false,
+  "our_status": "RESOLVED",
+  "stage": "probe",
+  "termination": null,
+  "checks": 1,
+  "candidates": [
+   {
+    "width": 157,
+    "height": 151,
+    "bit_depth": 1,
+    "header_size": 8,
+    "row_alignment": 1,
+    "encoding": "none",
+    "probe": "tiff",
+    "path": [],
+    "data_start": 8,
+    "data_end": 3028
+   }
+  ],
+  "pillow_decodes": true,
+  "pillow_mode": "1",
+  "pillow_size": [
+   157,
+   151
+  ],
+  "pixel_verdicts": [
+   "match"
+  ],
+  "pillow_pixels_sha256": "6ae6bcc7128dc90a923cc5ac5812088859c7a1cf4bc6b83661f0ed29f316b400"
+ },
+ {
+  "file": "libtiff_ojpeg_zackthecat_subsamp22_single_strip.tiff",
+  "format": "TIFF",
+  "scope": "out",
+  "invalid_by_construction": false,
+  "our_status": "FAILED",
+  "stage": null,
+  "termination": "exhausted",
+  "checks": 3,
+  "candidates": [],
+  "pillow_decodes": true,
+  "pillow_mode": "RGB",
+  "pillow_size": [
+   234,
+   213
+  ],
+  "pixel_verdicts": [],
+  "pillow_pixels_sha256": null
+ },
+ {
+  "file": "libtiff_palette-1c-8b.tiff",
+  "format": "TIFF",
+  "scope": "out",
+  "invalid_by_construction": false,
+  "our_status": "FAILED",
+  "stage": null,
+  "termination": "exhausted",
+  "checks": 3,
+  "candidates": [],
+  "pillow_decodes": true,
+  "pillow_mode": "P",
+  "pillow_size": [
+   157,
+   151
+  ],
+  "pixel_verdicts": [],
+  "pillow_pixels_sha256": null
+ },
+ {
+  "file": "libtiff_quad-tile.jpg.tiff",
+  "format": "TIFF",
+  "scope": "out",
+  "invalid_by_construction": false,
+  "our_status": "FAILED",
+  "stage": null,
+  "termination": "exhausted",
+  "checks": 3,
+  "candidates": [],
+  "pillow_decodes": true,
+  "pillow_mode": "RGB",
+  "pillow_size": [
+   512,
+   384
+  ],
+  "pixel_verdicts": [],
+  "pillow_pixels_sha256": null
+ },
+ {
+  "file": "libtiff_rgb-3c-16b.ppm",
+  "format": "PNM",
+  "scope": "out",
+  "invalid_by_construction": false,
+  "our_status": "FAILED",
+  "stage": null,
+  "termination": "no_hypothesis_checked",
+  "checks": 0,
+  "candidates": [],
+  "pillow_decodes": true,
+  "pillow_mode": "RGB",
+  "pillow_size": [
+   157,
+   151
+  ],
+  "pixel_verdicts": [],
+  "pillow_pixels_sha256": null
+ },
+ {
+  "file": "libtiff_rgb-3c-8b.ppm",
+  "format": "PNM",
+  "scope": "out",
+  "invalid_by_construction": false,
+  "our_status": "FAILED",
+  "stage": null,
+  "termination": "no_hypothesis_checked",
+  "checks": 0,
+  "candidates": [],
+  "pillow_decodes": true,
+  "pillow_mode": "RGB",
+  "pillow_size": [
+   157,
+   151
+  ],
+  "pixel_verdicts": [],
+  "pillow_pixels_sha256": null
+ },
+ {
+  "file": "libtiff_rgb-3c-8b.tiff",
+  "format": "TIFF",
+  "scope": "out",
+  "invalid_by_construction": false,
+  "our_status": "FAILED",
+  "stage": null,
+  "termination": "exhausted",
+  "checks": 3,
+  "candidates": [],
+  "pillow_decodes": true,
+  "pillow_mode": "RGB",
+  "pillow_size": [
+   157,
+   151
+  ],
+  "pixel_verdicts": [],
+  "pillow_pixels_sha256": null
+ },
+ {
+  "file": "libtiff_test_ifd_loop_to_self.tif",
+  "format": "TIFF",
+  "scope": "out",
+  "invalid_by_construction": false,
+  "our_status": "RESOLVED",
+  "stage": "probe",
+  "termination": null,
+  "checks": 1,
+  "candidates": [
+   {
+    "width": 20,
+    "height": 20,
+    "bit_depth": 8,
+    "header_size": 8,
+    "row_alignment": 1,
+    "encoding": "none",
+    "probe": "tiff",
+    "path": [],
+    "data_start": 8,
+    "data_end": 408
+   }
+  ],
+  "pillow_decodes": true,
+  "pillow_mode": "L",
+  "pillow_size": [
+   20,
+   20
+  ],
+  "pixel_verdicts": [
+   "match"
+  ],
+  "pillow_pixels_sha256": "b55a841b7b95be907f6bb0d358b8d10c9dce6e485381eb9accb71e653597d9a1"
+ },
+ {
+  "file": "libtiff_testfax4.tiff",
+  "format": "TIFF",
+  "scope": "out",
+  "invalid_by_construction": false,
+  "our_status": "FAILED",
+  "stage": null,
+  "termination": "exhausted",
+  "checks": 3,
+  "candidates": [],
+  "pillow_decodes": true,
+  "pillow_mode": "1",
+  "pillow_size": [
+   2453,
+   3369
+  ],
+  "pixel_verdicts": [],
+  "pillow_pixels_sha256": null
+ },
+ {
+  "file": "pillow_01r_00.pcx",
+  "format": "PCX",
+  "scope": "in",
+  "invalid_by_construction": true,
+  "our_status": "FAILED",
+  "stage": null,
+  "termination": "exhausted",
+  "checks": 6,
+  "candidates": [],
+  "pillow_decodes": false,
+  "pillow_mode": "L",
+  "pillow_size": [
+   88,
+   52
+  ],
+  "pixel_verdicts": [],
+  "pillow_pixels_sha256": null
+ },
+ {
+  "file": "pillow_12bit.cropped.tif",
+  "format": "TIFF",
+  "scope": "out",
+  "invalid_by_construction": false,
+  "our_status": "FAILED",
+  "stage": null,
+  "termination": "exhausted",
+  "checks": 3,
+  "candidates": [],
+  "pillow_decodes": true,
+  "pillow_mode": "I;16",
+  "pillow_size": [
+   100,
+   100
+  ],
+  "pixel_verdicts": [],
+  "pillow_pixels_sha256": null
+ },
+ {
+  "file": "pillow_1x1_l_tl_raw.tga",
+  "format": "TGA",
+  "scope": "in",
+  "invalid_by_construction": false,
+  "our_status": "RESOLVED",
+  "stage": "probe",
+  "termination": null,
+  "checks": 1,
+  "candidates": [
+   {
+    "width": 1,
+    "height": 1,
+    "bit_depth": 8,
+    "header_size": 18,
+    "row_alignment": 1,
+    "encoding": "none",
+    "probe": "tga",
+    "path": [],
+    "data_start": 18,
+    "data_end": 19
+   }
+  ],
+  "pillow_decodes": true,
+  "pillow_mode": "L",
+  "pillow_size": [
+   1,
+   1
+  ],
+  "pixel_verdicts": [
+   "match"
+  ],
+  "pillow_pixels_sha256": "76be8b528d0075f7aae98d6fa57a6d3c83ae480a8469e668d7b0af968995ac71"
+ },
+ {
+  "file": "pillow_200x32_l_bl_raw.tga",
+  "format": "TGA",
+  "scope": "in",
+  "invalid_by_construction": false,
+  "our_status": "RESOLVED",
+  "stage": "probe",
+  "termination": null,
+  "checks": 1,
+  "candidates": [
+   {
+    "width": 200,
+    "height": 32,
+    "bit_depth": 8,
+    "header_size": 18,
+    "row_alignment": 1,
+    "encoding": "none",
+    "probe": "tga",
+    "path": [],
+    "data_start": 18,
+    "data_end": 6418
+   }
+  ],
+  "pillow_decodes": true,
+  "pillow_mode": "L",
+  "pillow_size": [
+   200,
+   32
+  ],
+  "pixel_verdicts": [
+   "match"
+  ],
+  "pillow_pixels_sha256": "1d3a4a375990410a04b15e5f34195e24c1bba251d711f72ed363f9db746080ed"
+ },
+ {
+  "file": "pillow_200x32_l_tl_rle.tga",
+  "format": "TGA",
+  "scope": "out",
+  "invalid_by_construction": false,
+  "our_status": "FAILED",
+  "stage": null,
+  "termination": "exhausted",
+  "checks": 3,
+  "candidates": [],
+  "pillow_decodes": true,
+  "pillow_mode": "L",
+  "pillow_size": [
+   200,
+   32
+  ],
+  "pixel_verdicts": [],
+  "pillow_pixels_sha256": null
+ },
+ {
+  "file": "pillow_200x32_la_bl_raw.tga",
+  "format": "TGA",
+  "scope": "in",
+  "invalid_by_construction": false,
+  "our_status": "RESOLVED",
+  "stage": "probe",
+  "termination": null,
+  "checks": 1,
+  "candidates": [
+   {
+    "width": 200,
+    "height": 32,
+    "bit_depth": 16,
+    "header_size": 18,
+    "row_alignment": 1,
+    "encoding": "none",
+    "probe": "tga",
+    "path": [],
+    "data_start": 18,
+    "data_end": 12818
+   }
+  ],
+  "pillow_decodes": true,
+  "pillow_mode": "LA",
+  "pillow_size": [
+   200,
+   32
+  ],
+  "pixel_verdicts": [
+   "match"
+  ],
+  "pillow_pixels_sha256": "bcaf61ca32a645b4a43a651ac6425626344a334bd70e144edaf8237a38978d8e"
+ },
+ {
+  "file": "pillow_200x32_p_bl_raw.tga",
+  "format": "TGA",
+  "scope": "in",
+  "invalid_by_construction": false,
+  "our_status": "RESOLVED",
+  "stage": "probe",
+  "termination": null,
+  "checks": 1,
+  "candidates": [
+   {
+    "width": 200,
+    "height": 32,
+    "bit_depth": 8,
+    "header_size": 786,
+    "row_alignment": 1,
+    "encoding": "none",
+    "probe": "tga",
+    "path": [],
+    "data_start": 786,
+    "data_end": 7186
+   }
+  ],
+  "pillow_decodes": true,
+  "pillow_mode": "P",
+  "pillow_size": [
+   200,
+   32
+  ],
+  "pixel_verdicts": [
+   "match"
+  ],
+  "pillow_pixels_sha256": "a2340c38626f6a561b5b6406774a9f1bc99250ce3d8d7bb327cd26a2fa3aa3a7"
+ },
+ {
+  "file": "pillow_200x32_p_tl_rle.tga",
+  "format": "TGA",
+  "scope": "out",
+  "invalid_by_construction": false,
+  "our_status": "FAILED",
+  "stage": null,
+  "termination": "exhausted",
+  "checks": 3,
+  "candidates": [],
+  "pillow_decodes": true,
+  "pillow_mode": "P",
+  "pillow_size": [
+   200,
+   32
+  ],
+  "pixel_verdicts": [],
+  "pillow_pixels_sha256": null
+ },
+ {
+  "file": "pillow_200x32_rgb_bl_raw.tga",
+  "format": "TGA",
+  "scope": "in",
+  "invalid_by_construction": false,
+  "our_status": "RESOLVED",
+  "stage": "probe",
+  "termination": null,
+  "checks": 1,
+  "candidates": [
+   {
+    "width": 200,
+    "height": 32,
+    "bit_depth": 24,
+    "header_size": 18,
+    "row_alignment": 1,
+    "encoding": "none",
+    "probe": "tga",
+    "path": [],
+    "data_start": 18,
+    "data_end": 19218
+   }
+  ],
+  "pillow_decodes": true,
+  "pillow_mode": "RGB",
+  "pillow_size": [
+   200,
+   32
+  ],
+  "pixel_verdicts": [
+   "match"
+  ],
+  "pillow_pixels_sha256": "0d88e78be340cacf8768184f4b8fcb5f709a5c1edf910d086d2d241c7a9ca825"
+ },
+ {
+  "file": "pillow_200x32_rgb_tl_rle.tga",
+  "format": "TGA",
+  "scope": "out",
+  "invalid_by_construction": false,
+  "our_status": "FAILED",
+  "stage": null,
+  "termination": "exhausted",
+  "checks": 3,
+  "candidates": [],
+  "pillow_decodes": true,
+  "pillow_mode": "RGB",
+  "pillow_size": [
+   200,
+   32
+  ],
+  "pixel_verdicts": [],
+  "pillow_pixels_sha256": null
+ },
+ {
+  "file": "pillow_200x32_rgba_tl_raw.tga",
+  "format": "TGA",
+  "scope": "in",
+  "invalid_by_construction": false,
+  "our_status": "RESOLVED",
+  "stage": "probe",
+  "termination": null,
+  "checks": 1,
+  "candidates": [
+   {
+    "width": 200,
+    "height": 32,
+    "bit_depth": 32,
+    "header_size": 18,
+    "row_alignment": 1,
+    "encoding": "none",
+    "probe": "tga",
+    "path": [],
+    "data_start": 18,
+    "data_end": 25618
+   }
+  ],
+  "pillow_decodes": true,
+  "pillow_mode": "RGBA",
+  "pillow_size": [
+   200,
+   32
+  ],
+  "pixel_verdicts": [
+   "match"
+  ],
+  "pillow_pixels_sha256": "3c268e0bcb98a757fb6261f9b35df6d4a73633073281804033df7413e9b1c67d"
+ },
+ {
+  "file": "pillow_cross_scan_line.tga",
+  "format": "TGA",
+  "scope": "out",
+  "invalid_by_construction": false,
+  "our_status": "FAILED",
+  "stage": null,
+  "termination": "exhausted",
+  "checks": 3,
+  "candidates": [],
+  "pillow_decodes": true,
+  "pillow_mode": "L",
+  "pillow_size": [
+   2,
+   2
+  ],
+  "pixel_verdicts": [],
+  "pillow_pixels_sha256": null
+ },
+ {
+  "file": "pillow_cross_scan_line_truncated.tga",
+  "format": "TGA",
+  "scope": "out",
+  "invalid_by_construction": true,
+  "our_status": "FAILED",
+  "stage": null,
+  "termination": "exhausted",
+  "checks": 3,
+  "candidates": [],
+  "pillow_decodes": false,
+  "pillow_mode": "P",
+  "pillow_size": [
+   64,
+   64
+  ],
+  "pixel_verdicts": [],
+  "pillow_pixels_sha256": null
+ },
+ {
+  "file": "pillow_hopper_16bit.pgm",
+  "format": "PNM",
+  "scope": "out",
+  "invalid_by_construction": false,
+  "our_status": "FAILED",
+  "stage": null,
+  "termination": "no_hypothesis_checked",
+  "checks": 0,
+  "candidates": [],
+  "pillow_decodes": true,
+  "pillow_mode": "I",
+  "pillow_size": [
+   128,
+   128
+  ],
+  "pixel_verdicts": [],
+  "pillow_pixels_sha256": null
+ },
+ {
+  "file": "pillow_hopper_1bit.pbm",
+  "format": "PNM",
+  "scope": "in",
+  "invalid_by_construction": false,
+  "our_status": "RESOLVED",
+  "stage": "probe",
+  "termination": null,
+  "checks": 1,
+  "candidates": [
+   {
+    "width": 128,
+    "height": 128,
+    "bit_depth": 1,
+    "header_size": 11,
+    "row_alignment": 1,
+    "encoding": "none",
+    "probe": "pbm",
+    "path": [],
+    "data_start": 11,
+    "data_end": 2059
+   }
+  ],
+  "pillow_decodes": true,
+  "pillow_mode": "1",
+  "pillow_size": [
+   128,
+   128
+  ],
+  "pixel_verdicts": [
+   "match"
+  ],
+  "pillow_pixels_sha256": "78144e85d3b245e58631e5aac5b5b850a13691bdb155b7248b53648fffccc94b"
+ },
+ {
+  "file": "pillow_hopper_1bit_plain.pbm",
+  "format": "PNM",
+  "scope": "out",
+  "invalid_by_construction": false,
+  "our_status": "FAILED",
+  "stage": null,
+  "termination": "no_hypothesis_checked",
+  "checks": 0,
+  "candidates": [],
+  "pillow_decodes": true,
+  "pillow_mode": "1",
+  "pillow_size": [
+   128,
+   128
+  ],
+  "pixel_verdicts": [],
+  "pillow_pixels_sha256": null
+ },
+ {
+  "file": "pillow_hopper_8bit.pgm",
+  "format": "PNM",
+  "scope": "out",
+  "invalid_by_construction": false,
+  "our_status": "FAILED",
+  "stage": null,
+  "termination": "no_hypothesis_checked",
+  "checks": 0,
+  "candidates": [],
+  "pillow_decodes": true,
+  "pillow_mode": "L",
+  "pillow_size": [
+   128,
+   128
+  ],
+  "pixel_verdicts": [],
+  "pillow_pixels_sha256": null
+ },
+ {
+  "file": "pillow_hopper_8bit.ppm",
+  "format": "PNM",
+  "scope": "out",
+  "invalid_by_construction": false,
+  "our_status": "FAILED",
+  "stage": null,
+  "termination": "no_hypothesis_checked",
+  "checks": 0,
+  "candidates": [],
+  "pillow_decodes": true,
+  "pillow_mode": "RGB",
+  "pillow_size": [
+   128,
+   128
+  ],
+  "pixel_verdicts": [],
+  "pillow_pixels_sha256": null
+ },
+ {
+  "file": "pillow_hopper_g4.tif",
+  "format": "TIFF",
+  "scope": "out",
+  "invalid_by_construction": false,
+  "our_status": "FAILED",
+  "stage": null,
+  "termination": "exhausted",
+  "checks": 3,
+  "candidates": [],
+  "pillow_decodes": true,
+  "pillow_mode": "1",
+  "pillow_size": [
+   128,
+   128
+  ],
+  "pixel_verdicts": [],
+  "pillow_pixels_sha256": null
+ },
+ {
+  "file": "pillow_hopper_lzma.tif",
+  "format": "TIFF",
+  "scope": "out",
+  "invalid_by_construction": false,
+  "our_status": "FAILED",
+  "stage": null,
+  "termination": "exhausted",
+  "checks": 3,
+  "candidates": [],
+  "pillow_decodes": true,
+  "pillow_mode": "RGB",
+  "pillow_size": [
+   128,
+   128
+  ],
+  "pixel_verdicts": [],
+  "pillow_pixels_sha256": null
+ },
+ {
+  "file": "pillow_hopper_lzw.tif",
+  "format": "TIFF",
+  "scope": "out",
+  "invalid_by_construction": false,
+  "our_status": "FAILED",
+  "stage": null,
+  "termination": "exhausted",
+  "checks": 3,
+  "candidates": [],
+  "pillow_decodes": true,
+  "pillow_mode": "RGB",
+  "pillow_size": [
+   128,
+   128
+  ],
+  "pixel_verdicts": [],
+  "pillow_pixels_sha256": null
+ },
+ {
+  "file": "pillow_hopper_webp.tif",
+  "format": "TIFF",
+  "scope": "out",
+  "invalid_by_construction": false,
+  "our_status": "FAILED",
+  "stage": null,
+  "termination": "exhausted",
+  "checks": 3,
+  "candidates": [],
+  "pillow_decodes": true,
+  "pillow_mode": "RGB",
+  "pillow_size": [
+   128,
+   128
+  ],
+  "pixel_verdicts": [],
+  "pillow_pixels_sha256": null
+ },
+ {
+  "file": "pillow_la.tga",
+  "format": "TGA",
+  "scope": "out",
+  "invalid_by_construction": false,
+  "our_status": "FAILED",
+  "stage": null,
+  "termination": "exhausted",
+  "checks": 3,
+  "candidates": [],
+  "pillow_decodes": true,
+  "pillow_mode": "LA",
+  "pillow_size": [
+   64,
+   64
+  ],
+  "pixel_verdicts": [],
+  "pillow_pixels_sha256": null
+ },
+ {
+  "file": "pillow_negative_size.ppm",
+  "format": "PNM",
+  "scope": "out",
+  "invalid_by_construction": true,
+  "our_status": "FAILED",
+  "stage": null,
+  "termination": "no_hypothesis_checked",
+  "checks": 0,
+  "candidates": [],
+  "pillow_decodes": false,
+  "pillow_mode": null,
+  "pillow_size": null,
+  "pixel_verdicts": [],
+  "pillow_pixels_sha256": null
+ },
+ {
+  "file": "pillow_odd_stride.pcx",
+  "format": "PCX",
+  "scope": "in",
+  "invalid_by_construction": false,
+  "our_status": "RESOLVED",
+  "stage": "revision",
+  "termination": null,
+  "checks": 4,
+  "candidates": [
+   {
+    "width": 371,
+    "height": 150,
+    "bit_depth": 8,
+    "header_size": 128,
+    "row_alignment": 1,
+    "encoding": "rle_pcx",
+    "probe": "pcx",
+    "path": [
+     "inclusive_bounds"
+    ],
+    "data_start": 128,
+    "data_end": 13544
+   }
+  ],
+  "pillow_decodes": true,
+  "pillow_mode": "P",
+  "pillow_size": [
+   371,
+   150
+  ],
+  "pixel_verdicts": [
+   "match"
+  ],
+  "pillow_pixels_sha256": "fe6a78bc7f2048008bd82802b8b4f1946faa4bc90f7216eaa98c1d661e3e0abc"
+ },
+ {
+  "file": "pillow_old-style-jpeg-compression.tif",
+  "format": "TIFF",
+  "scope": "out",
+  "invalid_by_construction": false,
+  "our_status": "FAILED",
+  "stage": null,
+  "termination": "exhausted",
+  "checks": 3,
+  "candidates": [],
+  "pillow_decodes": true,
+  "pillow_mode": "RGB",
+  "pillow_size": [
+   4160,
+   870
+  ],
+  "pixel_verdicts": [],
+  "pillow_pixels_sha256": null
+ },
+ {
+  "file": "pillow_ossfuzz-4836216264589312.pcx",
+  "format": "PCX",
+  "scope": "out",
+  "invalid_by_construction": true,
+  "our_status": "RESOLVED",
+  "stage": "generic",
+  "termination": null,
+  "checks": 1,
+  "candidates": [
+   {
+    "width": 2,
+    "height": 1,
+    "bit_depth": 1,
+    "header_size": 128,
+    "row_alignment": 1,
+    "encoding": "none",
+    "probe": "generic",
+    "path": [],
+    "data_start": 128,
+    "data_end": 129
+   }
+  ],
+  "pillow_decodes": false,
+  "pillow_mode": "P",
+  "pillow_size": [
+   1,
+   1
+  ],
+  "pixel_verdicts": [],
+  "pillow_pixels_sha256": null
+ },
+ {
+  "file": "pillow_p_16.tga",
+  "format": "TGA",
+  "scope": "in",
+  "invalid_by_construction": false,
+  "our_status": "FAILED",
+  "stage": null,
+  "termination": "exhausted",
+  "checks": 3,
+  "candidates": [],
+  "pillow_decodes": true,
+  "pillow_mode": "P",
+  "pillow_size": [
+   128,
+   128
+  ],
+  "pixel_verdicts": [],
+  "pillow_pixels_sha256": null
+ },
+ {
+  "file": "pillow_p_4_planes.pcx",
+  "format": "PCX",
+  "scope": "out",
+  "invalid_by_construction": false,
+  "our_status": "FAILED",
+  "stage": null,
+  "termination": "exhausted",
+  "checks": 6,
+  "candidates": [],
+  "pillow_decodes": true,
+  "pillow_mode": "P",
+  "pillow_size": [
+   1,
+   1
+  ],
+  "pixel_verdicts": [],
+  "pillow_pixels_sha256": null
+ },
+ {
+  "file": "pillow_p_8.tga",
+  "format": "TGA",
+  "scope": "in",
+  "invalid_by_construction": true,
+  "our_status": "FAILED",
+  "stage": null,
+  "termination": "exhausted",
+  "checks": 3,
+  "candidates": [],
+  "pillow_decodes": false,
+  "pillow_mode": null,
+  "pillow_size": null,
+  "pixel_verdicts": [],
+  "pillow_pixels_sha256": null
+ },
+ {
+  "file": "pillow_pil184.pcx",
+  "format": "PCX",
+  "scope": "in",
+  "invalid_by_construction": false,
+  "our_status": "RESOLVED",
+  "stage": "probe",
+  "termination": null,
+  "checks": 1,
+  "candidates": [
+   {
+    "width": 447,
+    "height": 144,
+    "bit_depth": 1,
+    "header_size": 128,
+    "row_alignment": 1,
+    "encoding": "rle_pcx",
+    "probe": "pcx",
+    "path": [],
+    "data_start": 128,
+    "data_end": 5364
+   }
+  ],
+  "pillow_decodes": true,
+  "pillow_mode": "1",
+  "pillow_size": [
+   447,
+   144
+  ],
+  "pixel_verdicts": [
+   "match"
+  ],
+  "pillow_pixels_sha256": "cfb3cc33279d6bcb8e03d7da72837759d1b5b6902a407f5920f44f4cc03f14d7"
+ },
+ {
+  "file": "pillow_rgb32rle.tga",
+  "format": "TGA",
+  "scope": "out",
+  "invalid_by_construction": false,
+  "our_status": "FAILED",
+  "stage": null,
+  "termination": "exhausted",
+  "checks": 3,
+  "candidates": [],
+  "pillow_decodes": true,
+  "pillow_mode": "RGBA",
+  "pillow_size": [
+   199,
+   199
+  ],
+  "pixel_verdicts": [],
+  "pillow_pixels_sha256": null
+ },
+ {
+  "file": "pillow_rgba16.tga",
+  "format": "TGA",
+  "scope": "in",
+  "invalid_by_construction": false,
+  "our_status": "RESOLVED",
+  "stage": "probe",
+  "termination": null,
+  "checks": 1,
+  "candidates": [
+   {
+    "width": 2,
+    "height": 1,
+    "bit_depth": 16,
+    "header_size": 18,
+    "row_alignment": 1,
+    "encoding": "none",
+    "probe": "tga",
+    "path": [],
+    "data_start": 18,
+    "data_end": 22
+   }
+  ],
+  "pillow_decodes": true,
+  "pillow_mode": "RGBA",
+  "pillow_size": [
+   2,
+   1
+  ],
+  "pixel_verdicts": [
+   "mismatch: 2 of 8 canonical bytes differ"
+  ],
+  "pillow_pixels_sha256": "8bb94a75cf44e7733cb70a32bb7bd03e4120814879213a9c5cd4c52a485aad0b"
+ },
+ {
+  "file": "pillow_tga_id_field.tga",
+  "format": "TGA",
+  "scope": "in",
+  "invalid_by_construction": false,
+  "our_status": "RESOLVED",
+  "stage": "probe",
+  "termination": null,
+  "checks": 1,
+  "candidates": [
+   {
+    "width": 100,
+    "height": 100,
+    "bit_depth": 24,
+    "header_size": 24,
+    "row_alignment": 1,
+    "encoding": "none",
+    "probe": "tga",
+    "path": [],
+    "data_start": 24,
+    "data_end": 30024
+   }
+  ],
+  "pillow_decodes": true,
+  "pillow_mode": "RGB",
+  "pillow_size": [
+   100,
+   100
+  ],
+  "pixel_verdicts": [
+   "match"
+  ],
+  "pillow_pixels_sha256": "2b64039c9edeb950338aaec45cdd69283cfb63f17e31a727927f2ac7b4bd1c67"
+ },
+ {
+  "file": "pillow_tiff_adobe_deflate.tif",
+  "format": "TIFF",
+  "scope": "out",
+  "invalid_by_construction": false,
+  "our_status": "FAILED",
+  "stage": null,
+  "termination": "exhausted",
+  "checks": 3,
+  "candidates": [],
+  "pillow_decodes": true,
+  "pillow_mode": "RGB",
+  "pillow_size": [
+   278,
+   374
+  ],
+  "pixel_verdicts": [],
+  "pillow_pixels_sha256": null
+ },
+ {
+  "file": "pillow_tiff_strip_planar_raw.tif",
+  "format": "TIFF",
+  "scope": "out",
+  "invalid_by_construction": false,
+  "our_status": "FAILED",
+  "stage": null,
+  "termination": "exhausted",
+  "checks": 3,
+  "candidates": [],
+  "pillow_decodes": true,
+  "pillow_mode": "RGB",
+  "pillow_size": [
+   278,
+   374
+  ],
+  "pixel_verdicts": [],
+  "pillow_pixels_sha256": null
+ },
+ {
+  "file": "pillow_tiff_strip_raw.tif",
+  "format": "TIFF",
+  "scope": "out",
+  "invalid_by_construction": false,
+  "our_status": "FAILED",
+  "stage": null,
+  "termination": "exhausted",
+  "checks": 3,
+  "candidates": [],
+  "pillow_decodes": true,
+  "pillow_mode": "RGB",
+  "pillow_size": [
+   278,
+   374
+  ],
+  "pixel_verdicts": [],
+  "pillow_pixels_sha256": null
+ },
+ {
+  "file": "pillow_tiff_tiled_raw.tif",
+  "format": "TIFF",
+  "scope": "out",
+  "invalid_by_construction": false,
+  "our_status": "FAILED",
+  "stage": null,
+  "termination": "exhausted",
+  "checks": 3,
+  "candidates": [],
+  "pillow_decodes": true,
+  "pillow_mode": "RGB",
+  "pillow_size": [
+   278,
+   374
+  ],
+  "pixel_verdicts": [],
+  "pillow_pixels_sha256": null
+ },
+ {
+  "file": "sdlimage_sample.pcx",
+  "format": "PCX",
+  "scope": "out",
+  "invalid_by_construction": false,
+  "our_status": "FAILED",
+  "stage": null,
+  "termination": "exhausted",
+  "checks": 6,
+  "candidates": [],
+  "pillow_decodes": true,
+  "pillow_mode": "RGB",
+  "pillow_size": [
+   23,
+   42
+  ],
+  "pixel_verdicts": [],
+  "pillow_pixels_sha256": null
+ },
+ {
+  "file": "sdlimage_sample.pnm",
+  "format": "PNM",
+  "scope": "out",
+  "invalid_by_construction": false,
+  "our_status": "FAILED",
+  "stage": null,
+  "termination": "no_hypothesis_checked",
+  "checks": 0,
+  "candidates": [],
+  "pillow_decodes": true,
+  "pillow_mode": "RGB",
+  "pillow_size": [
+   23,
+   42
+  ],
+  "pixel_verdicts": [],
+  "pillow_pixels_sha256": null
+ },
+ {
+  "file": "sdlimage_sample.tga",
+  "format": "TGA",
+  "scope": "out",
+  "invalid_by_construction": false,
+  "our_status": "FAILED",
+  "stage": null,
+  "termination": "exhausted",
+  "checks": 3,
+  "candidates": [],
+  "pillow_decodes": true,
+  "pillow_mode": "RGB",
+  "pillow_size": [
+   23,
+   42
+  ],
+  "pixel_verdicts": [],
+  "pillow_pixels_sha256": null
+ },
+ {
+  "file": "sdlimage_sample.tif",
+  "format": "TIFF",
+  "scope": "in",
+  "invalid_by_construction": false,
+  "our_status": "FAILED",
+  "stage": null,
+  "termination": "exhausted",
+  "checks": 3,
+  "candidates": [],
+  "pillow_decodes": true,
+  "pillow_mode": "RGB",
+  "pillow_size": [
+   23,
+   42
+  ],
+  "pixel_verdicts": [],
+  "pillow_pixels_sha256": null
+ }
+]
