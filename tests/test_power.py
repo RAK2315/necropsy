@@ -139,3 +139,11 @@ def test_the_tool_is_callable_from_the_powers_own_mcp_json(installed):
     assert r.is_error is False
     sc = r.structured_content
     assert sc["status"] == "UNRESOLVED_AMBIGUITY" and len(sc["candidates"]) == 18
+
+
+def test_skill_names_payload_fields_and_gives_the_path_and_advice_rules():
+    body = (POWER / "skills" / "unknown-file" / "SKILL.md").read_text(encoding="utf-8")
+    assert "closure line" not in body
+    assert "`data_start`, `data_end`, `row_stride` and `expected_decoded_bytes`" in body
+    assert "must be an **absolute** path" in body and "not necessarily the workspace" in body
+    assert "Never give advice about renaming the file, other tools or viewers unless the user asks" in body

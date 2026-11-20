@@ -27,6 +27,8 @@ The engine and the web service are not changed. `core.py` duplicates four lines 
 
 Both tools return a `CallToolResult` with structured content (the object) and one text block holding the same JSON rendered as Starlette's `JSONResponse` renders it (`ensure_ascii=False`, compact separators). A test checks the text equals `JSONResponse(payload).body`.
 
+**Relative paths.** The Power runs the server with the working directory `${PLUGIN_ROOT}`, so `path="spike/samples/mystery_d"` is not found from there (verified: `file_not_found`). An agent naturally passes workspace-relative paths. The descriptions and the skill say `path` must be absolute. A relative path that is not found returns `file_not_found` with the working directory in the message and as `cwd`, and asks for an absolute path. No workspace root is guessed. The SDK has the machinery for MCP roots (`roots/list`, `ListRoots`, `RootsCapability`), but Kiro's MCP documentation read for this spec does not mention roots, so Kiro's support is unverified. Roots are not implemented.
+
 Input errors are `isError` true with `{"error", "message"}`: `bad_input`, `invalid_base64`, `file_not_found`, `not_a_file`, `unreadable`, `file_too_large` (with `limit_bytes: 65536`, the web service's 413 body), `internal_error`.
 
 A path is read with `open(path, "rb").read(65537)`, so a large or endless file is never read in full. A base64 string longer than the longest padded encoding of 65,536 bytes is refused before it is decoded.

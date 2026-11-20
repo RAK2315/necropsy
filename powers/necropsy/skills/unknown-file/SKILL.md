@@ -9,9 +9,9 @@ NECROPSY infers a file's layout from its bytes and checks each layout by arithme
 
 ## Steps
 
-1. **Call `analyse` first.** Give it the file's `path`, or `data_base64` if you only hold the bytes. Do this before reading the file yourself or proposing a layout. The limit is 65,536 bytes. A larger file returns the error `file_too_large`: say so and stop. Do not truncate the file and analyse the piece.
+1. **Call `analyse` first.** Give it the file's `path`, which must be an **absolute** path (the server's working directory is not necessarily the workspace, so a workspace-relative path may come back as `file_not_found`; if it does, retry once with the absolute path), or `data_base64` if you only hold the bytes. Do this before reading the file yourself or proposing a layout. The limit is 65,536 bytes. A larger file returns the error `file_too_large`: say so and stop. Do not truncate the file and analyse the piece.
 2. **Read `status`**, then report in these terms:
-   - **RESOLVED.** One layout closes. Report its width, height, bit depth, header size, encoding, data region and the closure line. You may rely on this layout.
+   - **RESOLVED.** One layout closes. Report its width, height, bit depth, header size, encoding and data region, and the values that show it closes: `data_start`, `data_end`, `row_stride` and `expected_decoded_bytes`. You may rely on this layout.
    - **UNRESOLVED_AMBIGUITY.** Several layouts close and the bytes cannot separate them. This is a correct result. Report **every** candidate, with its count, in the order the tool returned them. Do not pick one. Do not rank them by `coherence_score`: it is a heuristic and the tool says it does not choose. State what extra information would decide (a file name, a declared format, a larger sample from the same source).
    - **FAILED.** Nothing closed. Report `termination` (for example `exhausted` or `no_hypothesis_checked`) and what `rejection_counts` says was tried. Stop. Do not offer a layout the tool did not return.
    **If the tool result arrives truncated** (Kiro shows a result over 30,000 characters as only its first and last 500 and saves the full output to a file), read the saved full output before answering. Never report candidates, a candidate count or a status from a truncated view: the middle of the result is where the other candidates are.
@@ -23,3 +23,4 @@ NECROPSY infers a file's layout from its bytes and checks each layout by arithme
 - Never choose between candidates on your own, by looks, by size, or by "most likely".
 - Never describe a candidate as the file's format. A result describes this file's layout. It does not name a format unless a probe matched one.
 - Never retry the tool with a modified file to get a better answer.
+- Never give advice about renaming the file, other tools or viewers unless the user asks. Report what the tool returned and stop.

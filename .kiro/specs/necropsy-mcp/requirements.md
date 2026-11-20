@@ -44,8 +44,9 @@ Not in scope: a hand-written JSON-RPC layer (the SDK is the reference implementa
 4. WHEN `data_base64` is not valid base64, THE Server SHALL return `invalid_base64`.
 5. WHEN `path` names no file, a directory, or an unreadable file, THE Server SHALL return `file_not_found`, `not_a_file` or `unreadable`.
 6. WHEN reading a path, THE Server SHALL read at most 65,537 bytes, so an oversize or endless file is never read in full.
-7. EVERY input error SHALL be returned as a tool result with `isError` true. A FAILED engine result and `nothing_recovered` SHALL NOT be errors: they are normal outcomes.
-8. THE tools SHALL NOT raise on any input. Arbitrary bytes up to 65,536 SHALL produce a valid payload or a structured error.
+7. THE tool descriptions SHALL say that `path` must be absolute. WHEN a relative path is not found, THE Server SHALL return `file_not_found` with a message that states the server's working directory (also as `cwd`), says it is not necessarily the workspace, and asks for an absolute path. THE Server SHALL NOT guess a workspace root.
+8. EVERY input error SHALL be returned as a tool result with `isError` true. A FAILED engine result and `nothing_recovered` SHALL NOT be errors: they are normal outcomes.
+9. THE tools SHALL NOT raise on any input. Arbitrary bytes up to 65,536 SHALL produce a valid payload or a structured error.
 
 ### Requirement 3: Registration
 
@@ -90,7 +91,7 @@ Not in scope: a hand-written JSON-RPC layer (the SDK is the reference implementa
 1. THE Power SHALL follow the layout in Kiro's current documentation: `plugin.json` (required), `mcp.json`, and `skills/<name>/SKILL.md`. The format SHALL be read from the documentation before any Power file is written, and recorded in design.md.
 2. THE Power SHALL bundle the server and what it imports, generated from the repository by `tools/build_power.py`, so that it runs from its own directory with only the SDK installed. A test SHALL fail if the bundle differs from the source.
 3. THE Power's `mcp.json` SHALL start the server with the working directory `${PLUGIN_ROOT}`.
-4. THE Power's skill SHALL tell an agent: call `analyse` first on an unknown file; report every candidate; never pick one unless the result is RESOLVED; say what a FAILED result states and stop; when a tool result arrives truncated, read the saved full output before answering and never report candidates from a truncated view.
+4. THE Power's skill SHALL tell an agent: call `analyse` first on an unknown file; report every candidate; never pick one unless the result is RESOLVED; say what a FAILED result states and stop; when a tool result arrives truncated, read the saved full output before answering and never report candidates from a truncated view; name the payload fields `data_start`, `data_end`, `row_stride` and `expected_decoded_bytes` for a RESOLVED result and not a "closure line" the payload does not contain; and give no advice about renaming the file, other tools or viewers unless asked. THE `analyse` description SHALL state all three removals.
 5. THE Power's `plugin.json` and `mcp.json` SHALL validate against the Agent Plugins JSON schemas, and its skill SHALL satisfy the Agent Skills frontmatter rules.
 6. A test SHALL start the server from the Power's own `mcp.json` (its command, arguments and working directory) and call `analyse` successfully.
 7. THE Power's tool SHALL be callable from Kiro after installing the Power. THIS cannot be tested from outside Kiro, and the design SHALL say so.

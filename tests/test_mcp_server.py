@@ -27,8 +27,13 @@ LIMIT = 65_536
 STATUSES = {"RESOLVED", "UNRESOLVED_AMBIGUITY", "FAILED"}
 
 
-def server_params(cwd=REPO_ROOT, args=("-m", "necropsy_mcp"), command=None):
-    return StdioServerParameters(command=command or sys.executable, args=list(args), cwd=str(cwd))
+def server_params(cwd=REPO_ROOT, args=("-m", "necropsy_mcp"), command=None, env=None):
+    return StdioServerParameters(command=command or sys.executable, args=list(args), cwd=str(cwd), env=env)
+
+
+def elsewhere(tmp_path):
+    """Params for a server whose working directory is not the repository, as in the Power."""
+    return server_params(cwd=tmp_path, env={"PYTHONPATH": str(REPO_ROOT)})
 
 
 def run_session(fn, params=None):
@@ -312,3 +317,55 @@ def test_workspace_registration_starts_the_server():
     assert not entry.get("autoApprove") and not entry.get("disabled")
     tools = run_session(lambda c: c.list_tools(), server_params(command=sys.executable, args=entry["args"])).tools
     assert [t.name for t in tools] == ["analyse", "emit_spec"]
+
+
+def test_a_relative_path_not_found_states_the_cwd_and_asks_for_an_absolute_path(tmp_path):
+    # The Power runs with cwd ${PLUGIN_ROOT}, so a workspace-relative path is not found from there.
+    relative = "spike/samples/mystery_d"
+    for tool in ("analyse", "emit_spec"):
+        r = run_session(lambda c: c.call_tool(tool, {"path": relative}), elsewhere(tmp_path))
+        sc = r.structured_content
+        assert r.is_error is True and sc["error"] == "file_not_found"
+        assert sc["cwd"] == str(tmp_path)
+        assert repr(str(tmp_path)) in sc["message"] and "working directory" in sc["message"]
+        assert "not necessarily the workspace" in sc["message"] and "absolute path" in sc["message"]
+
+
+def test_the_same_file_by_absolute_path_works_from_any_cwd(tmp_path):
+    absolute = str(REPO_ROOT / "spike" / "samples" / "mystery_d")
+    r = run_session(lambda c: c.call_tool("analyse", {"path": absolute}), elsewhere(tmp_path))
+    assert r.is_error is False and len(r.structured_content["candidates"]) == 18
+
+
+def test_an_absolute_path_that_does_not_exist_gets_the_plain_error():
+    missing = str(REPO_ROOT / "spike" / "samples" / "no_such_file")
+    payload, is_error = core.analyse(path=missing)
+    assert is_error and payload["error"] == "file_not_found"
+    assert "cwd" not in payload and "absolute path" not in payload["message"]
+
+
+def test_the_server_does_not_guess_a_workspace_root(tmp_path, monkeypatch):
+    # A relative path is resolved only against the cwd; nothing else is searched.
+    (tmp_path / "x").write_bytes(b"P4\n1 1\n\x00")
+    monkeypatch.chdir(tmp_path)
+    assert core.analyse(path="x")[1] is False
+    monkeypatch.chdir(REPO_ROOT / "tests")
+    payload, is_error = core.analyse(path="x")
+    assert is_error and payload["error"] == "file_not_found" and payload["cwd"] == str(REPO_ROOT / "tests")
+
+
+def test_tool_descriptions_pin_the_absolute_path_rule_and_all_three_removals():
+    tools = {t.name: t.description for t in run_session(lambda c: c.list_tools()).tools}
+    for name, text in tools.items():
+        assert "absolute path" in text and "not necessarily the workspace" in text, name
+    a = tools["analyse"]
+    for needle in ("exactly three things removed", "`render.data_b64`", "top-level `spec`",
+                   "`value_repr` from every field", "repeats `value`"):
+        assert needle in a, needle
+
+
+def test_the_payload_has_the_fields_the_skill_names(results):
+    cand = results["spike/samples/mystery_a"]["analyse"].structured_content["candidates"][0]
+    for name in ("data_start", "data_end", "row_stride", "expected_decoded_bytes"):
+        assert name in cand, name
+    assert "closure" not in cand            # there is no closure-line field to report

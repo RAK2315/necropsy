@@ -14,7 +14,8 @@ INSTRUCTIONS = (
     "separate them: report all of them and choose none."
 )
 _INPUT = (
-    "Give exactly one of `path` (a file on this machine) or `data_base64` (the bytes, base64). "
+    "Give exactly one of `path` or `data_base64` (the bytes, base64). `path` must be an absolute path to a file on "
+    "this machine: this server's working directory is not necessarily the workspace, so a workspace-relative path may not be found. "
     f"At most {core.MAX_BYTES:,} bytes."
 )
 
@@ -34,7 +35,8 @@ def to_result(obj: dict, is_error: bool) -> CallToolResult:
     name="analyse",
     description=(
         "Infer the structure of a file from its bytes. Returns the analysis payload the NECROPSY web "
-        "service returns, without the pixel buffers and the emitted spec (`emit_spec` returns the spec): status RESOLVED (one layout closes), UNRESOLVED_AMBIGUITY (several layouts close; "
+        "service returns, with exactly three things removed to keep it readable: each candidate's pixel buffer (`render.data_b64`), the "
+        "top-level `spec` (`emit_spec` returns it), and `value_repr` from every field (it repeats `value`). The status is RESOLVED (one layout closes), UNRESOLVED_AMBIGUITY (several layouts close; "
         "the bytes cannot separate them, so report every candidate and choose none) or FAILED (nothing "
         "closed; the payload says what was tried and why the search stopped). " + _INPUT
     ),

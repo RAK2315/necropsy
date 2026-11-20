@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import base64
 import binascii
+import os
 import time
 
 from necropsy.emit import EmittedSpec, emit_spec as _emit_spec
@@ -49,6 +50,13 @@ def load(path, data_base64) -> bytes | dict:
                 with open(path, "rb") as f:
                     data = f.read(MAX_BYTES + 1)
             except FileNotFoundError:
+                if not os.path.isabs(path):
+                    cwd = os.getcwd()
+                    return error(
+                        "file_not_found",
+                        f"No file at {path!r}. A relative path resolves against this server's working directory, "
+                        f"{cwd!r}, which is not necessarily the workspace. Pass an absolute path.",
+                        cwd=cwd)
                 return error("file_not_found", f"No file at {path!r}.")
             except (IsADirectoryError, NotADirectoryError):
                 return error("not_a_file", f"{path!r} is not a file.")
