@@ -292,7 +292,7 @@ This screen shows the honesty mechanic. It is a success.
 
 #### Acceptance Criteria
 
-1. THE first screen SHALL be a near-empty drop zone with one instruction. It SHALL accept a file dropped on it and a file chosen with a file picker.
+1. THE first screen SHALL be a drop zone with one instruction, below the outcome strip of Requirement 16. It SHALL accept a file dropped on it and a file chosen with a file picker. (Amended: the screen was near-empty; the outcome strip now sits above the drop zone.)
 2. THE drop zone SHALL be the primary control. THE samples SHALL appear below it as a secondary list under the heading `No file to hand? Try one of these.`
 3. THE UI SHALL offer all nine corpus files, listed as `mystery_a` to `mystery_i` in that order, followed by the external samples (criterion 13). Each entry SHALL show its name and byte size.
 4. NO sample entry SHALL show its format, its expected status, its outcome, a description of its content, or the word `corpus`, `test` or `demo`. A sample SHALL NOT be labelled with the answer. The one permitted addition is the provenance line on an external sample (criterion 14).
@@ -381,7 +381,53 @@ This screen shows the honesty mechanic. It is a success.
 7. THE UI SHALL be accepted only after each screen in Requirement 13.5 has been run against the deployed URL and recorded as a screen capture, with the time it took.
 8. THE frontend's pure logic (region computation, field byte ranges, replay step list, step batching) SHALL be written as functions separate from the DOM, so that they can be tested. THE choice of JavaScript test tool belongs to the design.
 9. THE UI work SHALL add no feature, format, option or export beyond those stated in this spec.
+10. EACH browser-observable claim (Requirements 12.4, 13, 16, 17, 18) SHALL be checked by a test that drives the real page, and each such test SHALL have been seen to fail against a deliberate break of the claim before it is relied on.
 
+### Requirement 16: Outcome Strip on the First Screen
+
+**User Story:** As a judge who has not touched anything yet, I want to see the three things NECROPSY can say about a file, using real output, so that I understand the product before I try it.
+
+#### Acceptance Criteria
+
+1. THE first screen SHALL show, above the drop zone, three tiles in this order: a RESOLVED result, an UNRESOLVED_AMBIGUITY result and a FAILED result.
+2. EACH tile SHALL be produced by sending real bytes through the same `analyse` path and `/api/analyze` endpoint a dropped file uses, when the page loads. THE UI SHALL NOT ship a stored copy of any of these results (Requirement 11.7 applies).
+   - RESOLVED: the sample `external_a`, written by Pillow, not by this project.
+   - UNRESOLVED_AMBIGUITY: the sample `mystery_d`.
+   - FAILED: the first 300 bytes of the sample `mystery_b`, built in the browser from the served file, and labelled as exactly that.
+3. EACH tile SHALL name its input and carry one line, filled from the payload, never from a constant:
+   - RESOLVED: the recovered image, and `One layout closes.`
+   - UNRESOLVED_AMBIGUITY: every candidate's image at one common small size in discovery order, and `{n} readings fit, so NECROPSY does not choose.`, where `n` is the payload's candidate count.
+   - FAILED: the termination sentence of Requirement 10.1, the first three rejections as Requirement 10.5 shows them, and `Nothing closed, and here is why.`
+4. THE ambiguity tile SHALL obey Requirement 9.4: no candidate image larger, framed, ordered or marked differently from another.
+5. WHILE a tile's request is in flight, THE tile SHALL show `Analysing…`. IF it fails, THE tile SHALL say so in place and the drop zone SHALL still work.
+6. A click on a tile SHALL open that result's full screen from the payload already held, with no second request.
+7. THE strip, the drop zone and its instruction SHALL fit in a 1280×720 viewport without scrolling.
+
+### Requirement 17: Downloading Recovered Output
+
+**User Story:** As a user who recovered a picture, I want to take it away, so that the recovery is useful beyond this page.
+
+#### Acceptance Criteria
+
+1. THE RESOLVED screen and every UNRESOLVED_AMBIGUITY card SHALL offer two downloads: `PNG` and `data region`.
+2. THE `PNG` download SHALL be the candidate's pixel buffer at its native size, `width × height`, one PNG pixel per image pixel, with no scaling, smoothing or added alpha (every pixel opaque).
+3. THE `data region` download SHALL be exactly the bytes `[data_start, data_end)` of the examined file, as stored (still encoded, for an RLE candidate).
+4. THE downloads SHALL be built in the browser from data the page already holds, with no request.
+5. THE download file names SHALL be `<input>_<width>x<height>_<bit_depth>bit.png` and `<input>_<width>x<height>_<bit_depth>bit_data_<data_start>-<data_end>.bin`, where `<input>` is the sample name, or the dropped file's name without its extension, reduced to `[A-Za-z0-9._-]`.
+6. WHERE a candidate has a render-failure reason, its `PNG` control SHALL be present and disabled, so that every card keeps the same structure (Requirement 9.4). Its `data region` download SHALL still work.
+7. THE download controls SHALL NOT use the accent colour (Requirement 5.10), and a click on a card's control SHALL NOT select the card.
+
+### Requirement 18: Dropping Several Files
+
+**User Story:** As a user who dropped several files at once, I want to be told what happened to them, so that nothing is ignored silently.
+
+#### Acceptance Criteria
+
+1. NECROPSY examines one file at a time. WHEN several files are dropped at once, THE UI SHALL examine the first file in the drop's order and SHALL state, on the result screen and before any result content, `{k} files were dropped. NECROPSY examines one file at a time: it examined {name} and ignored {k − 1} other{s}: {names}.`, naming every ignored file.
+2. THE statement SHALL stay on the result screen until the user examines another file, and SHALL be announced to assistive technology.
+3. WHEN the first file is over the size limit, THE UI SHALL refuse it as Requirement 11.10 states and SHALL also state that the others were not examined.
+4. WHEN a drop carries no file (for example dragged text), THE UI SHALL say `Nothing to examine: drop a file.` and stay on the first screen.
+5. THE file picker SHALL accept one file.
 ## Accepted Decisions and Remaining Open Items
 
 Accepted by the user, and not to be reopened in design:

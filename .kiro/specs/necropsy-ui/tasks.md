@@ -98,6 +98,23 @@ Rules for every task:
   - If the cold analyse time is over 5 seconds or the terms fail, stop and ask the user to choose a new host now. Do not continue UI work on a failed host.
   - _Requirements: 14.2 to 14.4_
 
-- [ ] 16. Final deploy and acceptance
+- [ ] 17. Outcome strip on the first screen
+  - Three tiles above the drop zone from live `/api/analyze` calls: `external_a` (RESOLVED), `mystery_d` (ambiguity), first 300 bytes of `mystery_b` (FAILED). Lines filled from the payload. Click opens the held payload.
+  - Test in a real browser: tile contents equal the engine's output; with the ambiguity response rewritten in the browser, the tile follows the response, so a hard-coded line fails. Break and restore, and report both.
+  - Must be visible: all three tiles and the drop zone at 1280×720 without scrolling.
+  - _Requirements: 16, 11.1_
+
+- [ ] 18. PNG and data-region downloads
+  - `PNG` and `data region` on the RESOLVED screen and on every ambiguity card, built in the browser.
+  - Test in a real browser: the PNG decodes to exactly the pixel buffer at native size; the data region equals the file's bytes `[data_start, data_end)`. Break and restore, and report both.
+  - _Requirements: 17_
+
+- [ ] 19. Several files dropped at once
+  - Examine the first, state which one and name the ignored ones; handle empty drops.
+  - Test in a real browser: a three-file drop shows the statement and the result is the first file's. Break and restore, and report both.
+  - _Requirements: 18_
+
+- [ ] 16. Final deploy and acceptance (run last, after 17 to 19)
   - Redeploy, run each Requirement 13.5 beat on the public URL at 1280×720, record a screen capture and time for each. Schedule the 15 December and weekly cold-hit checks in `docs/KIRO-LOG.md`.
-  - _Requirements: 13.5, 14.5, 15.7_
+  - Also run the Requirement 16, 17 and 18 behaviours on the public URL.
+  - _Requirements: 13.5, 14.5, 15.7, 16, 17, 18_
