@@ -34,6 +34,83 @@ def palette_for(cand, data):
     return data[start:start + 768] if start + 768 <= len(data) else None
 
 
+def _int_field(cand, name):
+    """The integer value of the candidate's FieldRecord `name`, or None."""
+    for f in cand.hypothesis.fields:
+        if f.name == name:
+            v = f.value
+            if isinstance(v, tuple) and len(v) == 1 and isinstance(v[0], int) and not isinstance(v[0], bool):
+                return v[0]
+            return None
+    return None
+
+
+def channel_order_for(cand) -> str:
+    """24/32-bit channel order from the format (Requirement 3.5): TGA B,G,R; TIFF R,G,B; generic B,G,R by convention."""
+    probe = cand.hypothesis.probe_name
+    if probe == "tiff":
+        return "rgb"
+    if probe == "generic":
+        return "bgr-convention"
+    return "bgr"
+
+
+def photometric_for(cand):
+    """0 or 1 when declared; "undeclared" for a TIFF grey candidate that declares none (Requirement 3.4)."""
+    pi = _int_field(cand, "photometric_interpretation")
+    if pi in (0, 1):
+        return pi
+    if pi is None and cand.hypothesis.probe_name == "tiff" and cand.hypothesis.bit_depth in (1, 4, 8):
+        return "undeclared"
+    return None
+
+
+def _expand5(v: int) -> int:
+    return (v * 255) // 31
+
+
+def tga_colour_map_for(cand, data):
+    """(palette, name, why_not) for an 8-bit TGA that declares a colour map (Requirement 3.16).
+
+    palette is 768 bytes R,G,B indexed by pixel value, or None. The first entry index is the uint16 at 0x03,
+    which the probe does not record, so it is read here and named in the note.
+    """
+    h = cand.hypothesis
+    if h.probe_name != "tga" or h.bit_depth != 8 or _int_field(cand, "color_map_type") != 1:
+        return None, None, None
+    id_len = _int_field(cand, "id_length")
+    length = _int_field(cand, "color_map_length")
+    size = _int_field(cand, "color_map_entry_size")
+    if None in (id_len, length, size) or len(data) < 5:
+        return None, None, "colour map not applied: its fields were not read"
+    first = data[3] | (data[4] << 8)
+    per = {15: 2, 16: 2, 24: 3, 32: 4}.get(size)
+    if per is None:
+        return None, None, f"colour map not applied: {size}-bit entries are not supported"
+    start = 18 + id_len
+    if start + length * per > len(data):
+        return None, None, "colour map not applied: it runs past the end of the file"
+    used = h.width
+    values = set()
+    for r in range(h.height):
+        values.update(cand.decoded[r * cand.row_stride: r * cand.row_stride + used])
+    if values and (min(values) < first or max(values) >= first + length):
+        return None, None, "colour map not applied: a pixel value falls outside the map"
+    pal = bytearray(768)
+    for k in range(length):
+        i = first + k
+        if i > 255:
+            break
+        o = start + k * per
+        if per == 2:
+            v = data[o] | (data[o + 1] << 8)
+            rgb = (_expand5((v >> 10) & 31), _expand5((v >> 5) & 31), _expand5(v & 31))
+        else:
+            rgb = (data[o + 2], data[o + 1], data[o])          # stored B, G, R (, A)
+        pal[3 * i:3 * i + 3] = bytes(rgb)
+    return bytes(pal), f"colour map, {length} × {size}-bit entries, first index {first} (0x03)", None
+
+
 def bottom_left_for(cand) -> bool:
     """True when the candidate's image_descriptor record declares a bottom-left origin."""
     for f in cand.hypothesis.fields:
@@ -72,8 +149,14 @@ def _candidate(c, data, budget: dict) -> dict:
         budget["spent"] = PIXEL_BUDGET + 1                      # nothing later is converted either
         render = {"failure": NOT_RENDERED}
     else:
+        tga_pal, tga_name, tga_why = tga_colour_map_for(c, data)
+        if tga_pal is not None:
+            pal, name = tga_pal, tga_name
+        else:
+            pal, name = palette_for(c, data), "pcx_palette_256"
         out = decode(c.decoded, h.width, h.height, h.bit_depth, c.row_stride, h.probe_name,
-                     palette_for(c, data), bottom_left_for(c))
+                     pal, bottom_left_for(c), channel_order=channel_order_for(c), photometric=photometric_for(c),
+                     palette_name=name, no_palette_why=tga_why)
         if isinstance(out, PixelBuffer):
             budget["spent"] += pixels
             render = {"width": out.width, "height": out.height, "channels": out.channels,

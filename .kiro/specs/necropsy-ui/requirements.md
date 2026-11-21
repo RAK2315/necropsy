@@ -223,6 +223,7 @@ The static pane is built and working before any animation is added. A static pan
 10. WHEN the final step shows a result's fields, THE pane MAY reveal the fields one at a time in file order. THE log SHALL then say `reads shown in file order`. This is a presentation of recorded reads, and the label states that it is not an engine step order.
 11. WHEN the user prefers reduced motion, THE replay SHALL start at its final step and the controls SHALL still allow stepping through it.
 12. THE replay SHALL be the second delivery. The static pane (Requirement 5) and all three outcome screens work with the replay disabled.
+13. WHEN the user leaves a result (Escape, `Examine another file`, or a new result replacing it), THE replay SHALL stop: no step SHALL be shown and no outcome built after that.
 
 ### Requirement 8: RESOLVED Screen
 
@@ -455,6 +456,7 @@ This screen shows the honesty mechanic. It is a success.
 8. WHEN the spec ZIP download fails, THE panel SHALL say whether the service answered with an HTTP status (and which) or could not be reached, and to try again.
 9. WHEN a FAILED result's termination is `deadline_exceeded` or `search_cap_exceeded`, read from the payload, THE FAILED screen SHALL keep Requirement 10.1's sentence and SHALL add: `The search stopped at its limit before it could try everything. That does not mean no layout exists. The rejections below show what was tried before it stopped.`
 10. ERROR copy SHALL use only the existing message slots (the drop-zone message, the tile body, the panel status line, the FAILED screen's explanatory text). No retry button, toast or new screen SHALL be added.
+11. WHEN a chosen or dropped file's bytes cannot be read (for example a dropped folder), THE UI SHALL stay on the first screen and SHALL say `{name} could not be read, so it was not examined. If it is a folder, drop a file from inside it instead.`, followed by Requirement 18.3's sentence when other files were dropped with it.
 
 ### Requirement 20: Keyboard and Contrast
 

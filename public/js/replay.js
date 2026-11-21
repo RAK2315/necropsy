@@ -104,5 +104,7 @@ export function createReplay(payload, { onStep, onFinal }) {
       show(0);
       go();
     },
+    /** Stop the timer chain for good: called when the result is left, so no onStep or onFinal runs after that. */
+    dispose() { stop(); },
   };
 }

@@ -132,7 +132,7 @@ Rules for every task:
   - Capture the hex pane before and after with scrollbars shown. Redeploy through tools/deploy.ps1 and re-run tools/acceptance.py on the live URL.
   - _Requirements: 20.8_
 
-- [ ] 23. The recovered image shows what the file declares
+- [x] 23. The recovered image shows what the file declares
   - Differential test of the render against Pillow on every RESOLVED sample Pillow decodes; confirm it fails on the 9 measured files before any fix. Exceptions listed by name with their reason.
   - Fix in `web/` only: channel order from the probe's format, photometric 0 inverts grey, TGA colour map from the declared fields. One break per cause.
   - FAILED copy for a probe-matched search; test on a probe-matched and a generic FAILED file.

@@ -199,5 +199,7 @@ def test_failed_by_limit_keeps_10_1_and_adds_the_limit_note(base_url, terminatio
 
 def test_failed_exhausted_has_no_limit_note(base_url):
     got = run(base_url, FAILED_SCREEN)
-    assert got["reason"] == "Every hypothesis within the search axes was tried and none closed."
+    # the cut mystery_b matches the PCX probe, so Requirement 10.1 (amended) gives the probe-bounded sentence
+    assert got["reason"] == ("The bytes matched the PCX probe, so only readings under its declarations were tried. "
+                             "Generic search did not run.")
     assert got["limit"] == []

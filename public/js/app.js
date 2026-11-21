@@ -1,7 +1,7 @@
-import { renderResult } from './screens.js';
+import { renderResult, leaveResult } from './screens.js';
 import { stripElement } from './strip.js';
 import {
-  multiDropNotice, sizeMessage, emptyMessage, othersNotExamined, serviceStatusMessage, UNREACHABLE_MESSAGE,
+  multiDropNotice, sizeMessage, emptyMessage, unreadableMessage, othersNotExamined, serviceStatusMessage, UNREACHABLE_MESSAGE,
   sampleFailMessage, SAMPLE_LIST_FAIL, LIMIT_BYTES,
 } from './logic.js';
 
@@ -38,6 +38,7 @@ function open(payload, bytes, name, notice = null) {
 }
 
 async function showStart(message = '') {
+  leaveResult();               // Escape and 'Examine another file' both come here: stop the replay
   againBtn.hidden = true;
   const input = el('input', { type: 'file', hidden: '' });
   const drop = el('button', { class: 'drop', type: 'button', text: 'Drop in a file nothing can open.' });
@@ -56,7 +57,9 @@ async function showStart(message = '') {
     const notice = multiDropNotice(list.map((f) => f.name));
     if (file.size === 0) { refuse(emptyMessage(file.name) + othersNotExamined(list.length)); return; }
     if (file.size > MAX_UPLOAD) { refuse(sizeMessage(file.size) + othersNotExamined(list.length)); return; }
-    file.arrayBuffer().then((buf) => analyse(new Uint8Array(buf), file.name, notice));
+    file.arrayBuffer()
+      .then((buf) => analyse(new Uint8Array(buf), file.name, notice))
+      .catch(() => refuse(unreadableMessage(file.name) + othersNotExamined(list.length)));   // e.g. a dropped folder
   };
   drop.addEventListener('click', () => input.click());
   input.addEventListener('change', () => take(input.files));

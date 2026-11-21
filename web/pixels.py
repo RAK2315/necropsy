@@ -10,6 +10,11 @@ PALETTE_LENGTH = 768
 PALETTE_NAME = "pcx_palette_256"
 FLIP_NOTE = "rows flipped: file declares bottom-left origin"
 STORED_NOTE = "rows shown in stored order"
+NO_PHOTOMETRIC = "no photometric interpretation declared; shown as BlackIsZero (0 = black)"
+# Channel order of 24/32-bit pixels, from what the file declares (Requirement 3.5)
+CHANNEL_NOTES = {"bgr": "BGR→RGB", "rgb": "RGB as stored",
+                 "bgr-convention": "BGR→RGB (a convention: the file declares no channel order)"}
+_INVERT = bytes(255 - i for i in range(256))
 
 
 @dataclass(frozen=True)
@@ -47,15 +52,34 @@ def _interleave(r: bytes, g: bytes, b: bytes) -> bytes:
 
 
 def decode(decoded, width, height, bit_depth, row_stride, probe_name,
-           palette=None, bottom_left=False):
-    """Return a PixelBuffer, or a RenderFailure with a reason. Never raises."""
+           palette=None, bottom_left=False, channel_order="bgr", photometric=None,
+           palette_name=PALETTE_NAME, no_palette_why=None):
+    """Return a PixelBuffer, or a RenderFailure with a reason. Never raises.
+
+    channel_order: "bgr", "rgb" or "bgr-convention" (24/32 bit). photometric: None, 0 (WhiteIsZero), 1 (BlackIsZero)
+    or "undeclared" (1/4/8-bit grey). palette_name names the colour source in the note; no_palette_why says why an
+    8-bit colour map was not applied.
+    """
     try:
-        return _decode(decoded, width, height, bit_depth, row_stride, probe_name, palette, bottom_left)
+        return _decode(decoded, width, height, bit_depth, row_stride, probe_name, palette, bottom_left,
+                       channel_order, photometric, palette_name, no_palette_why)
     except Exception as exc:  # last line of defence; the checks below bound every read
         return RenderFailure(f"internal error: {type(exc).__name__}")
 
 
-def _decode(decoded, width, height, bit_depth, row_stride, probe_name, palette, bottom_left):
+def _grey(data, photometric):
+    """Apply the declared photometric interpretation to grey levels; returns (data, note fragment)."""
+    if photometric == 0:
+        return data.translate(_INVERT), "WhiteIsZero (photometric 0)"
+    if photometric == 1:
+        return data, "BlackIsZero (photometric 1)"
+    if photometric == "undeclared":
+        return data, NO_PHOTOMETRIC
+    return data, None
+
+
+def _decode(decoded, width, height, bit_depth, row_stride, probe_name, palette, bottom_left,
+            channel_order, photometric, palette_name, no_palette_why):
     if not isinstance(decoded, (bytes, bytearray)):
         return RenderFailure("inconsistent geometry")
     if not all(_is_int(v) and v > 0 for v in (width, height, bit_depth, row_stride)):
@@ -77,20 +101,31 @@ def _decode(decoded, width, height, bit_depth, row_stride, probe_name, palette, 
         t = _TABLE_1[black_is_one]
         data = b"".join(b"".join(t[b] for b in row)[:width] for row in rows)
         colour = "1 = black (PBM)" if black_is_one else "grey, 1 = white"
+        data, pi = _grey(data, photometric)
+        if pi:
+            colour = pi
         return PixelBuffer(width, height, "grey8", data, f"1-bit · {colour} · {orientation}")
     if bit_depth == 4:
         data = b"".join(b"".join(_TABLE_4[b] for b in row)[:width] for row in rows)
-        return PixelBuffer(width, height, "grey8", data, f"4-bit · grey · {orientation}")
+        data, pi = _grey(data, photometric)
+        return PixelBuffer(width, height, "grey8", data, f"4-bit · {pi or 'grey'} · {orientation}")
     if bit_depth == 8:
         idx = b"".join(rows)
         if isinstance(palette, (bytes, bytearray)) and len(palette) == PALETTE_LENGTH:
             p = bytes(palette)
             data = _interleave(idx.translate(p[0::3]), idx.translate(p[1::3]), idx.translate(p[2::3]))
-            return PixelBuffer(width, height, "rgb8", data, f"8-bit · palette: {PALETTE_NAME} · {orientation}")
-        return PixelBuffer(width, height, "grey8", idx, f"8-bit · greyscale; no palette · {orientation}")
-    # 24 and 32 bit: stored B, G, R (, unused); shown as R, G, B
+            return PixelBuffer(width, height, "rgb8", data, f"8-bit · palette: {palette_name} · {orientation}")
+        if no_palette_why:
+            return PixelBuffer(width, height, "grey8", idx, f"8-bit · {no_palette_why}; indices shown as grey · {orientation}")
+        idx, pi = _grey(idx, photometric)
+        return PixelBuffer(width, height, "grey8", idx, f"8-bit · {pi or 'greyscale; no palette'} · {orientation}")
+    # 24 and 32 bit: three channels in the declared order (a fourth byte is not used); shown as R, G, B
     step = bit_depth // 8
     raw = b"".join(rows)
-    data = _interleave(raw[2::step], raw[1::step], raw[0::step])
+    if channel_order == "rgb":
+        data = _interleave(raw[0::step], raw[1::step], raw[2::step])
+    else:
+        data = _interleave(raw[2::step], raw[1::step], raw[0::step])
+    order = CHANNEL_NOTES.get(channel_order, CHANNEL_NOTES["bgr"])
     extra = "; fourth byte ignored" if step == 4 else ""
-    return PixelBuffer(width, height, "rgb8", data, f"{bit_depth}-bit · BGR→RGB{extra} · {orientation}")
+    return PixelBuffer(width, height, "rgb8", data, f"{bit_depth}-bit · {order}{extra} · {orientation}")

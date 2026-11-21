@@ -318,6 +318,9 @@ export const emptyMessage = (name) =>
   `${name || 'The file'} is empty (0 bytes). There is nothing to examine. Choose a file that has content.`;
 
 /** The sentence for the other files of a multi-file drop whose first file was refused (Requirement 18.3). */
+export const unreadableMessage = (name) =>
+  `${name || 'The file'} could not be read, so it was not examined. If it is a folder, drop a file from inside it instead.`;
+
 export const othersNotExamined = (k) =>
   k > 1 ? ` The other ${k - 1} dropped file${k > 2 ? 's were' : ' was'} not examined.` : '';
 
@@ -339,3 +342,21 @@ export const zipFailMessage = (status) => status
 
 export const STOPPED_AT_LIMIT =
   'The search stopped at its limit before it could try everything. That does not mean no layout exists. The rejections below show what was tried before it stopped.';
+// ---- FAILED sentence (Requirement 10.1, amended) ----
+
+/**
+ * The FAILED screen's sentence. When the search was exhausted and the rejections show a probe stage and no generic
+ * stage, the probe's declarations bounded the search and Generic Search did not run (engine Decision Record 25).
+ */
+export function failureSentence(payload) {
+  if (payload.termination === 'exhausted') {
+    const rejections = payload.rejections || [];
+    const stages = new Set(Object.keys(payload.rejection_counts || {}));
+    for (const r of rejections) stages.add(stageOf(r.source));
+    const probe = rejections.find((r) => stageOf(r.source) === 'probe');
+    if (probe && stages.has('probe') && !stages.has('generic')) {
+      return `The bytes matched the ${probe.source.toUpperCase()} probe, so only readings under its declarations were tried. Generic search did not run.`;
+    }
+  }
+  return terminationText(payload.termination);
+}

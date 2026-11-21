@@ -1,5 +1,5 @@
 // Outcome strip on the first screen (Requirement 16): three real results, requested as the page loads.
-import { outcomeLine, terminationText, rejectionLine, sampleFailMessage } from './logic.js';
+import { outcomeLine, failureSentence, rejectionLine, sampleFailMessage } from './logic.js';
 import { paint } from './image.js';
 
 function el(tag, cls, text) {
@@ -61,7 +61,7 @@ function ambiguityBody(p) {
 }
 
 function failedBody(p) {
-  const out = [el('p', 'strip-term', terminationText(p.termination))];
+  const out = [el('p', 'strip-term', failureSentence(p))];
   const list = el('ol', 'strip-rej mono');
   for (const r of p.rejections.slice(0, 3)) list.append(el('li', '', rejectionLine(r)));
   out.push(list);

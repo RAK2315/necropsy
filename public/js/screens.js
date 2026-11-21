@@ -1,7 +1,7 @@
 // Result screens: RESOLVED, UNRESOLVED_AMBIGUITY and FAILED.
 import {
   closureLine, declaredVsActual, revisionDiffs, changeText, ambiguityStatement, COHERENCE_NOTE, cardsHTML, cardTitle,
-  terminationText, failureGroups, rejectionLine, hypothesisLine, stageOf, inputBase, STOPPED_AT_LIMIT,
+  terminationText, failureSentence, failureGroups, rejectionLine, hypothesisLine, stageOf, inputBase, STOPPED_AT_LIMIT,
 } from './logic.js';
 import { createPane, fieldTable } from './pane.js';
 import { paint } from './image.js';
@@ -162,7 +162,7 @@ function failedPanel(payload) {
   const side = el('div', 'exam-right');
   const head = el('div', 'result-head');
   head.append(chip('FAILED'), el('span', 'source', `termination ${payload.termination}`));
-  side.append(head, el('p', 'fail-reason', terminationText(payload.termination)));
+  side.append(head, el('p', 'fail-reason', failureSentence(payload)));
 
   const total = payload.rejections.length + (payload.rejections_omitted || 0);
   const stages = new Set(payload.rejections.map((r) => stageOf(r.source)));
@@ -262,7 +262,16 @@ function stepView(step) {
   return { cands: h ? [{ fields: h.fields }] : [], regions: null };
 }
 
+let activeReplay = null;    // the replay of the result on screen, if any
+
+/** Stop the current result's replay. Called whenever the result is left or replaced. */
+export function leaveResult() {
+  if (activeReplay) activeReplay.dispose();
+  activeReplay = null;
+}
+
 export function renderResult(root, payload, bytes, opts = {}) {
+  leaveResult();
   root.replaceChildren();
   if (opts.notice) {
     const n = el('p', 'notice', opts.notice);
@@ -271,7 +280,11 @@ export function renderResult(root, payload, bytes, opts = {}) {
   }
   const target = views(root, payload, bytes);
   const base = inputBase(opts.name);
-  if (payload.status === 'UNRESOLVED_AMBIGUITY') { ambiguityScreen(target, payload, bytes, base).start(); return; }
+  if (payload.status === 'UNRESOLVED_AMBIGUITY') {
+    activeReplay = ambiguityScreen(target, payload, bytes, base);
+    activeReplay.start();
+    return;
+  }
   const pane = createPane(bytes);
   const wrap = el('div', 'exam');
   const left = el('div', 'exam-left');
@@ -301,5 +314,6 @@ export function renderResult(root, payload, bytes, opts = {}) {
     },
   });
   left.append(replay.root, pane.root);
+  activeReplay = replay;
   replay.start();
 }
