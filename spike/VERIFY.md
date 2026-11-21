@@ -11,14 +11,14 @@ Summary and detail use hypothesis-major revision order; see the order section.
 | File | Probes matched | Outcome | Stage | Closing | Checks | design.md (closing / checks) | Agrees | Req 7 |
 |---|---|---|---|---|---|---|---|---|
 | mystery_a | pbm | RESOLVED | probe | 1 | 1 | 1 / 1 | yes | pass |
-| mystery_b | pcx | RESOLVED | revision depth 1 | 1 | 4 | 1 / 4 | yes | pass |
+| mystery_b | pcx | RESOLVED | revision depth 1 | 1 | 8 | 1 / 4 | **NO** | pass |
 | mystery_c | tga | RESOLVED | probe | 1 | 1 | 1 / 1 | yes | pass |
 | mystery_d | none | UNRESOLVED_AMBIGUITY | generic | 18 | 18 | 18 / 18 | yes | pass |
 | mystery_e | tiff | RESOLVED | probe | 1 | 1 | 1 / 1 | yes | pass |
 | mystery_f | none | UNRESOLVED_AMBIGUITY | generic | 8 | 8 | 8 / 8 | yes | pass |
 | mystery_g | none | UNRESOLVED_AMBIGUITY | generic | 8 | 8 | 8 / 8 | yes | pass |
 | mystery_h | pcx | RESOLVED | revision depth 2 | 1 | 10 | 1 / 10 | yes | pass |
-| mystery_i | pcx | RESOLVED | revision depth 2 | 1 | 10 | 1 / 10 | yes | pass |
+| mystery_i | pcx | RESOLVED | revision depth 2 | 1 | 20 | 1 / 10 | **NO** | pass |
 
 ## Revision enumeration order (Req 3.2)
 
@@ -28,12 +28,12 @@ keeps the first path to reach a key and skips the other as a duplicate.
 
 | File | Nesting | Closing | Checks | revision_path | Req 7 path |
 |---|---|---|---|---|---|
-| mystery_b | strategy-major | 1 | 4 | ['inclusive_bounds'] | matches |
-| mystery_b | hypothesis-major | 1 | 4 | ['inclusive_bounds'] | matches |
+| mystery_b | strategy-major | 1 | 8 | ['inclusive_bounds'] | matches |
+| mystery_b | hypothesis-major | 1 | 8 | ['inclusive_bounds'] | matches |
 | mystery_h | strategy-major | 1 | 10 | ['row_padding_variants', 'inclusive_bounds'] | **differs** |
 | mystery_h | hypothesis-major | 1 | 10 | ['inclusive_bounds', 'row_padding_variants'] | matches |
-| mystery_i | strategy-major | 1 | 10 | ['rle_pcx', 'inclusive_bounds'] | **differs** |
-| mystery_i | hypothesis-major | 1 | 10 | ['inclusive_bounds', 'rle_pcx'] | matches |
+| mystery_i | strategy-major | 1 | 20 | ['rle_pcx', 'inclusive_bounds'] | **differs** |
+| mystery_i | hypothesis-major | 1 | 20 | ['inclusive_bounds', 'rle_pcx'] | matches |
 
 ## Per-file detail
 
@@ -50,15 +50,19 @@ keeps the first path to reach a key and skips the other as a duplicate.
 
 - Probes matched: pcx
 - Outcome: RESOLVED, stage revision depth 1
-- Closure checks: 4
+- Closure checks: 8
 - Closing hypotheses (1):
 
   1. 8x8, 8 bpp, header 128, align 1, rle_pcx, stride 8, region [128, 186), trailer pcx_palette_256, path ['inclusive_bounds']  <- Req 7 expected
 
-- Rejected (3):
+- Rejected (7):
 
   - 7x7, 8 bpp, header 128, align 1, rle_pcx, path []: decoder_unconsumed
+  - 7x7, 8 bpp, header 128, align 1, rle_pcx, path []: decoder_unconsumed
+  - 8x8, 8 bpp, header 128, align 1, rle_pcx, path ['inclusive_bounds']: decoder_unconsumed
   - 7x7, 8 bpp, header 128, align 2, rle_pcx, path ['row_padding_variants']: decoder_unconsumed
+  - 7x7, 8 bpp, header 128, align 2, rle_pcx, path ['row_padding_variants']: decoder_unconsumed
+  - 7x7, 8 bpp, header 128, align 4, rle_pcx, path ['row_padding_variants']: decoder_unconsumed
   - 7x7, 8 bpp, header 128, align 4, rle_pcx, path ['row_padding_variants']: decoder_unconsumed
 
 ### mystery_c (786 bytes)
@@ -162,19 +166,29 @@ keeps the first path to reach a key and skips the other as a duplicate.
 
 - Probes matched: pcx
 - Outcome: RESOLVED, stage revision depth 2
-- Closure checks: 10
+- Closure checks: 20
 - Closing hypotheses (1):
 
   1. 8x8, 8 bpp, header 128, align 1, rle_pcx, stride 8, region [128, 186), trailer pcx_palette_256, path ['inclusive_bounds', 'rle_pcx']  <- Req 7 expected
 
-- Rejected (9):
+- Rejected (19):
 
   - 7x7, 8 bpp, header 128, align 1, none, path []: arithmetic_mismatch
+  - 7x7, 8 bpp, header 128, align 1, none, path []: arithmetic_mismatch
+  - 8x8, 8 bpp, header 128, align 1, none, path ['inclusive_bounds']: arithmetic_mismatch
   - 8x8, 8 bpp, header 128, align 1, none, path ['inclusive_bounds']: arithmetic_mismatch
   - 7x7, 8 bpp, header 128, align 1, rle_pcx, path ['rle_pcx']: decoder_unconsumed
+  - 7x7, 8 bpp, header 128, align 1, rle_pcx, path ['rle_pcx']: decoder_unconsumed
+  - 7x7, 8 bpp, header 128, align 2, none, path ['row_padding_variants']: arithmetic_mismatch
   - 7x7, 8 bpp, header 128, align 2, none, path ['row_padding_variants']: arithmetic_mismatch
   - 7x7, 8 bpp, header 128, align 4, none, path ['row_padding_variants']: arithmetic_mismatch
+  - 7x7, 8 bpp, header 128, align 4, none, path ['row_padding_variants']: arithmetic_mismatch
+  - 8x8, 8 bpp, header 128, align 1, rle_pcx, path ['inclusive_bounds', 'rle_pcx']: decoder_unconsumed
+  - 8x8, 8 bpp, header 128, align 2, none, path ['inclusive_bounds', 'row_padding_variants']: arithmetic_mismatch
   - 8x8, 8 bpp, header 128, align 2, none, path ['inclusive_bounds', 'row_padding_variants']: arithmetic_mismatch
   - 8x8, 8 bpp, header 128, align 4, none, path ['inclusive_bounds', 'row_padding_variants']: arithmetic_mismatch
+  - 8x8, 8 bpp, header 128, align 4, none, path ['inclusive_bounds', 'row_padding_variants']: arithmetic_mismatch
   - 7x7, 8 bpp, header 128, align 2, rle_pcx, path ['rle_pcx', 'row_padding_variants']: decoder_unconsumed
+  - 7x7, 8 bpp, header 128, align 2, rle_pcx, path ['rle_pcx', 'row_padding_variants']: decoder_unconsumed
+  - 7x7, 8 bpp, header 128, align 4, rle_pcx, path ['rle_pcx', 'row_padding_variants']: decoder_unconsumed
   - 7x7, 8 bpp, header 128, align 4, rle_pcx, path ['rle_pcx', 'row_padding_variants']: decoder_unconsumed

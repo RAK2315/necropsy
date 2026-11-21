@@ -132,6 +132,17 @@ def check_closure(h, data):
     return False, "unsupported_encoding", info
 
 
+def readings(h, data):
+    """Req 1.17 (Decision Record 24): one reading per possible data end. A hypothesis with
+    no declared data_end whose trailer matches is checked twice: the trailer reading, then
+    the end-of-file reading (data_end = len(data), no trailer, a different key)."""
+    if h.data_end is None:
+        name, _ = find_trailer(data, h.header_size, h.origin)
+        if name:
+            return [h, replace(h, data_end=len(data))]
+    return [h]
+
+
 # ---------------------------------------------------------------- Req 2
 
 def u(fmt, data, off):
@@ -283,12 +294,14 @@ def generic_search(data, counter, log):
                 depths.setdefault(data[off], []).append(off)
         trailer, tstart = find_trailer(data, L, "generic")
         end = tstart if trailer else len(data)
-        encodings = [("none", end - L)]
+        encodings = [("none", end - L, None)]
         if trailer:
             s = rle_output_len(data[L:end])
             if s is not None:
-                encodings.append(("rle_pcx", s))
-        for enc, S in encodings:
+                encodings.append(("rle_pcx", s, None))
+            # Req 4.10: the end-of-file reading for L, uncompressed only.
+            encodings.append(("none", len(data) - L, len(data)))
+        for enc, S, dend in encodings:
             if S <= 0:
                 continue
             for W, wreads in dims.items():
@@ -302,7 +315,7 @@ def generic_search(data, counter, log):
                     hreads = dims[H]
                     if not any(wo != ho for _, wo in wreads for _, ho in hreads):
                         continue
-                    h = Hyp(W, H, B, L, 1, enc, None, "generic")
+                    h = Hyp(W, H, B, L, 1, enc, dend, "generic")
                     counter.tick()
                     ok, reason, info = check_closure(h, data)
                     log.append((h, ok, reason))
@@ -325,12 +338,13 @@ def run(data):
                 seeds.append(seed)
 
         closed = {}
-        for s in seeds:
-            counter.tick()
-            ok, reason, info = check_closure(s, data)
-            log.append((s, ok, reason))
-            if ok and s.key() not in closed:
-                closed[s.key()] = (s, info)
+        for seed in seeds:
+            for s in readings(seed, data):
+                counter.tick()
+                ok, reason, info = check_closure(s, data)
+                log.append((s, ok, reason))
+                if ok and s.key() not in closed:
+                    closed[s.key()] = (s, info)
         if closed:
             stage = "probe"
             closers = list(closed.values())
@@ -365,7 +379,7 @@ ORDER = "strategy-major"
 
 
 def revise(seeds, data, counter, log):
-    seen = {s.key() for s in seeds}
+    seen = {r.key() for s in seeds for r in readings(s, data)}
     frontier = list(seeds)
     for depth in range(1, 4):
         nxt, closers = [], []
@@ -374,13 +388,16 @@ def revise(seeds, data, counter, log):
                 c = replace(c, path=h.path + (sname,))
                 if c.key() in seen:
                     continue
-                seen.add(c.key())
-                counter.tick()
-                ok, reason, info = check_closure(c, data)
-                log.append((c, ok, reason))
                 nxt.append(c)
-                if ok:
-                    closers.append((c, info))
+                for r in readings(c, data):
+                    if r.key() in seen:
+                        continue
+                    seen.add(r.key())
+                    counter.tick()
+                    ok, reason, info = check_closure(r, data)
+                    log.append((r, ok, reason))
+                    if ok:
+                        closers.append((r, info))
         if closers:
             return f"revision depth {depth}", closers
         frontier = nxt
