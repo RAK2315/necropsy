@@ -68,20 +68,32 @@ own homework. Check it independently.
 5. No CRT, scanline or horror styling. The look is forensic examination.
 6. No Streamlit or Gradio.
 
-## Project state (20 Nov 2026, evening: build complete)
+## Project state (21 Nov 2026: build complete, README rewritten)
 - Five Kiro specs in `.kiro/specs/`: `structure-inference-engine`,
   `necropsy-ui`, `gate-adversary`, `real-corpus`, `necropsy-mcp`.
   Every task in every spec is checked.
 - Engine: four probes (PCX, TGA, PBM, TIFF), three revision strategies,
   generic search for headerless files, a closure gate on the decoded
   stream, ambiguity reporting instead of guessing, and spec emission.
-  The Decision Record has 22 items. The spec was reopened three times:
-  item 20 (the TIFF probe reads the BitsPerSample array), item 21 (a
-  probe can say a declaration is impossible) and item 22 (the TGA 2.0
-  footer's offsets end the data region).
-- Tests in CI at `93e20bb`: 832 Python passed, 1 skipped (the
+  The Decision Record has 27 items. 23 to 27 (21 Nov): TIFF photometric
+  read, a matched trailer is one reading (both ends checked, so trailer
+  files' check counts doubled: mystery_b 8, mystery_i 20), generic
+  search only when no probe matched, emitted specs define their
+  encodings, rle_pcx override emits a file layout.
+- UI task 23 (21 Nov): the render follows the file's declarations;
+  matches Pillow on 28 of 29 readings (mystery_e is the stated
+  BlackIsZero convention). 16-bit images are not previewed.
+- Tests in CI at `a54b7ce`: 949 Python passed, 1 skipped (the
   open-failures test, whose list is now empty), 22 front-end passed.
   CI installs Pillow and mcp so the pixel comparisons and MCP tests run.
+- `examples/spec-to-parser/pillow_odd_stride/`: Kiro wrote a parser in
+  a clean-room session from an emitted spec alone; 4 tests pass and the
+  pixels equal Pillow's (verified by Claude Code, 21 Nov). Video beat.
+- `spike/verify_independent.py` updated for Requirement 1.17 (21 Nov):
+  agrees with the engine on all nine samples. design.md's Corpus Trace
+  table still has the pre-DR24 counts (4 and 10): a Kiro doc fix, open.
+- Name clash: another Devpost entry is also called NECROPSY. Use the
+  subtitle "Recover image files nothing can open" everywhere.
 - MCP server `necropsy_mcp/` (analyse, emit_spec) and the Kiro Power
   `powers/necropsy/`, both checked from inside Kiro. analyse drops
   pixel buffers, the spec and value_repr; Kiro truncates tool results
@@ -93,7 +105,7 @@ own homework. Check it independently.
 - UI: all 22 tasks done, including keyboard and contrast (21) and the
   dark colour scheme (22). The host gate passed on 20 Nov: cold analyse
   1.44 s on the idle canary. Final acceptance (task 16) passed on the
-  live URL; `21dc11b` is deployed at https://necropsy.vercel.app.
+  live URL. `6264896` is deployed at https://necropsy.vercel.app (21 Nov).
   Captures in `docs/acceptance/`.
   `necropsy-coldtest` has been used for its one cold hit: never
   redeploy it.
