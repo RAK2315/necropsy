@@ -779,3 +779,27 @@ Still leaking: the other session's worktree `%TEMP%\nd23` (detached at `9ba71b5`
 | 2026-11-21 06:55:18Z | PostFileSave | `C:/Users/rehtr/AppData/Local/Temp/fix24.py` | `c21fbb2` |
 | 2026-11-21 07:33:56Z | PostFileCreate | `C:/Users/rehtr/AppData/Local/Temp/msg24.txt` | `c21fbb2` |
 | 2026-11-21 07:33:56Z | PostFileSave | `C:/Users/rehtr/AppData/Local/Temp/msg24.txt` | `c21fbb2` |
+| 2026-11-21 07:48:34Z | PostFileCreate | `C:/Users/rehtr/AppData/Local/Temp/png24.py` | `6264896` |
+| 2026-11-21 07:48:34Z | PostFileSave | `C:/Users/rehtr/AppData/Local/Temp/png24.py` | `6264896` |
+| 2026-11-21 07:52:03Z | PostFileCreate | `C:/Users/rehtr/AppData/Local/Temp/log24.txt` | `6264896` |
+| 2026-11-21 07:52:03Z | PostFileSave | `C:/Users/rehtr/AppData/Local/Temp/log24.txt` | `6264896` |
+
+
+## Task 23: the recovered image shows what the file declares (2026-11-21)
+
+Differential test of the render against Pillow on every RESOLVED file in `spike/samples`, `external` and `real`: before the fix it failed on exactly the 9 measured files, 4 channel order (TIFF stores R,G,B), 2 WhiteIsZero, 2 TGA colour map, plus `mystery_e`. `mystery_e` declares no photometric interpretation: Pillow assumes WhiteIsZero, the render shows BlackIsZero and now says so. After the fix, 34 compared files pass. 5 listed exceptions assert their reasons: Pillow cannot decode `mystery_h` or `pillow_ossfuzz-…pcx`, two files are 16-bit placeholders, and `mystery_e` matches Pillow inverted, by convention. Breaks caught: TIFF back to B,G,R; WhiteIsZero not inverted; colour map not applied; `mystery_e` note missing. A 16-bit map expanded by bit shift was not caught by the samples, because they use only the 5-bit levels 0 and 31, where every expansion agrees. A synthetic 32-entry TGA, decoded by Pillow, now catches it.
+
+The TGA colour map's first-entry index (`<H` at 0x03) is not a probe field; the serialiser reads it and the note names it.
+
+FAILED copy: a probe-matched exhausted search now says Generic search did not run (Requirement 10.1 amended). Tested on the cut `mystery_b` (PCX probe) and on a constructed generic FAILED file. `test_errors.py`'s expectation for the cut `mystery_b` was updated to the amended wording.
+
+Verified, unchanged: `row_padding_variants` is always last in a canonical revision path, because of the engine's loop order. A built 6x6 RLE PCX resolves as `rle_pcx -> row_padding_variants`, with `row_padding_variants -> rle_pcx` only as an alternative path, which is shown as names, not diffs. Every diff picked the right intermediate.
+
+Fixed after verifying, each with a test and a break:
+- A dropped file whose `arrayBuffer()` rejects (for example a folder) showed nothing, with an unhandled rejection. It now states it (Requirement 19.11).
+- Leaving a result kept its replay stepping off-screen, 4 frames in 3 s. Escape, `Examine another file` and a new result now stop it (Requirement 7.13).
+
+Power bundle copies of `web/pixels.py` and `web/serialise.py` regenerated with `tools/build_power.py`. Full suite 949 passed, 1 skipped; node tests 22/22. Commit `d5c3a0b`.
+
+Deployed with `tools/deploy.ps1` from a clean clone of `6264896` to https://necropsy.vercel.app. `tools/acceptance.py`: all ten beats pass, every one under 20 s (7.3, 8.4, 0.9, 0.7, 1.2, 0.9, 5.4, 5.0, 0.3, 1.1 s). The `mystery_i` beat is 8.4 s, up from 6.3 s, with its 20-step replay at 1x. On the live URL, the PNG download of `goimage_video-001-uncompressed.tiff` (150x103) equals Pillow's pixels exactly and every pixel is opaque. Its note reads "24-bit · RGB as stored".
+
