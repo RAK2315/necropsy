@@ -803,3 +803,14 @@ Power bundle copies of `web/pixels.py` and `web/serialise.py` regenerated with `
 
 Deployed with `tools/deploy.ps1` from a clean clone of `6264896` to https://necropsy.vercel.app. `tools/acceptance.py`: all ten beats pass, every one under 20 s (7.3, 8.4, 0.9, 0.7, 1.2, 0.9, 5.4, 5.0, 0.3, 1.1 s). The `mystery_i` beat is 8.4 s, up from 6.3 s, with its 20-step replay at 1x. On the live URL, the PNG download of `goimage_video-001-uncompressed.tiff` (150x103) equals Pillow's pixels exactly and every pixel is opaque. Its note reads "24-bit · RGB as stored".
 
+| 2026-11-21 18:11:21Z | PostFileCreate | `examples/spec-to-parser/pillow_odd_stride/parser_pcx.py` | `4db7f8e` |
+| 2026-11-21 18:11:21Z | PostFileSave | `examples/spec-to-parser/pillow_odd_stride/parser_pcx.py` | `4db7f8e` |
+| 2026-11-21 18:12:33Z | PostFileCreate | `examples/spec-to-parser/pillow_odd_stride/show.py` | `4db7f8e` |
+| 2026-11-21 18:12:34Z | PostFileSave | `examples/spec-to-parser/pillow_odd_stride/show.py` | `4db7f8e` |
+| 2026-11-21 18:13:17Z | PostFileCreate | `examples/spec-to-parser/pillow_odd_stride/README.md` | `4db7f8e` |
+| 2026-11-21 18:13:18Z | PostFileSave | `examples/spec-to-parser/pillow_odd_stride/README.md` | `4db7f8e` |
+
+## Spec to parser, clean room: pillow_odd_stride (2026-11-21)
+Proof that NECROPSY's emitted spec is enough to build a parser. Wrote `parser_pcx.py` from `requirements.md`, `design.md` and `test_pcx.py` in `examples/spec-to-parser/pillow_odd_stride/` only, without opening `necropsy/`, `web/`, `tests/`, `spike/` code or any other spec. The three spec files were not edited and their sha256 still match `PROVENANCE.md`. First run: 4 passed (3 Hypothesis never-raises/round-trip/closure properties, 1 source test). No failures to resolve.
+Spec gaps noted in the README: no error format (3.7), behaviour for short files, inverted bounds and unknown encodings, `manufacturer` absent from the design.md field table, and `data_start`/`data_end` read by the tests but missing from Requirement 5.7.
+One step came from outside the spec: `show.py` colours `recovered.png` with the 768 bytes after the 0x0C trailer signature as 256 R,G,B entries. Pillow only writes the PNG. The output is 371x150.
