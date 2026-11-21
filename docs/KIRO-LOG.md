@@ -739,3 +739,43 @@ Cause: the test browser let each captured blob download for real into the system
 Proof, full suite with no other test run overlapping (checked every 5 s): 907 passed, 1 skipped; Downloads 130 -> 130 files; `brun-`/`shot-`/`probe-`/`vprobe-` dirs in %TEMP% 1,820 -> 1,820, no new entry in either. Nothing pre-existing was deleted. Two 5-byte files my own smoke test downloaded before the fix (`leaktest.bin`, `leaktest (1).bin`) were removed.
 
 Still leaking: the other session's worktree `%TEMP%\nd23` (detached at `9ba71b5`) has the old `browser_run.mjs`. Runs from it downloaded into Downloads and left profiles while my measurements overlapped them. It stops when that worktree moves to a commit with this fix.
+| 2026-11-20 21:37:19Z | PostFileCreate | `C:/Users/rehtr/AppData/Local/Temp/survey23.py` | `ba9680c` |
+| 2026-11-20 21:37:19Z | PostFileSave | `C:/Users/rehtr/AppData/Local/Temp/survey23.py` | `ba9680c` |
+| 2026-11-20 21:40:12Z | PostFileCreate | `C:/Users/rehtr/AppData/Local/Temp/tgamap23.py` | `ba9680c` |
+| 2026-11-20 21:40:12Z | PostFileSave | `C:/Users/rehtr/AppData/Local/Temp/tgamap23.py` | `ba9680c` |
+| 2026-11-20 21:47:18Z | PostFileCreate | `C:/Users/rehtr/AppData/Local/Temp/spec23.py` | `ba9680c` |
+| 2026-11-20 21:47:18Z | PostFileSave | `C:/Users/rehtr/AppData/Local/Temp/spec23.py` | `ba9680c` |
+| 2026-11-20 21:55:12Z | PostFileCreate | `tests/ui/test_render_vs_pillow.py` | `c21fbb2` |
+| 2026-11-20 21:55:12Z | PostFileSave | `tests/ui/test_render_vs_pillow.py` | `c21fbb2` |
+| 2026-11-20 21:57:23Z | PostFileCreate | `C:/Users/rehtr/AppData/Local/Temp/fix23.py` | `c21fbb2` |
+| 2026-11-20 21:57:23Z | PostFileSave | `C:/Users/rehtr/AppData/Local/Temp/fix23.py` | `c21fbb2` |
+| 2026-11-20 22:00:54Z | PostFileSave | `C:/Users/rehtr/AppData/Local/Temp/fix23.py` | `c21fbb2` |
+| 2026-11-20 22:00:55Z | PostFileSave | `C:/Users/rehtr/AppData/Local/Temp/fix23.py` | `c21fbb2` |
+| 2026-11-20 22:03:14Z | PostFileCreate | `C:/Users/rehtr/AppData/Local/Temp/why16.py` | `c21fbb2` |
+| 2026-11-20 22:03:14Z | PostFileSave | `C:/Users/rehtr/AppData/Local/Temp/why16.py` | `c21fbb2` |
+| 2026-11-20 22:04:02Z | PostFileSave | `tests/ui/test_render_vs_pillow.py` | `c21fbb2` |
+| 2026-11-20 22:05:07Z | PostFileCreate | `C:/Users/rehtr/AppData/Local/Temp/findgen.py` | `c21fbb2` |
+| 2026-11-20 22:05:07Z | PostFileSave | `C:/Users/rehtr/AppData/Local/Temp/findgen.py` | `c21fbb2` |
+| 2026-11-20 22:06:30Z | PostFileCreate | `C:/Users/rehtr/AppData/Local/Temp/gen2.py` | `c21fbb2` |
+| 2026-11-20 22:06:30Z | PostFileSave | `C:/Users/rehtr/AppData/Local/Temp/gen2.py` | `c21fbb2` |
+| 2026-11-20 22:09:21Z | PostFileCreate | `C:/Users/rehtr/AppData/Local/Temp/fix23b.py` | `c21fbb2` |
+| 2026-11-20 22:09:21Z | PostFileSave | `C:/Users/rehtr/AppData/Local/Temp/fix23b.py` | `c21fbb2` |
+| 2026-11-20 22:11:34Z | PostFileCreate | `tests/ui/test_failed_copy.py` | `c21fbb2` |
+| 2026-11-20 22:11:35Z | PostFileSave | `tests/ui/test_failed_copy.py` | `c21fbb2` |
+| 2026-11-20 22:11:52Z | PostFileSave | `tests/ui/test_errors.py` | `c21fbb2` |
+| 2026-11-21 06:04:28Z | PostFileCreate | `C:/Users/rehtr/AppData/Local/Temp/runpy.ps1` | `c21fbb2` |
+| 2026-11-21 06:04:29Z | PostFileSave | `C:/Users/rehtr/AppData/Local/Temp/runpy.ps1` | `c21fbb2` |
+| 2026-11-21 06:24:51Z | PostFileCreate | `C:/Users/rehtr/AppData/Local/Temp/rp23.py` | `c21fbb2` |
+| 2026-11-21 06:24:51Z | PostFileSave | `C:/Users/rehtr/AppData/Local/Temp/rp23.py` | `c21fbb2` |
+| 2026-11-21 06:25:49Z | PostFileSave | `C:/Users/rehtr/AppData/Local/Temp/rp23.py` | `c21fbb2` |
+| 2026-11-21 06:32:40Z | PostFileCreate | `C:/Users/rehtr/AppData/Local/Temp/waitfor.ps1` | `c21fbb2` |
+| 2026-11-21 06:32:40Z | PostFileSave | `C:/Users/rehtr/AppData/Local/Temp/waitfor.ps1` | `c21fbb2` |
+| 2026-11-21 06:40:12Z | PostFileCreate | `tests/ui/test_read_and_leave.py` | `c21fbb2` |
+| 2026-11-21 06:40:12Z | PostFileSave | `tests/ui/test_read_and_leave.py` | `c21fbb2` |
+| 2026-11-21 06:42:08Z | PostFileSave | `tests/ui/test_read_and_leave.py` | `c21fbb2` |
+| 2026-11-21 06:54:16Z | PostFileSave | `public/js/replay.js` | `c21fbb2` |
+| 2026-11-21 06:54:55Z | PostFileCreate | `C:/Users/rehtr/AppData/Local/Temp/fix24.py` | `c21fbb2` |
+| 2026-11-21 06:54:56Z | PostFileSave | `C:/Users/rehtr/AppData/Local/Temp/fix24.py` | `c21fbb2` |
+| 2026-11-21 06:55:18Z | PostFileSave | `C:/Users/rehtr/AppData/Local/Temp/fix24.py` | `c21fbb2` |
+| 2026-11-21 07:33:56Z | PostFileCreate | `C:/Users/rehtr/AppData/Local/Temp/msg24.txt` | `c21fbb2` |
+| 2026-11-21 07:33:56Z | PostFileSave | `C:/Users/rehtr/AppData/Local/Temp/msg24.txt` | `c21fbb2` |
