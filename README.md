@@ -147,7 +147,7 @@ At commit `a54b7ce`, in GitHub Actions (Ubuntu):
 
 - **Python suite: 949 passed**, 1 skipped (the real-corpus test for open in-scope failures, whose list is empty).
 - **Front-end tests: 22 passed.**
-- **Property tests:** 35 Hypothesis `@given` tests across 13 files cover the 16 numbered correctness properties in the engine design, including "Never raises", "Closure soundness", "Coherence cannot change the outcome" and "Emitted layout reproduces the engine".
+- **Property tests:** 35 Hypothesis `@given` tests across 13 files cover the 17 numbered correctness properties in the engine design, including "Never raises", "Closure soundness", "Coherence cannot change the outcome" and "Emitted layout reproduces the engine".
 - **Browser checks:** tests that drive the real page in headless Chrome or Edge (keyboard, contrast, error copy, downloads) run in CI.
 - **Break checks:** `tools/break_check.py` applies a deliberate defect, confirms the named test fails, and restores the file byte for byte. One of them replaces the parser with a do-nothing parser and confirms every emitted RLE spec fails it.
 
@@ -241,11 +241,11 @@ Everything here can be checked in [`.kiro/`](.kiro), [`docs/KIRO-LOG.md`](docs/K
 | [`real-corpus`](.kiro/specs/real-corpus) | 6 | 4 |
 | [`necropsy-mcp`](.kiro/specs/necropsy-mcp) | 6 | 8 |
 
-**The Decision Record.** The engine requirements open with 27 numbered decisions. Each records a design decision or reversal with the measurement behind it and the alternatives not taken. The design states 16 numbered correctness properties.
+**The Decision Record.** The engine requirements open with 27 numbered decisions. Each records a design decision or reversal with the measurement behind it and the alternatives not taken. The design states 17 numbered correctness properties.
 
 **Steering.** Five files in `.kiro/steering/`. Always on: `project.md` (scope, free-tier hosting, commit discipline) and `parsers.md` (structured errors, never raise, a property test for each parser). Path-scoped: `engine.md` (standard library only, bounds-checked lengths, explicit endianness), `tests.md` (offline, deterministic, fixtures from documented byte layouts) and `ui.md` (the UI calls the engine and never re-implements inference).
 
-**Hooks.** `.kiro/hooks/kiro-usage-log.json` appends every file the Kiro agent saves or creates, with the time and git HEAD, to `docs/KIRO-LOG.md`: 633 rows so far. A git pre-commit hook (`.githooks/pre-commit`) blocks a UTF-8 byte-order mark in `.kiro/`, because a BOM before `---` breaks steering front matter.
+**Hooks.** `.kiro/hooks/kiro-usage-log.json` appends every file the Kiro agent saves or creates, with the time and git HEAD, to `docs/KIRO-LOG.md`: 634 rows so far. A git pre-commit hook (`.githooks/pre-commit`) blocks a UTF-8 byte-order mark in `.kiro/`, because a BOM before `---` breaks steering front matter.
 
 **Agents.** Three custom agents in `.kiro/agents/`: `dev` implements one task, runs its tests and commits it; `reviewer` reads and runs tests but cannot write; `spec` writes only inside `.kiro/specs/`.
 
