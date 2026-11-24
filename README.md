@@ -183,7 +183,7 @@ For each ambiguous file, the true layout is among the closing candidates. Files 
 
 ### Real files
 
-[`spike/samples/real/`](spike/samples/real) holds 81 files taken from the test suites of six image decoders (Pillow 38, libtiff 15, Go `image` 14, ImageMagick 8, SDL_image 4, imagers 2), each pinned to an upstream commit with its licence recorded. The engine runs on every file and its pixels are compared with Pillow 12.2.0. Whether a file is in scope comes only from what the file declares, recorded in `manifest.json`, never from the engine's result.
+[`spike/samples/real/`](spike/samples/real) holds 81 files taken from the test suites of six image decoders (Pillow 38, libtiff 15, Go `image` 14, ImageMagick 8, SDL_image 4, image-rs 2), each pinned to an upstream commit with its licence recorded. The engine runs on every file and its pixels are compared with Pillow 12.2.0. Whether a file is in scope comes only from what the file declares, recorded in `manifest.json`, never from the engine's result.
 
 | | Files | Result |
 |---|---:|---|
