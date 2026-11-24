@@ -90,6 +90,61 @@ $ python -m pytest examples/spec-to-parser/pillow_odd_stride -q -p no:cacheprovi
   <br><sub><code>mystery_d</code>: 18 readings fit these bytes exactly. Each passes closure, so NECROPSY does not choose.</sub>
 </p>
 
+## Architecture
+
+One engine, three ways in: the web UI, an MCP server for agents, and a Kiro Power. Every path calls the same `Engine().run(data)`.
+
+```mermaid
+flowchart LR
+    user(["You: a file nothing can open"])
+    agent(["Your agent: Kiro or any MCP client"])
+
+    subgraph web ["Web: necropsy.vercel.app"]
+        ui["Front end, public/<br/>hex pane, replay, outcome screens"]
+        api["FastAPI, app.py<br/>POST /api/analyze<br/>POST /api/spec.zip"]
+        ser["web/serialise.py, web/pixels.py<br/>payload and pixels"]
+        zip["web/speczip.py"]
+    end
+
+    subgraph mcp ["Agents"]
+        server["MCP server, necropsy_mcp/<br/>analyse, emit_spec"]
+        power["Kiro Power, powers/necropsy/<br/>server plus unknown-file skill"]
+    end
+
+    engine[["Engine, necropsy/engine/<br/>standard library only"]]
+    emit["Spec emitter, necropsy/emit/"]
+    spec[/"Kiro spec folder<br/>requirements.md, design.md, test_*.py"/]
+
+    user --> ui --> api
+    api --> engine
+    api --> ser
+    api --> zip --> emit
+    agent --> power --> server
+    agent --> server
+    server --> engine
+    server --> emit
+    engine --> emit --> spec
+```
+
+Inside the engine, every hypothesis passes through the same binary gate. Nothing is scored or ranked:
+
+```mermaid
+flowchart TD
+    bytes[/"Raw bytes"/] --> probes{"Probes: PCX, TGA, PBM, TIFF<br/>does a signature match?"}
+    probes -- "yes: read the file's declarations" --> seed["Seed hypothesis"]
+    probes -- "no probe matched" --> generic["Generic search<br/>header 4 to 256, six integer reads,<br/>bit depths 1, 4, 8, 16, 24, 32<br/>10,000 checks, 5 s"]
+    seed --> gate{{"Closure gate<br/>decoded bytes = stride x height<br/>and the whole region consumed"}}
+    gate -- "fails" --> revision["Revision, breadth-first to depth 3<br/>inclusive_bounds, rle_pcx, row_padding_variants"]
+    revision --> gate
+    generic --> gate
+    trailers[("Trailer registry<br/>PCX palette, TGA 2.0 footer")] -.-> gate
+    gate -- "collect every closing layout" --> count{"How many closed?"}
+    count -- "exactly one" --> resolved(["RESOLVED"])
+    count -- "more than one" --> ambiguous(["UNRESOLVED_AMBIGUITY<br/>all candidates, none chosen"])
+    count -- "none" --> failed(["FAILED<br/>every rejection and why"])
+    coherence["Row coherence<br/>reported, never decides"] -.-> ambiguous
+```
+
 ## How it works
 
 The engine lives in `necropsy/engine/` and uses only the Python standard library.
