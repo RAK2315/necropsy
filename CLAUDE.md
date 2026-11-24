@@ -135,3 +135,6 @@ file that gets committed.
 - Windows. PowerShell execution policy was Restricted and has been set
   to RemoteSigned for CurrentUser. If shell calls fail, check that first.
 - Python 3.10.11 with pytest and hypothesis already installed.
+
+## Reporting to Rehaan
+Be extremely concise when reporting; sacrifice grammar for concision. Exception: reports (write-ups, docs, deliverables) stay full prose.
