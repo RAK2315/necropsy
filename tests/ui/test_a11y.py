@@ -78,8 +78,8 @@ def test_start_screen_tab_cycle(base_url):
     assert got["wrapped"], "Tab never returned to the first control: focus is trapped"
     assert _count(stops, cls="strip-tile") == 3
     assert _count(stops, cls="drop") == 1
-    assert _count(stops, cls="pick") == 11
-    assert _count(stops, cls="dl", tag="a") == 11
+    assert _count(stops, cls="pick") == 12
+    assert _count(stops, cls="dl", tag="a") == 12
     _assert_focus_visible(stops)
 
 
@@ -158,7 +158,7 @@ def test_drop_zone_pick_and_sample_link_enter_space(base_url):
   }
   for (const k of ['Enter', 'Space']) {
     await __tabTo(e => e.classList.contains('pick') && e.textContent === 'mystery_c', 'mystery_c'); await __key(k);
-    await __result(); out.picks.push(document.querySelector('.chip').textContent);
+    await __result(); out.picks.push(document.querySelector('.chip .tech').textContent);
     await __key('Escape'); await __start();
   }
   return JSON.stringify(out);
@@ -241,7 +241,7 @@ def test_every_canvas_is_named_from_the_payload(base_url):
 """, reduced_motion=True)
     name = lambda h: f"Recovered image, {h.width} × {h.height}, {h.bit_depth}-bit"
     d = [c.hypothesis for c in Engine().run(corpus_bytes("mystery_d")).candidates]
-    a = Engine().run((EXT / "external_a").read_bytes()).candidate.hypothesis
+    a = Engine().run(corpus_bytes("mystery_i")).candidate.hypothesis   # the first strip tile (UI task 24)
     b = Engine().run((EXT / "external_b").read_bytes()).candidate.hypothesis
     assert got["start"] == [name(a)] + [name(h) for h in d]
     assert got["resolved"] == [name(b)]

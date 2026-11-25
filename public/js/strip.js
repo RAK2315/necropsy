@@ -1,5 +1,6 @@
 // Outcome strip on the first screen (Requirement 16): three real results, requested as the page loads.
 import { outcomeLine, failureSentence, rejectionLine, sampleFailMessage } from './logic.js';
+import { CHIP, sourceText, rejectionPlain } from './words.js';
 import { paint } from './image.js';
 
 function el(tag, cls, text) {
@@ -11,7 +12,7 @@ function el(tag, cls, text) {
 
 // What each tile examines. Bytes come from the served samples, so the tile shows what any visitor would get.
 const INPUTS = [
-  { label: 'external_a', name: 'external_a', bytes: async () => fetchSample('external_a') },
+  { label: 'mystery_i', name: 'mystery_i', bytes: async () => fetchSample('mystery_i') },
   { label: 'mystery_d', name: 'mystery_d', bytes: async () => fetchSample('mystery_d') },
   { label: 'mystery_b, first 300 bytes', name: 'mystery_b_first300', bytes: async () => (await fetchSample('mystery_b')).slice(0, 300) },
 ];
@@ -46,7 +47,7 @@ function resolvedBody(p) {
   const c = p.candidates[0];
   const well = el('div', 'well strip-well');
   if (c.render && c.render.data_b64) well.append(paint(c.render, 196, 120, { bitDepth: c.bit_depth }).canvas);
-  return [well, el('p', 'strip-dims mono', `${c.width} × ${c.height} · ${c.bit_depth}-bit · ${c.probe_name.toUpperCase()} probe`)];
+  return [well, el('p', 'strip-dims', `${c.width} × ${c.height}, ${c.bit_depth}-bit. ${sourceText(c.probe_name)}`)];
 }
 
 function ambiguityBody(p) {
@@ -62,8 +63,12 @@ function ambiguityBody(p) {
 
 function failedBody(p) {
   const out = [el('p', 'strip-term', failureSentence(p))];
-  const list = el('ol', 'strip-rej mono');
-  for (const r of p.rejections.slice(0, 3)) list.append(el('li', '', rejectionLine(r)));
+  const list = el('ol', 'strip-rej');
+  for (const r of p.rejections.slice(0, 3)) {
+    const li = el('li', '', rejectionPlain(r));
+    li.append(el('span', 'tech', rejectionLine(r)));
+    list.append(li);
+  }
   out.push(list);
   const more = p.rejections.length + (p.rejections_omitted || 0) - Math.min(3, p.rejections.length);
   if (more > 0) out.push(el('p', 'strip-more', `and ${more} more`));
@@ -74,12 +79,14 @@ function failedBody(p) {
 export function stripElement(requestAnalysis, open) {
   const root = el('section', 'strip');
   root.setAttribute('aria-label', 'Three real results');
-  root.append(el('p', 'strip-head', 'Three real results, analysed as this page loaded.'));
+  root.append(el('h2', 'strip-title', 'Three honest answers'),
+    el('p', 'strip-head', 'Three real files, examined live as this page loaded. Open any of them to see the working.'));
   const row = el('div', 'strip-row');
   root.append(row);
   loadStrip(requestAnalysis).forEach((pending, i) => {
     const tile = el('article', 'strip-tile');
     tile.dataset.slot = String(i);
+    tile.dataset.cap = 'tile-' + i;
     const name = el('p', 'strip-input mono', INPUTS[i].label);
     const body = el('div', 'strip-body');
     body.setAttribute('aria-live', 'polite');
@@ -91,12 +98,14 @@ export function stripElement(requestAnalysis, open) {
       const p = result.payload;
       const kids = p.status === 'RESOLVED' ? resolvedBody(p) : p.status === 'UNRESOLVED_AMBIGUITY' ? ambiguityBody(p) : failedBody(p);
       body.replaceChildren(...kids);
-      tile.append(el('p', 'strip-line', outcomeLine(p)));
-      tile.prepend(el('span', 'chip ' + (p.status === 'FAILED' ? 'chip-failed' : 'chip-ok'), p.status));
+      tile.append(el('p', 'strip-line', outcomeLine(p)), el('span', 'strip-open', 'Open →'));
+      const chip = el('span', 'chip ' + (p.status === 'FAILED' ? 'chip-failed' : 'chip-ok'), CHIP[p.status] + ' ');
+      chip.append(el('span', 'tech', p.status));
+      tile.prepend(chip);
       tile.dataset.status = p.status;
       tile.tabIndex = 0;
       tile.setAttribute('role', 'button');
-      tile.setAttribute('aria-label', `Open the ${p.status} result for ${input.label}`);
+      tile.setAttribute('aria-label', `Open the result for ${input.label}: ${CHIP[p.status]}`);
       const go = () => open(p, bytes, input.name);
       tile.addEventListener('click', go);
       tile.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); } });

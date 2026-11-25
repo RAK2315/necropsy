@@ -279,9 +279,9 @@ export function hypothesisLine(h) {
 
 /** The one line under a strip tile, filled from the payload. */
 export function outcomeLine(payload) {
-  if (payload.status === 'RESOLVED') return 'One layout closes.';
+  if (payload.status === 'RESOLVED') return 'One reading fits the data exactly.';
   if (payload.status === 'UNRESOLVED_AMBIGUITY') return `${payload.candidates.length} readings fit, so NECROPSY does not choose.`;
-  return 'Nothing closed, and here is why.';
+  return 'No layout tried fits. Here is every one, and why.';
 }
 
 

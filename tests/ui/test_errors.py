@@ -137,9 +137,9 @@ def test_strip_tile_names_the_sample_and_the_failure(base_url):
   return JSON.stringify({ msgs: tiles.map(t => t.querySelector('.strip-error').textContent),
                           clickable: tiles.map(t => t.getAttribute('role')) });
 })()
-""", fault_at_load="{'/samples/external_a': 503, '/samples/mystery_b': 'down', '/api/analyze': 502}")
+""", fault_at_load="{'/samples/mystery_i': 503, '/samples/mystery_b': 'down', '/api/analyze': 502}")
     assert got["msgs"] == [
-        "The sample external_a could not be loaded (HTTP 503). Try again, or drop a file of your own.",
+        "The sample mystery_i could not be loaded (HTTP 503). Try again, or drop a file of your own.",
         "The analysis service answered with HTTP 502. Your file was not examined. Try again.",
         "The sample mystery_b could not be loaded (no connection). Try again, or drop a file of your own.",
     ]

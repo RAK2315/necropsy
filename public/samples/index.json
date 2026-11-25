@@ -1,48 +1,66 @@
 [
   {
     "name": "mystery_a",
-    "size": 11
+    "size": 11,
+    "description": "One reading fits: 4 × 4, 1-bit, as the header declares."
   },
   {
     "name": "mystery_b",
-    "size": 955
+    "size": 955,
+    "description": "One reading fits: 8 × 8, 8-bit, once the header's bounds are counted inclusively."
   },
   {
     "name": "mystery_c",
-    "size": 786
+    "size": 786,
+    "description": "One reading fits: 16 × 16, 24-bit, as the header declares."
   },
   {
     "name": "mystery_d",
-    "size": 104
+    "size": 104,
+    "description": "18 readings fit exactly. NECROPSY does not choose."
   },
   {
     "name": "mystery_e",
-    "size": 150
+    "size": 150,
+    "description": "One reading fits: 8 × 8, 8-bit, as the header declares."
   },
   {
     "name": "mystery_f",
-    "size": 132
+    "size": 132,
+    "description": "8 readings fit exactly. NECROPSY does not choose."
   },
   {
     "name": "mystery_g",
-    "size": 212
+    "size": 212,
+    "description": "8 readings fit exactly. NECROPSY does not choose."
   },
   {
     "name": "mystery_h",
-    "size": 176
+    "size": 176,
+    "description": "One reading fits: 6 × 6, 8-bit, once the header's bounds are counted inclusively and rows are padded to a multiple of 4 bytes."
   },
   {
     "name": "mystery_i",
-    "size": 955
+    "size": 955,
+    "description": "One reading fits: 8 × 8, 8-bit, once the header's bounds are counted inclusively and the data is run-length decoded."
   },
   {
     "name": "external_a",
     "size": 1162,
+    "description": "One reading fits: 64 × 48, 8-bit, once the header's bounds are counted inclusively.",
     "provenance": "written by Pillow 12.2.0"
   },
   {
     "name": "external_b",
     "size": 9260,
+    "description": "One reading fits: 64 × 48, 24-bit, as the header declares.",
     "provenance": "written by Pillow 12.2.0"
+  },
+  {
+    "name": "pillow_odd_stride.pcx",
+    "size": 14313,
+    "description": "One reading fits: 371 × 150, 8-bit, once the header's bounds are counted inclusively.",
+    "provenance": "from Pillow's test suite (MIT-CMU)",
+    "licence": "LICENSES/Pillow-MIT-CMU.txt"
   }
 ]

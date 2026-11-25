@@ -1,5 +1,8 @@
 """Outcome strip (Requirement 16): the three tiles show the engine's real output, and follow the response.
 
+UI clarity pass, task 24 (Claude Code): the first tile examines mystery_i, not external_a; its pixels are compared
+with the service's own render (web/pixels.py), so a tile that paints a stored copy or anything else still fails.
+
 Run in a real browser against the real app. The second test rewrites every /api/analyze response in the browser,
 so a tile that shows a constant, a stored copy or another sample's result fails.
 """
@@ -20,7 +23,7 @@ READ_TILES = r"""
   const out = { statuses: tiles.map(t => t.dataset.status), inputs: tiles.map(t => t.querySelector('.strip-input').textContent),
                 lines: tiles.map(t => t.querySelector('.strip-line').textContent) };
   const cv = tiles[0].querySelector('canvas');
-  const [w, h] = tiles[0].querySelector('.strip-dims').textContent.split(' · ')[0].split(' × ').map(Number);
+  const [w, h] = tiles[0].querySelector('.strip-dims').textContent.match(/^(\d+) × (\d+)/).slice(1).map(Number);
   const sx = cv.width / w, sy = cv.height / h, ctx = cv.getContext('2d'), px = [];
   for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
     const d = ctx.getImageData(Math.floor((x + 0.5) * sx), Math.floor((y + 0.5) * sy), 1, 1).data; px.push(d[0], d[1], d[2]);
@@ -31,7 +34,7 @@ READ_TILES = r"""
   out.thumbCanvases = tiles[1].querySelectorAll('.strip-thumb canvas').length;
   out.thumbSizes = [...new Set([...tiles[1].querySelectorAll('.strip-thumb')].map(b => b.getBoundingClientRect().width + 'x' + b.getBoundingClientRect().height))];
   out.failed = { term: tiles[2].querySelector('.strip-term').textContent,
-                 rej: [...tiles[2].querySelectorAll('.strip-rej li')].map(li => li.textContent) };
+                 rej: [...tiles[2].querySelectorAll('.strip-rej li .tech')].map(li => li.textContent) };
   out.fits = document.querySelector('.drop').getBoundingClientRect().bottom <= 720;
   const before = performance.getEntriesByType('resource').filter(e => e.name.includes('/api/analyze')).length;
   tiles[1].click();
@@ -63,9 +66,13 @@ REWRITE = r"""
 
 
 def _ppm_rgb():
-    raw = (EXT / "source.ppm").read_bytes()
-    parts = raw.split(b"\n", 3)
-    return tuple(map(int, parts[1].split())), parts[3]
+    """The service's render of mystery_i, the first tile since UI task 24: (w, h), rgb bytes."""
+    import app as service
+    c = service._analyse(corpus_bytes("mystery_i"))["candidates"][0]["render"]
+    px = base64.b64decode(c["data_b64"])
+    if c["channels"] == "grey8":
+        px = bytes(v for g in px for v in (g, g, g))
+    return (c["width"], c["height"]), px
 
 
 def _rejection_line(r):
@@ -75,11 +82,11 @@ def _rejection_line(r):
 def test_tiles_show_the_engines_real_output(base_url):
     got = run_in_browser(base_url, READ_TILES)
     assert got["statuses"] == ["RESOLVED", "UNRESOLVED_AMBIGUITY", "FAILED"]
-    assert got["inputs"] == ["external_a", "mystery_d", "mystery_b, first 300 bytes"]
+    assert got["inputs"] == ["mystery_i", "mystery_d", "mystery_b, first 300 bytes"]
 
     (w, h), rgb = _ppm_rgb()
     assert (got["resolved"]["w"], got["resolved"]["h"]) == (w, h)
-    assert base64.b64decode(got["resolved"]["rgb_b64"]) == rgb, "RESOLVED tile pixels differ from external_a's source image"
+    assert base64.b64decode(got["resolved"]["rgb_b64"]) == rgb, "RESOLVED tile pixels differ from the service's render of mystery_i"
 
     n = len(Engine().run(corpus_bytes("mystery_d")).candidates)
     assert got["thumbs"] == got["thumbCanvases"] == n
@@ -88,7 +95,8 @@ def test_tiles_show_the_engines_real_output(base_url):
     failed = Engine().run(corpus_bytes("mystery_b")[:300])
     assert failed.status == "FAILED"
     assert got["failed"]["rej"] == [_rejection_line(r) for r in failed.rejections[:3]]
-    assert got["lines"] == ["One layout closes.", f"{n} readings fit, so NECROPSY does not choose.", "Nothing closed, and here is why."]
+    assert got["lines"] == ["One reading fits the data exactly.", f"{n} readings fit, so NECROPSY does not choose.",
+                            "No layout tried fits. Here is every one, and why."]
     assert got["fits"], "the strip and the drop zone do not fit in 1280x720"
 
     assert got["openedCards"] == n and got["extraRequests"] == 0

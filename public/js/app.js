@@ -37,14 +37,37 @@ function open(payload, bytes, name, notice = null) {
   renderResult(view, payload, bytes, { name, notice });
 }
 
+const PRIMARY = 'pillow_odd_stride.pcx';     // the primary action's sample: a real file from Pillow's test suite
+
+/** Fetch a served sample and examine it exactly as a dropped file: bytes in, analyse(bytes). */
+async function runSample(name) {
+  let r;
+  try { r = await fetch('/samples/' + name); } catch (e) { showStart(sampleFailMessage(name, 0)); return; }
+  if (!r.ok) { showStart(sampleFailMessage(name, r.status)); return; }   // never analyse an error page
+  analyse(new Uint8Array(await r.arrayBuffer()), name);
+}
+
 async function showStart(message = '') {
   leaveResult();               // Escape and 'Examine another file' both come here: stop the replay
   againBtn.hidden = true;
   const input = el('input', { type: 'file', hidden: '' });
-  const drop = el('button', { class: 'drop', type: 'button', text: 'Drop in a file nothing can open.' });
+  const primary = el('button', { class: 'primary', type: 'button', 'data-cap': 'primary', text: 'See it recover a real file' });
+  primary.addEventListener('click', () => runSample(PRIMARY));
+  const hero = el('section', { class: 'hero', 'data-cap': 'hero' },
+    el('h1', { text: 'Get the picture back from an image file nothing can open.' }),
+    el('p', { class: 'hero-who', text: 'For archivists, investigators, and anyone holding an image in a format nothing reads any more.' }),
+    el('p', { class: 'hero-what', text: 'NECROPSY reads what the file says about itself, accepts a layout only if it fits the data exactly, and otherwise tells you why.' }),
+    el('div', { class: 'hero-act' }, primary,
+      el('span', { class: 'primary-note', text: `${PRIMARY} · from Pillow’s test suite` })));
+  const drop = el('button', { class: 'drop', type: 'button', 'data-cap': 'drop', text: 'Or drop your own file here, or click to choose one.' });
   const msg = el('p', { class: 'drop-msg' + (message ? ' bad' : ''), role: 'status', 'aria-live': 'polite', text: message });
-  const samples = el('section', { class: 'samples' }, el('h2', { text: 'No file to hand? Try one of these.' }));
-  const start = el('div', { class: 'start' }, stripElement(requestAnalysis, open), drop, input, msg,
+  const how = el('section', { class: 'how', 'data-cap': 'how' }, el('h2', { text: 'How it works' }),
+    el('ol', {},
+      el('li', { text: 'It reads what the file declares about itself: size, depth, compression, where the data starts.' }),
+      el('li', { text: 'It tries the layouts those declarations allow, and small corrections to them.' }),
+      el('li', { text: 'It accepts a layout only if it fits the data exactly. If none or several do, it says so.' })));
+  const samples = el('section', { class: 'samples' }, el('h2', { text: 'More files to try' }));
+  const start = el('div', { class: 'start' }, hero, drop, input, msg, stripElement(requestAnalysis, open), how,
     el('p', { class: 'scope', text: 'NECROPSY reads PCX, TGA, PBM and TIFF declarations, and otherwise searches for headerless raster layouts.' }),
     samples);
   view.replaceChildren(start);
@@ -76,19 +99,19 @@ async function showStart(message = '') {
     const index = await r.json();
     const list = el('ul');
     for (const s of index) {
-      const pick = el('button', { class: 'pick', type: 'button', text: s.name });
+      const pick = el('button', { class: 'pick', type: 'button', 'data-cap': 'sample', 'data-name': s.name, text: s.name });
       // a sample takes exactly the path a dropped file takes: bytes in, analyse(bytes)
-      pick.addEventListener('click', async () => {
-        let r;
-        try { r = await fetch('/samples/' + s.name); } catch (e) { showStart(sampleFailMessage(s.name, 0)); return; }
-        if (!r.ok) { showStart(sampleFailMessage(s.name, r.status)); return; }   // never analyse an error page
-        analyse(new Uint8Array(await r.arrayBuffer()), s.name);
-      });
+      pick.addEventListener('click', () => runSample(s.name));
       const li = el('li', {}, pick, el('span', { class: 'size', text: `${fmt(s.size)} bytes` }),
         el('a', { class: 'dl', href: '/samples/' + s.name, download: s.name, text: 'download' }));
       const link = li.querySelector('a.dl');
       link.addEventListener('keydown', (e) => { if (e.key === ' ') { e.preventDefault(); link.click(); } });
-      if (s.provenance) li.append(el('span', { class: 'prov', text: s.provenance }));
+      if (s.description) li.append(el('span', { class: 'desc', text: s.description }));
+      if (s.provenance) {
+        const prov = el('span', { class: 'prov', text: s.provenance });
+        if (s.licence) prov.append(' · ', el('a', { class: 'lic', href: '/samples/' + s.licence, text: 'licence notice' }));
+        li.append(prov);
+      }
       list.append(li);
     }
     samples.append(list);

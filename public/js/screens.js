@@ -4,6 +4,7 @@ import {
   terminationText, failureSentence, failureGroups, rejectionLine, hypothesisLine, stageOf, inputBase, STOPPED_AT_LIMIT,
 } from './logic.js';
 import { createPane, fieldTable } from './pane.js';
+import { CHIP } from './words.js';
 import { paint } from './image.js';
 import { specPanel } from './spec.js';
 import { createReplay } from './replay.js';
@@ -39,8 +40,11 @@ export function imageFrame(cand, box, opts = {}) {
   return { frame, done };
 }
 
+/** The outcome chip: the plain word leads; the engine's enum follows, small, for the README, API and specs. */
 function chip(status) {
-  const c = el('span', 'chip ' + (status === 'FAILED' ? 'chip-failed' : 'chip-ok'), status);
+  const c = el('span', 'chip ' + (status === 'FAILED' ? 'chip-failed' : 'chip-ok'), CHIP[status] + ' ');
+  c.dataset.cap = 'chip';
+  c.append(el('span', 'tech', status));
   return c;
 }
 
