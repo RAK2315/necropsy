@@ -177,6 +177,11 @@ export function fitSize(w, h, boxW, boxH) {
   const k = Math.min(boxW / w, boxH / h);                      // larger than the box even at 1: shrink, still nearest-neighbour
   return { scale: k, width: Math.max(1, Math.floor(w * k)), height: Math.max(1, Math.floor(h * k)) };
 }
+/** The largest nearest-neighbour size of a w × h image inside boxW × boxH, any scale, aspect kept: the image fills its frame. */
+export function fillSize(w, h, boxW, boxH) {
+  const k = Math.min(boxW / w, boxH / h);
+  return { scale: k, width: Math.max(1, Math.floor(w * k)), height: Math.max(1, Math.floor(h * k)) };
+}
 // ---- UNRESOLVED_AMBIGUITY (Requirement 9) ----
 
 export const escapeHTML = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);

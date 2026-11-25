@@ -112,7 +112,7 @@ export function verdictText(payload) {
  * s = { phase: 'idle' | 'sending' | 'replaying' | 'done' | 'error', name, size, payload, step, of, reason }
  */
 export function stateText(s) {
-  const file = s.name ? `${s.name} · ${fmt(s.size)} bytes` : '';
+  const file = s.name ? (s.size === undefined ? s.name : `${s.name} · ${fmt(s.size)} bytes`) : '';
   const join = (...p) => p.filter(Boolean).join(' · ');
   switch (s.phase) {
     case 'sending': return join(file, 'Examining…');

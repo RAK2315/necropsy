@@ -200,8 +200,8 @@ The image on screen follows the file's own declarations: B,G,R order for TGA, R,
 
 At commit `a54b7ce`, in GitHub Actions (Ubuntu):
 
-- **Python suite: 966 passed**, 1 skipped (the real-corpus test for open in-scope failures, whose list is empty), at `56de21b`.
-- **Front-end tests: 26 passed.**
+- **Python suite: 980 passed**, 1 skipped (the real-corpus test for open in-scope failures, whose list is empty), after UI tasks 29 to 36 (25 Nov).
+- **Front-end tests: 27 passed.**
 - **Property tests:** 35 Hypothesis `@given` tests across 13 files cover the 17 numbered correctness properties in the engine design, including "Never raises", "Closure soundness", "Coherence cannot change the outcome" and "Emitted layout reproduces the engine".
 - **Browser checks:** tests that drive the real page in headless Chrome or Edge (keyboard, contrast, error copy, downloads) run in CI.
 - **Break checks:** `tools/break_check.py` applies a deliberate defect, confirms the named test fails, and restores the file byte for byte. One of them replaces the parser with a do-nothing parser and confirms every emitted RLE spec fails it.
@@ -216,13 +216,14 @@ At commit `a54b7ce`, in GitHub Actions (Ubuntu):
 - A state line under the header on every screen: the file, what is running, and the verdict.
 - A verdict heading on every result, and a title and one plain line on every region. Engine terms are translated into plain words (`public/js/words.js`, each mapping citing the engine function it translates) and kept beside them in small type.
 - A hex pane with the header, data and trailer regions marked, and a table of every field read.
+- A result read top to bottom: the recovered image, why it fits, how the engine got there, then the evidence (the bytes and the header values, collapsed until opened).
 - A replay of the engine's recorded steps with a running caption, one rejected layout at a time.
 - A distinct screen for each outcome; on the ambiguity screen, every reading at a glance and one card per reading.
 - PNG and data-region downloads, and the emitted spec as a zip.
-- Keyboard navigation, checked contrast and a dark colour scheme.
+- Keyboard navigation, checked contrast, and dark and light themes.
 - Twelve samples one click away, each with one plain line from a fresh engine run.
 
-The interface up to UI task 23 was built by Kiro; tasks 24 to 28 (landing page, state line, region titles and plain words, replay caption, ambiguity grid) were built by Claude Code. See [Built with Kiro](#built-with-kiro) and [`docs/UI-CLARITY-PASS.md`](docs/UI-CLARITY-PASS.md).
+The interface up to UI task 23 was built by Kiro; tasks 24 to 36 were built by Claude Code: 24 to 28 (landing page, state line, region titles and plain words, replay caption, ambiguity grid) and a second pass, 29 to 36 (single-column result, collapsed evidence, image filling its frame, the sample busy flow, a bigger and slower replay, light and dark themes, a visible "Examine another file", Roboto and Poppins). See [Built with Kiro](#built-with-kiro) and [`docs/UI-CLARITY-PASS.md`](docs/UI-CLARITY-PASS.md).
 
 **Privacy:** uploads are analysed in memory and the service writes nothing to disk. Files up to 65,536 bytes are accepted.
 
@@ -296,7 +297,7 @@ Everything here can be checked in [`.kiro/`](.kiro), [`docs/KIRO-LOG.md`](docs/K
 | Spec | Requirements | Tasks |
 |---|---:|---:|
 | [`structure-inference-engine`](.kiro/specs/structure-inference-engine) | 12 | 22 (95 checklist items with sub-tasks) |
-| [`necropsy-ui`](.kiro/specs/necropsy-ui) | 20 | 23 (tasks 24 to 28 were built outside the spec by Claude Code: [`docs/UI-CLARITY-PASS.md`](docs/UI-CLARITY-PASS.md)) |
+| [`necropsy-ui`](.kiro/specs/necropsy-ui) | 20 | 23 (tasks 24 to 36 were built outside the spec by Claude Code: [`docs/UI-CLARITY-PASS.md`](docs/UI-CLARITY-PASS.md)) |
 | [`gate-adversary`](.kiro/specs/gate-adversary) | 3 | 3 |
 | [`real-corpus`](.kiro/specs/real-corpus) | 6 | 4 |
 | [`necropsy-mcp`](.kiro/specs/necropsy-mcp) | 6 | 8 |
@@ -318,9 +319,9 @@ Everything here can be checked in [`.kiro/`](.kiro), [`docs/KIRO-LOG.md`](docs/K
 **Division of work.**
 
 - **Kiro wrote**, through its spec workflow, the specs, the engine, emitter, report, web service, the original front end (UI tasks 1 to 23), MCP server, Power, the example parser and their tests. 103 of the 179 commits at `2f40422` are per-task commits named `Task <n>: ...` (one, `Tasks 10 and 11`, covers two).
-- **Claude Code built the final UI clarity pass**, outside Kiro's spec workflow, on Rehaan's call of 25 Nov 2026: UI tasks 24 to 28, which are the landing page, the state line under the header, a title and plain-word line on every region (the glossary in `public/js/words.js`), the replay caption and pending placeholder, and the ambiguity grid. That is the whole visible surface of the product as it stands. Claude Code also wrote those tasks' tests, edited older Kiro-written UI tests where the markup changed, and fixed `.kiro/steering/ui.md`. Commits are named `UI task <n>:`; the record, with every break-and-restore run, is [`docs/UI-CLARITY-PASS.md`](docs/UI-CLARITY-PASS.md).
+- **Claude Code built the final UI clarity passes**, outside Kiro's spec workflow, on Rehaan's call of 25 Nov 2026: UI tasks 24 to 28, which are the landing page, the state line under the header, a title and plain-word line on every region (the glossary in `public/js/words.js`), the replay caption and pending placeholder, and the ambiguity grid. A second pass on 25 Nov, also Rehaan's call, added UI tasks 29 to 36: a single-column result in reading order, the evidence (bytes and header values) collapsed by default, the recovered image scaled to fill its frame, a sample click that runs the same busy upload flow as a dropped file, a bigger and slower replay, a light and dark theme switch, a more visible "Examine another file" button, and self-hosted Roboto and Poppins fonts. That is the whole visible surface of the product as it stands. Claude Code also wrote those tasks' tests, edited older Kiro-written UI tests where the markup changed, and fixed `.kiro/steering/ui.md`. Commits are named `UI task <n>:`; the record, with every break-and-restore run, is [`docs/UI-CLARITY-PASS.md`](docs/UI-CLARITY-PASS.md).
 - **Claude Code** also did the scaffolding, git, CI, deploy configuration, the steering, hook and agent files, this README and its icon, and the prompts Rehaan gave Kiro (written in a separate Claude chat until 20 Nov, in Claude Code after that).
-- **Claude Code also verified Kiro's work independently**, from the spec rather than the code: the independent reimplementation above, pixel comparisons against Pillow, and a do-nothing parser run against every emitted RLE spec. The 28 commits made with Claude Code carry a `Co-Authored-By: Claude` trailer.
+- **Claude Code also verified Kiro's work independently**, from the spec rather than the code: the independent reimplementation above, pixel comparisons against Pillow, and a do-nothing parser run against every emitted RLE spec. Commits made with Claude Code carry a `Co-Authored-By: Claude` trailer: 47 of them up to and including the `UI tasks 29 to 36` commit.
 
 ## Repository layout
 

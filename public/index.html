@@ -4,12 +4,17 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>NECROPSY</title>
+<script src="/js/theme.js"></script>
+<link rel="preload" href="/fonts/roboto-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="/app.css">
 </head>
 <body>
 <header class="top">
   <span class="brand-wrap"><span class="brand">NECROPSY</span><span class="tagline">Recover image files nothing can open</span></span>
-  <button id="again" class="quiet" type="button" data-cap="again" hidden>Examine another file</button>
+  <span class="top-actions">
+    <button id="again" class="again" type="button" data-cap="again" hidden>Examine another file</button>
+    <button id="theme" class="quiet theme-btn" type="button" data-cap="theme">Light theme</button>
+  </span>
 </header>
 <p id="state" class="state" data-cap="state" role="status" aria-live="polite"></p>
 <main id="view"></main>

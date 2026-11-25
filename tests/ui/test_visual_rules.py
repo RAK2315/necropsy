@@ -26,9 +26,9 @@ ALLOWED_ACCENT = {
 }
 
 
-@pytest.fixture(scope="module")
-def report(base_url):  # noqa: F811
-    out = subprocess.run(["node", str(PROBE), base_url], capture_output=True, text=True, encoding="utf-8", timeout=180)
+@pytest.fixture(scope="module", params=["dark", "light"])   # every rule holds in both themes (second clarity pass)
+def report(base_url, request):  # noqa: F811
+    out = subprocess.run(["node", str(PROBE), base_url, request.param], capture_output=True, text=True, encoding="utf-8", timeout=180)
     result = json.loads(out.stdout.strip().splitlines()[-1])
     if result.get("error") == "no browser":
         pytest.skip("no Edge or Chrome found to drive")
@@ -66,7 +66,7 @@ def test_no_third_party_requests(report, base_url):  # noqa: F811
 
 def test_reduced_motion_opens_at_the_final_step_with_the_image_drawn(report):
     r = report["reduced"]
-    assert r["counter"] == "steps 19\u201320 of 20"
+    assert r["counter"] == "step 20 of 20"   # one step per frame since the second clarity pass (1 s frames, 20 s bound)
     assert r["outcome"] == "visible"
     assert r["bottomRowAlpha"] == 255
 

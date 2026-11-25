@@ -1,9 +1,21 @@
 {
   "_about": "Every element the recordings touch, by data-cap hook and the screen it must exist on. One source for tests/ui/test_hooks.py and the recording preflight (video/scripts/check_selectors.mjs). Never rename a hook without updating both.",
-  "start": ["hero", "primary", "how", "drop", "tile-0", "tile-1", "tile-2", "sample", "state"],
-  "replaying": ["state", "verdict", "chip", "replay", "replay-caption", "skip", "answer-pending", "hex", "tab-exam", "tab-spec", "again"],
-  "resolved": ["state", "verdict", "chip", "replay", "hex", "image", "contradiction", "fields", "tab-exam", "tab-spec", "again"],
-  "ambiguity": ["state", "verdict", "chip", "replay", "hex", "amb-grid", "card"],
-  "failed": ["state", "verdict", "chip", "replay", "hex", "failed-groups"],
-  "spec": ["spec", "tab-exam", "tab-spec"]
+  "start": [
+    "hero", "primary", "how", "drop", "tile-0", "tile-1", "tile-2", "sample", "state", "theme"
+  ],
+  "replaying": [
+    "state", "verdict", "chip", "replay", "replay-caption", "skip", "answer-pending", "hex", "tab-exam", "tab-spec", "again"
+  ],
+  "resolved": [
+    "state", "verdict", "chip", "replay", "hex", "image", "contradiction", "fields", "tab-exam", "tab-spec", "again", "ev-bytes", "ev-fields", "tech-line"
+  ],
+  "ambiguity": [
+    "state", "verdict", "chip", "replay", "hex", "amb-grid", "card", "ev-bytes", "ev-fields"
+  ],
+  "failed": [
+    "state", "verdict", "chip", "replay", "hex", "failed-groups", "ev-bytes"
+  ],
+  "spec": [
+    "spec", "tab-exam", "tab-spec"
+  ]
 }

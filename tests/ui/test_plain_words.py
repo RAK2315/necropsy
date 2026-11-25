@@ -36,6 +36,7 @@ window.__open = async (name) => {
 window.__rest = async () => {
   const b = document.querySelector('.rp-bar button[title="Skip to the end"]'); if (b && !b.disabled) b.click();
   await __until(() => !document.querySelector('.exam-right.pending, .verdict-bar.pending'), 'at rest');
+  for (const d of document.querySelectorAll('details.ev')) d.open = true;    // scan the evidence too, not only what shows first
 };
 window.__home = async () => { document.getElementById('again').click(); await __until(() => document.querySelectorAll('.strip-tile[data-status]').length === 3, 'home'); };
 """
@@ -103,8 +104,9 @@ def test_plain_words_titles_and_sizes(base_url):
     assert {t["screen"] for t in got["texts"]} == {"landing", "refusal", "resolved-mid", "resolved", "spec", "odd_stride",
                                                    "ambiguity", "ambiguity-selected", "failed-mid", "failed"}
 
-    want = {"resolved": {"replay", "hex", "image", "proof", "facts", "fields"}, "odd": {"replay", "hex", "image", "proof", "facts", "fields"},
-            "ambiguity": {"replay", "hex", "fields", "glance", "cards"}, "failed": {"replay", "hex", "groups"}}
+    want = {"resolved": {"replay", "hex", "image", "proof", "facts", "fields", "evidence"},
+            "odd": {"replay", "hex", "image", "proof", "facts", "fields", "evidence"},
+            "ambiguity": {"replay", "hex", "fields", "glance", "cards", "evidence"}, "failed": {"replay", "hex", "groups", "evidence"}}
     for screen, names in want.items():
         regs = got["regions"][screen]
         assert {r["name"] for r in regs} == names, (screen, regs)

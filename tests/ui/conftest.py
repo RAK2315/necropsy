@@ -53,7 +53,7 @@ def base_url():
 
 
 def run_in_browser(url: str, scenario: str, rewrite: str | None = None, reduced_motion: bool = False,
-                   prelude: str | None = None) -> dict:
+                   prelude: str | None = None, viewport: str | None = None) -> dict:
     """Evaluate `scenario` (an async JS expression returning a JSON string) in a real page at `url`."""
     with tempfile.TemporaryDirectory() as d:
         sp = Path(d) / "scenario.js"
@@ -69,6 +69,8 @@ def run_in_browser(url: str, scenario: str, rewrite: str | None = None, reduced_
             cmd += ["--prelude", str(pp)]
         if reduced_motion:
             cmd.append("--reduced-motion")
+        if viewport:
+            cmd += ["--viewport", viewport]
         out = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8", timeout=120)
     lines = out.stdout.strip().splitlines()
     result = json.loads(lines[-1]) if lines else {"error": out.stderr[-500:]}

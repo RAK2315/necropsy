@@ -1,4 +1,4 @@
-# UI clarity pass: tasks 24 to 28
+# UI clarity passes: tasks 24 to 36
 
 ## Who built this
 
@@ -19,7 +19,10 @@ Claude Code also wrote every test for these tasks and edited older Kiro-written 
 changed (first strip tile, chip text, sample counts, the failure copy, the accent rule's proof-line class). Each
 commit names its task and carries a `Co-Authored-By: Claude` trailer.
 
-Nothing in the engine or the API payload changed. The palette, fonts and the no-CRT rule are unchanged; no light mode.
+A second pass the same day (tasks 29 to 36, also Rehaan's call) is recorded in its own section below.
+
+Nothing in the engine or the API payload changed in either pass. The first pass kept the palette, fonts and theme; the
+second added a light theme and self-hosted fonts at Rehaan's request. The no-CRT rule is unchanged.
 
 ## The rule: translate, never diagnose
 
@@ -102,3 +105,40 @@ added after a screenshot showed it, then the CSS was fixed).
 
 Every existing guard stays green: the accent is used only on recovered data, no third-party requests, no CRT effects,
 the keyboard and contrast tests, the Pillow render match, and the ambiguity neutrality test.
+
+## Second pass: tasks 29 to 36
+
+The first pass labelled every region; the layout still had no hierarchy. Eleven regions shared one background, border,
+title size and weight, the two columns competed at every scroll position, and the hex dump was the largest object on the
+screen. Rehaan set five changes and, separately, asked for a theme switch, a more visible way back and new fonts. All
+eight were built by Claude Code, in one commit named `UI tasks 29 to 36`.
+
+| Task | What |
+|---|---|
+| 29 | One column, in sequence, the weight falling at each level: the answer (the recovered image, large, under the verdict), why it fits (the one-line proof), how it got there (the replay and the corrections), the evidence (the technical line, the bytes, the header values). The answer and its proof fit above the fold at 1600 × 900. |
+| 30 | The evidence starts collapsed, behind controls that say what is inside and how big it is ("The file’s bytes (14,313)", "What the header declares (8 values)"). Open by default on FAILED only. Selecting an ambiguous reading opens its header values. |
+| 31 | The recovered image fills its frame (up to 880 × 340), scaled nearest-neighbour by any factor, so the frame is the image's own shape; the true dimensions stay beneath it. mystery_i's 8 × 8 shows at 340 × 340. |
+| 32 | Clicking a sample (or the primary button) runs the same flow as a dropped file: "Examining <name>…" with an indeterminate progress bar and the name in the state line, held for at least 700 ms, then the result with its replay running. |
+| 33 | The replay is bigger (caption 18 px, log 14 px, controls 14 px, a taller log) and slower: 1 s per frame at 1×, up from 600 ms. |
+| 34 | A light and dark theme switch in the header. Dark stays the default; the choice is remembered in the browser and applied before first paint. Every colour is a theme token; the contrast test and the accent rule now run in both themes. |
+| 35 | "Examine another file" is a solid, bordered control with an arrow, not a quiet one. |
+| 36 | Roboto for text and Poppins for headings, self-hosted from `public/fonts/` (from the `@fontsource` 5.3.0 packages, SIL Open Font License 1.1, notices beside the files). The mono font is unchanged, so the hex columns keep their widths. |
+
+**Requirements superseded.** necropsy-ui Requirement 7.7 bounded the replay at 10 s at 1×; with 1 s frames the bound
+is now 20 s, so a replay of up to 20 steps shows one step per frame (mystery_i's 20 steps take 20 s at 1×). The
+original two-column layout of the necropsy-ui design is replaced by the single column.
+
+**Hooks added** to `tools/capture_hooks.json`: `theme` (start), `ev-bytes`, `ev-fields`, `tech-line` (results). The
+busy screen is `[data-cap=busy]`.
+
+**Verification.** `tests/ui/test_second_pass.py` (eight browser tests, one per task) and a `fillSize` unit test. The
+existing contrast test and accent-rule probe were made to run in both themes. `tests/ui/test_plain_words.py` now opens
+the evidence before its jargon scan, so collapsed text is still scanned; `tests/ui/test_state_line.py` reads the
+state line once the sample's size is known, because the name now shows first.
+
+Breaks: `docs/ui-clarity-breaks/p2.json`, output beside it. 20 breaks, each restore byte-identical. 19 were
+caught on the first run. One was not: putting the accent on the chip's text colour in the light theme passed, because
+the accent probe (`tools/visual_probe.mjs`, Kiro's) only counts a text colour on elements without child elements, and
+the chip has one (its `.tech` enum). That blind spot predates this pass and applies in both themes; it is recorded here,
+not fixed. The break was re-aimed at the chip's border, which the probe does count, and was caught in the light run and
+passed in the dark run, as it should (the output shows both runs).

@@ -3,9 +3,9 @@
 //   requests: every URL the page requested
 import { findBrowser, launch } from './headless.mjs';
 //   reduced:  what the RESOLVED screen looks like on first paint when the browser prefers reduced motion
-// node tools/visual_probe.mjs <base-url>
+// node tools/visual_probe.mjs <base-url> [light]   (light: the remembered light theme, set before any page script)
 
-const [base] = process.argv.slice(2);
+const [base, theme] = process.argv.slice(2);
 if (!findBrowser()) { console.log(JSON.stringify({ error: 'no browser' })); process.exit(0); }
 // Downloads denied and profile removed afterwards: see tools/headless.mjs.
 const browser = await launch('vprobe-', ['--window-size=1280,720'], { timeoutMs: 170000 });
@@ -89,6 +89,7 @@ try {
     return JSON.parse(r.result.result.value);
   };
   await send('Page.enable'); await send('Network.enable');
+  if (theme === 'light') await send('Page.addScriptToEvaluateOnNewDocument', { source: "try { localStorage.setItem('necropsy-theme', 'light'); } catch (e) {}" });
   await send('Emulation.setDeviceMetricsOverride', { width: 1280, height: 720, deviceScaleFactor: 1, mobile: false });
   await load();
   const accent = await run(SCENARIO);

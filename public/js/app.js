@@ -46,12 +46,14 @@ function open(payload, bytes, name, notice = null) {
 
 const PRIMARY = 'pillow_odd_stride.pcx';     // the primary action's sample: a real file from Pillow's test suite
 
-/** Fetch a served sample and examine it exactly as a dropped file: bytes in, analyse(bytes). */
+/** Fetch a served sample and examine it exactly as a dropped file: the same busy screen, bytes in, analyse(bytes). */
 async function runSample(name) {
+  const t0 = performance.now();
+  examining(name);
   let r;
   try { r = await fetch('/samples/' + name); } catch (e) { showStart(sampleFailMessage(name, 0), name); return; }
   if (!r.ok) { showStart(sampleFailMessage(name, r.status), name); return; }   // never analyse an error page
-  analyse(new Uint8Array(await r.arrayBuffer()), name);
+  analyse(new Uint8Array(await r.arrayBuffer()), name, null, t0);
 }
 
 async function showStart(message = '', name = '') {
@@ -128,11 +130,25 @@ async function showStart(message = '', name = '') {
   }
 }
 
-async function analyse(bytes, name, notice = null) {
+// The busy screen stays up at least this long, so a fast answer still reads as "your file was examined" (second
+// clarity pass, change 4). The state line and the replay header give the engine's real time.
+const MIN_BUSY_MS = 700;
+
+/** The busy screen, the same for a dropped file and a sample: the file's name and an activity indicator. */
+function examining(name, size) {
   againBtn.hidden = true;
-  view.replaceChildren(el('p', { class: 'busy', role: 'status', text: 'Analysing…' }));
-  setState({ phase: 'sending', name, size: bytes.length });
-  const result = await requestAnalysis(bytes);
+  const busy = document.querySelector('#view > .busy');
+  if (!busy) {
+    view.replaceChildren(el('div', { class: 'busy', role: 'status', 'data-cap': 'busy' },
+      el('p', { class: 'busy-text', text: `Examining ${name}…` }), el('progress', { class: 'busy-bar', 'aria-label': `Examining ${name}` })));
+  }
+  setState({ phase: 'sending', name, size });
+}
+
+async function analyse(bytes, name, notice = null, t0 = performance.now()) {
+  examining(name, bytes.length);
+  const [result] = await Promise.all([requestAnalysis(bytes), new Promise((r) => setTimeout(r, MIN_BUSY_MS - (performance.now() - t0)))]);
+  if (!document.querySelector('#view > .busy')) return;    // the busy screen was replaced before the answer came
   if (result.error) { showStart(result.message, name); return; }
   open(result.payload, bytes, name, notice);
 }

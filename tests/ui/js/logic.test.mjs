@@ -104,6 +104,11 @@ test('valueText', () => {
   assert.equal(L.valueText(rec('m', 0, '3s', [{ bytes: '50340a' }])), "b'P4\\x0a'");
 });
 
+test('fillSize: any scale, aspect kept, fills the box in one dimension (second clarity pass)', () => {
+  assert.deepEqual(L.fillSize(8, 8, 880, 340), { scale: 42.5, width: 340, height: 340 });
+  assert.deepEqual(L.fillSize(371, 150, 880, 340), { scale: 340 / 150, width: 840, height: 340 });   // bound by height
+});
+
 test('fitScale and fitSize', () => {
   assert.equal(L.fitScale(8, 8, 224, 224), 28);
   assert.equal(L.fitScale(64, 1, 224, 224), 3);

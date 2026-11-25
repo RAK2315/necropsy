@@ -199,7 +199,7 @@ def test_result_controls_enter_space(base_url):
   return JSON.stringify(out);
 })()
 """, reduced_motion=True)
-    assert got["counters"] == ["steps 19\u201320 of 20", "steps 17\u201318 of 20", "steps 15\u201316 of 20"]
+    assert got["counters"] == ["step 20 of 20", "step 19 of 20", "step 18 of 20"]   # one step per frame since the second clarity pass
     assert got["pngs"] == 2
     assert got["specShown"] and got["examShown"]
     assert got["tab1"] == "design.md" and got["tab2"].startswith("test_")
@@ -360,9 +360,12 @@ def test_contrast_formula_matches_wcag_reference_values():
     assert round(contrast((118, 118, 118), (255, 255, 255)), 2) == 4.54     # #767676 on white, the classic just-pass
 
 
-@pytest.fixture(scope="module")
-def rendered_pairs(base_url):
-    return run(base_url, COLLECT + SCREENS, reduced_motion=True)
+LIGHT = "try { localStorage.setItem('necropsy-theme', 'light'); } catch (e) {}"
+
+
+@pytest.fixture(scope="module", params=["dark", "light"])     # both themes meet 4.5:1 (second clarity pass)
+def rendered_pairs(base_url, request):
+    return run(base_url, COLLECT + SCREENS, reduced_motion=True, **({"prelude": LIGHT} if request.param == "light" else {}))
 
 
 def test_every_rendered_text_pair_meets_4_5(rendered_pairs):

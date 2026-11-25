@@ -1,5 +1,5 @@
 // Test support: run one scenario in a real headless Edge or Chrome page and print its JSON result.
-// node tools/browser_run.mjs <url> <scenario.js> [--rewrite <rewrite.js>] [--prelude <prelude.js>] [--reduced-motion] [--shot <out.png>]
+// node tools/browser_run.mjs <url> <scenario.js> [--rewrite <rewrite.js>] [--prelude <prelude.js>] [--reduced-motion] [--shot <out.png>] [--viewport 1600x900]
 //   scenario.js  an async expression evaluated in the page after load; it must return a JSON string
 //   rewrite.js   a JS function source `(payload) => payload`, applied in the browser to every /api/analyze response
 //   prelude.js   extra JS run in the page before any page script (for example a window.fetch fault for one URL)
@@ -16,9 +16,10 @@ const rewritePath = opt('--rewrite');
 const preludePath = opt('--prelude');
 const shotPath = opt('--shot');
 const reduced = args.includes('--reduced-motion');
+const [vw, vh] = (opt('--viewport') || '1280x720').split('x').map(Number);
 if (!findBrowser()) { console.log(JSON.stringify({ error: 'no browser' })); process.exit(0); }
 // Downloads denied and profile removed afterwards: see tools/headless.mjs.
-const browser = await launch('brun-', ['--window-size=1280,720'], { timeoutMs: 110000 });
+const browser = await launch('brun-', [`--window-size=${vw},${vh}`], { timeoutMs: 110000 });
 const { port } = browser;
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -84,7 +85,7 @@ try {
   await send('Page.enable');
   await send('Runtime.enable');
   await send('Runtime.addBinding', { name: '__cdpKey' });
-  await send('Emulation.setDeviceMetricsOverride', { width: 1280, height: 720, deviceScaleFactor: 1, mobile: false });
+  await send('Emulation.setDeviceMetricsOverride', { width: vw, height: vh, deviceScaleFactor: 1, mobile: false });
   if (reduced) await send('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-reduced-motion', value: 'reduce' }] });
   if (rewrite) await send('Fetch.enable', { patterns: [{ urlPattern: '*/api/analyze', requestStage: 'Response' }] });
   await send('Page.addScriptToEvaluateOnNewDocument', { source: PRELUDE + (preludePath ? readFileSync(preludePath, 'utf8') : '') });

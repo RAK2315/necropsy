@@ -3,7 +3,10 @@ import { buildSteps, batch, counterText, hypothesisLine, rejectionLine } from '.
 import { rejectionPlain, verdictText, reasonText } from './words.js';
 import { prefersReducedMotion } from './image.js';
 
-const FRAME_MS = 600;                       // one frame at 1x; batch() keeps the whole replay within 10 s at 1x
+// One frame at 1x. Slowed from 600 ms to 1 s in the second clarity pass (change 5) so a first-time viewer can read a step
+// without pausing; batch() keeps the whole replay within MAX_MS at 1x (Requirement 7.7's 10 s, raised to 20 s).
+const FRAME_MS = 1000;
+const MAX_MS = 20000;
 const SPEEDS = [0.5, 1, 2, 4];
 
 function el(tag, cls, text) {
@@ -42,10 +45,12 @@ export function nothingToReplay(payload) {
  * createReplay(payload, { onStep(step), onFinal() }) -> { root, start() }
  * onStep is called with the last rejection step of the current frame; onFinal when the final step is shown.
  */
+export const REPLAY_TIMING = { frameMs: FRAME_MS, maxMs: MAX_MS };
+
 export function createReplay(payload, { onStep, onFinal, onFrame = () => {} }) {
   const steps = buildSteps(payload);
   const n = steps.length;
-  const frames = batch(n, { frameMs: FRAME_MS, maxMs: 10000 });
+  const frames = batch(n, { frameMs: FRAME_MS, maxMs: MAX_MS });
   const root = el('section', 'replay');
   root.setAttribute('aria-label', 'Replay of the engine\u2019s recorded steps');
 

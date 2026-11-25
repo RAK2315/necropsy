@@ -1,5 +1,5 @@
 // Paint a pixel buffer from the payload to a canvas, nearest-neighbour, integer scale, optional row reveal.
-import { fitSize } from './logic.js';
+import { fitSize, fillSize } from './logic.js';
 
 function decodeB64(s) {
   const bin = atob(s);
@@ -26,11 +26,11 @@ export function toImageData(render) {
 
 /**
  * Draw render into a new canvas sized to fit boxW × boxH. Returns { canvas, done: Promise }.
- * reveal: paint rows top to bottom over at most 2 s instead of all at once.
+ * reveal: paint rows top to bottom over at most 2 s instead of all at once. fill: scale to fill the box, not by an integer.
  */
-export function paint(render, boxW, boxH, { reveal = false, bitDepth } = {}) {
+export function paint(render, boxW, boxH, { reveal = false, fill = false, bitDepth } = {}) {
   const { width: w, height: h } = render;
-  const size = fitSize(w, h, boxW, boxH);
+  const size = (fill ? fillSize : fitSize)(w, h, boxW, boxH);   // fill: any scale, so the image fills its frame
   const canvas = document.createElement('canvas');
   canvas.width = size.width;
   canvas.height = size.height;

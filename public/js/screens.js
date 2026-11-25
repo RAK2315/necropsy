@@ -38,18 +38,20 @@ function region(name, title, line, ...kids) {
   return s;
 }
 
-/** The image frame used on every screen: a fixed box with the image, or a failure reason, in the same place. */
-export function imageFrame(cand, box, opts = {}) {
-  const frame = el('figure', 'frame');
-  frame.style.width = box + 'px';
+/**
+ * The recovered image on the result screen (second clarity pass, change 3): scaled to fill its frame, nearest-neighbour,
+ * so the frame is the image's own shape with no dead space. The true dimensions stay beneath it.
+ */
+export function fillFrame(cand, maxW, maxH, opts = {}) {
+  const frame = el('figure', 'frame fill');
   const well = el('div', 'well');
-  well.style.width = well.style.height = box + 'px';
   let done = Promise.resolve();
   if (cand.render && cand.render.data_b64) {
-    const p = paint(cand.render, box - 16, box - 16, { ...opts, bitDepth: cand.bit_depth });
+    const p = paint(cand.render, maxW, maxH, { ...opts, fill: true, bitDepth: cand.bit_depth });
     well.append(p.canvas);
     done = p.done;
   } else {
+    well.classList.add('empty');
     well.append(el('p', 'no-image', cand.render ? cand.render.failure : 'no image'));
   }
   const cap = el('figcaption');
@@ -89,19 +91,57 @@ function verdictBar(payload) {
     const how = steps.length
       ? `${sourceText(c.probe_name)} ${steps.length === 1 ? 'One correction' : `${steps.length} corrections`}: ${steps.join('; ')}.`
       : `${sourceText(c.probe_name)} No correction was needed.`;
-    bar.append(el('p', 'verdict-sub', how),
-      el('p', 'tech', `stage ${payload.stage} · ${checksTech(payload)}${c.revision_path.length ? ' · revision path ' + path(c.revision_path) : ''}`));
+    bar.append(el('p', 'verdict-sub', how));
   } else if (payload.status === 'UNRESOLVED_AMBIGUITY') {
-    bar.append(el('p', 'verdict-sub', `${sourceText(payload.candidates[0].probe_name)} Each reading below fits the data exactly. The bytes alone cannot separate them.`),
-      el('p', 'tech', `stage ${payload.stage} · ${checksTech(payload)}`));
+    bar.append(el('p', 'verdict-sub', `${sourceText(payload.candidates[0].probe_name)} Each reading below fits the data exactly. The bytes alone cannot separate them.`));
   } else {
-    bar.append(el('p', 'verdict-sub fail-reason', failureSentence(payload)),
-      el('p', 'tech', `termination ${payload.termination} · ${checksTech(payload)}`));
+    bar.append(el('p', 'verdict-sub fail-reason', failureSentence(payload)));
   }
   return bar;
 }
 
+/** The engine's own technical line: stage, fit checks, engine time, revision path. Evidence, not narrative. */
+function techLine(payload) {
+  let t;
+  if (payload.status === 'RESOLVED') {
+    const c = payload.candidates[0];
+    t = `stage ${payload.stage} · ${checksTech(payload)}${c.revision_path.length ? ' · revision path ' + path(c.revision_path) : ''}`;
+  } else if (payload.status === 'UNRESOLVED_AMBIGUITY') t = `stage ${payload.stage} · ${checksTech(payload)}`;
+  else t = `termination ${payload.termination} · ${checksTech(payload)}`;
+  const p = el('p', 'tech ev-tech', t);
+  p.dataset.cap = 'tech-line';
+  return p;
+}
+
+/** One collapsed piece of evidence behind a control that says what is inside and how big it is (change 2). */
+function drawer(cap, label, open, ...kids) {
+  const d = el('details', 'ev');
+  d.dataset.cap = cap;
+  d.open = open;
+  const sum = el('summary', 'ev-sum', label);
+  d.append(sum, ...kids);
+  return d;
+}
+
+/**
+ * Level 4, the evidence: the technical line, then the file's bytes and the header values, each collapsed by default
+ * except on FAILED, where the bytes are most of what there is to show.
+ */
+function evidence(payload, bytes, hexRegion, fieldsRegion, fieldsLabel) {
+  const open = payload.status === 'FAILED';
+  const kids = [techLine(payload), drawer('ev-bytes', `The file’s bytes (${fmt(bytes.length)})`, open, hexRegion)];
+  if (fieldsRegion) kids.push(drawer('ev-fields', fieldsLabel, open, fieldsRegion));
+  const sec = region('evidence', 'The evidence', 'The raw bytes and the values read from them, for checking the work.', ...kids);
+  sec.classList.add('level-4');
+  return sec;
+}
+
 // ---- RESOLVED ----
+
+// The recovered image's frame on the result screen. With the verdict and the one-line proof it fits above the fold at
+// 1600 × 900 (tests/ui/test_single_column.py).
+const IMAGE_W = 880;
+const IMAGE_H = 340;
 
 function resolvedPanel(payload, bytes, base) {
   const c = payload.candidates[0];
@@ -117,7 +157,7 @@ function resolvedPanel(payload, bytes, base) {
     side.append(box);
   }
 
-  const { frame, done } = imageFrame(c, 264, { reveal: true });
+  const { frame, done } = fillFrame(c, IMAGE_W, IMAGE_H, { reveal: true });
   frame.dataset.cap = 'image';
   side.append(region('image', 'Recovered image', 'Decoded from this file’s own bytes.', frame, downloadRow(c, bytes, base)));
 
@@ -136,8 +176,8 @@ function resolvedPanel(payload, bytes, base) {
   }
   for (const alt of c.alternative_paths) facts.append(kv('second route', 'Another order of corrections reaches the same answer.'), kv('', path(alt), 'tech'));
   facts.append(kv('checked', `${fmt(payload.total_checks)} layout${payload.total_checks === 1 ? '' : 's'} checked in ${fmt(payload.engine_ms)} ms`));
-  side.append(region('facts', 'How it got there', 'The corrections tried, and how many layouts were checked.', facts));
-  return { side, done };
+  const how = region('facts', 'Corrections', 'The corrections tried, and how many layouts were checked.', facts);
+  return { side, how, done };
 }
 
 // ---- UNRESOLVED_AMBIGUITY ----
@@ -150,8 +190,7 @@ function ambiguityScreen(root, payload, bytes, base, onProgress) {
   const cands = payload.candidates;
   const bar = verdictBar(payload);
 
-  const wrap = el('div', 'exam amb');
-  const left = el('div', 'exam-left sticky');
+  const wrap = el('div', 'exam flow amb');
   const pane = createPane(bytes);
   pane.root.dataset.cap = 'hex';
   const labels = (i) => cardTitle(cands[i]);
@@ -165,8 +204,9 @@ function ambiguityScreen(root, payload, bytes, base, onProgress) {
     onStep: (s) => { pane.show(stepView(s)); paneNote.textContent = 'Replay: bytes read by the layout being tried.'; },
     onFinal: () => { union(); paneNote.textContent = UNION_NOTE; bar.classList.remove('pending'); right.classList.remove('pending'); right.querySelector('.answer-pending')?.remove(); },
   });
-  left.append(replayRegion(replay), region('hex', 'The file’s bytes', 'Highlighted bytes were read as header fields by at least one reading.', paneNote, pane.root),
-    region('fields', 'What the header declares', 'Each value a reading takes from the file, and where it sits.', tableSlot));
+  const hexRegion = region('hex', 'The file’s bytes', 'Highlighted bytes were read as header fields by at least one reading.', paneNote, pane.root);
+  const fieldsRegion = region('fields', 'What the header declares', 'Each value a reading takes from the file, and where it sits.', tableSlot);
+  const ev = evidence(payload, bytes, hexRegion, fieldsRegion, `What each reading declares (${cands.length} readings)`);
 
   // at-a-glance grid (task 28): every reading at one size, in payload order, no score, no emphasis
   const glance = el('div', 'amb-grid');
@@ -191,6 +231,7 @@ function ambiguityScreen(root, payload, bytes, base, onProgress) {
     selected = i;
     card.classList.add('open');
     tableSlot.replaceChildren(el('p', 'pane-note', `Fields of ${cardTitle(cands[i])}`), fieldTable(cands[i], records, pane));
+    ev.querySelector('[data-cap=ev-fields]').open = true;      // the person asked for this reading's values
   };
   for (const card of grid.querySelectorAll('.card')) {
     const i = Number(card.dataset.index);
@@ -216,13 +257,15 @@ function ambiguityScreen(root, payload, bytes, base, onProgress) {
       card.focus();
     });
   }
-  const right = el('div', 'exam-right pending');
+  const right = el('div', 'exam-right answer pending');
   const note = el('p', 'amb-note', COHERENCE_NOTE);
   note.append(' ', el('span', 'tech', 'row_mad_ratio'));
   right.append(region('glance', 'Every reading at a glance', 'Same size, in the order the engine found them. Select one to go to its card.', glance),
     region('cards', 'Readings that fit', 'Each one fits the data exactly. The bytes alone cannot separate them.', grid, note));
   if (!replay.single) right.prepend(answerPending(replay));
-  wrap.append(left, right);
+  const how = el('div', 'how-col level-3');
+  how.append(replayRegion(replay));
+  wrap.append(right, how, ev);
   root.append(bar, wrap);
   return replay;
 }
@@ -361,6 +404,11 @@ export function leaveResult() {
   activeReplay = null;
 }
 
+/**
+ * The single-column result (second clarity pass, change 1), top to bottom with the weight falling at each step:
+ *   level 1 the answer and level 2 why it is right (`.exam-right.answer`), level 3 how it got there (`.how-col`: the replay
+ *   and the corrections), level 4 the evidence (`.evidence`: the technical line, the bytes, the header values).
+ */
 export function renderResult(root, payload, bytes, opts = {}) {
   leaveResult();
   root.replaceChildren();
@@ -379,24 +427,30 @@ export function renderResult(root, payload, bytes, opts = {}) {
   const bar = verdictBar(payload);
   const pane = createPane(bytes);
   pane.root.dataset.cap = 'hex';
-  const wrap = el('div', 'exam');
-  const left = el('div', 'exam-left');
-  const right = el('div', 'exam-right pending');
-  wrap.append(left, right);
-  target.append(bar, wrap);
-  let finalView, buildRight;
+  const flow = el('div', 'exam flow');
+  const answer = el('div', 'exam-right answer pending');
+  const how = el('div', 'how-col');
   const hexLine = payload.status === 'RESOLVED'
     ? 'Shaded by the role this reading gives them: header, data, trailer. Highlighted bytes were read as header fields.'
     : 'No layout tried fits, so no byte has a role to shade.';
   const hex = region('hex', 'The file’s bytes', hexLine, pane.root);
+  let finalView, buildAnswer, fieldsRegion = null, fieldsLabel = '';
   if (payload.status === 'RESOLVED') {
     const c = payload.candidates[0];
     finalView = { cands: [c], regions: c };
-    buildRight = () => right.replaceChildren(...resolvedPanel(payload, bytes, base).side.childNodes);   // built at the final step, so the image reveal starts then
+    fieldsRegion = region('fields', 'What the header declares', 'Each value the file states about itself, and where it sits.');
+    fieldsLabel = `What the header declares (${c.fields.length} value${c.fields.length === 1 ? '' : 's'})`;
+    buildAnswer = () => {                // built at the final step, so the image reveal starts then
+      const r = resolvedPanel(payload, bytes, base);
+      answer.replaceChildren(...r.side.childNodes);
+      how.append(r.how);
+    };
   } else {
     finalView = { cands: [], regions: null };
-    buildRight = () => right.replaceChildren(...failedPanel(payload).childNodes);
+    buildAnswer = () => answer.replaceChildren(...failedPanel(payload).childNodes);
   }
+  flow.append(answer, how, evidence(payload, bytes, hex, fieldsRegion, fieldsLabel));
+  target.append(bar, flow);
   let built = false;
   const replay = createReplay(payload, {
     onFrame: opts.onProgress,
@@ -405,19 +459,20 @@ export function renderResult(root, payload, bytes, opts = {}) {
       const records = pane.show(finalView);
       if (!built) {
         built = true;
-        buildRight();
-        right.classList.remove('pending');
+        buildAnswer();
+        answer.classList.remove('pending');
         bar.classList.remove('pending');
-        if (payload.status === 'RESOLVED') {
+        if (fieldsRegion) {
           const table = fieldTable(payload.candidates[0], records, pane);
           table.dataset.cap = 'fields';
-          left.append(region('fields', 'What the header declares', 'Each value the file states about itself, and where it sits.', table));
+          fieldsRegion.append(table);
         }
       }
     },
   });
-  left.append(replayRegion(replay), hex);
-  if (!replay.single) right.append(answerPending(replay));
+  how.classList.add('level-3');
+  how.append(replayRegion(replay));
+  if (!replay.single) answer.append(answerPending(replay));
   activeReplay = replay;
   replay.start();
 }

@@ -23,8 +23,8 @@ SCENARIO = r"""
   out.idle = text();
   window.__slowApi = true;
   [...document.querySelectorAll('.pick')].find(b => b.textContent === 'mystery_i').click();
-  await __until(() => document.querySelector('.busy'), 'busy');
-  out.sending = text();
+  out.sendingFirst = (await __until(() => document.querySelector('.busy'), 'busy')) && text();   // the name, before the bytes arrive
+  out.sending = await __until(() => /bytes · Examining/.test(text()) ? text() : null, 'busy with size');
   window.__slowApi = false;
   out.replaying = await __until(() => /Replaying/.test(text()) ? text() : null, 'replaying');
   document.querySelector('.rp-bar button[title="Skip to the end"]').click();
@@ -59,6 +59,7 @@ def test_state_line_on_every_screen(base_url):
     assert got["live"] == "polite" and got["under"] == "HEADER"
     assert got["idle"] == got["idleAgain"] == "No file loaded. Try a sample or drop your own."
     assert got["sending"] == "mystery_i · 955 bytes · Examining…"
+    assert got["sendingFirst"] in ("mystery_i · Examining…", got["sending"])
 
     r = Engine().run(corpus_bytes("mystery_i"))
     h = r.candidate.hypothesis

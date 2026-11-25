@@ -39,6 +39,11 @@ is coherent, and recovers the contents.
   UI tasks 24 to 28: the landing page, the state line, region titles
   with the plain-word glossary, the replay that announces itself, and
   the ambiguity grid, with their tests and edits to older UI tests.
+  A second pass the same day, also Rehaan's call, is UI tasks 29 to
+  36: single-column result, collapsed evidence, image filling its
+  frame, the sample busy flow, a bigger and slower replay, light and
+  dark themes, a visible "Examine another file", self-hosted Roboto
+  and Poppins.
   Record: `docs/UI-CLARITY-PASS.md`; commits named `UI task <n>:`.
   This is the entire visible surface of the product, and every account
   of who built what (README, Devpost story) says so plainly.
@@ -79,6 +84,8 @@ own homework. Check it independently.
    is the acceptance suite for a parser the reader writes from the
    document.
 5. No CRT, scanline or horror styling. The look is forensic examination.
+   Dark is the default theme; a light theme exists (Rehaan, 25 Nov), and
+   the contrast and accent rules are tested in both.
 6. No Streamlit or Gradio.
 
 ## Project state (21 Nov 2026: build complete, README rewritten)
@@ -96,9 +103,9 @@ own homework. Check it independently.
 - UI task 23 (21 Nov): the render follows the file's declarations;
   matches Pillow on 28 of 29 readings (mystery_e is the stated
   BlackIsZero convention). 16-bit images are not previewed.
-- Tests at `56de21b` (25 Nov, after UI tasks 24 to 28): 966 Python
-  passed, 1 skipped (the open-failures test, whose list is now empty),
-  26 front-end passed.
+- Tests after UI tasks 29 to 36 (25 Nov): 980 Python passed,
+  1 skipped (the open-failures test, whose list is now empty),
+  27 front-end passed.
 - UI tasks 24 to 28 (25 Nov) were built by Claude Code, not Kiro:
   landing page, state line, region titles and plain words, replay
   caption, ambiguity grid. Record and break runs: `docs/UI-CLARITY-PASS.md`.

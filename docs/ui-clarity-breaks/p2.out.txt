@@ -1,0 +1,85 @@
+BREAK  1 two columns again  (public/app.css)
+  with break : 1 failed in 11.73s  -> caught
+  failure    : E   AssertionError: [data-cap=replay] is beside or above .closure: {'top': 838, 'bottom': 883, 'left': 313, 'right': 780} {'top': 256, 'bottom': 652, 'left': 806, 'right': 1273}
+  restored   : sha256 ce3d0738c706 -> ce3d0738c706 identical
+BREAK  1 the replay before the answer  (public/js/screens.js)
+  with break : 1 failed in 11.62s  -> caught
+  failure    : E   AssertionError: [data-cap=replay] is beside or above .closure: {'top': 1515, 'bottom': 1538, 'left': 313, 'right': 1273} {'top': 256, 'bottom': 631, 'left': 313, 'right': 1273}
+  restored   : sha256 aafd1339ca64 -> aafd1339ca64 identical
+BREAK  1 the proof pushed below the fold  (public/js/screens.js)
+  with break : 1 failed in 11.87s  -> caught
+  failure    : E   AssertionError: the answer and its proof must fit above 900 px: {'image': 983, 'closure': 1101}
+  restored   : sha256 aafd1339ca64 -> aafd1339ca64 identical
+BREAK  2 evidence open by default  (public/js/screens.js)
+  with break : 1 failed in 11.20s  -> caught
+  failure    : E   AssertionError: assert [('ev-bytes',... (8 values)')] == [('ev-bytes',... (8 values)')]
+  restored   : sha256 aafd1339ca64 -> aafd1339ca64 identical
+BREAK  2 the control does not say how big  (public/js/screens.js)
+  with break : 1 failed in 11.21s  -> caught
+  failure    : E   AssertionError: assert [('ev-bytes',... (8 values)')] == [('ev-bytes',... (8 values)')]
+  restored   : sha256 aafd1339ca64 -> aafd1339ca64 identical
+BREAK  2 FAILED bytes collapsed too  (public/js/screens.js)
+  with break : 1 failed in 10.91s  -> caught
+  failure    : E   AssertionError: FAILED keeps the bytes open
+  restored   : sha256 aafd1339ca64 -> aafd1339ca64 identical
+BREAK  3 integer scale again (dead space)  (public/js/image.js)
+  with break : 1 failed in 10.67s  -> caught
+  failure    : E   AssertionError: ('i', {'cw': 336, 'ch': 336, 'css': [336, 336], 'well': [338, 338], ...})
+  restored   : sha256 6a27ed85a5ff -> 6a27ed85a5ff identical
+BREAK  3 smoothed, not nearest-neighbour  (public/js/image.js)
+  with break : 1 failed in 10.55s  -> caught
+  failure    : E   AssertionError: assert ('crisp-edges' in ('pixelated', 'crisp-edges') and True is False)
+  restored   : sha256 6a27ed85a5ff -> 6a27ed85a5ff identical
+BREAK  3 padding around the image  (public/app.css)
+  with break : 1 failed in 10.68s  -> caught
+  failure    : E   AssertionError: dead space around the image: {'cw': 340, 'ch': 340, 'css': [340, 340], 'well': [390, 390], 'rendering': 'crisp-edges', 'smoothing': False, 'dims': '8 × 8 · 8-bit'}
+  restored   : sha256 ce3d0738c706 -> ce3d0738c706 identical
+BREAK  4 instant jump to the result  (public/js/app.js)
+  with break : 1 failed in 29.81s  -> caught
+  failure    : E   AssertionError: {'error': 'Error: timed out: busy
+  restored   : sha256 09fe1a2f5a70 -> 09fe1a2f5a70 identical
+BREAK  4 no activity indicator  (public/js/app.js)
+  with break : 1 failed in 11.46s  -> caught
+  failure    : E   AssertionError: {'text': 'Examining mystery_i…', 'bar': False, 'role': 'status', 'state': 'mystery_i · 955 bytes · Examining…', ...}
+  restored   : sha256 09fe1a2f5a70 -> 09fe1a2f5a70 identical
+BREAK  5 the old 600 ms frame  (public/js/replay.js)
+  with break : 1 failed in 10.55s  -> caught
+  failure    : E   AssertionError: one step at 1x must stay on screen at least a second: {'caption': 18, 'log': 14, 'head': 14, 'button': 14, 'logHeight': 236, 'frameMs': 618.9000000059605, 'first': 'step 1 of 20', 'second': 'step 2 of 20'}
+  restored   : sha256 c2aa259ec1f5 -> c2aa259ec1f5 identical
+BREAK  5 the old 14 px caption  (public/app.css)
+  with break : 1 failed in 10.90s  -> caught
+  failure    : E   AssertionError: {'caption': 14, 'log': 14, 'head': 14, 'button': 14, ...}
+  restored   : sha256 ce3d0738c706 -> ce3d0738c706 identical
+BREAK  theme choice not remembered  (public/js/theme.js)
+  with break : 1 failed in 9.19s  -> caught
+  failure    : E   AssertionError: assert {'theme': 'li...k theme', ...} == {'theme': 'li...k theme', ...}
+  restored   : sha256 059d4a516b43 -> 059d4a516b43 identical
+BREAK  light theme muted text below 4.5:1  (public/app.css)
+  with break : 1 failed, 1 passed, 13 deselected in 22.86s  -> caught
+  failure    : E   AssertionError: text below 4.5:1: a.dl (138, 145, 155) on (245, 246, 248) = 2.94 (start: 'download'); a.lic (138, 145, 155) on (245, 246, 248) = 2.94 (start: 'licence notice'); button.dl-btn (138, 145, 155) on (245, 246, 248) = 2.94 (resolved: 'PNG'); button.dl-btn (138, 145, 155) on (255, 255, 
+  restored   : sha256 ce3d0738c706 -> ce3d0738c706 identical
+BREAK  light theme accent on the chip  (public/app.css)
+  with break : 2 passed, 13 deselected in 25.95s  -> NOT CAUGHT
+  restored   : sha256 ce3d0738c706 -> ce3d0738c706 identical
+BREAK  Examine another file quiet again  (public/index.html)
+  with break : 1 failed in 9.91s  -> caught
+  failure    : E   AssertionError: {'border': 'rgb(42, 49, 58)', 'text': 'rgb(211, 216, 223)', 'color': 'rgb(149, 156, 166)', 'weight': '400', ...}
+  restored   : sha256 a8c4f846a148 -> a8c4f846a148 identical
+BREAK  Roboto from a font CDN  (public/app.css)
+  with break : 1 failed in 9.37s  -> caught
+  failure    : E   AssertionError: ['Roboto 500', 'Roboto 600', 'Poppins 600']
+  restored   : sha256 ce3d0738c706 -> ce3d0738c706 identical
+BREAK  body back on the system font  (public/app.css)
+  with break : 1 failed in 9.07s  -> caught
+  failure    : E   AssertionError: assert ('system-ui',...s', 'Poppins') == ('Roboto', 'P...s', 'Poppins')
+  restored   : sha256 ce3d0738c706 -> ce3d0738c706 identical
+BREAK  evidence hook removed  (public/js/screens.js)
+  with break : 1 failed in 10.01s  -> caught
+  failure    : E   AssertionError: capture hooks missing: {'resolved': ['ev-bytes', 'ev-fields'], 'ambiguity': ['ev-bytes', 'ev-fields'], 'failed': ['ev-bytes']}
+  restored   : sha256 aafd1339ca64 -> aafd1339ca64 identical
+
+RERUN after the miss above: the break re-aimed at the chip's border (--ok-line), which the accent probe counts
+BREAK  light theme accent on the chip  (public/app.css)
+  with break : 1 failed, 1 passed, 13 deselected in 26.74s  -> caught
+  failure    : E   AssertionError: accent used outside recovered data: {'start': ['span.chip.chip-ok (border-top,border-left)'], 'resolved': ['span.chip.chip-ok (border-top,border-left)'], 'resolved_tga': ['span.chip.chip-ok (border-top,border-left)'], 'ambiguity': ['span.chip.chip-ok (border-top,border-left)'], '
+  restored   : sha256 ce3d0738c706 -> ce3d0738c706 identical
