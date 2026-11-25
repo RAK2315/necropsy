@@ -182,3 +182,66 @@ def test_decode_never_raises_and_returns_declared_types(decoded, width, height, 
 def test_decode_tolerates_wrong_types(decoded, width, height, bit_depth, row_stride):
     out = decode(decoded, width, height, bit_depth, row_stride, "generic")
     assert isinstance(out, (PixelBuffer, RenderFailure))
+
+
+# ---- PNM grey and RGB, 8 and 16 bit, scaled by maxval (Requirement 16.1) ----
+
+def test_pnm_p5_maxval_15_scales_each_sample():
+    raw = bytes([0, 1, 7, 15])                       # 2x2, v*255//15 = 17*v
+    buf = decode(raw, 2, 2, 8, 2, "pnm", maxval=15)
+    assert (buf.width, buf.height, buf.channels) == (2, 2, "grey8")
+    assert buf.data == bytes([0, 17, 119, 255])
+    assert "255//15" in buf.note
+
+
+def test_pnm_p5_16bit_big_endian_maxval_65535():
+    raw = bytes([0x00, 0x00, 0x12, 0x34, 0x80, 0x00, 0xFF, 0xFF])      # 4 words, 4x1
+    buf = decode(raw, 4, 1, 16, 8, "pnm", maxval=65535)
+    assert buf.data == bytes(v * 255 // 65535 for v in (0x0000, 0x1234, 0x8000, 0xFFFF))
+    assert buf.data == bytes([0, 18, 127, 255])
+
+
+def test_pnm_p5_16bit_maxval_1000_is_not_65535():
+    raw = bytes([0x01, 0xF4, 0x03, 0xE8])            # 500 and 1000
+    buf = decode(raw, 2, 1, 16, 4, "pnm", maxval=1000)
+    assert buf.data == bytes([127, 255])
+
+
+def test_pnm_p6_rgb_in_stored_order_maxval_15():
+    raw = bytes([0, 5, 15, 15, 10, 0])               # two pixels, R G B stored, no BGR swap
+    buf = decode(raw, 2, 1, 24, 6, "pnm", maxval=15)
+    assert buf.channels == "rgb8"
+    assert buf.data == bytes([0, 85, 255, 255, 170, 0])
+
+
+def test_pnm_p6_48bit_big_endian_maxval_65535():
+    raw = bytes([0xFF, 0xFF, 0x00, 0x00, 0x80, 0x00])        # one pixel
+    buf = decode(raw, 1, 1, 48, 6, "pnm", maxval=65535)
+    assert buf.channels == "rgb8" and buf.data == bytes([255, 0, 127])
+
+
+def test_pnm_render_from_full_engine_run():
+    header = b"P6\n2 1\n15\n"
+    data = header + bytes([0, 5, 15, 15, 10, 0])
+    result = Engine().run(data)
+    assert result.status == "RESOLVED"
+    c = result.candidate
+    h = c.hypothesis
+    buf = decode(c.decoded, h.width, h.height, h.bit_depth, c.row_stride, h.probe_name, maxval=h.maxval)
+    assert buf.data == bytes([0, 85, 255, 255, 170, 0])
+
+
+def test_pnm_bad_maxval_or_geometry_is_a_failure_not_a_raise():
+    assert decode(bytes(4), 2, 2, 8, 2, "pnm", maxval=0) == RenderFailure("inconsistent geometry")
+    assert decode(bytes(3), 2, 2, 8, 2, "pnm", maxval=255) == RenderFailure("inconsistent geometry")
+
+
+@settings(max_examples=100, deadline=None)
+@given(decoded=st.binary(max_size=600), width=st.integers(-2, 20), height=st.integers(-2, 20),
+       bit_depth=st.sampled_from([8, 16, 24, 48]), row_stride=st.integers(-2, 130),
+       maxval=st.one_of(st.none(), st.integers(-5, 70000)))
+def test_pnm_decode_never_raises(decoded, width, height, bit_depth, row_stride, maxval):
+    out = decode(decoded, width, height, bit_depth, row_stride, "pnm", maxval=maxval)
+    assert isinstance(out, (PixelBuffer, RenderFailure))
+    if isinstance(out, PixelBuffer):
+        assert len(out.data) == out.width * out.height * (1 if out.channels == "grey8" else 3)

@@ -53,8 +53,11 @@ def _interleave(r: bytes, g: bytes, b: bytes) -> bytes:
 
 def decode(decoded, width, height, bit_depth, row_stride, probe_name,
            palette=None, bottom_left=False, channel_order="bgr", photometric=None,
-           palette_name=PALETTE_NAME, no_palette_why=None):
+           palette_name=PALETTE_NAME, no_palette_why=None, maxval=None):
     """Return a PixelBuffer, or a RenderFailure with a reason. Never raises.
+
+    maxval: the PNM header's declared maximum. With probe_name "pnm" and bit_depth 8, 16, 24 or 48 the samples are
+    scaled v * 255 // maxval (16-bit samples are big-endian words).
 
     channel_order: "bgr", "rgb" or "bgr-convention" (24/32 bit). photometric: None, 0 (WhiteIsZero), 1 (BlackIsZero)
     or "undeclared" (1/4/8-bit grey). palette_name names the colour source in the note; no_palette_why says why an
@@ -62,9 +65,38 @@ def decode(decoded, width, height, bit_depth, row_stride, probe_name,
     """
     try:
         return _decode(decoded, width, height, bit_depth, row_stride, probe_name, palette, bottom_left,
-                       channel_order, photometric, palette_name, no_palette_why)
+                       channel_order, photometric, palette_name, no_palette_why, maxval)
     except Exception as exc:  # last line of defence; the checks below bound every read
         return RenderFailure(f"internal error: {type(exc).__name__}")
+
+
+PNM_DEPTHS = (8, 16, 24, 48)
+
+
+def _decode_pnm(decoded, width, height, bit_depth, row_stride, maxval):
+    """PNM grey (8, 16) and RGB (24, 48) samples, each shown as v * 255 // maxval (Requirement 16.1)."""
+    if not 1 <= maxval <= 65535:
+        return RenderFailure("inconsistent geometry")
+    per = 1 if bit_depth in (8, 24) else 2            # bytes per sample
+    channels = 1 if bit_depth in (8, 16) else 3
+    used = width * channels * per
+    if row_stride < used or len(decoded) < row_stride * height:
+        return RenderFailure("inconsistent geometry")
+    d = bytes(decoded)
+    raw = b"".join(d[r * row_stride: r * row_stride + used] for r in range(height))
+    if per == 1:
+        table = bytes(min(255, v * 255 // maxval) for v in range(256))
+        samples = raw.translate(table)
+        word = "8-bit samples"
+    else:
+        samples = bytes(min(255, ((raw[i] << 8) | raw[i + 1]) * 255 // maxval) for i in range(0, len(raw), 2))
+        word = "16-bit big-endian samples"
+    if channels == 1:
+        return PixelBuffer(width, height, "grey8", samples,
+                           f"PNM grey · {word} · v×255//{maxval} · {STORED_NOTE}")
+    data = _interleave(samples[0::3], samples[1::3], samples[2::3])
+    return PixelBuffer(width, height, "rgb8", data,
+                       f"PNM RGB as stored · {word} · v×255//{maxval} · {STORED_NOTE}")
 
 
 def _grey(data, photometric):
@@ -79,11 +111,13 @@ def _grey(data, photometric):
 
 
 def _decode(decoded, width, height, bit_depth, row_stride, probe_name, palette, bottom_left,
-            channel_order, photometric, palette_name, no_palette_why):
+            channel_order, photometric, palette_name, no_palette_why, maxval=None):
     if not isinstance(decoded, (bytes, bytearray)):
         return RenderFailure("inconsistent geometry")
     if not all(_is_int(v) and v > 0 for v in (width, height, bit_depth, row_stride)):
         return RenderFailure("inconsistent geometry")
+    if probe_name == "pnm" and bit_depth in PNM_DEPTHS and _is_int(maxval):
+        return _decode_pnm(decoded, width, height, bit_depth, row_stride, maxval)
     if bit_depth not in SUPPORTED_DEPTHS:
         return RenderFailure(f"no renderer for {bit_depth}-bit pixels")
     used = -(-(width * bit_depth) // 8)               # bytes of pixel data in one row
