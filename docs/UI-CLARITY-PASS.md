@@ -236,7 +236,7 @@ byte-identical.
 
 Rehaan's call, 25 Nov: the cards for several readings were a stack of same-weight monospaced lines. Each card now leads
 with its size as a heading ("8 × 24 · 8-bit") and lists the rest as labelled rows: Header, Each row, Compression,
-Picture data, Row similarity. Every card has the same rows in the same order, and the only thing that differs between
+Data bytes, Row similarity. Every card has the same rows in the same order, and the only thing that differs between
 cards is their values, so the neutrality test (`tests/ui/js/screens.test.mjs`: cards identical apart from the
 coherence value) still holds. The full identity, header length included, stays in each card's accessible label.
 

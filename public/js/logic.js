@@ -222,7 +222,7 @@ export function cardModel(c, index) {
       ['Header', `${c.header_size} byte${c.header_size === 1 ? '' : 's'}`],
       ['Each row', `${c.row_stride} byte${c.row_stride === 1 ? '' : 's'}` + (c.row_alignment > 1 ? `, padded to ${c.row_alignment}` : '')],
       ['Compression', c.encoding === 'none' ? 'none' : c.encoding === 'rle_pcx' ? 'PCX run-length' : c.encoding],
-      ['Picture data', c.data_end > c.data_start ? `bytes ${c.data_start} to ${c.data_end - 1}` : 'none'],
+      ['Data bytes', c.data_end > c.data_start ? `${c.data_start}–${c.data_end - 1}` : 'none'],
     ],
     note: c.render && c.render.note ? c.render.note : '',
     failure: c.render && c.render.failure ? c.render.failure : '',

@@ -207,5 +207,5 @@ def test_cards_are_labelled_rows(base_url):
         assert card["rows"] == [["Header", f"{c['header_size']} bytes"],
                                 ["Each row", f"{c['row_stride']} byte{'' if c['row_stride'] == 1 else 's'}" + (f", padded to {c['row_alignment']}" if c["row_alignment"] > 1 else "")],
                                 ["Compression", "none" if c["encoding"] == "none" else "PCX run-length"],
-                                ["Picture data", f"bytes {c['data_start']} to {c['data_end'] - 1}"],
+                                ["Data bytes", f"{c['data_start']}–{c['data_end'] - 1}"],
                                 ["Row similarity", coh]], card
