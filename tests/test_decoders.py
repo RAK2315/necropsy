@@ -137,3 +137,93 @@ def test_pnm_text_never_raises(data, w, h, depth, maxval, cap):
 def test_pnm_text_never_raises_on_arbitrary_range(data, s, e):
     r = pnm_text_decode(data, s, e, 2, 2, 8, 255, 4)
     assert isinstance(r, DecodeResult) and r.status in STATUSES
+
+
+# --- rle_tga (format-coverage task 10; Requirements 5.2 to 5.7, 2.8 to 2.10) ---
+from necropsy.engine.decoders import rle_tga_decode
+
+
+def tga(body, pb, out, start=0, end=None):
+    return rle_tga_decode(body, start, len(body) if end is None else end, pb, out)
+
+
+def test_tga_run_packet():
+    # 0x82 = run of 3; pixel 0xAA
+    r = tga(bytes([0x82, 0xAA]), 1, 3)
+    assert (r.status, r.data, r.consumed_to) == ("ok", b"\xaa\xaa\xaa", 2)
+
+
+def test_tga_raw_packet():
+    # 0x01 = raw of 2 pixels
+    r = tga(bytes([0x01, 1, 2, 3, 4]), 2, 4)
+    assert (r.status, r.data, r.consumed_to) == ("ok", bytes([1, 2, 3, 4]), 5)
+
+
+def test_tga_packet_across_row_end_decodes():
+    # 2x2 8bpp: run of 3 crosses end of row 0, then raw of 1.
+    r = tga(bytes([0x82, 7, 0x00, 9]), 1, 4)
+    assert r.status == "ok" and r.data == bytes([7, 7, 7, 9])
+
+
+def test_tga_overrun_does_not_write_and_consumed_after_packet():
+    r = tga(bytes([0x83, 5, 0x00, 1]), 1, 3)
+    assert r.status == "overrun" and r.data is None and r.consumed_to == 2
+
+
+def test_tga_overrun_raw():
+    r = tga(bytes([0x02, 1, 2, 3]), 1, 2)
+    assert r.status == "overrun" and r.consumed_to == 4
+
+
+def test_tga_region_ends_inside_run_packet():
+    r = tga(bytes([0x80]), 3, 3)
+    assert r.status == "underrun" and r.consumed_to == 1
+
+
+def test_tga_region_ends_inside_raw_packet():
+    r = tga(bytes([0x02, 1, 2]), 1, 3)
+    assert r.status == "underrun" and r.consumed_to == 3
+
+
+def test_tga_output_short_is_underrun():
+    r = tga(bytes([0x80, 5]), 1, 3)
+    assert r.status == "underrun" and r.consumed_to == 2
+
+
+def test_tga_leftover_byte_is_unconsumed():
+    r = tga(bytes([0x80, 5, 0x00]), 1, 1)
+    assert r.status == "unconsumed" and r.consumed_to == 2 and r.data is None
+
+
+def test_tga_pixel_sizes_and_range_bounds():
+    for pb in (1, 2, 3, 4):
+        px = bytes(range(10, 10 + pb))
+        r = tga(b"\xff" + bytes([0x81]) + px, pb, 2 * pb, start=1)
+        assert r.status == "ok" and r.data == px * 2 and r.consumed_to == 2 + pb
+    r = tga(b"\x80\x01", 1, 1, start=0, end=5)  # end beyond data
+    assert r.status == "underrun" and r.consumed_to == 0
+    assert tga(b"\x80\x01", 1, 1, start=2, end=1).status == "underrun"
+    assert tga(b"\x80\x01", 1, -1).status == "underrun"
+
+
+def test_tga_huge_run_does_not_allocate_beyond_bound():
+    r = tga(bytes([0xFF]) + b"\x01" * 4, 4, 8)
+    assert r.status == "overrun" and r.data is None
+
+
+@settings(max_examples=200, deadline=None)
+@given(st.binary(max_size=200), st.integers(-1, 5), st.integers(-3, 300))
+def test_rle_tga_never_raises(data, pb, cap):
+    r = rle_tga_decode(data, 0, len(data), pb, cap)
+    assert isinstance(r, DecodeResult) and r.status in STATUSES
+    assert isinstance(r.consumed_to, int) and isinstance(r.detail, str)
+    assert (r.data is not None) == (r.status == "ok")
+    if r.data is not None:
+        assert len(r.data) == cap
+
+
+@settings(max_examples=100, deadline=None)
+@given(st.binary(max_size=64), st.integers(-5, 80), st.integers(-5, 80))
+def test_rle_tga_never_raises_on_arbitrary_range(data, s, e):
+    r = rle_tga_decode(data, s, e, 3, 6)
+    assert isinstance(r, DecodeResult) and r.status in STATUSES
