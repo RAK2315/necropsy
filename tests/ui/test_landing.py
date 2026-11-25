@@ -12,6 +12,10 @@ from tests.ui.conftest import run_in_browser
 
 PUBLIC = REPO_ROOT / "public" / "samples"
 
+
+def norm(text):
+    return text.replace(chr(13) + chr(10), chr(10))
+
 LANDING = r"""
 (async () => {
   await __until(() => document.querySelectorAll('.strip-tile[data-status]').length === 3, 'strip');
@@ -62,7 +66,8 @@ def test_landing_page(base_url):
     licensed = [r for r in got["rows"] if r["lic"]]
     assert [r["name"] for r in licensed] == ["pillow_odd_stride.pcx"]
     assert licensed[0]["lic"] == "/samples/LICENSES/Pillow-MIT-CMU.txt"
-    assert got["licText"] == (PUBLIC / "LICENSES" / "Pillow-MIT-CMU.txt").read_text(encoding="utf-8")
+    # same notice; a deploy from a Windows clone may serve it with CRLF line endings
+    assert norm(got["licText"]) == norm((PUBLIC / "LICENSES" / "Pillow-MIT-CMU.txt").read_text(encoding="utf-8"))
 
     h = Engine(deadline_seconds=5.0).run((PUBLIC / "pillow_odd_stride.pcx").read_bytes()).candidate.hypothesis
     assert got["result"] == {"dims": f"{h.width} × {h.height} · {h.bit_depth}-bit", "status": "RESOLVED"}
