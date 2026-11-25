@@ -196,7 +196,14 @@ table.counts td.num { text-align: right; color: var(--text); }
 pre.spec-text { margin: -12px 0 0; height: 520px; overflow: auto; padding: 14px 16px; background: var(--panel); border: 1px solid var(--line);
                 border-top: 0; font-size: 12.5px; font-weight: 400; line-height: 1.55; color: #b9c0c9; white-space: pre-wrap; word-break: break-word; }
 /* replay */
-.pending { visibility: hidden; }
+.verdict-bar.pending > :not(.verdict-wait), .exam-right.pending > :not(.answer-pending) { visibility: hidden; }
+.verdict-bar { position: relative; }
+.verdict-wait { position: absolute; top: 20px; left: 24px; margin: 0; color: var(--muted); font-size: 15px; }
+.verdict-bar:not(.pending) .verdict-wait { display: none; }
+.answer-pending { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; padding: 18px 20px;
+                  border: 1px dashed var(--line); border-radius: 4px; color: var(--muted); font-size: 14px; }
+.answer-pending p { margin: 0; }
+.rp-caption { margin: 0; min-height: 1.5em; font-size: 14px; color: var(--text); }
 .replay { border: 1px solid var(--line); border-radius: 4px; background: var(--panel); padding: 8px 12px; display: flex; flex-direction: column; gap: 6px; }
 .rp-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; }
 .rp-label { font-family: var(--mono); font-size: 12.5px; letter-spacing: .12em; text-transform: uppercase; color: var(--text);
@@ -265,3 +272,4 @@ ol.strip-rej .tech { margin-left: 8px; }
 .region > .tech, .facts .tech { margin: 0; }
 .kv .v.tech { font-size: 12px; color: var(--muted); }
 .rp-item .rl { font-family: var(--sans); }
+.replay [hidden] { display: none; }

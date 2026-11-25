@@ -30,7 +30,7 @@ window.__accentUsers = () => {
   return out;
 };
 window.__pick = async (name) => { const b = await __until(() => [...document.querySelectorAll('.pick')].find(x => x.textContent === name), 'sample ' + name); b.click(); };
-window.__skip = async () => { const b = await __until(() => document.querySelector('.rp-bar button[title="Skip to the end"]'), 'replay'); if (!b.disabled) b.click(); await __until(() => !document.querySelector('.exam-right.pending, .verdict-bar.pending'), 'outcome'); };
+window.__skip = async () => { const b = await __until(() => document.querySelector('.rp-bar button[title="Skip to the end"]') || document.querySelector('.verdict-bar:not(.pending)'), 'replay'); if (b.tagName === 'BUTTON' && !b.disabled) b.click(); await __until(() => !document.querySelector('.exam-right.pending, .verdict-bar.pending'), 'outcome'); };
 window.__home = async () => { document.getElementById('again').click(); await __until(() => document.querySelector('.pick'), 'start'); };
 `;
 
@@ -55,7 +55,7 @@ const REDUCED = `(async () => {
   // Wait only for the result to exist, then read everything at once: first paint, no further waiting.
   // (Waiting for the image here would let a normal replay run to its end and pass by accident.)
   const counter = await __until(() => { const e = document.querySelector('.rp-counter'); return e && e.textContent ? e.textContent : null; }, 'counter');
-  const outcome = getComputedStyle(document.querySelector('.exam-right')).visibility;
+  const outcome = document.querySelector('.exam-right.pending') ? 'hidden' : getComputedStyle(document.querySelector('.exam-right > *')).visibility;
   const canvas = document.querySelector('.exam-right canvas.pixels');
   const px = canvas ? canvas.getContext('2d').getImageData(1, canvas.height - 2, 1, 1).data : [0, 0, 0, 0];   // bottom row: drawn only when the reveal is complete
   return JSON.stringify({ counter, outcome, bottomRowAlpha: px[3] });

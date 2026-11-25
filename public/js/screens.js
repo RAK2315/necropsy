@@ -79,6 +79,7 @@ const checksTech = (p) => `${p.total_checks} closure check${p.total_checks === 1
 function verdictBar(payload) {
   const bar = el('section', 'verdict-bar pending');
   bar.dataset.cap = 'verdict';
+  bar.append(el('p', 'verdict-wait', 'The verdict appears here when the replay ends.'));
   const head = el('div', 'verdict-head');
   head.append(chip(payload.status), el('h1', 'verdict-text', verdictText(payload)));
   bar.append(head);
@@ -161,7 +162,7 @@ function ambiguityScreen(root, payload, bytes, base, onProgress) {
   const replay = createReplay(payload, {
     onFrame: onProgress,
     onStep: (s) => { pane.show(stepView(s)); paneNote.textContent = 'Replay: bytes read by the layout being tried.'; },
-    onFinal: () => { union(); paneNote.textContent = UNION_NOTE; bar.classList.remove('pending'); right.classList.remove('pending'); },
+    onFinal: () => { union(); paneNote.textContent = UNION_NOTE; bar.classList.remove('pending'); right.classList.remove('pending'); right.querySelector('.answer-pending')?.remove(); },
   });
   left.append(replayRegion(replay), region('hex', 'The file’s bytes', 'Highlighted bytes were read as header fields by at least one reading.', paneNote, pane.root),
     region('fields', 'What the header declares', 'Each value a reading takes from the file, and where it sits.', tableSlot));
@@ -201,6 +202,7 @@ function ambiguityScreen(root, payload, bytes, base, onProgress) {
   const note = el('p', 'amb-note', COHERENCE_NOTE);
   note.append(' ', el('span', 'tech', 'row_mad_ratio'));
   right.append(region('cards', 'Readings that fit', 'Each one fits the data exactly. The bytes alone cannot separate them.', grid, note));
+  if (!replay.single) right.prepend(answerPending(replay));
   wrap.append(left, right);
   root.append(bar, wrap);
   return replay;
@@ -321,6 +323,17 @@ function replayRegion(replay) {
   return region('replay', 'How the engine searched', 'Every layout it tried, in order, and why each one was rejected.', replay.root);
 }
 
+/** The answer column's placeholder while the replay runs (UI task 27): the page never looks as if it is still loading. */
+function answerPending(replay) {
+  const p = el('div', 'answer-pending');
+  p.dataset.cap = 'answer-pending';
+  const b = el('button', 'quiet', 'Skip to the answer');
+  b.type = 'button';
+  b.addEventListener('click', () => replay.skip());
+  p.append(el('p', '', 'The answer appears here when the replay ends.'), b);
+  return p;
+}
+
 let activeReplay = null;    // the replay of the result on screen, if any
 
 /** Stop the current result's replay. Called whenever the result is left or replaced. */
@@ -385,6 +398,7 @@ export function renderResult(root, payload, bytes, opts = {}) {
     },
   });
   left.append(replayRegion(replay), hex);
+  if (!replay.single) right.append(answerPending(replay));
   activeReplay = replay;
   replay.start();
 }
