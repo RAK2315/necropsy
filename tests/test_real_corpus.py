@@ -62,7 +62,20 @@ def test_committed_results_match_a_live_run(name):
     assert row["candidates"] == [rc.describe(c) for c in rc.candidates_of(result)]
 
 
-OUT_OF_SCOPE = [n for n in FILES if scope_of(n) == "out" and n != OSSFUZZ]
+# format-coverage Requirement 3.8 and design.md row 4: the binary PNM probe resolves these nine files. The manifest
+# scope is rewritten from header bytes in format-coverage Task 37, so for now they are carved out here.
+PNM_RESOLVED = {
+    "imagemagick_input_p5.pgm", "imagemagick_input_p6.ppm", "libtiff_minisblack-1c-8b.pgm",
+    "libtiff_rgb-3c-16b.ppm", "libtiff_rgb-3c-8b.ppm", "pillow_hopper_16bit.pgm",
+    "pillow_hopper_8bit.pgm", "pillow_hopper_8bit.ppm", "sdlimage_sample.pnm",
+}
+OUT_OF_SCOPE = [n for n in FILES if scope_of(n) == "out" and n != OSSFUZZ and n not in PNM_RESOLVED]
+
+
+@pytest.mark.parametrize("name", sorted(PNM_RESOLVED))
+def test_binary_pnm_files_resolve(name):
+    # Requirement 3.8: the probe's candidate closes; format-coverage Task 4.
+    assert run(name)[1].status == "RESOLVED"
 
 
 @pytest.mark.parametrize("name", OUT_OF_SCOPE)

@@ -552,11 +552,24 @@
   "scope": "out",
   "scope_reason": "P5 (only binary PBM, P4, has a probe)",
   "invalid_by_construction": false,
-  "our_status": "FAILED",
-  "stage": null,
-  "termination": "no_hypothesis_checked",
-  "checks": 0,
-  "candidates": [],
+  "our_status": "RESOLVED",
+  "stage": "probe",
+  "termination": null,
+  "checks": 1,
+  "candidates": [
+   {
+    "width": 70,
+    "height": 46,
+    "bit_depth": 8,
+    "header_size": 13,
+    "row_alignment": 1,
+    "encoding": "none",
+    "probe": "pnm",
+    "path": [],
+    "data_start": 13,
+    "data_end": 3233
+   }
+  ],
   "expected_status": "FAILED",
   "note": "",
   "pillow_error": null,
@@ -566,8 +579,10 @@
    70,
    46
   ],
-  "pixel_verdicts": [],
-  "pillow_pixels_sha256": null
+  "pixel_verdicts": [
+   "match"
+  ],
+  "pillow_pixels_sha256": "fb44ca702deb10609521e2a499273bfb2f2a8825f34e014df441798e51fa6875"
  },
  {
   "file": "imagemagick_input_p6.ppm",
@@ -575,11 +590,24 @@
   "scope": "out",
   "scope_reason": "P6 (only binary PBM, P4, has a probe)",
   "invalid_by_construction": false,
-  "our_status": "FAILED",
-  "stage": null,
-  "termination": "no_hypothesis_checked",
-  "checks": 0,
-  "candidates": [],
+  "our_status": "RESOLVED",
+  "stage": "probe",
+  "termination": null,
+  "checks": 1,
+  "candidates": [
+   {
+    "width": 70,
+    "height": 46,
+    "bit_depth": 24,
+    "header_size": 13,
+    "row_alignment": 1,
+    "encoding": "none",
+    "probe": "pnm",
+    "path": [],
+    "data_start": 13,
+    "data_end": 9673
+   }
+  ],
   "expected_status": "FAILED",
   "note": "",
   "pillow_error": null,
@@ -589,8 +617,10 @@
    70,
    46
   ],
-  "pixel_verdicts": [],
-  "pillow_pixels_sha256": null
+  "pixel_verdicts": [
+   "match"
+  ],
+  "pillow_pixels_sha256": "a698f2fe0c6c31f83d19554a6ec02bac79c961dd9a87e7ed217752e75eb615d7"
  },
  {
   "file": "imagers_issue-794.pbm",
@@ -740,11 +770,24 @@
   "scope": "out",
   "scope_reason": "P5 (only binary PBM, P4, has a probe)",
   "invalid_by_construction": false,
-  "our_status": "FAILED",
-  "stage": null,
-  "termination": "no_hypothesis_checked",
-  "checks": 0,
-  "candidates": [],
+  "our_status": "RESOLVED",
+  "stage": "probe",
+  "termination": null,
+  "checks": 1,
+  "candidates": [
+   {
+    "width": 157,
+    "height": 151,
+    "bit_depth": 8,
+    "header_size": 15,
+    "row_alignment": 1,
+    "encoding": "none",
+    "probe": "pnm",
+    "path": [],
+    "data_start": 15,
+    "data_end": 23722
+   }
+  ],
   "expected_status": "FAILED",
   "note": "",
   "pillow_error": null,
@@ -754,8 +797,10 @@
    157,
    151
   ],
-  "pixel_verdicts": [],
-  "pillow_pixels_sha256": null
+  "pixel_verdicts": [
+   "match"
+  ],
+  "pillow_pixels_sha256": "6f2d6e8e78698950bfced4d1049ff79e13b54d751db08364c43de4a721b72d16"
  },
  {
   "file": "libtiff_minisblack-1c-8b.tiff",
@@ -931,11 +976,24 @@
   "scope": "out",
   "scope_reason": "P6 (only binary PBM, P4, has a probe)",
   "invalid_by_construction": false,
-  "our_status": "FAILED",
-  "stage": null,
-  "termination": "no_hypothesis_checked",
-  "checks": 0,
-  "candidates": [],
+  "our_status": "RESOLVED",
+  "stage": "probe",
+  "termination": null,
+  "checks": 1,
+  "candidates": [
+   {
+    "width": 157,
+    "height": 151,
+    "bit_depth": 48,
+    "header_size": 63,
+    "row_alignment": 1,
+    "encoding": "none",
+    "probe": "pnm",
+    "path": [],
+    "data_start": 63,
+    "data_end": 142305
+   }
+  ],
   "expected_status": "FAILED",
   "note": "",
   "pillow_error": null,
@@ -945,8 +1003,10 @@
    157,
    151
   ],
-  "pixel_verdicts": [],
-  "pillow_pixels_sha256": null
+  "pixel_verdicts": [
+   "not comparable: PNM bit depth 48 not handled by the comparer"
+  ],
+  "pillow_pixels_sha256": "d01a45bf10baeaf41ad982b3cc2a38e2e9a993c944c34658abfa78878d5ed4bd"
  },
  {
   "file": "libtiff_rgb-3c-8b.ppm",
@@ -954,11 +1014,24 @@
   "scope": "out",
   "scope_reason": "P6 (only binary PBM, P4, has a probe)",
   "invalid_by_construction": false,
-  "our_status": "FAILED",
-  "stage": null,
-  "termination": "no_hypothesis_checked",
-  "checks": 0,
-  "candidates": [],
+  "our_status": "RESOLVED",
+  "stage": "probe",
+  "termination": null,
+  "checks": 1,
+  "candidates": [
+   {
+    "width": 157,
+    "height": 151,
+    "bit_depth": 24,
+    "header_size": 15,
+    "row_alignment": 1,
+    "encoding": "none",
+    "probe": "pnm",
+    "path": [],
+    "data_start": 15,
+    "data_end": 71136
+   }
+  ],
   "expected_status": "FAILED",
   "note": "",
   "pillow_error": null,
@@ -968,8 +1041,10 @@
    157,
    151
   ],
-  "pixel_verdicts": [],
-  "pillow_pixels_sha256": null
+  "pixel_verdicts": [
+   "match"
+  ],
+  "pillow_pixels_sha256": "ff53739e3609939a902677367b759b4dd0c32e0605dae9173657e32f56de0ff4"
  },
  {
   "file": "libtiff_rgb-3c-8b.tiff",
@@ -1450,11 +1525,24 @@
   "scope": "out",
   "scope_reason": "P5 (only binary PBM, P4, has a probe)",
   "invalid_by_construction": false,
-  "our_status": "FAILED",
-  "stage": null,
-  "termination": "no_hypothesis_checked",
-  "checks": 0,
-  "candidates": [],
+  "our_status": "RESOLVED",
+  "stage": "probe",
+  "termination": null,
+  "checks": 1,
+  "candidates": [
+   {
+    "width": 128,
+    "height": 128,
+    "bit_depth": 16,
+    "header_size": 17,
+    "row_alignment": 1,
+    "encoding": "none",
+    "probe": "pnm",
+    "path": [],
+    "data_start": 17,
+    "data_end": 32785
+   }
+  ],
   "expected_status": "FAILED",
   "note": "",
   "pillow_error": null,
@@ -1464,7 +1552,9 @@
    128,
    128
   ],
-  "pixel_verdicts": [],
+  "pixel_verdicts": [
+   "not comparable: PNM bit depth 16 not handled by the comparer"
+  ],
   "pillow_pixels_sha256": null
  },
  {
@@ -1534,11 +1624,24 @@
   "scope": "out",
   "scope_reason": "P5 (only binary PBM, P4, has a probe)",
   "invalid_by_construction": false,
-  "our_status": "FAILED",
-  "stage": null,
-  "termination": "no_hypothesis_checked",
-  "checks": 0,
-  "candidates": [],
+  "our_status": "RESOLVED",
+  "stage": "probe",
+  "termination": null,
+  "checks": 1,
+  "candidates": [
+   {
+    "width": 128,
+    "height": 128,
+    "bit_depth": 8,
+    "header_size": 15,
+    "row_alignment": 1,
+    "encoding": "none",
+    "probe": "pnm",
+    "path": [],
+    "data_start": 15,
+    "data_end": 16399
+   }
+  ],
   "expected_status": "FAILED",
   "note": "",
   "pillow_error": null,
@@ -1548,8 +1651,10 @@
    128,
    128
   ],
-  "pixel_verdicts": [],
-  "pillow_pixels_sha256": null
+  "pixel_verdicts": [
+   "match"
+  ],
+  "pillow_pixels_sha256": "3bb3c55a1fa9e49bd642661e667632d8e65b405df39c2a249ab18177b803e2f7"
  },
  {
   "file": "pillow_hopper_8bit.ppm",
@@ -1557,11 +1662,24 @@
   "scope": "out",
   "scope_reason": "P6 (only binary PBM, P4, has a probe)",
   "invalid_by_construction": false,
-  "our_status": "FAILED",
-  "stage": null,
-  "termination": "no_hypothesis_checked",
-  "checks": 0,
-  "candidates": [],
+  "our_status": "RESOLVED",
+  "stage": "probe",
+  "termination": null,
+  "checks": 1,
+  "candidates": [
+   {
+    "width": 128,
+    "height": 128,
+    "bit_depth": 24,
+    "header_size": 15,
+    "row_alignment": 1,
+    "encoding": "none",
+    "probe": "pnm",
+    "path": [],
+    "data_start": 15,
+    "data_end": 49167
+   }
+  ],
   "expected_status": "FAILED",
   "note": "",
   "pillow_error": null,
@@ -1571,8 +1689,10 @@
    128,
    128
   ],
-  "pixel_verdicts": [],
-  "pillow_pixels_sha256": null
+  "pixel_verdicts": [
+   "match"
+  ],
+  "pillow_pixels_sha256": "87ce2dc3eea0549d83beb8013872498a3ce5267acaa22fbd26335ccb680700d5"
  },
  {
   "file": "pillow_hopper_g4.tif",
@@ -2147,11 +2267,24 @@
   "scope": "out",
   "scope_reason": "P6 (only binary PBM, P4, has a probe)",
   "invalid_by_construction": false,
-  "our_status": "FAILED",
-  "stage": null,
-  "termination": "no_hypothesis_checked",
-  "checks": 0,
-  "candidates": [],
+  "our_status": "RESOLVED",
+  "stage": "probe",
+  "termination": null,
+  "checks": 1,
+  "candidates": [
+   {
+    "width": 23,
+    "height": 42,
+    "bit_depth": 24,
+    "header_size": 59,
+    "row_alignment": 1,
+    "encoding": "none",
+    "probe": "pnm",
+    "path": [],
+    "data_start": 59,
+    "data_end": 2957
+   }
+  ],
   "expected_status": "FAILED",
   "note": "",
   "pillow_error": null,
@@ -2161,8 +2294,10 @@
    23,
    42
   ],
-  "pixel_verdicts": [],
-  "pillow_pixels_sha256": null
+  "pixel_verdicts": [
+   "match"
+  ],
+  "pillow_pixels_sha256": "cc52c11a41aa260d6735b1526550049ffd88ea1c0c35256375fa400d64bcbb7d"
  },
  {
   "file": "sdlimage_sample.tga",

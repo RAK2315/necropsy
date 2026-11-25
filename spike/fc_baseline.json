@@ -196,14 +196,62 @@
   "termination": null
  },
  "real/imagemagick_input_p5.pgm": {
-  "candidates": [],
-  "status": "FAILED",
-  "termination": "no_hypothesis_checked"
+  "candidates": [
+   {
+    "key": [
+     70,
+     46,
+     8,
+     13,
+     1,
+     "none",
+     null,
+     [
+      1,
+      null,
+      [],
+      null,
+      null,
+      255
+     ]
+    ],
+    "region": [
+     13,
+     3233
+    ]
+   }
+  ],
+  "status": "RESOLVED",
+  "termination": null
  },
  "real/imagemagick_input_p6.ppm": {
-  "candidates": [],
-  "status": "FAILED",
-  "termination": "no_hypothesis_checked"
+  "candidates": [
+   {
+    "key": [
+     70,
+     46,
+     24,
+     13,
+     1,
+     "none",
+     null,
+     [
+      1,
+      null,
+      [],
+      null,
+      null,
+      255
+     ]
+    ],
+    "region": [
+     13,
+     9673
+    ]
+   }
+  ],
+  "status": "RESOLVED",
+  "termination": null
  },
  "real/imagers_issue-794.pbm": {
   "candidates": [
@@ -263,9 +311,33 @@
   "termination": "exhausted"
  },
  "real/libtiff_minisblack-1c-8b.pgm": {
-  "candidates": [],
-  "status": "FAILED",
-  "termination": "no_hypothesis_checked"
+  "candidates": [
+   {
+    "key": [
+     157,
+     151,
+     8,
+     15,
+     1,
+     "none",
+     null,
+     [
+      1,
+      null,
+      [],
+      null,
+      null,
+      255
+     ]
+    ],
+    "region": [
+     15,
+     23722
+    ]
+   }
+  ],
+  "status": "RESOLVED",
+  "termination": null
  },
  "real/libtiff_minisblack-1c-8b.tiff": {
   "candidates": [],
@@ -330,14 +402,62 @@
   "termination": "exhausted"
  },
  "real/libtiff_rgb-3c-16b.ppm": {
-  "candidates": [],
-  "status": "FAILED",
-  "termination": "no_hypothesis_checked"
+  "candidates": [
+   {
+    "key": [
+     157,
+     151,
+     48,
+     63,
+     1,
+     "none",
+     null,
+     [
+      1,
+      null,
+      [],
+      null,
+      null,
+      65535
+     ]
+    ],
+    "region": [
+     63,
+     142305
+    ]
+   }
+  ],
+  "status": "RESOLVED",
+  "termination": null
  },
  "real/libtiff_rgb-3c-8b.ppm": {
-  "candidates": [],
-  "status": "FAILED",
-  "termination": "no_hypothesis_checked"
+  "candidates": [
+   {
+    "key": [
+     157,
+     151,
+     24,
+     15,
+     1,
+     "none",
+     null,
+     [
+      1,
+      null,
+      [],
+      null,
+      null,
+      255
+     ]
+    ],
+    "region": [
+     15,
+     71136
+    ]
+   }
+  ],
+  "status": "RESOLVED",
+  "termination": null
  },
  "real/libtiff_rgb-3c-8b.tiff": {
   "candidates": [],
@@ -532,9 +652,33 @@
   "termination": "exhausted"
  },
  "real/pillow_hopper_16bit.pgm": {
-  "candidates": [],
-  "status": "FAILED",
-  "termination": "no_hypothesis_checked"
+  "candidates": [
+   {
+    "key": [
+     128,
+     128,
+     16,
+     17,
+     1,
+     "none",
+     null,
+     [
+      1,
+      null,
+      [],
+      null,
+      null,
+      65535
+     ]
+    ],
+    "region": [
+     17,
+     32785
+    ]
+   }
+  ],
+  "status": "RESOLVED",
+  "termination": null
  },
  "real/pillow_hopper_1bit.pbm": {
   "candidates": [
@@ -563,14 +707,62 @@
   "termination": "no_hypothesis_checked"
  },
  "real/pillow_hopper_8bit.pgm": {
-  "candidates": [],
-  "status": "FAILED",
-  "termination": "no_hypothesis_checked"
+  "candidates": [
+   {
+    "key": [
+     128,
+     128,
+     8,
+     15,
+     1,
+     "none",
+     null,
+     [
+      1,
+      null,
+      [],
+      null,
+      null,
+      255
+     ]
+    ],
+    "region": [
+     15,
+     16399
+    ]
+   }
+  ],
+  "status": "RESOLVED",
+  "termination": null
  },
  "real/pillow_hopper_8bit.ppm": {
-  "candidates": [],
-  "status": "FAILED",
-  "termination": "no_hypothesis_checked"
+  "candidates": [
+   {
+    "key": [
+     128,
+     128,
+     24,
+     15,
+     1,
+     "none",
+     null,
+     [
+      1,
+      null,
+      [],
+      null,
+      null,
+      255
+     ]
+    ],
+    "region": [
+     15,
+     49167
+    ]
+   }
+  ],
+  "status": "RESOLVED",
+  "termination": null
  },
  "real/pillow_hopper_g4.tif": {
   "candidates": [],
@@ -774,9 +966,33 @@
   "termination": "exhausted"
  },
  "real/sdlimage_sample.pnm": {
-  "candidates": [],
-  "status": "FAILED",
-  "termination": "no_hypothesis_checked"
+  "candidates": [
+   {
+    "key": [
+     23,
+     42,
+     24,
+     59,
+     1,
+     "none",
+     null,
+     [
+      1,
+      null,
+      [],
+      null,
+      null,
+      255
+     ]
+    ],
+    "region": [
+     59,
+     2957
+    ]
+   }
+  ],
+  "status": "RESOLVED",
+  "termination": null
  },
  "real/sdlimage_sample.tga": {
   "candidates": [],

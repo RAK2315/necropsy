@@ -492,9 +492,141 @@ def _probe_tiff(data: bytes) -> ProbeOutcome | None:
     return ProbeOutcome(seed, tuple(rejections))
 
 
+# PNM header (binary P5, P6). Text grammar read only within data[:1024].
+PNM_MIN_LENGTH = 4
+PNM_MAGIC_OFFSET = 0x00            # 2s: b"P" then one of 1 2 3 5 6
+PNM_SIGNATURE_BYTE = 0x50          # "P"
+PNM_FIRST_SEPARATOR_OFFSET = 0x02  # must be ASCII whitespace
+PNM_SCAN_LIMIT = 1024
+PNM_WHITESPACE = frozenset(b" \t\n\x0b\x0c\r")
+PNM_DIGITS = frozenset(b"0123456789")
+PNM_MAGIC_DIGITS = frozenset(b"12356")
+PNM_BINARY = {0x35: 8, 0x36: 24}   # "5" -> grey, "6" -> RGB: bits per pixel at maxval <= 255
+PNM_MAX_MAXVAL = 65535
+
+
+def probe_pnm(data: bytes) -> ProbeOutcome | None:
+    """PNM probe (binary P5 and P6). Returns None when the signature does not match."""
+    try:
+        return _probe_pnm(data)
+    except Exception:  # last line of defence; inner code bounds-checks
+        return None
+
+
+def _pnm_skip(window: bytes, index: int) -> tuple[int, bool, str]:
+    """Skip whitespace and comments from index. Returns (index, saw_separator, problem)."""
+    saw = False
+    n = len(window)
+    while index < n:
+        b = window[index]
+        if b in PNM_WHITESPACE:
+            saw = True
+            index += 1
+        elif b == 0x23:  # "#": comment through the next 0x0A or 0x0D
+            end = index + 1
+            while end < n and window[end] not in (0x0A, 0x0D):
+                end += 1
+            if end >= n:
+                return index, saw, "comment has no line end within the first 1024 bytes"
+            saw = True
+            index = end + 1
+        else:
+            break
+    return index, saw, ""
+
+
+def _pnm_token(window: bytes, index: int) -> tuple[int, int]:
+    """Run of ASCII digits from index. Returns (end_index, value); value is -1 for no digits."""
+    end = index
+    while end < len(window) and window[end] in PNM_DIGITS:
+        end += 1
+    if end == index:
+        return end, -1
+    return end, int(window[index:end])
+
+
+def _probe_pnm(data: bytes) -> ProbeOutcome | None:
+    if len(data) < PNM_MIN_LENGTH:
+        return None
+    if data[0] != PNM_SIGNATURE_BYTE or data[1] not in PNM_MAGIC_DIGITS:
+        return None
+    if data[PNM_FIRST_SEPARATOR_OFFSET] not in PNM_WHITESPACE:
+        return None
+    if data[1] not in PNM_BINARY:
+        return None  # P1, P2, P3 (plain text) are not read by this probe yet
+
+    magic = read(data, "magic", PNM_MAGIC_OFFSET, "2s")
+    if magic is None:
+        return None
+    bits = PNM_BINARY[data[1]]
+    window = data[:PNM_SCAN_LIMIT]
+    records = [magic]
+    values: dict[str, int] = {}
+    problems: list[str] = []
+    header_size = PNM_FIRST_SEPARATOR_OFFSET
+    index = PNM_FIRST_SEPARATOR_OFFSET
+    for name in ("width", "height", "maxval"):
+        index, saw, problem = _pnm_skip(window, index)
+        if problem:
+            problems.append(problem)
+            break
+        if not saw:
+            problems.append(f"no whitespace before {name}")
+            break
+        end, value = _pnm_token(window, index)
+        if value < 0 or (end >= len(window) and len(data) > len(window)):
+            problems.append(f"{name} is not a complete run of ASCII digits")
+            break
+        rec = read(data, name, index, f"{end - index}s")
+        if rec is None:
+            problems.append(f"{name} lies outside the data")
+            break
+        records.append(rec)
+        values[name] = value
+        index = end
+        header_size = end
+    else:
+        if index < len(data) and data[index] in PNM_WHITESPACE:
+            header_size = index + 1
+        else:
+            problems.append("no single whitespace byte after maxval")
+
+    width = values.get("width", 0)
+    height = values.get("height", 0)
+    maxval = values.get("maxval", 0)
+    if "width" in values and width == 0:
+        problems.append("width 0 is not > 0")
+    if "height" in values and height == 0:
+        problems.append("height 0 is not > 0")
+    if "maxval" in values and not 1 <= maxval <= PNM_MAX_MAXVAL:
+        problems.append(f"maxval {maxval} is outside 1..{PNM_MAX_MAXVAL}")
+        maxval = 0
+    bit_depth = 0
+    if maxval:
+        bit_depth = bits if maxval <= 255 else bits * 2
+    seed = Hypothesis(
+        width=width,
+        height=height,
+        bit_depth=bit_depth,
+        header_size=header_size,
+        row_alignment=1,
+        encoding="none",
+        fields=tuple(records),
+        probe_name="pnm",
+        maxval=maxval if "maxval" in values else None,
+    )
+    rejections: tuple[RejectionEntry, ...] = ()
+    if problems:
+        rejections = (
+            RejectionEntry("probe_precondition_failed", "pnm", seed, detail="; ".join(problems)),
+        )
+    return ProbeOutcome(seed, rejections)
+
+
 PROBES = (
     ("pcx", probe_pcx),
     ("tga", probe_tga),
     ("pbm", probe_pbm),
+    ("pnm", probe_pnm),
     ("tiff", probe_tiff),
 )

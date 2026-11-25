@@ -13,7 +13,7 @@ from web.pixels import PixelBuffer, decode
 PIXEL_BUDGET = 500_000        # pixels converted per payload (Requirement 2.9)
 SIZE_BUDGET = 4_000_000       # serialised bytes (Requirement 2.6)
 NOT_RENDERED = "not rendered: payload limit"
-PROBES = ("pcx", "tga", "pbm", "tiff")
+PROBES = ("pcx", "tga", "pbm", "pnm", "tiff")
 
 
 def stage_of(source: str) -> str:

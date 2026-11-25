@@ -10,6 +10,7 @@ from necropsy.engine.probes import (
     PROBES,
     ProbeOutcome,
     probe_pbm,
+    probe_pnm,
     probe_pcx,
     probe_tga,
     probe_tiff,
@@ -563,10 +564,10 @@ def test_tiff_photometric_records_round_trip():
 
 
 # ------------------------------------------------------- order, round trips
-def test_probes_order_is_pcx_tga_pbm_tiff():
-    # Req 2.1
-    assert [name for name, _ in PROBES] == ["pcx", "tga", "pbm", "tiff"]
-    assert [fn for _, fn in PROBES] == [probe_pcx, probe_tga, probe_pbm, probe_tiff]
+def test_probes_order_is_pcx_tga_pbm_pnm_tiff():
+    # Req 2.1, amended by format-coverage Requirement 3.1 (PNM between PBM and TIFF)
+    assert [name for name, _ in PROBES] == ["pcx", "tga", "pbm", "pnm", "tiff"]
+    assert [fn for _, fn in PROBES] == [probe_pcx, probe_tga, probe_pbm, probe_pnm, probe_tiff]
 
 
 def crafted_inputs():
