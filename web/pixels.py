@@ -131,7 +131,7 @@ def _decode(decoded, width, height, bit_depth, row_stride, probe_name, palette, 
     orientation = FLIP_NOTE if bottom_left else STORED_NOTE
 
     if bit_depth == 1:
-        black_is_one = probe_name == "pbm"
+        black_is_one = probe_name in ("pbm", "pnm")   # plain P1 is black-is-one through the PBM path (Requirement 16.4)
         t = _TABLE_1[black_is_one]
         data = b"".join(b"".join(t[b] for b in row)[:width] for row in rows)
         colour = "1 = black (PBM)" if black_is_one else "grey, 1 = white"

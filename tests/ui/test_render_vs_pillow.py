@@ -30,9 +30,6 @@ EXCEPTIONS = {
     "mystery_h": ("pillow_fails", "Pillow raises OSError (buffer overrun): rows padded to 4 bytes; checked against "
                                   "make_samples in test_pixels.py instead"),
     "pillow_ossfuzz-4836216264589312.pcx": ("pillow_fails", "Pillow raises OSError (image file is truncated)"),
-    # format-coverage Task 8 resolves plain P1; its renderer is Task 9 (Requirement 16.1, 16.4). Remove these two then.
-    "imagemagick_input_p1.pbm": ("render_pending", "plain P1 is rendered by format-coverage Task 9"),
-    "pillow_hopper_1bit_plain.pbm": ("render_pending", "plain P1 is rendered by format-coverage Task 9"),
     # Requirement 16.1 fixes the scaling of 16-bit PNM at v * 255 // maxval. Pillow differs by design: it rounds an RGB
     # sample to nearest, (v * 255 + 32767) // 65535, where we floor, and, for
     # grey, loads 16-bit as mode I, which convert("RGB") clips to 255. Each test asserts exactly that difference.
@@ -103,9 +100,6 @@ def test_render_matches_pillow(path):
         known = bytes((v * 255 + 32767) // 65535 for v in words) if channels == 3 else bytes(min(255, v) for v in words)
         assert theirs == spread(known), reason
         assert _rgb(render) != theirs
-        return
-    if kind == "render_pending":
-        assert _rgb(render) != _pillow(data).tobytes(), reason
         return
     assert "data_b64" in render, f"{path.name}: no image ({render.get('failure')})"
     ref = _pillow(data)

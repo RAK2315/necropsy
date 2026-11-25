@@ -245,3 +245,35 @@ def test_pnm_decode_never_raises(decoded, width, height, bit_depth, row_stride, 
     assert isinstance(out, (PixelBuffer, RenderFailure))
     if isinstance(out, PixelBuffer):
         assert len(out.data) == out.width * out.height * (1 if out.channels == "grey8" else 3)
+
+
+# ---- plain-text PNM after a full engine run (Requirements 16.1, 16.4) ----
+
+def _engine_pixels(data):
+    result = Engine().run(data)
+    assert result.status == "RESOLVED"
+    c = result.candidate
+    h = c.hypothesis
+    return decode(c.decoded, h.width, h.height, h.bit_depth, c.row_stride, h.probe_name, maxval=h.maxval)
+
+
+def test_plain_p1_is_black_is_one_with_exact_pixels():
+    # 3x2: row 0 = 1 0 1, row 1 = 0 1 0 ; 1 is black (0), 0 is white (255)
+    buf = _engine_pixels(b"P1\n3 2\n1 0 1\n0 1 0\n")
+    assert (buf.width, buf.height, buf.channels) == (3, 2, "grey8")
+    assert buf.data == bytes([0, 255, 0, 255, 0, 255])
+    assert "1 = black" in buf.note
+
+
+def test_plain_p1_digit_runs_without_separators_give_the_same_pixels():
+    assert _engine_pixels(b"P1\n3 2\n101010\n").data == bytes([0, 255, 0, 255, 0, 255])
+
+
+def test_plain_p2_scales_by_maxval():
+    buf = _engine_pixels(b"P2\n2 2\n15\n0 1\n7 15\n")
+    assert buf.channels == "grey8" and buf.data == bytes([0, 17, 119, 255])
+
+
+def test_plain_p3_renders_rgb_in_stored_order():
+    buf = _engine_pixels(b"P3\n2 1\n15\n0 5 15 15 10 0\n")
+    assert buf.channels == "rgb8" and buf.data == bytes([0, 85, 255, 255, 170, 0])
