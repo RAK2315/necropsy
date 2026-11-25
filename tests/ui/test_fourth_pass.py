@@ -13,6 +13,7 @@ In a real browser against the real app:
 Expected text is built here in Python from the payload, not from the page's JavaScript.
 """
 import re
+from decimal import ROUND_HALF_UP, Decimal
 
 from tests.conftest import REPO_ROOT, corpus_bytes
 from tests.ui.conftest import run_in_browser
@@ -182,3 +183,29 @@ def test_no_side_stripes_or_wide_tracked_logo():
     brand = re.search(r"\.brand \{[^}]*\}", css).group(0)
     m = re.search(r"letter-spacing:\s*([0-9]*\.?[0-9]+)em", brand)
     assert m is None or float(m.group(1)) <= 0.08, f"the logo is tracked wide: {brand}"
+
+
+# ---- 47: the ambiguity cards, read at a glance ----
+
+CARDS = HELPERS + r"""
+(async () => {
+  await __pick('mystery_g'); await __result();
+  return JSON.stringify([...document.querySelectorAll('.card')].map(c => ({ title: c.querySelector('.card-title').textContent,
+    rows: [...c.querySelectorAll('.cf')].map(r => [r.querySelector('dt').textContent, r.querySelector('dd').textContent]) })));
+})()
+"""
+
+
+def test_cards_are_labelled_rows(base_url):
+    got = run_in_browser(base_url, CARDS, reduced_motion=True)
+    cands = payload(corpus_bytes("mystery_g"))["candidates"]
+    assert len(got) == len(cands)
+    for card, c in zip(got, cands):
+        assert card["title"] == f"{c['width']} × {c['height']} · {c['bit_depth']}-bit"
+        # JavaScript's toFixed(4) rounds the exact binary value half up; Python's format rounds half to even
+        coh = str(Decimal(c["coherence_score"]).quantize(Decimal("0.0001"), ROUND_HALF_UP)) if c["coherence_status"] == "scored"             else c["coherence_status"].replace("_", " ")
+        assert card["rows"] == [["Header", f"{c['header_size']} bytes"],
+                                ["Each row", f"{c['row_stride']} byte{'' if c['row_stride'] == 1 else 's'}" + (f", padded to {c['row_alignment']}" if c["row_alignment"] > 1 else "")],
+                                ["Compression", "none" if c["encoding"] == "none" else "PCX run-length"],
+                                ["Picture data", f"bytes {c['data_start']} to {c['data_end'] - 1}"],
+                                ["Row similarity", coh]], card

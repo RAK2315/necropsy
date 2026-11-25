@@ -1,4 +1,4 @@
-# UI clarity passes: tasks 24 to 46
+# UI clarity passes: tasks 24 to 47
 
 ## Who built this
 
@@ -231,3 +231,18 @@ readings take about 10 s on the examining screen.
 
 Breaks: `docs/ui-clarity-breaks/p5.json`, output beside it. 14 breaks, all caught on the first run, each restore
 byte-identical.
+
+## Task 47: the reading cards at a glance
+
+Rehaan's call, 25 Nov: the cards for several readings were a stack of same-weight monospaced lines. Each card now leads
+with its size as a heading ("8 × 24 · 8-bit") and lists the rest as labelled rows: Header, Each row, Compression,
+Picture data, Row similarity. Every card has the same rows in the same order, and the only thing that differs between
+cards is their values, so the neutrality test (`tests/ui/js/screens.test.mjs`: cards identical apart from the
+coherence value) still holds. The full identity, header length included, stays in each card's accessible label.
+
+**Verification.** `tests/ui/test_fourth_pass.py::test_cards_are_labelled_rows` compares every card on mystery_g with the
+payload. The neutrality test's mask was moved to the new coherence element. Breaks: `docs/ui-clarity-breaks/p6.json`,
+3 breaks, each restore byte-identical. The first run counted for nothing, because the new test failed without a break:
+it rounded the score in Python (half to even, 1.4062) where the page rounds in JavaScript (half up, 1.4063). The test
+now rounds as the page does. The emphasis break was also re-aimed, because its first threshold (a score above 1) matched
+no value in the neutrality test's fixtures. The rerun caught all 3.

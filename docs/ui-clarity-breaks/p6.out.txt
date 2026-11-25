@@ -1,0 +1,12 @@
+BREAK  47 header size dropped from the card  (public/js/logic.js)
+  with break : 1 failed in 10.07s  -> caught
+  failure    : E   AssertionError: {'title': '8 × 24 · 8-bit', 'rows': [['Each row', '8 bytes'], ['Compression', 'none'], ['Picture data', 'bytes 20 to 211'], ['Row similarity', '0.7594']]}
+  restored   : sha256 2ad164fd8ff9 -> 2ad164fd8ff9 identical
+BREAK  47 picture data off by one  (public/js/logic.js)
+  with break : 1 failed in 10.18s  -> caught
+  failure    : E   AssertionError: {'title': '8 × 24 · 8-bit', 'rows': [['Header', '20 bytes'], ['Each row', '8 bytes'], ['Compression', 'none'], ['Picture data', 'bytes 20 to 212'], ['Row similarity', '0.7594']]}
+  restored   : sha256 2ad164fd8ff9 -> 2ad164fd8ff9 identical
+BREAK  47 one card emphasised by its score  (public/js/logic.js)
+  with break : ℹ fail 1  -> caught
+  failure    : AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  restored   : sha256 2ad164fd8ff9 -> 2ad164fd8ff9 identical

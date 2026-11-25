@@ -1,0 +1,11 @@
+[
+ {"name": "47 header size dropped from the card", "file": "public/js/logic.js",
+  "old": "      ['Header', `${c.header_size} byte${c.header_size === 1 ? '' : 's'}`],\n", "new": "",
+  "test": "tests/ui/test_fourth_pass.py::test_cards_are_labelled_rows"},
+ {"name": "47 picture data off by one", "file": "public/js/logic.js",
+  "old": "`bytes ${c.data_start} to ${c.data_end - 1}`", "new": "`bytes ${c.data_start} to ${c.data_end}`",
+  "test": "tests/ui/test_fourth_pass.py::test_cards_are_labelled_rows"},
+ {"name": "47 one card emphasised by its score", "file": "public/js/logic.js",
+  "old": "    + `<div class=\"cf cf-coh\">", "new": "    + (Number(m.coherence) > 0.9 ? '<b>' : '') + `<div class=\"cf cf-coh\">",
+  "test": "node:tests/ui/js/screens.test.mjs"}
+]

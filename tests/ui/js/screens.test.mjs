@@ -17,7 +17,7 @@ const scored = [0.11, 0.97, 0.42, null].map((s) => (s === null ? { coherence_sco
   : { coherence_score: s, coherence_status: 'scored' }));
 const reversed = [0.97, 0.11, null, 0.42].map((s) => (s === null ? { coherence_score: null, coherence_status: 'not_computed' }
   : { coherence_score: s, coherence_status: 'scored' }));
-const mask = (html) => html.replace(/<p class="card-coh mono">[^<]*<\/p>/g, '<p class="card-coh mono">#</p>');
+const mask = (html) => html.replace(/<dd class="card-coh">[^<]*<\/dd>/g, '<dd class="card-coh">#</dd>');
 
 test('cards are identical apart from the coherence text, whatever the coherence values', () => {
   const a = L.cardsHTML(payloadWith(scored));
@@ -28,7 +28,7 @@ test('cards are identical apart from the coherence text, whatever the coherence 
 
 test('cards keep the payload order and carry no rank', () => {
   const html = L.cardsHTML(payloadWith(scored));
-  const titles = [...html.matchAll(/<h3 class="card-title mono">([^<]*)<\/h3>/g)].map((m) => m[1]);
+  const titles = [...html.matchAll(/aria-label="([^"]*)"/g)].map((m) => m[1]);   // UI task 47: the full identity stays in the label
   assert.deepEqual(titles, geometry.map(([w, h, bd, hdr]) => `${w} × ${h} · ${bd}-bit · header ${hdr}`));
   for (const word of ['best', 'likely', 'selected', 'recommended', 'preferred', '#1', 'rank', 'aria-pressed="true"']) {
     assert.ok(!html.toLowerCase().includes(word.toLowerCase()), word);

@@ -195,30 +195,38 @@ export const COHERENCE_NOTE =
   'The row similarity score on each card is a heuristic with known failure modes. It is shown for information only and does not choose between readings.';
 
 export function coherenceText(c) {
+  return `row similarity score: ${coherenceValue(c)}`;
+}
+
+/** The coherence value alone, for the card's labelled row (UI task 47). */
+export function coherenceValue(c) {
   return c.coherence_status === 'scored' && typeof c.coherence_score === 'number'
-    ? `row similarity score: ${c.coherence_score.toFixed(4)}`
-    : `row similarity score: ${String(c.coherence_status).replace(/_/g, ' ')}`;
+    ? c.coherence_score.toFixed(4)
+    : String(c.coherence_status).replace(/_/g, ' ');
 }
 
 /** Card identity is the candidate's own geometry, never a rank. */
 export const cardTitle = (c) => `${c.width} × ${c.height} · ${c.bit_depth}-bit · header ${c.header_size}`;
 
 /**
- * Everything one ambiguity card shows. Same keys, same number of lines, for every candidate.
- * Nothing here depends on coherence except the coherence text itself.
+ * Everything one ambiguity card shows. Same keys, same number of rows, for every candidate.
+ * Nothing here depends on coherence except the coherence value itself.
+ * UI task 47 (Claude Code): the size leads as the heading; the rest is a labelled list, read at a glance.
  */
 export function cardModel(c, index) {
   return {
     index,
     title: cardTitle(c),
-    lines: [
-      `${c.row_stride} byte${c.row_stride === 1 ? '' : 's'} per row` + (c.row_alignment > 1 ? `, padded to ${c.row_alignment}` : ''),
-      c.encoding === 'none' ? 'no compression' : c.encoding === 'rle_pcx' ? 'PCX run-length' : c.encoding,
-      c.data_end > c.data_start ? `data: bytes ${c.data_start} to ${c.data_end - 1}` : 'data: none',
+    size: `${c.width} × ${c.height} · ${c.bit_depth}-bit`,
+    facts: [
+      ['Header', `${c.header_size} byte${c.header_size === 1 ? '' : 's'}`],
+      ['Each row', `${c.row_stride} byte${c.row_stride === 1 ? '' : 's'}` + (c.row_alignment > 1 ? `, padded to ${c.row_alignment}` : '')],
+      ['Compression', c.encoding === 'none' ? 'none' : c.encoding === 'rle_pcx' ? 'PCX run-length' : c.encoding],
+      ['Picture data', c.data_end > c.data_start ? `bytes ${c.data_start} to ${c.data_end - 1}` : 'none'],
     ],
     note: c.render && c.render.note ? c.render.note : '',
     failure: c.render && c.render.failure ? c.render.failure : '',
-    coherence: coherenceText(c),
+    coherence: coherenceValue(c),
   };
 }
 
@@ -227,10 +235,12 @@ export function cardHTML(m) {
   const well = m.failure ? `<p class="no-image">${escapeHTML(m.failure)}</p>` : '';
   return `<article class="card" id="card-${m.index}" tabindex="0" data-index="${m.index}" aria-label="${escapeHTML(m.title)}">`
     + `<div class="well card-well" data-index="${m.index}">${well}</div>`
-    + `<h3 class="card-title mono">${escapeHTML(m.title)}</h3>`
-    + m.lines.map((l) => `<p class="card-line mono">${escapeHTML(l)}</p>`).join('')
+    + `<h3 class="card-title">${escapeHTML(m.size)}</h3>`
+    + `<dl class="card-facts">`
+    + m.facts.map(([k, v]) => `<div class="cf"><dt>${escapeHTML(k)}</dt><dd>${escapeHTML(v)}</dd></div>`).join('')
+    + `<div class="cf cf-coh"><dt>Row similarity</dt><dd class="card-coh">${escapeHTML(m.coherence)}</dd></div>`
+    + `</dl>`
     + `<p class="card-note">${escapeHTML(m.note)}</p>`
-    + `<p class="card-coh mono">${escapeHTML(m.coherence)}</p>`
     + `<div class="card-dl"><button type="button" class="dl-btn" data-act="png" data-index="${m.index}"${m.failure ? ' disabled title="no image to save"' : ''}>PNG</button>`
     + `<button type="button" class="dl-btn" data-act="data" data-index="${m.index}">data region</button></div>`
     + `</article>`;
