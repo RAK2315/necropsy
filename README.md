@@ -45,13 +45,13 @@ Drop in the bytes. NECROPSY works out how they are laid out as an image (the hea
 
 **It proves, it does not guess.** A layout is accepted only if decoding its data region yields exactly `row_stride × height` bytes and consumes the whole region. That gate is binary. There is no score, no threshold and no model deciding what looks right.
 
-**It refuses to choose when the bytes cannot.** When several layouts all close, NECROPSY reports every one, each with its own image, and chooses none. On the headerless 104-byte `mystery_d`, 18 readings fit the bytes exactly. Most tools would pick one and call it an answer. NECROPSY tells you the truth.
+**It refuses to choose when the bytes cannot.** When several layouts all close, NECROPSY reports every one, each with its own image, and chooses none. On the headerless 104-byte `mystery_d`, 18 readings fit the bytes exactly. Most tools would pick one and call it an answer. NECROPSY reports all eighteen.
 
-**It reads what a file says about itself, and catches it lying.** Probes read a file's own declarations, such as the PCX encoding byte or the TIFF byte-order mark. When a declaration contradicts the bytes, revision finds what is really there and shows declared against actual.
+**It reads what a file says about itself, and shows when a declaration does not fit.** Probes read a file's own declarations, such as the PCX encoding byte or the TIFF byte-order mark. When the declared layout does not close, revision tries small corrections, and the screen shows the declaration beside the reading that fits. It does not say which one is true: closure proves the arithmetic is consistent, nothing more.
 
 <p align="center">
   <img src="docs/acceptance/lying_header.png" width="900" alt="RESOLVED screen for mystery_i on the live site: the header declares the data uncompressed, closure holds only as PCX RLE, and the screen shows declared none against actual rle_pcx">
-  <br><sub><code>mystery_i</code>: the header says the data is uncompressed. Closure fails, revision tries RLE, and closure holds. The screen shows the header's claim struck through.</sub>
+  <br><sub><code>mystery_i</code>. Declared: no compression. Only run-length decoding fits. Closure fails as declared, revision tries RLE, and closure holds.</sub>
 </p>
 
 ## From spec to working parser
@@ -296,13 +296,15 @@ Everything here can be checked in [`.kiro/`](.kiro), [`docs/KIRO-LOG.md`](docs/K
 | [`real-corpus`](.kiro/specs/real-corpus) | 6 | 4 |
 | [`necropsy-mcp`](.kiro/specs/necropsy-mcp) | 6 | 8 |
 
-**The Decision Record.** The engine requirements open with 27 numbered decisions. Each records a design decision or reversal with the measurement behind it and the alternatives not taken. The design states 17 numbered correctness properties.
+**The Decision Record.** The engine requirements open with 27 numbered decisions. Each records a design decision or reversal and the alternatives not taken; most also record the measurement behind it. The design states 17 numbered correctness properties.
 
 **Steering.** Five files in `.kiro/steering/`. Always on: `project.md` (scope, free-tier hosting, commit discipline) and `parsers.md` (structured errors, never raise, a property test for each parser). Path-scoped: `engine.md` (standard library only, bounds-checked lengths, explicit endianness), `tests.md` (offline, deterministic, fixtures from documented byte layouts) and `ui.md` (the UI calls the engine and never re-implements inference).
 
-**Hooks.** `.kiro/hooks/kiro-usage-log.json` appends every file the Kiro agent saves or creates, with the time and git HEAD, to `docs/KIRO-LOG.md`: 634 rows so far. A git pre-commit hook (`.githooks/pre-commit`) blocks a UTF-8 byte-order mark in `.kiro/`, because a BOM before `---` breaks steering front matter.
+`ui.md` never applied. Its pattern was `necropsy/ui/**`, a path that never existed, because the UI was built in `public/` and `web/`, so Kiro never included it automatically. It was found on 25 Nov 2026 during a UI audit; the front end, read by hand, formats the engine's payload and runs no inference of its own. Correcting the pattern is part of the UI clarity tasks (24 to 28).
 
-**Agents.** Three custom agents in `.kiro/agents/`: `dev` implements one task, runs its tests and commits it; `reviewer` reads and runs tests but cannot write; `spec` writes only inside `.kiro/specs/`.
+**Hooks.** `.kiro/hooks/kiro-usage-log.json` appends every file the Kiro agent saves or creates, with the time and git HEAD, to `docs/KIRO-LOG.md`: 633 rows so far. Files written by commands Kiro ran, rather than by its file tools, are not logged. A git pre-commit hook (`.githooks/pre-commit`) blocks a UTF-8 byte-order mark in `.kiro/`, because a BOM before `---` breaks steering front matter.
+
+**Agents.** Three custom agent definitions in `.kiro/agents/`: `dev` (read, write, shell) implements one task, runs its tests and commits it; `reviewer` (read and shell, no write tool) reviews without editing; `spec` (read and write) is told to write only inside `.kiro/specs/`. The limits are partly instructions: `reviewer` has a shell, and `spec`'s write tool is not path-restricted.
 
 **MCP and Powers.** Kiro built the MCP server and the Power from the `necropsy-mcp` spec, and both were checked from inside Kiro: through the workspace server, and through the Power installed in an empty workspace.
 
@@ -310,7 +312,7 @@ Everything here can be checked in [`.kiro/`](.kiro), [`docs/KIRO-LOG.md`](docs/K
 
 **Division of work.**
 
-- **Kiro wrote** the specs, the engine, emitter, report, web service, front end, MCP server, Power, the example parser and the tests. 103 of the 179 commits at `2f40422` are per-task commits named `Task <n>: ...`.
+- **Kiro wrote** the specs, the engine, emitter, report, web service, front end, MCP server, Power, the example parser and the tests. 103 of the 179 commits at `2f40422` are per-task commits named `Task <n>: ...` (one, `Tasks 10 and 11`, covers two).
 - **Claude Code** did the scaffolding, git, CI, deploy configuration, the steering, hook and agent files, this README and its icon, and the prompts Rehaan gave Kiro (written in a separate Claude chat until 20 Nov, in Claude Code after that).
 - **Claude Code also verified Kiro's work independently**, from the spec rather than the code: the independent reimplementation above, pixel comparisons against Pillow, and a do-nothing parser run against every emitted RLE spec. The 28 commits made with Claude Code carry a `Co-Authored-By: Claude` trailer.
 
