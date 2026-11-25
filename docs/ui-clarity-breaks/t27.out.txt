@@ -1,0 +1,28 @@
+BREAK  freeze the caption  (public/js/replay.js)
+  with break : 1 failed in 9.81s  -> caught
+  failure    : E   AssertionError: ('steps 3–4 of 20', 'Step 2 of 20. Trying 7 × 7, 8-bit, header 128 bytes… rejected: the data is 778 bytes longer than ... 'Step 4 of 20. Trying 8 × 8, 8-bit, header 128 bytes… rejected: the data is 763 bytes longer than this layout needs.')
+  restored   : sha256 8a579457f909 -> 8a579457f909 identical
+BREAK  caption not announced  (public/js/replay.js)
+  with break : 1 failed in 9.72s  -> caught
+  failure    : E   AssertionError: assert None == 'polite'
+  restored   : sha256 8a579457f909 -> 8a579457f909 identical
+BREAK  no placeholder while pending  (public/js/screens.js)
+  with break : 1 failed in 30.33s  -> caught
+  failure    : E   AssertionError: {'error': 'Error: timed out: placeholder skip
+  restored   : sha256 298d11ae5aa7 -> 298d11ae5aa7 identical
+BREAK  placeholder left on screen after the answer (ambiguity removal skipped and resolved never replaced)  (public/js/screens.js)
+  with break : 1 failed in 9.67s  -> caught
+  failure    : E   assert (not True)
+  restored   : sha256 298d11ae5aa7 -> 298d11ae5aa7 identical
+BREAK  one-frame replay keeps its controls  (public/js/replay.js)
+  with break : 1 failed in 9.97s  -> caught
+  failure    : E   AssertionError: assert {'head': 'Not...nding': False} == {'head': 'Not...nding': False}
+  restored   : sha256 8a579457f909 -> 8a579457f909 identical
+BREAK  old header sentence  (public/js/replay.js)
+  with break : 1 failed in 9.85s  -> caught
+  failure    : E   AssertionError: The engine finished in 0.52 ms. This is a replay of its recorded steps.
+  restored   : sha256 8a579457f909 -> 8a579457f909 identical
+BREAK  final caption says nothing about the answer  (public/js/replay.js)
+  with break : 1 failed in 9.52s  -> caught
+  failure    : E   AssertionError: ('steps 19–20 of 20', 'Done.', 'Fits: 8 × 8, 8-bit.')
+  restored   : sha256 8a579457f909 -> 8a579457f909 identical

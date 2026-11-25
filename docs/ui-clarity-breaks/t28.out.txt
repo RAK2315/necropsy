@@ -1,0 +1,28 @@
+BREAK  first tile gets an extra class  (public/js/logic.js)
+  with break : ℹ fail 2  -> caught
+  failure    : AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  restored   : sha256 53e78b1b4354 -> 53e78b1b4354 identical
+BREAK  first tile larger (CSS by position)  (public/app.css)
+  with break : ℹ fail 1  -> caught
+  failure    : AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:
+  restored   : sha256 0c3300805f9b -> 0c3300805f9b identical
+BREAK  first tile larger (rendered)  (public/app.css)
+  with break : 1 failed in 9.24s  -> caught
+  failure    : E   AssertionError: (['96x109', '78x109'], ['64x64'])
+  restored   : sha256 0c3300805f9b -> 0c3300805f9b identical
+BREAK  grid shows the coherence score  (public/js/logic.js)
+  with break : ℹ fail 1  -> caught
+  failure    : AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  restored   : sha256 53e78b1b4354 -> 53e78b1b4354 identical
+BREAK  grid sorted by coherence  (public/js/logic.js)
+  with break : ℹ fail 3  -> caught
+  failure    : AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  restored   : sha256 53e78b1b4354 -> 53e78b1b4354 identical
+BREAK  tile links to the wrong card  (public/js/screens.js)
+  with break : 1 failed in 9.19s  -> caught
+  failure    : E   AssertionError: assert ['0', '0', '0'] == ['0', '5', '17']
+  restored   : sha256 14e28d84ecb9 -> 14e28d84ecb9 identical
+BREAK  emphasis on one tile (border)  (public/js/screens.js)
+  with break : 1 failed in 9.26s  -> caught
+  failure    : E   AssertionError: ['rgb(255, 255, 255)/rgb(24, 29, 35)/400/1', 'rgb(42, 49, 58)/rgb(24, 29, 35)/400/1']
+  restored   : sha256 14e28d84ecb9 -> 14e28d84ecb9 identical

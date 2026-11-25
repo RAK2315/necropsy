@@ -1,0 +1,32 @@
+BREAK  second primary action (drop zone marked primary)  (public/js/app.js)
+  with break : 1 failed in 9.48s  -> caught
+  failure    : E   assert (1 == 1 and 2 == 1)
+  restored   : sha256 c385a2efa8fe -> c385a2efa8fe identical
+BREAK  primary runs a different sample  (public/js/app.js)
+  with break : 1 failed in 9.62s  -> caught
+  failure    : E   AssertionError: assert {'dims': '8 ×...': 'RESOLVED'} == {'dims': '371...': 'RESOLVED'}
+  restored   : sha256 c385a2efa8fe -> c385a2efa8fe identical
+BREAK  sample rows lose their plain line  (public/js/app.js)
+  with break : 1 failed in 9.33s  -> caught
+  failure    : E   AssertionError: assert ['', '', '', '', '', '', ...] == ['One reading...choose.', ...]
+  restored   : sha256 c385a2efa8fe -> c385a2efa8fe identical
+BREAK  licence link dropped from the real sample's row  (public/js/app.js)
+  with break : 1 failed in 9.41s  -> caught
+  failure    : E   AssertionError: assert [] == ['pillow_odd_stride.pcx']
+  restored   : sha256 c385a2efa8fe -> c385a2efa8fe identical
+BREAK  tile loses its Open affordance  (public/js/strip.js)
+  with break : 1 failed in 9.30s  -> caught
+  failure    : E   assert False
+  restored   : sha256 37ea956e61cb -> 37ea956e61cb identical
+BREAK  how-it-works has two steps  (public/js/app.js)
+  with break : 1 failed in 9.26s  -> caught
+  failure    : E   assert 2 == 3
+  restored   : sha256 c385a2efa8fe -> c385a2efa8fe identical
+BREAK  index description drifts from the engine  (public/samples/index.json)
+  with break : 2 failed, 16 passed in 0.33s  -> caught
+  failure    : E   AssertionError: assert [{'name': 'my...hoose.'}, ...] == [{'name': 'my...hoose.'}, ...]
+  restored   : sha256 be7e85ac4fee -> be7e85ac4fee identical
+BREAK  description diagnoses the file  (tools/copy_samples.py)
+  with break : 1 failed, 17 passed in 0.37s  -> caught
+  failure    : E   AssertionError: assert [{'name': 'my...hoose.'}, ...] == [{'name': 'my...hoose.'}, ...]
+  restored   : sha256 627fa682f378 -> 627fa682f378 identical

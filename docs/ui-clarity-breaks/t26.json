@@ -1,0 +1,65 @@
+[
+ {
+  "name": "'closure' back in a heading",
+  "file": "public/js/screens.js",
+  "old": "region('proof', 'Why it fits',",
+  "new": "region('proof', 'Closure',",
+  "test": "tests/ui/test_plain_words.py"
+ },
+ {
+  "name": "'lies' back in the contradiction box",
+  "file": "public/js/screens.js",
+  "old": "el('p', 'c-title', `Declared: ",
+  "new": "el('p', 'c-title', `The header lies. Declared: ",
+  "test": "tests/ui/test_plain_words.py"
+ },
+ {
+  "name": "a region loses its plain line",
+  "file": "public/js/screens.js",
+  "old": "'How it got there', 'The corrections tried, and how many layouts were checked.'",
+  "new": "'How it got there', ''",
+  "test": "tests/ui/test_plain_words.py"
+ },
+ {
+  "name": "chip shows the enum as its plain word",
+  "file": "public/js/words.js",
+  "old": "  RESOLVED: 'Recovered',",
+  "new": "  RESOLVED: 'RESOLVED',",
+  "test": "tests/ui/test_plain_words.py"
+ },
+ {
+  "name": "replay log shows the raw reason",
+  "file": "public/js/words.js",
+  "old": "    case 'decoder_unconsumed': return 'decoding finished with bytes left over';",
+  "new": "    case 'decoder_unconsumed': return 'decoder_unconsumed';",
+  "test": "tests/ui/test_plain_words.py"
+ },
+ {
+  "name": "card text back to 11.5 px",
+  "file": "public/app.css",
+  "old": ".card-line { margin: 0; font-size: 12.5px;",
+  "new": ".card-line { margin: 0; font-size: 11.5px;",
+  "test": "tests/ui/test_plain_words.py"
+ },
+ {
+  "name": "verdict heading removed",
+  "file": "public/js/screens.js",
+  "old": "head.append(chip(payload.status), el('h1', 'verdict-text', verdictText(payload)));",
+  "new": "head.append(chip(payload.status));",
+  "test": "tests/ui/test_plain_words.py"
+ },
+ {
+  "name": "card line says 'stride' again",
+  "file": "public/js/logic.js",
+  "old": "`${c.row_stride} byte${c.row_stride === 1 ? '' : 's'} per row`",
+  "new": "`stride ${c.row_stride}`",
+  "test": "tests/ui/test_plain_words.py"
+ },
+ {
+  "name": "ui.md pattern back to a path that does not exist",
+  "file": ".kiro/steering/ui.md",
+  "old": "fileMatchPattern: [\"public/**\", \"web/**\"]",
+  "new": "fileMatchPattern: \"necropsy/ui/**\"",
+  "test": "tests/test_steering.py"
+ }
+]

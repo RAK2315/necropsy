@@ -1,0 +1,36 @@
+BREAK  'closure' back in a heading  (public/js/screens.js)
+  with break : 1 failed in 9.77s  -> caught
+  failure    : E   AssertionError: engine terms or diagnoses outside .tech:
+  restored   : sha256 48d9691e1720 -> 48d9691e1720 identical
+BREAK  'lies' back in the contradiction box  (public/js/screens.js)
+  with break : 1 failed in 9.72s  -> caught
+  failure    : E   AssertionError: engine terms or diagnoses outside .tech:
+  restored   : sha256 48d9691e1720 -> 48d9691e1720 identical
+BREAK  a region loses its plain line  (public/js/screens.js)
+  with break : 1 failed in 10.17s  -> caught
+  failure    : E   AssertionError: ('resolved', [{'name': 'replay', 'title': 'How the engine searched', 'line': 'Every layout it tried, in order, and why...the data decodes to exactly the size this layout needs.'}, {'name': 'facts', 'title': 'How it got there', 'line': ''}])
+  restored   : sha256 48d9691e1720 -> 48d9691e1720 identical
+BREAK  chip shows the enum as its plain word  (public/js/words.js)
+  with break : 1 failed in 9.73s  -> caught
+  failure    : E   AssertionError: engine terms or diagnoses outside .tech:
+  restored   : sha256 f9cd99aa87a6 -> f9cd99aa87a6 identical
+BREAK  replay log shows the raw reason  (public/js/words.js)
+  with break : 1 failed in 9.76s  -> caught
+  failure    : E   AssertionError: engine terms or diagnoses outside .tech:
+  restored   : sha256 f9cd99aa87a6 -> f9cd99aa87a6 identical
+BREAK  card text back to 11.5 px  (public/app.css)
+  with break : 1 failed in 9.70s  -> caught
+  failure    : E   AssertionError: text below 12 px: [('p.card-line.mono', 11.5)]
+  restored   : sha256 cb156f17417d -> cb156f17417d identical
+BREAK  verdict heading removed  (public/js/screens.js)
+  with break : 1 failed in 9.76s  -> caught
+  failure    : E   AssertionError: assert {'resolved': ...failed': None} == {'resolved': ...data exactly'}
+  restored   : sha256 48d9691e1720 -> 48d9691e1720 identical
+BREAK  card line says 'stride' again  (public/js/logic.js)
+  with break : 1 failed in 10.11s  -> caught
+  failure    : E   AssertionError: engine terms or diagnoses outside .tech:
+  restored   : sha256 f3d90ab4d2f1 -> f3d90ab4d2f1 identical
+BREAK  ui.md pattern back to a path that does not exist  (.kiro/steering/ui.md)
+  with break : 1 failed, 5 passed in 0.26s  -> caught
+  failure    : E   AssertionError: ui.md: fileMatchPattern 'necropsy/ui/**' matches no tracked file, so the file never applies
+  restored   : sha256 4815168378c7 -> 4815168378c7 identical

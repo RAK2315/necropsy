@@ -1,0 +1,51 @@
+[
+ {
+  "name": "freeze the caption",
+  "file": "public/js/replay.js",
+  "old": "    caption.textContent = captionText(payload, s, b, n);",
+  "new": "    if (!caption.textContent) caption.textContent = captionText(payload, s, b, n);",
+  "test": "tests/ui/test_replay_caption.py"
+ },
+ {
+  "name": "caption not announced",
+  "file": "public/js/replay.js",
+  "old": "  caption.setAttribute('aria-live', 'polite');\n",
+  "new": "",
+  "test": "tests/ui/test_replay_caption.py"
+ },
+ {
+  "name": "no placeholder while pending",
+  "file": "public/js/screens.js",
+  "old": "  if (!replay.single) right.append(answerPending(replay));\n",
+  "new": "",
+  "test": "tests/ui/test_replay_caption.py"
+ },
+ {
+  "name": "placeholder left on screen after the answer (ambiguity removal skipped and resolved never replaced)",
+  "file": "public/js/screens.js",
+  "old": "    buildRight = () => right.replaceChildren(...resolvedPanel(payload, bytes, base).side.childNodes);",
+  "new": "    buildRight = () => right.append(...resolvedPanel(payload, bytes, base).side.childNodes);",
+  "test": "tests/ui/test_replay_caption.py"
+ },
+ {
+  "name": "one-frame replay keeps its controls",
+  "file": "public/js/replay.js",
+  "old": "    bar.hidden = true;\n",
+  "new": "",
+  "test": "tests/ui/test_replay_caption.py"
+ },
+ {
+  "name": "old header sentence",
+  "file": "public/js/replay.js",
+  "old": "`Replaying the engine’s search. It finished in ${payload.engine_ms} ms; this replay slows it down so you can follow it.`",
+  "new": "`The engine finished in ${payload.engine_ms} ms. This is a replay of its recorded steps.`",
+  "test": "tests/ui/test_replay_caption.py"
+ },
+ {
+  "name": "final caption says nothing about the answer",
+  "file": "public/js/replay.js",
+  "old": "return `Fits: ${c.width} × ${c.height}, ${c.bit_depth}-bit.`;",
+  "new": "return 'Done.';",
+  "test": "tests/ui/test_replay_caption.py"
+ }
+]

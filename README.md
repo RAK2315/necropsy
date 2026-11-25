@@ -200,8 +200,8 @@ The image on screen follows the file's own declarations: B,G,R order for TGA, R,
 
 At commit `a54b7ce`, in GitHub Actions (Ubuntu):
 
-- **Python suite: 949 passed**, 1 skipped (the real-corpus test for open in-scope failures, whose list is empty).
-- **Front-end tests: 22 passed.**
+- **Python suite: 966 passed**, 1 skipped (the real-corpus test for open in-scope failures, whose list is empty), at `56de21b`.
+- **Front-end tests: 26 passed.**
 - **Property tests:** 35 Hypothesis `@given` tests across 13 files cover the 17 numbered correctness properties in the engine design, including "Never raises", "Closure soundness", "Coherence cannot change the outcome" and "Emitted layout reproduces the engine".
 - **Browser checks:** tests that drive the real page in headless Chrome or Edge (keyboard, contrast, error copy, downloads) run in CI.
 - **Break checks:** `tools/break_check.py` applies a deliberate defect, confirms the named test fails, and restores the file byte for byte. One of them replaces the parser with a do-nothing parser and confirms every emitted RLE spec fails it.
@@ -212,12 +212,17 @@ At commit `a54b7ce`, in GitHub Actions (Ubuntu):
 
 **[necropsy.vercel.app](https://necropsy.vercel.app)** serves a FastAPI analysis service (`app.py`, `web/`) and a static front end (`public/`) over the unchanged engine.
 
+- A landing page with one primary action, "See it recover a real file", which runs a PCX from Pillow's test suite, and three real outcomes examined live as the page loads.
+- A state line under the header on every screen: the file, what is running, and the verdict.
+- A verdict heading on every result, and a title and one plain line on every region. Engine terms are translated into plain words (`public/js/words.js`, each mapping citing the engine function it translates) and kept beside them in small type.
 - A hex pane with the header, data and trailer regions marked, and a table of every field read.
-- A replay of the engine's recorded steps, one closure check at a time.
-- A distinct screen for each outcome, with one image per candidate on the ambiguity screen.
+- A replay of the engine's recorded steps with a running caption, one rejected layout at a time.
+- A distinct screen for each outcome; on the ambiguity screen, every reading at a glance and one card per reading.
 - PNG and data-region downloads, and the emitted spec as a zip.
 - Keyboard navigation, checked contrast and a dark colour scheme.
-- The eleven corpus files are one click away on the start page.
+- Twelve samples one click away, each with one plain line from a fresh engine run.
+
+The interface up to UI task 23 was built by Kiro; tasks 24 to 28 (landing page, state line, region titles and plain words, replay caption, ambiguity grid) were built by Claude Code. See [Built with Kiro](#built-with-kiro) and [`docs/UI-CLARITY-PASS.md`](docs/UI-CLARITY-PASS.md).
 
 **Privacy:** uploads are analysed in memory and the service writes nothing to disk. Files up to 65,536 bytes are accepted.
 
@@ -291,7 +296,7 @@ Everything here can be checked in [`.kiro/`](.kiro), [`docs/KIRO-LOG.md`](docs/K
 | Spec | Requirements | Tasks |
 |---|---:|---:|
 | [`structure-inference-engine`](.kiro/specs/structure-inference-engine) | 12 | 22 (95 checklist items with sub-tasks) |
-| [`necropsy-ui`](.kiro/specs/necropsy-ui) | 20 | 23 |
+| [`necropsy-ui`](.kiro/specs/necropsy-ui) | 20 | 23 (tasks 24 to 28 were built outside the spec by Claude Code: [`docs/UI-CLARITY-PASS.md`](docs/UI-CLARITY-PASS.md)) |
 | [`gate-adversary`](.kiro/specs/gate-adversary) | 3 | 3 |
 | [`real-corpus`](.kiro/specs/real-corpus) | 6 | 4 |
 | [`necropsy-mcp`](.kiro/specs/necropsy-mcp) | 6 | 8 |
@@ -300,7 +305,7 @@ Everything here can be checked in [`.kiro/`](.kiro), [`docs/KIRO-LOG.md`](docs/K
 
 **Steering.** Five files in `.kiro/steering/`. Always on: `project.md` (scope, free-tier hosting, commit discipline) and `parsers.md` (structured errors, never raise, a property test for each parser). Path-scoped: `engine.md` (standard library only, bounds-checked lengths, explicit endianness), `tests.md` (offline, deterministic, fixtures from documented byte layouts) and `ui.md` (the UI calls the engine and never re-implements inference).
 
-`ui.md` never applied. Its pattern was `necropsy/ui/**`, a path that never existed, because the UI was built in `public/` and `web/`, so Kiro never included it automatically. It was found on 25 Nov 2026 during a UI audit; the front end, read by hand, formats the engine's payload and runs no inference of its own. Correcting the pattern is part of the UI clarity tasks (24 to 28).
+`ui.md` never applied. Its pattern was `necropsy/ui/**`, a path that never existed, because the UI was built in `public/` and `web/`, so Kiro never included it automatically. It was found on 25 Nov 2026 during a UI audit; the front end, read by hand, formats the engine's payload and runs no inference of its own. The pattern was corrected on 25 Nov to `public/**` and `web/**`, and `tests/test_steering.py` now fails if any steering pattern matches no tracked file.
 
 **Hooks.** `.kiro/hooks/kiro-usage-log.json` appends every file the Kiro agent saves or creates, with the time and git HEAD, to `docs/KIRO-LOG.md`: 633 rows so far. Files written by commands Kiro ran, rather than by its file tools, are not logged. A git pre-commit hook (`.githooks/pre-commit`) blocks a UTF-8 byte-order mark in `.kiro/`, because a BOM before `---` breaks steering front matter.
 
@@ -312,8 +317,9 @@ Everything here can be checked in [`.kiro/`](.kiro), [`docs/KIRO-LOG.md`](docs/K
 
 **Division of work.**
 
-- **Kiro wrote** the specs, the engine, emitter, report, web service, front end, MCP server, Power, the example parser and the tests. 103 of the 179 commits at `2f40422` are per-task commits named `Task <n>: ...` (one, `Tasks 10 and 11`, covers two).
-- **Claude Code** did the scaffolding, git, CI, deploy configuration, the steering, hook and agent files, this README and its icon, and the prompts Rehaan gave Kiro (written in a separate Claude chat until 20 Nov, in Claude Code after that).
+- **Kiro wrote**, through its spec workflow, the specs, the engine, emitter, report, web service, the original front end (UI tasks 1 to 23), MCP server, Power, the example parser and their tests. 103 of the 179 commits at `2f40422` are per-task commits named `Task <n>: ...` (one, `Tasks 10 and 11`, covers two).
+- **Claude Code built the final UI clarity pass**, outside Kiro's spec workflow, on Rehaan's call of 25 Nov 2026: UI tasks 24 to 28, which are the landing page, the state line under the header, a title and plain-word line on every region (the glossary in `public/js/words.js`), the replay caption and pending placeholder, and the ambiguity grid. That is the whole visible surface of the product as it stands. Claude Code also wrote those tasks' tests, edited older Kiro-written UI tests where the markup changed, and fixed `.kiro/steering/ui.md`. Commits are named `UI task <n>:`; the record, with every break-and-restore run, is [`docs/UI-CLARITY-PASS.md`](docs/UI-CLARITY-PASS.md).
+- **Claude Code** also did the scaffolding, git, CI, deploy configuration, the steering, hook and agent files, this README and its icon, and the prompts Rehaan gave Kiro (written in a separate Claude chat until 20 Nov, in Claude Code after that).
 - **Claude Code also verified Kiro's work independently**, from the spec rather than the code: the independent reimplementation above, pixel comparisons against Pillow, and a do-nothing parser run against every emitted RLE spec. The 28 commits made with Claude Code carry a `Co-Authored-By: Claude` trailer.
 
 ## Repository layout

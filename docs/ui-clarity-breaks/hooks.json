@@ -1,0 +1,23 @@
+[
+ {
+  "name": "hook renamed",
+  "file": "public/js/screens.js",
+  "old": "box.dataset.cap = 'contradiction';",
+  "new": "box.dataset.cap = 'contradict';",
+  "test": "tests/ui/test_hooks.py"
+ },
+ {
+  "name": "hook dropped from the landing page",
+  "file": "public/js/app.js",
+  "old": "el('section', { class: 'how', 'data-cap': 'how' }",
+  "new": "el('section', { class: 'how' }",
+  "test": "tests/ui/test_hooks.py"
+ },
+ {
+  "name": "sample hook loses data-name",
+  "file": "public/js/app.js",
+  "old": "'data-cap': 'sample', 'data-name': s.name,",
+  "new": "'data-cap': 'sample',",
+  "test": "tests/ui/test_hooks.py"
+ }
+]

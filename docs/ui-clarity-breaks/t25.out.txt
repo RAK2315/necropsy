@@ -1,0 +1,24 @@
+BREAK  leave 'Replaying' on screen after the final step  (public/js/app.js)
+  with break : 1 failed in 32.47s  -> caught
+  failure    : E   AssertionError: {'error': 'Error: timed out: ambiguity done
+  restored   : sha256 fe031fb800ea -> fe031fb800ea identical
+BREAK  state line not announced  (public/index.html)
+  with break : 1 failed in 11.62s  -> caught
+  failure    : E   AssertionError: assert (None == 'polite')
+  restored   : sha256 fa46e9a2c803 -> fa46e9a2c803 identical
+BREAK  done state drops the file name  (public/js/words.js)
+  with break : 1 failed in 11.84s  -> caught
+  failure    : E   AssertionError: assert 'Recovered: 8 × 8, 8-bit' == 'mystery_i · ... 8 × 8, 8-bit'
+  restored   : sha256 f9cd99aa87a6 -> f9cd99aa87a6 identical
+BREAK  no state while sending  (public/js/app.js)
+  with break : 1 failed in 11.62s  -> caught
+  failure    : E   AssertionError: assert 'No file load...rop your own.' == 'mystery_i · ... · Examining…'
+  restored   : sha256 fe031fb800ea -> fe031fb800ea identical
+BREAK  refusal not reflected in the state line  (public/js/app.js)
+  with break : 1 failed in 11.86s  -> caught
+  failure    : E   AssertionError: assert 'No file load...rop your own.' == 'big.bin · No...agment of it.'
+  restored   : sha256 fe031fb800ea -> fe031fb800ea identical
+BREAK  FAILED verdict says 'nothing fits' (unscoped)  (public/js/words.js)
+  with break : 1 failed in 12.91s  -> caught
+  failure    : E   AssertionError: assert 'mystery_b_fi... nothing fits' == 'mystery_b_fi... data exactly'
+  restored   : sha256 f9cd99aa87a6 -> f9cd99aa87a6 identical

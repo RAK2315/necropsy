@@ -1,0 +1,51 @@
+[
+ {
+  "name": "first tile gets an extra class",
+  "file": "public/js/logic.js",
+  "old": "    return `<a class=\"amb-tile\" href=",
+  "new": "    return `<a class=\"amb-tile${i === 0 ? ' amb-first' : ''}\" href=",
+  "test": "node:tests/ui/js/screens.test.mjs"
+ },
+ {
+  "name": "first tile larger (CSS by position)",
+  "file": "public/app.css",
+  "old": ".amb-tile:hover { border-color: var(--faint); }",
+  "new": ".amb-tile:hover { border-color: var(--faint); }\n.amb-tile:first-child { width: 96px; }",
+  "test": "node:tests/ui/js/screens.test.mjs"
+ },
+ {
+  "name": "first tile larger (rendered)",
+  "file": "public/app.css",
+  "old": ".amb-tile:hover { border-color: var(--faint); }",
+  "new": ".amb-tile:hover { border-color: var(--faint); }\n.amb-grid > a[data-index=\"0\"] { width: 96px; }",
+  "test": "tests/ui/test_amb_grid.py"
+ },
+ {
+  "name": "grid shows the coherence score",
+  "file": "public/js/logic.js",
+  "old": "+ `<span class=\"amb-dims mono\">${escapeHTML(`${c.width} × ${c.height} · ${c.bit_depth}-bit`)}</span></a>`;",
+  "new": "+ `<span class=\"amb-dims mono\">${escapeHTML(`${c.width} × ${c.height} · ${c.bit_depth}-bit`)}</span><span class=\"amb-coh\">${c.coherence_score}</span></a>`;",
+  "test": "node:tests/ui/js/screens.test.mjs"
+ },
+ {
+  "name": "grid sorted by coherence",
+  "file": "public/js/logic.js",
+  "old": "  return payload.candidates.map((c, i) => {\n    const failure",
+  "new": "  return payload.candidates.map((c, i) => [c, i]).sort((a, b) => (a[0].coherence_score ?? 9) - (b[0].coherence_score ?? 9)).map(([c, i]) => {\n    const failure",
+  "test": "node:tests/ui/js/screens.test.mjs"
+ },
+ {
+  "name": "tile links to the wrong card",
+  "file": "public/js/screens.js",
+  "old": "const card = grid.querySelector(`.card[data-index=\"${tile.dataset.index}\"]`);",
+  "new": "const card = grid.querySelector(`.card[data-index=\"0\"]`);",
+  "test": "tests/ui/test_amb_grid.py"
+ },
+ {
+  "name": "emphasis on one tile (border)",
+  "file": "public/js/screens.js",
+  "old": "  glance.innerHTML = ambGridHTML(payload);",
+  "new": "  glance.innerHTML = ambGridHTML(payload);\n  glance.querySelector('.amb-tile').style.borderColor = '#ffffff';",
+  "test": "tests/ui/test_amb_grid.py"
+ }
+]

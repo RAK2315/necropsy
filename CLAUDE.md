@@ -18,9 +18,10 @@ is coherent, and recovers the contents.
 
 ## Who does what
 - Rehaan decides. Everything goes through him.
-- Kiro builds everything that ships, through its spec workflow
-  (requirements, design, tasks in EARS form, each task citing its
-  requirement IDs): all engine and UI code, the specs and the tests.
+- Kiro built the engine and the original interface through its spec
+  workflow (requirements, design, tasks in EARS form, each task citing
+  its requirement IDs): all engine code, the UI up to task 23, the
+  specs and their tests.
   This is deliberate. Technological Implementation is 20% of the score
   and here means depth of Kiro usage, judged from `.kiro/` and the
   submission write-up.
@@ -31,8 +32,20 @@ is coherent, and recovers the contents.
   a pasted diff.
 - Until 20 Nov 2026 a separate Claude chat session wrote Kiro's prompts.
   Claude Code took that over on 20 Nov.
-- Claude Code never writes engine or UI code. If asked to, it stops and
-  says the work belongs in Kiro.
+- Claude Code never writes engine code. If asked to, it stops and says
+  the work belongs in Kiro.
+- One exception, Rehaan's call on 25 Nov 2026: Claude Code built the
+  final UI clarity pass itself, outside Kiro's spec workflow. That is
+  UI tasks 24 to 28: the landing page, the state line, region titles
+  with the plain-word glossary, the replay that announces itself, and
+  the ambiguity grid, with their tests and edits to older UI tests.
+  Record: `docs/UI-CLARITY-PASS.md`; commits named `UI task <n>:`.
+  This is the entire visible surface of the product, and every account
+  of who built what (README, Devpost story) says so plainly.
+- Translate, never diagnose (Rehaan, 25 Nov): the UI may say in plain
+  words what the engine found, never what it implies about the file.
+  Glossary in `public/js/words.js`, each mapping citing its engine
+  function. Apply it to every wording question.
 - Questions about the engine's principles go to Rehaan before they are
   settled: whether something is a declaration or format knowledge,
   whether a rejection rule is derivable or a threshold, whether a result
@@ -83,8 +96,14 @@ own homework. Check it independently.
 - UI task 23 (21 Nov): the render follows the file's declarations;
   matches Pillow on 28 of 29 readings (mystery_e is the stated
   BlackIsZero convention). 16-bit images are not previewed.
-- Tests in CI at `a54b7ce`: 949 Python passed, 1 skipped (the
-  open-failures test, whose list is now empty), 22 front-end passed.
+- Tests at `56de21b` (25 Nov, after UI tasks 24 to 28): 966 Python
+  passed, 1 skipped (the open-failures test, whose list is now empty),
+  26 front-end passed.
+- UI tasks 24 to 28 (25 Nov) were built by Claude Code, not Kiro:
+  landing page, state line, region titles and plain words, replay
+  caption, ambiguity grid. Record and break runs: `docs/UI-CLARITY-PASS.md`.
+  Capture hooks: `tools/capture_hooks.json`; preflight before any
+  recapture: `node video/scripts/check_selectors.mjs v7`.
   CI installs Pillow and mcp so the pixel comparisons and MCP tests run.
 - `examples/spec-to-parser/pillow_odd_stride/`: Kiro wrote a parser in
   a clean-room session from an emitted spec alone; 4 tests pass and the

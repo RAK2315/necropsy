@@ -1,0 +1,44 @@
+[
+ {
+  "name": "leave 'Replaying' on screen after the final step",
+  "file": "public/js/app.js",
+  "old": "setState(final ? { ...base, phase: 'done' } : { ...base, phase: 'replaying', step, of })",
+  "new": "setState({ ...base, phase: 'replaying', step, of })",
+  "test": "tests/ui/test_state_line.py"
+ },
+ {
+  "name": "state line not announced",
+  "file": "public/index.html",
+  "old": "role=\"status\" aria-live=\"polite\"",
+  "new": "",
+  "test": "tests/ui/test_state_line.py"
+ },
+ {
+  "name": "done state drops the file name",
+  "file": "public/js/words.js",
+  "old": "    case 'done': return join(file, verdictText(s.payload));",
+  "new": "    case 'done': return join(verdictText(s.payload));",
+  "test": "tests/ui/test_state_line.py"
+ },
+ {
+  "name": "no state while sending",
+  "file": "public/js/app.js",
+  "old": "  setState({ phase: 'sending', name, size: bytes.length });\n",
+  "new": "",
+  "test": "tests/ui/test_state_line.py"
+ },
+ {
+  "name": "refusal not reflected in the state line",
+  "file": "public/js/app.js",
+  "old": "msg.classList.add('bad'); setState({ phase: 'error', name, reason: text }); };",
+  "new": "msg.classList.add('bad'); };",
+  "test": "tests/ui/test_state_line.py"
+ },
+ {
+  "name": "FAILED verdict says 'nothing fits' (unscoped)",
+  "file": "public/js/words.js",
+  "old": "  return 'Not recovered: no layout tried fits the data exactly';",
+  "new": "  return 'Not recovered: nothing fits';",
+  "test": "tests/ui/test_state_line.py"
+ }
+]

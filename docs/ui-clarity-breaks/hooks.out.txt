@@ -1,0 +1,12 @@
+BREAK  hook renamed  (public/js/screens.js)
+  with break : 1 failed in 9.27s  -> caught
+  failure    : E   AssertionError: capture hooks missing: {'resolved': ['contradiction']}
+  restored   : sha256 14e28d84ecb9 -> 14e28d84ecb9 identical
+BREAK  hook dropped from the landing page  (public/js/app.js)
+  with break : 1 failed in 9.24s  -> caught
+  failure    : E   AssertionError: capture hooks missing: {'start': ['how']}
+  restored   : sha256 fe031fb800ea -> fe031fb800ea identical
+BREAK  sample hook loses data-name  (public/js/app.js)
+  with break : 1 failed in 9.20s  -> caught
+  failure    : E   AssertionError: every sample hook carries data-name equal to the sample's name
+  restored   : sha256 fe031fb800ea -> fe031fb800ea identical

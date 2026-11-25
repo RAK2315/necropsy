@@ -1,0 +1,58 @@
+[
+ {
+  "name": "second primary action (drop zone marked primary)",
+  "file": "public/js/app.js",
+  "old": "class: 'drop', type: 'button', 'data-cap': 'drop'",
+  "new": "class: 'drop primary', type: 'button', 'data-cap': 'drop'",
+  "test": "tests/ui/test_landing.py"
+ },
+ {
+  "name": "primary runs a different sample",
+  "file": "public/js/app.js",
+  "old": "const PRIMARY = 'pillow_odd_stride.pcx';",
+  "new": "const PRIMARY = 'mystery_i';",
+  "test": "tests/ui/test_landing.py"
+ },
+ {
+  "name": "sample rows lose their plain line",
+  "file": "public/js/app.js",
+  "old": "if (s.description) li.append(",
+  "new": "if (false) li.append(",
+  "test": "tests/ui/test_landing.py"
+ },
+ {
+  "name": "licence link dropped from the real sample's row",
+  "file": "public/js/app.js",
+  "old": "if (s.licence) prov.append(",
+  "new": "if (false) prov.append(",
+  "test": "tests/ui/test_landing.py"
+ },
+ {
+  "name": "tile loses its Open affordance",
+  "file": "public/js/strip.js",
+  "old": "el('span', 'strip-open', 'Open →')",
+  "new": "el('span', 'strip-open', '')",
+  "test": "tests/ui/test_landing.py"
+ },
+ {
+  "name": "how-it-works has two steps",
+  "file": "public/js/app.js",
+  "old": "      el('li', { text: 'It tries the layouts those declarations allow, and small corrections to them.' }),\n",
+  "new": "",
+  "test": "tests/ui/test_landing.py"
+ },
+ {
+  "name": "index description drifts from the engine",
+  "file": "public/samples/index.json",
+  "old": "\"18 readings fit exactly. NECROPSY does not choose.\"",
+  "new": "\"17 readings fit exactly. NECROPSY does not choose.\"",
+  "test": "tests/ui/test_samples.py"
+ },
+ {
+  "name": "description diagnoses the file",
+  "file": "tools/copy_samples.py",
+  "old": "return f\"One reading fits: {size}, as the header declares.\"",
+  "new": "return f\"One reading fits: {size}, though the header lies.\"",
+  "test": "tests/ui/test_samples.py"
+ }
+]
