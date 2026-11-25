@@ -71,6 +71,11 @@ export function createReplay(payload, { onStep, onFinal, onFrame = () => {} }) {
   const counter = el('span', 'rp-counter mono');
   counter.setAttribute('aria-live', 'polite');
   bar.append(back, play, fwd, end, speed, counter);
+  // While the replay runs for the first time only the step counter shows: no Pause, step or Skip control until it has
+  // reached its end once (UI task 37, Rehaan). After that the controls appear, for going back over it.
+  const controls = [back, play, fwd, end, speed];
+  let firstRunDone = false;
+  function reveal() { if (firstRunDone) return; firstRunDone = true; for (const c of controls) c.hidden = false; }
 
   const log = el('ol', 'rp-log');
   const items = steps.map((s, i) => {
@@ -116,7 +121,7 @@ export function createReplay(payload, { onStep, onFinal, onFrame = () => {} }) {
     caption.textContent = captionText(payload, s, b, n);
     if (s.kind === 'final') onFinal(); else onStep(s);
     onFrame({ step: b + 1, of: n, final: s.kind === 'final' });
-    if (frame === frames.length - 1) stop();
+    if (frame === frames.length - 1) { stop(); reveal(); }
     back.disabled = frame === 0;
     fwd.disabled = end.disabled = frame === frames.length - 1;
   }
@@ -137,11 +142,10 @@ export function createReplay(payload, { onStep, onFinal, onFrame = () => {} }) {
     root,
     start() {
       if (prefersReducedMotion() || frames.length === 1) { show(frames.length - 1); return; }
+      for (const c of controls) c.hidden = true;
       show(0);
       go();
     },
-    /** Jump to the final step (the answer column's own Skip button). */
-    skip() { stop(); show(frames.length - 1); },
     single,
     /** Stop the timer chain for good: called when the result is left, so no onStep or onFinal runs after that. */
     dispose() { stop(); },

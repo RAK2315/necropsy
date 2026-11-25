@@ -12,7 +12,8 @@ function el(tag, cls, text) {
 
 // What each tile examines. Bytes come from the served samples, so the tile shows what any visitor would get.
 const INPUTS = [
-  { label: 'mystery_i', name: 'mystery_i', bytes: async () => fetchSample('mystery_i') },
+  // a real photograph since UI task 38 (Rehaan): the corpus's 8 × 8 mystery_i read as a test pattern, not a picture
+  { label: 'imagemagick_input.tga', name: 'imagemagick_input.tga', bytes: async () => fetchSample('imagemagick_input.tga') },
   { label: 'mystery_d', name: 'mystery_d', bytes: async () => fetchSample('mystery_d') },
   { label: 'mystery_b, first 300 bytes', name: 'mystery_b_first300', bytes: async () => (await fetchSample('mystery_b')).slice(0, 300) },
 ];

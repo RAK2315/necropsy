@@ -1,7 +1,7 @@
 """UI clarity pass, task 27: the replay announces itself. Built by Claude Code, not Kiro.
 
 A caption rewritten in plain words on every step, a header that says this is a slowed-down replay of a search that
-already finished, a placeholder in the answer column while the answer is pending (with its own Skip), and a replay with
+already finished, a placeholder in the answer column while the answer is pending, and a replay with
 nothing to replay hides its controls. The expected captions are written here in Python from the engine's own
 rejections, independently of the page's JavaScript.
 """
@@ -43,6 +43,7 @@ STEPS = r"""
   const out = { live: cap.getAttribute('aria-live'), head: document.querySelector('.rp-head').textContent };
   out.pendingNow = !!document.querySelector('.exam-right.pending [data-cap=answer-pending]');
   out.pendingText = (document.querySelector('[data-cap=answer-pending]') || {}).textContent || '';
+  out.pendingButtons = document.querySelectorAll('[data-cap=answer-pending] button').length;
   document.querySelector('.rp-bar button[title="Play or pause"]').click();
   const back = document.querySelector('.rp-bar button[title="Step back"]');
   while (!back.disabled) back.click();
@@ -54,10 +55,6 @@ STEPS = r"""
     fwd.click();
   }
   out.pendingAtEnd = !!document.querySelector('[data-cap=answer-pending]');
-  document.getElementById('again').click();
-  (await __until(() => [...document.querySelectorAll('.pick')].find(b => b.textContent === 'mystery_b'), 'sample b')).click();
-  (await __until(() => document.querySelector('[data-cap=answer-pending] button'), 'placeholder skip')).click();
-  out.skipped = !document.querySelector('.verdict-bar.pending') && !document.querySelector('[data-cap=answer-pending]');
   document.getElementById('again').click();
   (await __until(() => [...document.querySelectorAll('.pick')].find(b => b.textContent === 'mystery_d'), 'sample d')).click();
   await __until(() => document.querySelector('.verdict-bar:not(.pending)'), 'ambiguity verdict');
@@ -91,8 +88,9 @@ def test_replay_announces_itself(base_url):
     assert all(a != b for a, b in zip(captions, captions[1:])), "the caption must change on every step"
     assert captions[-1] == expected[-1]
 
-    assert got["pendingNow"] and got["pendingText"].startswith("The answer appears here when the replay ends.")
-    assert not got["pendingAtEnd"] and got["skipped"]
+    assert got["pendingNow"] and got["pendingText"] == "The answer appears here when the replay ends."
+    assert got["pendingButtons"] == 0, "UI task 37: no skip in the answer column while the first run plays"
+    assert not got["pendingAtEnd"]
 
     n = Engine().run(corpus_bytes("mystery_d")).total_checks
     assert got["single"] == {"head": f"Nothing to replay: all {n} layouts checked fit.", "controls": 0, "caption": False, "pending": False}

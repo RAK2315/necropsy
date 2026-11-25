@@ -5,8 +5,10 @@ NECROPSY did not make, a provenance line. The line is computed here from a fresh
 drift from the engine. Wording follows the glossary in public/js/words.js: translate what the engine found,
 never what it implies about the file.
 
-The real-world sample (from Pillow's test suite, MIT-CMU) is checked against the corpus manifest's sha256,
-and its licence notice is copied beside it, because MIT-CMU requires the notice in supporting documentation.
+The real-world samples (from Pillow's and ImageMagick's test suites) are checked against the corpus manifest's
+sha256, and each one's licence notice is copied beside it, because both licences require the notice to travel with
+the file. UI task 38 (Rehaan, 25 Nov): three real pictures, a photograph, a portrait scan and a signature, are listed
+first, so the demo shows real images rather than the corpus's few-pixel test files.
 
 Run from anywhere: python tools/copy_samples.py
 """
@@ -23,13 +25,21 @@ SRC = ROOT / "spike" / "samples"
 EXT = SRC / "external"
 REAL = SRC / "real"
 DEST = ROOT / "public" / "samples"
-REAL_SAMPLE = "pillow_odd_stride.pcx"
+REAL_SAMPLE = "pillow_odd_stride.pcx"     # the primary action's file
 LICENCE = "Pillow-MIT-CMU.txt"
-NAMES = ["mystery_" + c for c in "abcdefghi"] + ["external_a", "external_b", REAL_SAMPLE]
+# real files from the corpus (spike/samples/real/): name -> (provenance, licence notice in spike/samples/real/LICENSES/)
+REAL_SAMPLES = {
+    "imagemagick_input.tga": ("from ImageMagick's test suite (ImageMagick License)", "ImageMagick-License.txt"),
+    "pillow_hopper_1bit.pbm": ("from Pillow's test suite (MIT-CMU)", LICENCE),
+    "pillow_pil184.pcx": ("from Pillow's test suite (MIT-CMU)", LICENCE),
+    REAL_SAMPLE: ("from Pillow's test suite (MIT-CMU)", LICENCE),
+}
+PICTURES = ["imagemagick_input.tga", "pillow_hopper_1bit.pbm", "pillow_pil184.pcx"]
+NAMES = PICTURES + ["mystery_" + c for c in "abcdefghi"] + ["external_a", "external_b", REAL_SAMPLE]
 
 
 def source_of(name: str) -> Path:
-    if name == REAL_SAMPLE:
+    if name in REAL_SAMPLES:
         return REAL / name
     return (EXT if name.startswith("external_") else SRC) / name
 
@@ -81,24 +91,26 @@ def build_index() -> list:
         entry = {"name": name, "size": src.stat().st_size, "description": describe(src.read_bytes())}
         if name.startswith("external_"):
             entry["provenance"] = pillow_provenance()
-        if name == REAL_SAMPLE:
-            entry["provenance"] = "from Pillow's test suite (MIT-CMU)"
-            entry["licence"] = "LICENSES/" + LICENCE
+        if name in REAL_SAMPLES:
+            entry["provenance"], lic = REAL_SAMPLES[name]
+            entry["licence"] = "LICENSES/" + lic
         index.append(entry)
     return index
 
 
 def main() -> None:
     DEST.mkdir(parents=True, exist_ok=True)
-    got = hashlib.sha256(source_of(REAL_SAMPLE).read_bytes()).hexdigest()
-    if got != manifest_sha256(REAL_SAMPLE):
-        raise SystemExit(f"{REAL_SAMPLE}: sha256 {got} does not match the corpus manifest")
+    for name in REAL_SAMPLES:
+        got = hashlib.sha256(source_of(name).read_bytes()).hexdigest()
+        if got != manifest_sha256(name):
+            raise SystemExit(f"{name}: sha256 {got} does not match the corpus manifest")
     for name in NAMES:
         shutil.copyfile(source_of(name), DEST / name)
     (DEST / "LICENSES").mkdir(exist_ok=True)
-    shutil.copyfile(REAL / "LICENSES" / LICENCE, DEST / "LICENSES" / LICENCE)
+    for lic in sorted({lic for _, lic in REAL_SAMPLES.values()}):
+        shutil.copyfile(REAL / "LICENSES" / lic, DEST / "LICENSES" / lic)
     (DEST / "index.json").write_text(json.dumps(build_index(), indent=2, ensure_ascii=False) + "\n", encoding="utf-8", newline="\n")
-    print(f"copied {len(NAMES)} samples and the {LICENCE} notice to {DEST}")
+    print(f"copied {len(NAMES)} samples and their licence notices to {DEST}")
 
 
 if __name__ == "__main__":

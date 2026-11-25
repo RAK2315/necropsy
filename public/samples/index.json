@@ -1,5 +1,26 @@
 [
   {
+    "name": "imagemagick_input.tga",
+    "size": 9678,
+    "description": "One reading fits: 70 × 46, 24-bit, as the header declares.",
+    "provenance": "from ImageMagick's test suite (ImageMagick License)",
+    "licence": "LICENSES/ImageMagick-License.txt"
+  },
+  {
+    "name": "pillow_hopper_1bit.pbm",
+    "size": 2059,
+    "description": "One reading fits: 128 × 128, 1-bit, as the header declares.",
+    "provenance": "from Pillow's test suite (MIT-CMU)",
+    "licence": "LICENSES/Pillow-MIT-CMU.txt"
+  },
+  {
+    "name": "pillow_pil184.pcx",
+    "size": 5364,
+    "description": "One reading fits: 447 × 144, 1-bit, as the header declares.",
+    "provenance": "from Pillow's test suite (MIT-CMU)",
+    "licence": "LICENSES/Pillow-MIT-CMU.txt"
+  },
+  {
     "name": "mystery_a",
     "size": 11,
     "description": "One reading fits: 4 × 4, 1-bit, as the header declares."

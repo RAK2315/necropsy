@@ -262,7 +262,7 @@ function ambiguityScreen(root, payload, bytes, base, onProgress) {
   note.append(' ', el('span', 'tech', 'row_mad_ratio'));
   right.append(region('glance', 'Every reading at a glance', 'Same size, in the order the engine found them. Select one to go to its card.', glance),
     region('cards', 'Readings that fit', 'Each one fits the data exactly. The bytes alone cannot separate them.', grid, note));
-  if (!replay.single) right.prepend(answerPending(replay));
+  if (!replay.single) right.prepend(answerPending());
   const how = el('div', 'how-col level-3');
   how.append(replayRegion(replay));
   wrap.append(right, how, ev);
@@ -385,14 +385,12 @@ function replayRegion(replay) {
   return region('replay', 'How the engine searched', 'Every layout it tried, in order, and why each one was rejected.', replay.root);
 }
 
-/** The answer column's placeholder while the replay runs (UI task 27): the page never looks as if it is still loading. */
-function answerPending(replay) {
+/** The answer column's placeholder while the replay runs (UI task 27). No skip control: the first run plays through
+ * (UI task 37, Rehaan). */
+function answerPending() {
   const p = el('div', 'answer-pending');
   p.dataset.cap = 'answer-pending';
-  const b = el('button', 'quiet', 'Skip to the answer');
-  b.type = 'button';
-  b.addEventListener('click', () => replay.skip());
-  p.append(el('p', '', 'The answer appears here when the replay ends.'), b);
+  p.append(el('p', '', 'The answer appears here when the replay ends.'));
   return p;
 }
 
@@ -472,7 +470,7 @@ export function renderResult(root, payload, bytes, opts = {}) {
   });
   how.classList.add('level-3');
   how.append(replayRegion(replay));
-  if (!replay.single) answer.append(answerPending(replay));
+  if (!replay.single) answer.append(answerPending());
   activeReplay = replay;
   replay.start();
 }

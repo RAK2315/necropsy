@@ -43,7 +43,8 @@ is coherent, and recovers the contents.
   36: single-column result, collapsed evidence, image filling its
   frame, the sample busy flow, a bigger and slower replay, light and
   dark themes, a visible "Examine another file", self-hosted Roboto
-  and Poppins.
+  and Poppins. A third pass, UI tasks 37 and 38: replay controls
+  hidden until the first run ends, real pictures leading the samples.
   Record: `docs/UI-CLARITY-PASS.md`; commits named `UI task <n>:`.
   This is the entire visible surface of the product, and every account
   of who built what (README, Devpost story) says so plainly.
@@ -103,7 +104,7 @@ own homework. Check it independently.
 - UI task 23 (21 Nov): the render follows the file's declarations;
   matches Pillow on 28 of 29 readings (mystery_e is the stated
   BlackIsZero convention). 16-bit images are not previewed.
-- Tests after UI tasks 29 to 36 (25 Nov): 980 Python passed,
+- Tests after UI tasks 37 and 38 (25 Nov): 995 Python passed,
   1 skipped (the open-failures test, whose list is now empty),
   27 front-end passed.
 - UI tasks 24 to 28 (25 Nov) were built by Claude Code, not Kiro:

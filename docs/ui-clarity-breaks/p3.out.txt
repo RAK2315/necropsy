@@ -1,0 +1,24 @@
+BREAK  37 controls shown during the first run  (public/js/replay.js)
+  with break : 1 failed in 15.38s  -> caught
+  failure    : E   AssertionError: controls shown while the first run plays: {'during': 5, 'counter': True, 'pendingButtons': 0, 'skipVisible': True, 'after': 5, 'skipAfter': True}
+  restored   : sha256 47bfd54622d5 -> 47bfd54622d5 identical
+BREAK  37 controls never come back  (public/js/replay.js)
+  with break : 1 failed in 15.43s  -> caught
+  failure    : E   AssertionError: controls must appear once the replay has ended: {'during': 0, 'counter': True, 'pendingButtons': 0, 'skipVisible': False, 'after': 0, 'skipAfter': False}
+  restored   : sha256 47bfd54622d5 -> 47bfd54622d5 identical
+BREAK  37 skip back in the answer column  (public/js/screens.js)
+  with break : 1 failed in 15.71s  -> caught
+  failure    : E   assert 1 == 0
+  restored   : sha256 f1428f2dc7d6 -> f1428f2dc7d6 identical
+BREAK  38 first tile back on mystery_i  (public/js/strip.js)
+  with break : 2 failed in 18.49s  -> caught
+  failure    : E   assert (8, 8) == (70, 46)
+  restored   : sha256 620de10a0273 -> 620de10a0273 identical
+BREAK  38 real pictures listed last  (tools/copy_samples.py)
+  with break : 1 failed, 23 passed in 0.42s  -> caught
+  failure    : E   assert [{'name': 'im...lares.'}, ...] == [{'name': 'my...hoose.'}, ...]
+  restored   : sha256 55c6d42128ef -> 55c6d42128ef identical
+BREAK  38 the photograph credited to Pillow  (tools/copy_samples.py)
+  with break : 1 failed, 23 passed in 0.66s  -> caught
+  failure    : E   assert [{'name': 'im...lares.'}, ...] == [{'name': 'im...lares.'}, ...]
+  restored   : sha256 55c6d42128ef -> 55c6d42128ef identical

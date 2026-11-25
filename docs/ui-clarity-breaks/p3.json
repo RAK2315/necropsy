@@ -1,0 +1,20 @@
+[
+ {"name": "37 controls shown during the first run", "file": "public/js/replay.js",
+  "old": "      for (const c of controls) c.hidden = true;\n", "new": "",
+  "test": "tests/ui/test_third_pass.py::test_no_controls_until_the_first_run_ends"},
+ {"name": "37 controls never come back", "file": "public/js/replay.js",
+  "old": "{ stop(); reveal(); }", "new": "{ stop(); }",
+  "test": "tests/ui/test_third_pass.py::test_no_controls_until_the_first_run_ends"},
+ {"name": "37 skip back in the answer column", "file": "public/js/screens.js",
+  "old": "  p.append(el('p', '', 'The answer appears here when the replay ends.'));", "new": "  p.append(el('p', '', 'The answer appears here when the replay ends.'), el('button', 'quiet', 'Skip to the answer'));",
+  "test": "tests/ui/test_third_pass.py::test_no_controls_until_the_first_run_ends"},
+ {"name": "38 first tile back on mystery_i", "file": "public/js/strip.js",
+  "old": "{ label: 'imagemagick_input.tga', name: 'imagemagick_input.tga', bytes: async () => fetchSample('imagemagick_input.tga') }", "new": "{ label: 'imagemagick_input.tga', name: 'imagemagick_input.tga', bytes: async () => fetchSample('mystery_i') }",
+  "test": "tests/ui/test_strip.py"},
+ {"name": "38 real pictures listed last", "file": "tools/copy_samples.py",
+  "old": "NAMES = PICTURES + [\"mystery_\" + c for c in \"abcdefghi\"] + [\"external_a\", \"external_b\", REAL_SAMPLE]", "new": "NAMES = [\"mystery_\" + c for c in \"abcdefghi\"] + [\"external_a\", \"external_b\", REAL_SAMPLE] + PICTURES",
+  "test": "tests/ui/test_samples.py"},
+ {"name": "38 the photograph credited to Pillow", "file": "tools/copy_samples.py",
+  "old": "\"imagemagick_input.tga\": (\"from ImageMagick's test suite (ImageMagick License)\", \"ImageMagick-License.txt\")", "new": "\"imagemagick_input.tga\": (\"from Pillow's test suite (MIT-CMU)\", LICENCE)",
+  "test": "tests/ui/test_samples.py"}
+]

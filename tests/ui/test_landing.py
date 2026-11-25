@@ -55,7 +55,7 @@ def test_landing_page(base_url):
     assert got["primaryText"] == "See it recover a real file"
     assert all(got["aboveFold"]), "the primary action and the drop zone must be visible at 1280x720 without scrolling"
 
-    assert [t["input"] for t in got["tiles"]] == ["mystery_i", "mystery_d", "mystery_b, first 300 bytes"]
+    assert [t["input"] for t in got["tiles"]] == ["imagemagick_input.tga", "mystery_d", "mystery_b, first 300 bytes"]
     assert [t["cap"] for t in got["tiles"]] == ["tile-0", "tile-1", "tile-2"]
     assert all(t["open"].startswith("Open") and t["role"] == "button" for t in got["tiles"])
     assert got["steps"] == 3
@@ -64,10 +64,11 @@ def test_landing_page(base_url):
     assert [r["desc"] for r in got["rows"]] == [e["description"] for e in index]
     assert all(r["desc"] for r in got["rows"])
     licensed = [r for r in got["rows"] if r["lic"]]
-    assert [r["name"] for r in licensed] == ["pillow_odd_stride.pcx"]
-    assert licensed[0]["lic"] == "/samples/LICENSES/Pillow-MIT-CMU.txt"
+    # UI task 38: the real pictures come first, each linked to its licence notice
+    assert [r["name"] for r in licensed] == ["imagemagick_input.tga", "pillow_hopper_1bit.pbm", "pillow_pil184.pcx", "pillow_odd_stride.pcx"]
+    assert [r["lic"] for r in licensed] == ["/samples/LICENSES/ImageMagick-License.txt"] + ["/samples/LICENSES/Pillow-MIT-CMU.txt"] * 3
     # same notice; a deploy from a Windows clone may serve it with CRLF line endings
-    assert norm(got["licText"]) == norm((PUBLIC / "LICENSES" / "Pillow-MIT-CMU.txt").read_text(encoding="utf-8"))
+    assert norm(got["licText"]) == norm((PUBLIC / "LICENSES" / "ImageMagick-License.txt").read_text(encoding="utf-8"))   # the first row's notice
 
     h = Engine(deadline_seconds=5.0).run((PUBLIC / "pillow_odd_stride.pcx").read_bytes()).candidate.hypothesis
     assert got["result"] == {"dims": f"{h.width} × {h.height} · {h.bit_depth}-bit", "status": "RESOLVED"}

@@ -20,9 +20,9 @@ def _index():
     return json.loads((PUBLIC / "index.json").read_text(encoding="utf-8"))
 
 
-def test_nine_corpus_samples_then_the_external_ones_then_the_real_one():
+def test_real_pictures_then_the_corpus_then_the_external_ones_then_the_real_one():
     names = [e["name"] for e in _index()]
-    assert names == ["mystery_" + c for c in "abcdefghi"] + ["external_a", "external_b", "pillow_odd_stride.pcx"]
+    assert names == ["imagemagick_input.tga", "pillow_hopper_1bit.pbm", "pillow_pil184.pcx"] + ["mystery_" + c for c in "abcdefghi"]         + ["external_a", "external_b", "pillow_odd_stride.pcx"]   # UI task 38: real pictures first
 
 
 @pytest.mark.parametrize("name", cs.NAMES)
@@ -30,9 +30,10 @@ def test_public_copy_is_byte_identical_to_source(name):
     assert (PUBLIC / name).read_bytes() == cs.source_of(name).read_bytes()
 
 
-def test_real_sample_matches_the_corpus_manifest():
-    got = hashlib.sha256((PUBLIC / cs.REAL_SAMPLE).read_bytes()).hexdigest()
-    assert got == cs.manifest_sha256(cs.REAL_SAMPLE)
+@pytest.mark.parametrize("name", cs.REAL_SAMPLES)
+def test_real_sample_matches_the_corpus_manifest(name):
+    got = hashlib.sha256((PUBLIC / name).read_bytes()).hexdigest()
+    assert got == cs.manifest_sha256(name)
 
 
 def test_index_matches_the_generator():
@@ -67,11 +68,17 @@ def test_provenance_and_licence():
     for e in _index():
         if e["name"].startswith("external_"):
             assert e["provenance"].startswith("written by Pillow ") and "licence" not in e
-        elif e["name"] == cs.REAL_SAMPLE:
+        elif e["name"].startswith("pillow_"):
             assert e["provenance"] == "from Pillow's test suite (MIT-CMU)"
             assert e["licence"] == "LICENSES/Pillow-MIT-CMU.txt"
             notice = (PUBLIC / e["licence"]).read_text(encoding="utf-8")
             assert notice == (cs.REAL / "LICENSES" / "Pillow-MIT-CMU.txt").read_text(encoding="utf-8")
             assert "Secret Labs AB" in notice and "Permission to use, copy, modify" in notice
+        elif e["name"].startswith("imagemagick_"):
+            assert e["provenance"] == "from ImageMagick's test suite (ImageMagick License)"
+            assert e["licence"] == "LICENSES/ImageMagick-License.txt"
+            notice = (PUBLIC / e["licence"]).read_text(encoding="utf-8")
+            assert notice == (cs.REAL / "LICENSES" / "ImageMagick-License.txt").read_text(encoding="utf-8")
+            assert "ImageMagick License" in notice
         else:
             assert "provenance" not in e and "licence" not in e

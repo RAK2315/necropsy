@@ -1,4 +1,4 @@
-# UI clarity passes: tasks 24 to 36
+# UI clarity passes: tasks 24 to 38
 
 ## Who built this
 
@@ -19,7 +19,7 @@ Claude Code also wrote every test for these tasks and edited older Kiro-written 
 changed (first strip tile, chip text, sample counts, the failure copy, the accent rule's proof-line class). Each
 commit names its task and carries a `Co-Authored-By: Claude` trailer.
 
-A second pass the same day (tasks 29 to 36, also Rehaan's call) is recorded in its own section below.
+A second pass the same day (tasks 29 to 36) and a third (tasks 37 and 38), both also Rehaan's call, are recorded in their own sections below.
 
 Nothing in the engine or the API payload changed in either pass. The first pass kept the palette, fonts and theme; the
 second added a light theme and self-hosted fonts at Rehaan's request. The no-CRT rule is unchanged.
@@ -142,3 +142,29 @@ the accent probe (`tools/visual_probe.mjs`, Kiro's) only counts a text colour on
 the chip has one (its `.tech` enum). That blind spot predates this pass and applies in both themes; it is recorded here,
 not fixed. The break was re-aimed at the chip's border, which the probe does count, and was caught in the light run and
 passed in the dark run, as it should (the output shows both runs).
+
+## Third pass: tasks 37 and 38
+
+Rehaan's call, 25 Nov, after watching a sample run: the replay looked as if it had already run, because Pause, the step
+buttons and two Skip controls were on screen from the first frame; and the demo's images were few-pixel test files, not
+pictures. Both were built by Claude Code, in one commit named `UI tasks 37 and 38`.
+
+| Task | What |
+|---|---|
+| 37 | While the replay plays for the first time only its step counter and caption show. Pause, the step buttons, the speed and "Skip to end" appear once it has reached its end, for going back over it. The answer column's "Skip to the answer" button is removed; its placeholder line stays. With reduced motion the replay opens at its end, so the controls show at once. |
+| 38 | Three real pictures lead the sample list: `imagemagick_input.tga` (a photograph of a rose, from ImageMagick's test suite, ImageMagick License), `pillow_hopper_1bit.pbm` (a 1-bit portrait) and `pillow_pil184.pcx` (a handwritten signature), both from Pillow's test suite (MIT-CMU). They are corpus files from `spike/samples/real/`, checked against the manifest's sha256, each linked to its licence notice. The first outcome tile on the landing page examines the photograph instead of mystery_i. |
+
+**What task 37 does not do.** The replay is still a replay: the engine finishes in milliseconds and the header says so.
+The three real pictures resolve at their first check (each file's declarations fit the data at once), so their result
+says "Nothing to replay" and shows no steps. No step is invented to make them look busier.
+
+**Requirements superseded.** UI task 27's skip button in the answer placeholder is removed.
+
+**Verification.** `tests/ui/test_third_pass.py`: the controls are hidden while the first run plays and shown after it,
+and the three pictures lead the list, the first tile is the photograph, and each resolves to the engine's own
+dimensions. `test_samples.py`, `test_landing.py`, `test_strip.py`, `test_a11y.py` and `test_replay_caption.py` were
+updated for the new order, notices, first tile and placeholder. Older tests that click "Skip to end" during the first
+run still do so programmatically; a hidden button still receives a scripted click.
+
+Breaks: `docs/ui-clarity-breaks/p3.json`, output beside it. 6 breaks, all caught on the first run, each restore
+byte-identical.
