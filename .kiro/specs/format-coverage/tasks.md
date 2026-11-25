@@ -12,7 +12,7 @@
 ## Tasks
 
 - [ ] 1. Decision Record items 28 to 32, and the diff tool
-  - Append items 28 to 32 to the Decision Record of `.kiro/specs/structure-inference-engine/requirements.md`: the five principle calls, verbatim, each with its reason and the date 25 Nov 2026. Add `tools/fc_diff.py` (runs the engine over the 11 samples and the 81 corpus files, compares status, termination, candidate keys and data regions with `spike/fc_baseline.json`, prints every difference) and commit the baseline taken before any engine change, with a test that the baseline equals a live run.
+  - Append items 28 to 32 to the Decision Record of `.kiro/specs/structure-inference-engine/requirements.md`: the five principle calls, verbatim, each with its reason and the date 25 Nov 2026. Item 28 carries the wording fix of Requirement 4.4: the call stands, and the item says what a "number" is in P1 (each `0` or `1` character; whitespace between them optional; P2 and P3 still need whitespace). Add `tools/fc_diff.py` (runs the engine over the 11 samples and the 81 corpus files, compares status, termination, candidate keys and data regions with `spike/fc_baseline.json`, prints every difference) and commit the baseline taken before any engine change, with a test that the baseline equals a live run.
   - _Requirements: 1.1, 1.2, 1.3, 1.4, 1.5, 20.1, 20.2_
 
 - [ ] 2. Data model: optional hypothesis fields, key, stride helper
@@ -20,8 +20,8 @@
   - _Requirements: 7.1, 7.2, 7.3, 7.4, 7.13, 7.14_
 
 - [ ] 3. Closure rule: samples above the declared maximum (PNM binary)
-  - In `check_closure`, after the `none` length rule, when `maxval` is set: reject with `decoder_overrun` and a detail when any 1-byte or big-endian 2-byte sample exceeds `maxval`. Tests built with `Hypothesis` objects directly (no probe yet): a sample equal to the maximum passes, one above fails, 16-bit with maxval 1000 on both bytes, never-raises on `st.binary()`.
-  - _Requirements: 1.5, 3.9, 15.1_
+  - Add `sample_above_maxval` to `REASONS` in `necropsy/engine/types.py` and amend engine Requirement 5.6 in the same commit (Requirement 2.16; tests that assert the reason set are updated here, each cited). In `check_closure`, after the `none` length rule, when `maxval` is set: reject with `sample_above_maxval` and a detail naming offset, value and maximum when any 1-byte or big-endian 2-byte sample exceeds `maxval`. `web/serialise.py` passes the reason through; a test checks `reason` and `rejection_counts`. Tests built with `Hypothesis` objects directly (no probe yet): a sample equal to the maximum passes, one above fails, 16-bit with maxval 1000 on both bytes, never-raises on `st.binary()`.
+  - _Requirements: 1.5, 2.16, 2.17, 3.9, 15.1_
 
 - [ ] 4. PNM probe, binary (P5, P6)
   - `probe_pnm` with the grammar of Requirement 3.2 to 3.7, registered in `PROBES` between `pbm` and `tiff`; `web/serialise.py` stage list gains `pnm`. Tests: crafted P5/P6 files byte by byte, with a comment, with CRLF, maxval 255 and 65535, a missing single whitespace byte, zero dimension, `P4`, `P7` and `P0` not matched, never-raises. Engine tests: exact status, key, header size, data region and decoded bytes. Expected diff: 9 files (design.md, row 4).
@@ -32,16 +32,16 @@
   - _Requirements: 16.1, 16.3, 16.4, 16.5_
 
 - [ ] 6. Decoder: `pnm_text`
-  - `necropsy/engine/decoders.py` with `DecodeResult` and `pnm_text_decode`. Tests for every state and every `consumed_to` of Requirement 4.6 to 4.9, comments between numbers, a number above maxval, a digit run without separators, a stray token, an extra number, the packing of P1 rows, 16-bit output, a 6-digit token with leading zeros, never-raises, no allocation above `max_output_bytes`.
-  - _Requirements: 2.7, 2.8, 2.9, 2.10, 2.11, 4.3, 4.4, 4.5, 4.6, 4.7, 4.8, 4.9, 15.1_
+  - `necropsy/engine/decoders.py` with `DecodeResult` (six states: `ok`, `overrun`, `underrun`, `unconsumed`, `malformed`, `above_maxval`) and `pnm_text_decode`. Tests for every state and every `consumed_to` of Requirement 4.7 to 4.11: P1 as digit runs with no separators (ok), P1 mixed with separators and comments (ok), a P1 digit `2` (`above_maxval`), a P1 letter (`malformed`), a P2 number above maxval (`above_maxval`), `255255` in P2 (`above_maxval`), a P2 non-digit token (`malformed`), a short file (`underrun`), an extra digit or number (`unconsumed`), the packing of P1 rows, 16-bit output, a 6-digit token with leading zeros, never-raises, no allocation above `max_output_bytes`.
+  - _Requirements: 2.7, 2.8, 2.9, 2.10, 2.11, 4.3, 4.4, 4.5, 4.6, 4.7, 4.8, 4.9, 4.10, 4.11, 15.1_
 
 - [ ] 7. Closure rule: decoder dispatch and the decode cap
-  - `DECODERS` table and `DECODE_CAP` in `decoders.py`; `check_closure` dispatches on it, carries `detail`, and rejects above the cap with `degenerate_hypothesis`. `pnm_text` is the first entry. Tests: dispatch of every state to its reason, cap boundary (exactly the cap passes, one above is rejected), unknown encoding still `unsupported_encoding`, never-raises.
-  - _Requirements: 2.12, 2.13, 4.10, 15.1_
+  - `DECODERS` table and `DECODE_CAP` in `decoders.py`; `check_closure` dispatches on it, carries `detail`, and rejects above the cap with `degenerate_hypothesis`. `decoder_malformed` is added to `REASONS` and engine Requirement 5.6 is amended again (Requirement 2.16). `pnm_text` is the first entry. Tests: dispatch of every state to its reason (`overrun`, `underrun`, `unconsumed`, `malformed`, `above_maxval` to `decoder_overrun`, `decoder_underrun`, `decoder_unconsumed`, `decoder_malformed`, `sample_above_maxval`), both new reasons pass through `web/serialise.py` unchanged, cap boundary (exactly the cap passes, one above is rejected), unknown encoding still `unsupported_encoding`, never-raises.
+  - _Requirements: 2.12, 2.13, 2.16, 2.17, 4.12, 15.1_
 
 - [ ] 8. PNM probe, text (P1, P2, P3)
-  - Extend `probe_pnm` with Requirement 4.1 and 4.2. Tests: crafted files for each magic, the exact-count rule (one number short, one too many), a number above maxval, comments, P1 as digit runs (fails, with the reason), a P3 with 16-bit maxval. Expected diff: 3 files (design.md, row 8); `pillow_hopper_1bit_plain.pbm` stays FAILED.
-  - _Requirements: 1.1, 4.1, 4.2, 4.11, 15.1_
+  - Extend `probe_pnm` with Requirement 4.1 and 4.2. Tests: crafted files for each magic, the exact-count rule (one number short, one too many), a number above maxval, comments, P1 as digit runs and as separated digits (both resolve with identical pixels), a P1 with a letter (fails with `decoder_malformed`), P2 with no whitespace between numbers (fails), a P3 with 16-bit maxval. Expected diff: 4 files (design.md, row 8), including `pillow_hopper_1bit_plain.pbm`.
+  - _Requirements: 1.1, 4.1, 4.2, 4.4, 4.13, 15.1_
 
 - [ ] 9. Render plain-text PNM
   - P1 renders as a 1-bit black-is-one image through the PBM path. Tests: exact pixels for P1, P2, P3 fixtures after a full engine run.
@@ -164,7 +164,7 @@
   - _Requirements: 19.2, 19.3_
 
 - [ ] 39. Regenerate the results
-  - Run `python -m tools.real_corpus`. Commit `docs/REAL-CORPUS-RESULTS.md` and `spike/real_corpus_results.json`. Add the two expected open failures to `OPEN_IN_SCOPE_FAILURES` as strict expected failures with measured notes; change the "five of six invalid files fail" test in its own commit if `goimage_invalid-palette-ref.tiff` is `RESOLVED`, citing Requirement 19.5; write every mismatch and its cause into the notes; write measured counts into design.md beside the predicted ones, and into the repository README and `.kiro/specs/real-corpus/design.md`.
+  - Run `python -m tools.real_corpus`. Commit `docs/REAL-CORPUS-RESULTS.md` and `spike/real_corpus_results.json`. Add the expected open failure (`libtiff_deflate-last-strip-extra-data.tiff`) to `OPEN_IN_SCOPE_FAILURES` as a strict expected failure with a measured note, and any other in-scope valid file that measures FAILED; change the "five of six invalid files fail" test in its own commit if `goimage_invalid-palette-ref.tiff` is `RESOLVED`, citing Requirement 19.5; write every mismatch and its cause into the notes; write measured counts into design.md beside the predicted ones, and into the repository README and `.kiro/specs/real-corpus/design.md`.
   - _Requirements: 19.1, 19.3, 19.4, 19.5, 19.6, 20.2_
 
 - [ ] 40. Verification and report

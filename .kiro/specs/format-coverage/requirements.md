@@ -13,7 +13,7 @@ This spec extends the engine to read six more declared layouts and nothing else:
 5. Uncompressed TIFF in several strips, then tiled uncompressed TIFF.
 6. Compressed TIFF: PackBits (32773), LZW (5), Deflate (8 and 32946) and LZMA (34925).
 
-Everything the engine rules already say still holds: the closure gate is a hard gate on the decoded stream (engine Decision Record items 1 and 4), probes read what a file states about itself and apply the format's fixed layout and never encode knowledge that is not in the file (item 2), and when several readings close the engine reports all of them and chooses none (items 6 and 7). This spec adds layouts and decoders. It does not change the gate, the revision strategies, Generic Search or the reason and termination vocabularies.
+Everything the engine rules already say still holds: the closure gate is a hard gate on the decoded stream (engine Decision Record items 1 and 4), probes read what a file states about itself and apply the format's fixed layout and never encode knowledge that is not in the file (item 2), and when several readings close the engine reports all of them and chooses none (items 6 and 7). This spec adds layouts and decoders. It does not change the gate, the revision strategies, Generic Search or the termination vocabulary. It adds two members to the reason vocabulary (Requirement 2.16).
 
 Engine requirement numbers are written "engine Requirement N.M". Requirement numbers below are this spec's own.
 
@@ -22,10 +22,10 @@ Engine requirement numbers are written "engine Requirement N.M". Requirement num
 - **Data range**: a half-open byte interval `[start, end)` of the file that holds coded or raw pixel data. A hypothesis has one data range unless it declares several.
 - **Unit**: the thing one data range holds: the whole image (today's layouts), one strip, one tile, or, for PCX, one scanline of all planes.
 - **Decoder**: a function that turns one data range into the bytes of its unit. Decoders are `pnm_text`, `rle_tga`, `packbits`, `lzw_tiff`, `deflate_zlib` and `lzma_xz`. The existing `rle_pcx` decoder is unchanged.
-- **Decoder result**: the four states `ok`, `overrun`, `underrun`, `unconsumed`, with `consumed_to`, defined for each decoder in Requirements 2 to 4 and 11 to 14 in the way engine Requirement 1.11 defines them for `rle_pcx`.
-- **Declared row bytes**: a scanline length the file states directly, instead of one derived from width and bit depth. Only multi-plane PCX uses it (`planes Ã— bytes_per_line`).
+- **Decoder result**: the six states `ok`, `overrun`, `underrun`, `unconsumed`, `malformed` and `above_maxval`, with `consumed_to`, defined for each decoder in Requirements 2 to 4 and 11 to 14 in the way engine Requirement 1.11 defines them for `rle_pcx`.
+- **Declared row bytes**: a scanline length the file states directly, instead of one derived from width and bit depth. Only multi-plane PCX uses it (`planes × bytes_per_line`).
 - **Maximum value** (`maxval`): the PNM header's declared largest sample value. P1 has no such field and its maximum is 1.
-- **Whole-strip rows**: the number of image rows a strip holds, `min(RowsPerStrip, height âˆ’ index Ã— RowsPerStrip)`; the last strip holds the remaining rows.
+- **Whole-strip rows**: the number of image rows a strip holds, `min(RowsPerStrip, height − index × RowsPerStrip)`; the last strip holds the remaining rows.
 - **Tile grid**: `ceil(width / TileWidth)` tiles across and `ceil(height / TileLength)` down, in row-major order, which is the order of the TileOffsets array.
 - **Predictor**: TIFF tag 317. A declared pre-compression transform.
 - **Expected diff**: before a change, the list of corpus files whose status changes and the statement that nothing else does. After the change the same comparison is measured (Requirement 20).
@@ -41,13 +41,15 @@ These five calls were decided by Claude Code on Rehaan's delegation, on 25 Novem
 
 #### Acceptance Criteria
 
-1. (Call 1, item 28) Text PNM (P1/P2/P3): a layout fits only if, after the header, the file holds exactly width Ã— height (Ã— 3 for P3) numbers, each within the declared maximum value (P1: 0 or 1), and nothing else but whitespace and comments.
-2. (Call 2, item 29) Compressed TIFF (PackBits, LZW, Deflate, LZMA): a layout fits only if each strip decodes to exactly its rows Ã— row bytes AND decoding ends exactly at the declared end of the strip (all strip bytes consumed, nothing left). Files whose encoder pads strips will FAIL and are reported as such. Same hard gate as today, no tolerance.
-3. (Call 3, item 30) TGA run-length data is one continuous stream of packets over the whole image. A packet that runs across the end of a row is not rejected: the TGA 2.0 specification says packets "should" not cross rows, which is advice to encoders, not a rule the file declares. Closure is the same as for every encoding: the output is exactly width Ã— height pixels and the packets end exactly at the end of the data region.
+1. (Call 1, item 28) Text PNM (P1/P2/P3): a layout fits only if, after the header, the file holds exactly width × height (× 3 for P3) numbers, each within the declared maximum value (P1: 0 or 1), and nothing else but whitespace and comments.
+2. (Call 2, item 29) Compressed TIFF (PackBits, LZW, Deflate, LZMA): a layout fits only if each strip decodes to exactly its rows × row bytes AND decoding ends exactly at the declared end of the strip (all strip bytes consumed, nothing left). Files whose encoder pads strips will FAIL and are reported as such. Same hard gate as today, no tolerance.
+3. (Call 3, item 30) TGA run-length data is one continuous stream of packets over the whole image. A packet that runs across the end of a row is not rejected: the TGA 2.0 specification says packets "should" not cross rows, which is advice to encoders, not a rule the file declares. Closure is the same as for every encoding: the output is exactly width × height pixels and the packets end exactly at the end of the data region.
 4. (Call 4, item 31) TIFF Predictor (tag 317) is a declaration. Four files in `spike/samples/real/` declare Predictor 2. A file declaring a Predictor value the engine does not implement is refused with that tag and value named. It is never decoded as if Predictor were 1. (Implementing Predictor 2 is not in this spec.)
 5. (Call 5, item 32) PNM binary samples (P5/P6) follow the same maximum-value rule as call 1: a sample above the declared maximum value fails closure. The maximum value is the file's declaration, so this rule is derivable, not a threshold.
 
 Requirements 3, 4, 5, 8 and 12 to 15 turn these calls into testable criteria.
+
+One clarification, made on 25 November 2026 before any code was written, folded into Decision Record item 28: call 1 stands as written, and the only change is that it says what a "number" is in P1. In plain PBM each `0` or `1` character is one number, and whitespace between them is optional; that is part of the format's fixed layout, not a convention (Requirement 4.4). P2 and P3 still need whitespace between numbers.
 
 ## Requirements
 
@@ -63,15 +65,22 @@ Requirements 3, 4, 5, 8 and 12 to 15 turn these calls into testable criteria.
 4. THE new PNM probe (Requirement 3) SHALL NOT match `P0`, `P4`, `P7`, `P8`, `P9`, or any file whose third byte is not whitespace. P4 stays with the PBM probe, exactly as engine Requirement 2.7 states it.
 5. WHEN given the 54 bytes of a BMP file header (`BM`, size, reserved, data offset 54, `BITMAPINFOHEADER`) followed by pixel bytes, NO probe SHALL emit a seed. The result is whatever the engine returns for it today.
 6. THE engine package `necropsy/engine/` SHALL import only the Python standard library and itself. A test SHALL parse every module under that package and fail on any other import. Pillow and every other image library stay in `tools/` and `tests/` only. `zlib` and `lzma` are the standard-library modules that Deflate and LZMA use. PackBits, LZW, TGA RLE and PNM text are written in this repository.
-7. EVERY decoder SHALL have the signature `decode(data, start, end, <layout parameters>, max_output_bytes)` and SHALL return a decoder result `(status, data, consumed_to, detail)` with `status` one of `ok`, `overrun`, `underrun`, `unconsumed`, `data` the decoded bytes when `status` is `ok` and `None` otherwise, and `detail` a short string (empty when `ok`).
+7. EVERY decoder SHALL have the signature `decode(data, start, end, <layout parameters>, max_output_bytes)` and SHALL return a decoder result `(status, data, consumed_to, detail)` with `status` one of `ok`, `overrun`, `underrun`, `unconsumed`, `malformed`, `above_maxval`, `data` the decoded bytes when `status` is `ok` and `None` otherwise, and `detail` a short string (empty when `ok`).
 8. EVERY decoder SHALL check, before each write, whether the write would take the output beyond `max_output_bytes`, and if so SHALL return `overrun` without writing it. The output SHALL never exceed `max_output_bytes`. `zlib` and `lzma` SHALL be called with a `max_length` of `max_output_bytes + 1`, so that they never allocate more than that.
 9. EVERY decoder SHALL return `ok` only when the output length equals `max_output_bytes` AND the decoder stopped exactly at `end`, as each decoder defines that stop. `consumed_to` SHALL be the index of the first byte not consumed, with the per-decoder definitions below.
 10. WHEN `start < 0`, `end > len(data)`, `start > end` or `max_output_bytes < 0`, EVERY decoder SHALL return `underrun` with `consumed_to = start` and no output, the same way `rle_pcx_decode` does.
-11. WHEN a stream is malformed in a way that no other state describes (a code with no meaning, a stray token, a corrupt `zlib` or `lzma` stream), THE decoder SHALL return `underrun`. The engine reason vocabulary (engine Requirement 5.6) gains no member, so no consumer needs to learn a new reason. The decoder's `detail` SHALL say what was malformed.
-12. THE closure gate SHALL map decoder states to `decoder_overrun`, `decoder_underrun` and `decoder_unconsumed` (engine Requirement 1.12), and SHALL carry the decoder's `detail` on the `RejectionEntry`.
+11. THE decoder states SHALL mean exactly this, and no state SHALL be used for a case that another state names:
+    - `overrun`: the next write would take the output beyond `max_output_bytes`.
+    - `underrun`: the region ended before the output was full (or before the stream's end code), or the arguments are invalid (criterion 10).
+    - `unconsumed`: the output is complete and bytes of the region remain.
+    - `malformed`: the stream holds something with no meaning in its format: a code with no meaning, a stray or non-digit token, a corrupt `zlib` or `lzma` stream, or an `lzma` dictionary above the memory limit. The decoder's `detail` SHALL say what was wrong.
+    - `above_maxval`: a P2, P3, P5 or P6 sample, or a P1 digit, is greater than the declared maximum value. The `detail` SHALL name the offset, the value and the maximum.
+12. THE closure gate SHALL map decoder states to reasons: `overrun` to `decoder_overrun`, `underrun` to `decoder_underrun`, `unconsumed` to `decoder_unconsumed` (engine Requirement 1.12), `malformed` to `decoder_malformed` and `above_maxval` to `sample_above_maxval`, and SHALL carry the decoder's `detail` on the `RejectionEntry`. THE `none` sample rule of Requirement 3.9 SHALL use `sample_above_maxval` directly.
 13. WHEN a hypothesis names a decoder encoding and `expected_decoded_bytes` is greater than `DECODE_CAP = 8,388,608` (8 MiB), THE closure gate SHALL reject it with reason `degenerate_hypothesis` and a detail naming the size and the cap, before any decoding. THE `none` encoding allocates nothing sized from the input and is not capped.
 14. EVERY decoder, every new probe and every new closure rule SHALL have a Hypothesis property test, on `st.binary()`, asserting that it never raises and that its return type is the declared type (steering `parsers.md`).
 15. NO decoder SHALL read the clock, a random source or global mutable state.
+16. THE engine reason vocabulary (engine Requirement 5.6) SHALL gain exactly two members, `sample_above_maxval` and `decoder_malformed`, and no other. This amends engine Requirement 5.6, which says the vocabulary is exactly the ten members listed there. The reason is needed because each reason is put into plain words on the screen: `decoder_overrun` reads "a run would write past the size of the picture" and `decoder_underrun` reads "the data ran out before the picture was full", and a sample above the maximum, a corrupt stream or a stray token is neither, so reusing them would make the screen state something false. `REASONS` in `necropsy/engine/types.py` SHALL hold the twelve members.
+17. THE payload of `web/serialise.py` SHALL pass both new reasons through unchanged like any other reason, in `reason` and in `rejection_counts`. Claude Code adds their plain words in `public/js/words.js`; nothing under `public/` is edited by this spec.
 
 ### Requirement 3: PNM probe and binary PNM (P5, P6)
 
@@ -84,10 +93,10 @@ Requirements 3, 4, 5, 8 and 12 to 15 turn these calls into testable criteria.
 3. THE PNM probe SHALL parse the header only within `data[:1024]` with this grammar: the magic (2 bytes), then one or more whitespace bytes, with comments allowed anywhere a whitespace run is allowed (a comment is `#` and every byte up to and including the next `0x0A` or `0x0D`), then width as a run of ASCII digits, then whitespace or comments, then height, then, for P2, P3, P5 and P6 only, whitespace or comments and the maximum value. A token ends at the first byte that is not an ASCII digit.
 4. FOR P5 and P6, exactly one whitespace byte SHALL follow the maximum value, and `header_size` SHALL be the index of the byte after it. A comment SHALL NOT sit between the maximum value and that byte.
 5. THE probe SHALL record these `FieldRecord`s: `magic` at `0x00` as `2s`; `width`, `height` and (P2, P3, P5, P6) `maxval` each at its token offset as `<n>s`, `n` the token length.
-6. FOR P5 and P6 the seed SHALL be: `width`, `height` as read; `maxval` as read; `bit_depth = 8` (P5) or `24` (P6) when `maxval â‰¤ 255`, and `16` (P5) or `48` (P6) when `256 â‰¤ maxval â‰¤ 65535`; `row_alignment = 1`; `encoding = "none"`; `probe_name = "pnm"`.
+6. FOR P5 and P6 the seed SHALL be: `width`, `height` as read; `maxval` as read; `bit_depth = 8` (P5) or `24` (P6) when `maxval ≤ 255`, and `16` (P5) or `48` (P6) when `256 ≤ maxval ≤ 65535`; `row_alignment = 1`; `encoding = "none"`; `probe_name = "pnm"`.
 7. IF the header cannot be parsed, a dimension is 0, the maximum value is 0 or above 65535, or the single whitespace byte of criterion 4 is missing, THEN the probe SHALL still emit a seed with the values that could not be read set to 0 (a `bit_depth` of 0 when the maximum value is unusable) and SHALL record `probe_precondition_failed` with a detail naming the field.
-8. THE closure gate SHALL apply the `none` rule of engine Requirement 1.7 to a P5 or P6 hypothesis unchanged: the data region `[header_size, len(data))` SHALL hold exactly `row_stride Ã— height` bytes. No PNM trailer SHALL exist: the data region ends at the end of the file.
-9. WHEN a hypothesis has a `maxval` and encoding `none`, THE closure gate SHALL, after the length rule passes, read each sample of the data region (1 byte, or 2 bytes big-endian when `bit_depth` per sample is 16) and SHALL reject the hypothesis with reason `decoder_overrun`, and a detail naming the first offending sample's offset and value and the maximum, WHEN any sample is greater than `maxval`. This is Principle call 5, and it is derived from the file's own declaration, not from a threshold. No allocation SHALL be sized from `maxval`.
+8. THE closure gate SHALL apply the `none` rule of engine Requirement 1.7 to a P5 or P6 hypothesis unchanged: the data region `[header_size, len(data))` SHALL hold exactly `row_stride × height` bytes. No PNM trailer SHALL exist: the data region ends at the end of the file.
+9. WHEN a hypothesis has a `maxval` and encoding `none`, THE closure gate SHALL, after the length rule passes, read each sample of the data region (1 byte, or 2 bytes big-endian when `bit_depth` per sample is 16) and SHALL reject the hypothesis with reason `sample_above_maxval` (Requirement 2.16), and a detail naming the first offending sample's offset and value and the maximum, WHEN any sample is greater than `maxval`. This is Principle call 5, and it is derived from the file's own declaration, not from a threshold. No allocation SHALL be sized from `maxval`.
 10. THE decoded bytes of an accepted P5 or P6 candidate SHALL be the raster bytes as stored: row-major, top row first, samples in the stored order (R, G, B for P6), 16-bit samples big-endian.
 
 ### Requirement 4: PNM plain text (P1, P2, P3)
@@ -98,25 +107,28 @@ Requirements 3, 4, 5, 8 and 12 to 15 turn these calls into testable criteria.
 
 1. FOR P1, P2 and P3 the PNM probe SHALL parse the header with Requirement 3's grammar, and `header_size` SHALL be the index of the byte after the last header token (the height for P1, the maximum value for P2 and P3). No whitespace byte is consumed beyond that token.
 2. THE seed SHALL be: `bit_depth = 1` and `maxval = 1` (P1), `8` or `16` (P2), `24` or `48` (P3) with the maximum value read; `row_alignment = 1`; `encoding = "pnm_text"`; `probe_name = "pnm"`. For P2 and P3, `bit_depth` follows Requirement 3.6.
-3. THE `pnm_text` decoder SHALL have the signature `pnm_text_decode(data, start, end, width, height, bit_depth, maxval, max_output_bytes)`, and SHALL treat `data[start:end]` as a sequence of whitespace, comments and tokens. Whitespace is `0x20`, `0x09`, `0x0A`, `0x0B`, `0x0C`, `0x0D`. A comment is `#` through the next `0x0A` or `0x0D`. A token is a maximal run of bytes that are neither whitespace nor `#`.
-4. THE decoder SHALL expect exactly `N = width Ã— height` numbers (P1, P2) or `N = width Ã— height Ã— 3` numbers (P3; `bit_depth` 24 or 48), and each number SHALL be a token of ASCII digits whose value is at most `maxval`. A token of more than five digits after its leading zeros is above every possible maximum value.
-5. THE decoder SHALL output: for `bit_depth = 1`, the pixels packed 8 per byte, most significant bit first, each row padded with zero bits to a whole byte, where a number 1 is a set bit (black, as in P4); for the other depths, one byte per number when `maxval â‰¤ 255`, and two bytes big-endian when `maxval > 255`.
-6. WHEN the next number would be written and its value is greater than `maxval`, or the write would exceed `max_output_bytes`, THE decoder SHALL return `overrun` without writing it, with `consumed_to` the index after that token.
-7. WHEN a token that is not all ASCII digits is met before `N` numbers are written, THE decoder SHALL return `underrun` with `consumed_to` the index of the token's first byte and a detail naming it. WHEN the region ends before `N` numbers are written, THE decoder SHALL return `underrun` with `consumed_to = end`.
-8. WHEN `N` numbers are written and anything but whitespace and comments remains in `data[start:end]`, THE decoder SHALL return `unconsumed` with `consumed_to` the index of the first byte of the first stray token. This covers a `N + 1`th number.
-9. WHEN `N` numbers are written and only whitespace and comments remain, THE decoder SHALL return `ok` with `consumed_to = end`.
-10. THE closure gate SHALL run `pnm_text_decode` over `[header_size, len(data))` with `max_output_bytes = expected_decoded_bytes` and accept the hypothesis only when the decoder returns `ok` (engine Requirement 1.8 in the same form).
-11. A P1 file that writes its pixels as runs of digits without separators SHALL fail closure under criterion 4, because a run is one token that is not 0 or 1. The result is reported as measured (Requirement 19.4).
-
+3. THE `pnm_text` decoder SHALL have the signature `pnm_text_decode(data, start, end, width, height, bit_depth, maxval, max_output_bytes)`, and SHALL treat `data[start:end]` as a sequence of whitespace, comments and numbers. Whitespace is `0x20`, `0x09`, `0x0A`, `0x0B`, `0x0C`, `0x0D`. A comment is `#` through the next `0x0A` or `0x0D`.
+4. WHAT a number is SHALL depend on the format, and this is the whole of the wording fix to Principle call 1 (Decision Record item 28): the call stands, and this criterion says what a "number" is in P1.
+   - In P1, each `0` or `1` character is one number. Whitespace between P1 numbers is optional, because the P1 raster is a sequence of single-character pixels; that is part of the format's fixed layout, not a convention. A P1 file written as runs of digits with no separators is therefore read digit by digit and can close.
+   - In P2 and P3, a number is a maximal run of non-whitespace, non-`#` bytes, and whitespace is required between numbers.
+5. THE decoder SHALL expect exactly `N = width × height` numbers (P1, P2) or `N = width × height × 3` numbers (P3; `bit_depth` 24 or 48), each at most `maxval`. In P2 and P3 a number whose bytes are all ASCII digits has the value of those digits, and a number of more than five digits after its leading zeros is above every possible maximum value without being converted.
+6. THE decoder SHALL output: for `bit_depth = 1`, the pixels packed 8 per byte, most significant bit first, each row padded with zero bits to a whole byte, where a number 1 is a set bit (black, as in P4); for the other depths, one byte per number when `maxval ≤ 255`, and two bytes big-endian when `maxval > 255`.
+7. WHEN the next number would be written and its value is greater than `maxval` (in P1, a digit `2` to `9`), THE decoder SHALL return `above_maxval` without writing it, with `consumed_to` the index after that number (in P1, after that digit) and a detail naming the offset, the value and the maximum. WHEN the write would exceed `max_output_bytes`, THE decoder SHALL return `overrun` without writing it, with `consumed_to` the index after that number.
+8. WHEN, before `N` numbers are written, a P2 or P3 number is not all ASCII digits, or a P1 byte is neither a digit, whitespace nor part of a comment, THE decoder SHALL return `malformed` with `consumed_to` the index of its first byte and a detail naming it. In P1, any character other than `0`, `1`, whitespace or a comment is malformed, except that the digits `2` to `9` are `above_maxval` under criterion 7.
+9. WHEN the region ends before `N` numbers are written, THE decoder SHALL return `underrun` with `consumed_to = end`.
+10. WHEN `N` numbers are written and anything but whitespace and comments remains in `data[start:end]`, THE decoder SHALL return `unconsumed` with `consumed_to` the index of the first byte of the first stray number or byte. This covers a `N + 1`th number, and in P1 a further digit.
+11. WHEN `N` numbers are written and only whitespace and comments remain, THE decoder SHALL return `ok` with `consumed_to = end`.
+12. THE closure gate SHALL run `pnm_text_decode` over `[header_size, len(data))` with `max_output_bytes = expected_decoded_bytes` and accept the hypothesis only when the decoder returns `ok` (engine Requirement 1.8 in the same form).
+13. A P2 or P3 file with no whitespace between two numbers (for example `255255`) SHALL fail closure: the run is one number, above the maximum value or not a count that fits. A P1 file with a character that is not `0`, `1`, whitespace or a comment SHALL fail closure with `decoder_malformed`. Results are reported as measured (Requirement 19.4).
 ### Requirement 5: TGA run-length (types 9, 10, 11)
 
 **User Story:** As a user dropping an RLE TGA, I want the packets decoded as one stream and the image closed by arithmetic like every other layout.
 
 #### Acceptance Criteria
 
-1. THE TGA probe SHALL be unchanged: it already reads `image_type` at `0x02` and seeds `encoding = "rle_tga"` for 9, 10 and 11, with `header_size = 18 + id_length + color_map_type Ã— color_map_length Ã— ceil(color_map_entry_size / 8)`.
+1. THE TGA probe SHALL be unchanged: it already reads `image_type` at `0x02` and seeds `encoding = "rle_tga"` for 9, 10 and 11, with `header_size = 18 + id_length + color_map_type × color_map_length × ceil(color_map_entry_size / 8)`.
 2. THE `rle_tga` decoder SHALL have the signature `rle_tga_decode(data, start, end, pixel_bytes, max_output_bytes)`, with `pixel_bytes = ceil(bit_depth / 8)`.
-3. THE decoder SHALL read packets from `start` while fewer than `max_output_bytes` bytes are written and the region is not exhausted. A packet header is one byte `h`. WHEN `h â‰¥ 0x80`, THE packet is a run: the next `pixel_bytes` bytes are one pixel, written `(h & 0x7F) + 1` times. WHEN `h < 0x80`, THE packet is raw: the next `(h + 1) Ã— pixel_bytes` bytes are written as they are.
+3. THE decoder SHALL read packets from `start` while fewer than `max_output_bytes` bytes are written and the region is not exhausted. A packet header is one byte `h`. WHEN `h ≥ 0x80`, THE packet is a run: the next `pixel_bytes` bytes are one pixel, written `(h & 0x7F) + 1` times. WHEN `h < 0x80`, THE packet is raw: the next `(h + 1) × pixel_bytes` bytes are written as they are.
 4. THE packets SHALL be one continuous stream over the whole image. A packet that runs across the end of a row SHALL NOT be rejected (Principle call 3).
 5. WHEN a packet's write would take the output beyond `max_output_bytes`, THE decoder SHALL return `overrun` without writing it, with `consumed_to` the index after the packet's last byte.
 6. WHEN the region ends inside a packet, or before `max_output_bytes` bytes are written, THE decoder SHALL return `underrun` with `consumed_to = end`.
@@ -127,14 +139,14 @@ Requirements 3, 4, 5, 8 and 12 to 15 turn these calls into testable criteria.
 
 ### Requirement 6: Multi-plane PCX
 
-**User Story:** As a user dropping a PCX with several colour planes, I want each scanline read as the file declares it, `planes Ã— bytes_per_line` bytes.
+**User Story:** As a user dropping a PCX with several colour planes, I want each scanline read as the file declares it, `planes × bytes_per_line` bytes.
 
 #### Acceptance Criteria
 
 1. THE PCX probe SHALL keep every field and offset of engine Requirement 2.5 and SHALL read no new byte. The `planes` byte at `0x41` and `bytes_per_line` (`<H` at `0x42`) are already recorded.
-2. WHEN `planes > 1`, THE seed SHALL additionally set `planes` to the declared value, `row_bytes = planes Ã— bytes_per_line`, and `bit_depth = bit_depth_byte Ã— planes` (the bits per pixel across all planes). WHEN `planes â‰¤ 1`, THE seed SHALL be exactly as before: `planes = 1`, `row_bytes` unset.
-3. WHEN `row_bytes` is set, THE row stride SHALL be `row_bytes`, and `expected_decoded_bytes = row_bytes Ã— height`. The `row_alignment` SHALL NOT enter the row stride. This is a declaration read, not a convention.
-4. WHEN `row_bytes` is set, THE closure gate SHALL reject the hypothesis with reason `degenerate_hypothesis` and a detail if `bit_depth` is not a multiple of `planes`, or `bytes_per_line < ceil(width Ã— (bit_depth / planes) / 8)`: a scanline whose declared plane length cannot hold the width contradicts itself.
+2. WHEN `planes > 1`, THE seed SHALL additionally set `planes` to the declared value, `row_bytes = planes × bytes_per_line`, and `bit_depth = bit_depth_byte × planes` (the bits per pixel across all planes). WHEN `planes ≤ 1`, THE seed SHALL be exactly as before: `planes = 1`, `row_bytes` unset.
+3. WHEN `row_bytes` is set, THE row stride SHALL be `row_bytes`, and `expected_decoded_bytes = row_bytes × height`. The `row_alignment` SHALL NOT enter the row stride. This is a declaration read, not a convention.
+4. WHEN `row_bytes` is set, THE closure gate SHALL reject the hypothesis with reason `degenerate_hypothesis` and a detail if `bit_depth` is not a multiple of `planes`, or `bytes_per_line < ceil(width × (bit_depth / planes) / 8)`: a scanline whose declared plane length cannot hold the width contradicts itself.
 5. THE `row_padding_variants` strategy SHALL produce no candidate for a hypothesis whose `row_bytes` is set, because the file already declares its padding. `inclusive_bounds` and `rle_pcx` SHALL apply unchanged. No strategy is added.
 6. THE decoded bytes SHALL be the scanlines as stored: scanline by scanline, and within each scanline plane 0 first, then plane 1, each plane `bytes_per_line` bytes.
 7. THE rest of the closure rules (the trailer registry's `pcx_palette_256` entry, `rle_pcx` decoding, engine Requirement 12) SHALL apply to multi-plane hypotheses unchanged.
@@ -150,14 +162,14 @@ Requirements 3, 4, 5, 8 and 12 to 15 turn these calls into testable criteria.
 2. WHEN `ranges` is empty, THE data region SHALL be the single range `[header_size, data_end)` exactly as before. WHEN `ranges` is non-empty, `header_size` SHALL be the smallest range start and the declared `data_end` the largest range end, so that every existing consumer of those two fields sees the envelope of the data.
 3. THE `hypothesis_key` SHALL stay the seven-tuple `(width, height, bit_depth, header_size, row_alignment, encoding, data_end)` for a hypothesis whose new fields are all at their defaults, and SHALL append one eighth element, the tuple `(planes, row_bytes, ranges, rows_per_strip, tile, maxval)`, otherwise. Two hypotheses with different ranges are therefore different hypotheses.
 4. THE `Candidate` SHALL gain `ranges: tuple[tuple[int, int], ...] = ()`: the ranges that closed, in order. `data_start` and `data_end` SHALL be the smallest start and the largest end of those ranges, which is `[header_size, data_end)` for a single range, as before.
-5. WHEN `ranges` is non-empty, THE closure gate SHALL check, for every range, that `0 â‰¤ start â‰¤ end â‰¤ len(data)`, and SHALL reject with reason `field_out_of_bounds` and a detail naming the range otherwise.
+5. WHEN `ranges` is non-empty, THE closure gate SHALL check, for every range, that `0 ≤ start ≤ end ≤ len(data)`, and SHALL reject with reason `field_out_of_bounds` and a detail naming the range otherwise.
 6. WHEN `ranges` is non-empty, THE closure gate SHALL apply engine Requirement 12 to every range separately: a range that intersects the byte range of any of the hypothesis's own `FieldRecord`s SHALL reject the hypothesis with reason `degenerate_hypothesis` and a detail naming the range and the field. A field between two ranges SHALL NOT cause a rejection.
 7. WHEN `ranges` is non-empty, THE closure gate SHALL reject with reason `degenerate_hypothesis` and a detail naming the two ranges WHEN two non-empty ranges overlap. The same bytes cannot be the data of two units. This needs no format knowledge.
-8. FOR strips, THE unit `i` SHALL be `rows_i = min(rows_per_strip, height âˆ’ i Ã— rows_per_strip)` image rows, and its expected bytes `rows_i Ã— row_stride`, where `row_stride` is the engine's row stride (`ceil(width Ã— bit_depth / 8)` at alignment 1). THE number of ranges SHALL equal `ceil(height / rows_per_strip)`; otherwise the hypothesis is rejected with `degenerate_hypothesis`.
-9. FOR tiles, THE unit SHALL be one tile of `tile_length` rows of `ceil(tile_width Ã— bit_depth / 8)` bytes, whole, including the part beyond the image edge. THE number of ranges SHALL equal `ceil(width / tile_width) Ã— ceil(height / tile_length)`; otherwise the hypothesis is rejected with `degenerate_hypothesis`. WHEN `(tile_width Ã— bit_depth) mod 8 â‰  0`, THE hypothesis SHALL be rejected with `degenerate_hypothesis`: tile columns would not start on a byte.
-10. THE closure gate SHALL check every range in order and SHALL stop at the first range that fails, rejecting the hypothesis with that range's reason, discrepancy (for `none`: `range length âˆ’ unit expected bytes`) and a detail that names the range's index. One failing range fails the hypothesis (Principle call 2: no tolerance).
+8. FOR strips, THE unit `i` SHALL be `rows_i = min(rows_per_strip, height − i × rows_per_strip)` image rows, and its expected bytes `rows_i × row_stride`, where `row_stride` is the engine's row stride (`ceil(width × bit_depth / 8)` at alignment 1). THE number of ranges SHALL equal `ceil(height / rows_per_strip)`; otherwise the hypothesis is rejected with `degenerate_hypothesis`.
+9. FOR tiles, THE unit SHALL be one tile of `tile_length` rows of `ceil(tile_width × bit_depth / 8)` bytes, whole, including the part beyond the image edge. THE number of ranges SHALL equal `ceil(width / tile_width) × ceil(height / tile_length)`; otherwise the hypothesis is rejected with `degenerate_hypothesis`. WHEN `(tile_width × bit_depth) mod 8 ≠ 0`, THE hypothesis SHALL be rejected with `degenerate_hypothesis`: tile columns would not start on a byte.
+10. THE closure gate SHALL check every range in order and SHALL stop at the first range that fails, rejecting the hypothesis with that range's reason, discrepancy (for `none`: `range length − unit expected bytes`) and a detail that names the range's index. One failing range fails the hypothesis (Principle call 2: no tolerance).
 11. FOR encoding `none`, EACH range's length SHALL equal its unit's expected bytes. FOR a decoder encoding, EACH range SHALL decode with status `ok` and `max_output_bytes` equal to its unit's expected bytes.
-12. THE decoded bytes of a strip layout SHALL be the strips' bytes concatenated in order. THE decoded bytes of a tile layout SHALL be the image assembled from the tiles: for each tile, its rows are copied to the image at the tile's column and row, cropped on the right and bottom to the image, with each image row `row_stride` bytes. `expected_decoded_bytes` SHALL be `row_stride Ã— height` in both cases.
+12. THE decoded bytes of a strip layout SHALL be the strips' bytes concatenated in order. THE decoded bytes of a tile layout SHALL be the image assembled from the tiles: for each tile, its rows are copied to the image at the tile's column and row, cropped on the right and bottom to the image, with each image row `row_stride` bytes. `expected_decoded_bytes` SHALL be `row_stride × height` in both cases.
 13. THE payload that `web/serialise.py` builds SHALL add `ranges`, `planes`, `row_bytes`, `rows_per_strip`, `tile` and `maxval` to a hypothesis or candidate only when its value is not the default, so that the payload of every result that exists today stays byte for byte the same. No existing payload key SHALL change meaning. `web/pixels.py` SHALL keep its `decode` signature working for every call that is made today.
 14. THE `RejectionEntry` SHALL keep its fields. The decoder detail of Requirement 2.12 SHALL travel in the existing `detail` field.
 
@@ -168,16 +180,16 @@ Requirements 3, 4, 5, 8 and 12 to 15 turn these calls into testable criteria.
 #### Acceptance Criteria
 
 1. THE TIFF probe SHALL keep every field, tag and rule of engine Requirement 2.8, and SHALL additionally read these tags, each in the file's byte order, from the same IFD entries (tag at `+0` as `oH`, type at `+2` as `oH`, count at `+4` as `oI`, value at `+8`):
-   - 278 `rows_per_strip`: SHORT or LONG, count 1; absent means `2^32 âˆ’ 1` (the TIFF default), which holds the whole image in one strip.
+   - 278 `rows_per_strip`: SHORT or LONG, count 1; absent means `2^32 − 1` (the TIFF default), which holds the whole image in one strip.
    - 273 `strip_offset` and 279 `strip_byte_count`: SHORT or LONG, count `n`.
-2. THE probe SHALL read an array of count `n` (tags 273, 279, 324, 325) by the rule that engine Requirement 2.8 gives BitsPerSample: when `n Ã— size(type) â‰¤ 4` the `n` values are read consecutively at `+8`, left-justified; otherwise the value field is read as `oI` and the values are read consecutively from that offset. `n` SHALL satisfy `1 â‰¤ n â‰¤ 16,384` (`TIFF_MAX_RANGES`); otherwise the probe SHALL record `probe_precondition_failed` and read no values.
+2. THE probe SHALL read an array of count `n` (tags 273, 279, 324, 325) by the rule that engine Requirement 2.8 gives BitsPerSample: when `n × size(type) ≤ 4` the `n` values are read consecutively at `+8`, left-justified; otherwise the value field is read as `oI` and the values are read consecutively from that offset. `n` SHALL satisfy `1 ≤ n ≤ 16,384` (`TIFF_MAX_RANGES`); otherwise the probe SHALL record `probe_precondition_failed` and read no values.
 3. WHEN tag 273 has count 1, THE probe SHALL record `strip_offset` and `strip_byte_count` as today (each one `FieldRecord`, named as today) and SHALL leave `ranges` empty, so that single-strip results are unchanged.
 4. WHEN tag 273 has count `n > 1`, THE probe SHALL record each value as its own `FieldRecord` named `strip_offset[i]` and `strip_byte_count[i]` at the value's own offset with format `oH` or `oI`, and SHALL build `ranges = ((strip_offset[i], strip_offset[i] + strip_byte_count[i]), ...)` and `rows_per_strip = min(rows_per_strip, height)`. The names carry the index so that engine Requirement 8.3 (equal names, equal values) is not violated.
 5. IF any value of an array lies outside the file, THEN the probe SHALL record `field_out_of_bounds`, the array SHALL be treated as not read, and the other tags SHALL be read as before.
 6. IF the counts of tags 273 and 279 differ, THEN the probe SHALL record `probe_precondition_failed` naming both counts and emit the seed from what was read.
 7. IF the count of tag 273 differs from `ceil(height / rows_per_strip)`, THEN the probe SHALL record `probe_precondition_failed` naming both numbers. This applies to a single strip too: one strip with `RowsPerStrip < height` contradicts itself.
 8. IF tags 273 and 324 are both present, THEN the probe SHALL record `probe_precondition_failed` naming both. The file cannot be both stripped and tiled.
-9. FOR a multi-strip seed, `bit_depth = bits_per_sample Ã— samples_per_pixel`, `header_size` and `data_end` follow Requirement 7.2, `row_alignment = 1`, and `encoding` is `none` for Compression 1 or `tiff_compression_<n>` otherwise (Requirement 2.2).
+9. FOR a multi-strip seed, `bit_depth = bits_per_sample × samples_per_pixel`, `header_size` and `data_end` follow Requirement 7.2, `row_alignment = 1`, and `encoding` is `none` for Compression 1 or `tiff_compression_<n>` otherwise (Requirement 2.2).
 10. THE result for every TIFF in the corpus that has one strip SHALL be unchanged in status, key, data region and fields. THE only new rejections that may appear on a single-strip file are those of criterion 7.
 11. A strip layout with encoding `none` SHALL close under Requirement 7.10 and 7.11, and the decoded bytes SHALL equal the strips' bytes concatenated.
 
@@ -214,7 +226,7 @@ Requirements 3, 4, 5, 8 and 12 to 15 turn these calls into testable criteria.
 #### Acceptance Criteria
 
 1. THE closure gate SHALL map `tiff_compression_32773` to the `packbits` decoder.
-2. THE `packbits_decode(data, start, end, max_output_bytes)` SHALL read a header byte `n` as a signed byte. WHEN `0 â‰¤ n â‰¤ 127`, THE next `n + 1` bytes SHALL be written as they are. WHEN `-127 â‰¤ n â‰¤ -1`, THE next byte SHALL be written `1 âˆ’ n` times. WHEN `n = -128` (`0x80`), THE decoder SHALL write nothing and read the next header.
+2. THE `packbits_decode(data, start, end, max_output_bytes)` SHALL read a header byte `n` as a signed byte. WHEN `0 ≤ n ≤ 127`, THE next `n + 1` bytes SHALL be written as they are. WHEN `-127 ≤ n ≤ -1`, THE next byte SHALL be written `1 − n` times. WHEN `n = -128` (`0x80`), THE decoder SHALL write nothing and read the next header.
 3. THE decoder SHALL read packets while fewer than `max_output_bytes` bytes are written and the region is not exhausted.
 4. WHEN a packet's write would take the output beyond `max_output_bytes`, THE decoder SHALL return `overrun` without writing it, with `consumed_to` the index after that packet's last byte.
 5. WHEN the region ends inside a packet or before `max_output_bytes` bytes are written, THE decoder SHALL return `underrun` with `consumed_to = end`.
@@ -228,11 +240,11 @@ Requirements 3, 4, 5, 8 and 12 to 15 turn these calls into testable criteria.
 #### Acceptance Criteria
 
 1. THE closure gate SHALL map `tiff_compression_5` to the `lzw_tiff` decoder.
-2. THE `lzw_tiff_decode(data, start, end, max_output_bytes)` SHALL read codes most significant bit first from `data[start:end]`, with these constants: `CLEAR = 256`, `EOI = 257`, first free table entry 258, initial code width 9 bits, maximum code width 12 bits. This is the TIFF 6.0 LZW. The old-style LZW of TIFF 5.0 (least significant bit first) has no reading here; a stream written that way is malformed under criterion 6.
+2. THE `lzw_tiff_decode(data, start, end, max_output_bytes)` SHALL read codes most significant bit first from `data[start:end]`, with these constants: `CLEAR = 256`, `EOI = 257`, first free table entry 258, initial code width 9 bits, maximum code width 12 bits. This is the TIFF 6.0 LZW. The old-style LZW of TIFF 5.0 (least significant bit first) has no reading here; a stream written that way is malformed under criterion 6 (or fails earlier, as any stream does).
 3. THE decoder SHALL keep a table of byte strings: entries 0 to 255 are the single bytes. WHEN the table holds 258 entries (after a `CLEAR`), THE first code SHALL be a `CLEAR` or a literal below 256; anything else is malformed.
 4. THE decoder SHALL grow the code width with early change: the width becomes 10 when the table reaches 511 entries, 11 at 1023, 12 at 2047, and stays 12. A table that is full (4094 entries) SHALL stay full until the next `CLEAR`.
 5. WHEN a code is below the table's size, THE decoder SHALL output that entry. WHEN a code equals the table's size, THE decoder SHALL output the previous entry followed by its own first byte. A code above the table's size is malformed.
-6. WHEN a code is malformed, THE decoder SHALL return `underrun` with `consumed_to` the index after the byte that holds the code's last bit, and a detail naming the code.
+6. WHEN a code is malformed, THE decoder SHALL return `malformed` with `consumed_to` the index after the byte that holds the code's last bit, and a detail naming the code.
 7. WHEN a code's output would take the total beyond `max_output_bytes`, THE decoder SHALL return `overrun` without writing it, with `consumed_to` the index after the byte that holds that code's last bit.
 8. THE decoder SHALL end only at an `EOI` code. WHEN the region has fewer bits left than the current code width before an `EOI` is read, THE decoder SHALL return `underrun` with `consumed_to = end`. No end of data without `EOI` is accepted.
 9. WHEN `EOI` is read, `consumed_to` SHALL be `start + ceil(bits_read / 8)`, where `bits_read` is the number of bits of all codes read including the `EOI`. THE bits after the last code inside the final byte are padding and are NOT leftover bytes. A whole unread byte is.
@@ -248,10 +260,10 @@ Requirements 3, 4, 5, 8 and 12 to 15 turn these calls into testable criteria.
 
 1. THE closure gate SHALL map `tiff_compression_8` and `tiff_compression_32946` to the `deflate_zlib` decoder. Both codes name the same zlib stream.
 2. THE `deflate_zlib_decode(data, start, end, max_output_bytes)` SHALL inflate `data[start:end]` with a `zlib` decompressor object called with `max_length = max_output_bytes + 1`.
-3. WHEN the decompressor produces more than `max_output_bytes` bytes, THE decoder SHALL return `overrun`, with `consumed_to = end âˆ’ len(unconsumed_tail)`, and no output.
-4. WHEN the stream is corrupt (`zlib.error`), THE decoder SHALL return `underrun` with `consumed_to = start` and a detail.
-5. WHEN the stream is not complete (the decompressor is not at end of stream) or has produced fewer than `max_output_bytes` bytes, THE decoder SHALL return `underrun` with `consumed_to = end âˆ’ len(unused_data)` when the stream ended, otherwise `end`.
-6. WHEN the stream is complete with `max_output_bytes` bytes and `unused_data` is not empty, THE decoder SHALL return `unconsumed` with `consumed_to = end âˆ’ len(unused_data)`. WHEN `unused_data` is empty, it SHALL return `ok`.
+3. WHEN the decompressor produces more than `max_output_bytes` bytes, THE decoder SHALL return `overrun`, with `consumed_to = end − len(unconsumed_tail)`, and no output.
+4. WHEN the stream is corrupt (`zlib.error`), THE decoder SHALL return `malformed` with `consumed_to = start` and a detail.
+5. WHEN the stream is not complete (the decompressor is not at end of stream) or has produced fewer than `max_output_bytes` bytes, THE decoder SHALL return `underrun` with `consumed_to = end − len(unused_data)` when the stream ended, otherwise `end`.
+6. WHEN the stream is complete with `max_output_bytes` bytes and `unused_data` is not empty, THE decoder SHALL return `unconsumed` with `consumed_to = end − len(unused_data)`. WHEN `unused_data` is empty, it SHALL return `ok`.
 
 ### Requirement 14: LZMA
 
@@ -261,8 +273,8 @@ Requirements 3, 4, 5, 8 and 12 to 15 turn these calls into testable criteria.
 
 1. THE closure gate SHALL map `tiff_compression_34925` to the `lzma_xz` decoder.
 2. THE `lzma_xz_decode(data, start, end, max_output_bytes)` SHALL decompress `data[start:end]` as an xz stream (`lzma.FORMAT_XZ`), with a decompressor whose `memlimit` is 64 MiB and a `max_length` of `max_output_bytes + 1`. The corpus file `pillow_hopper_lzma.tif` holds an xz stream (magic `FD 37 7A 58 5A 00` at the strip start).
-3. THE states SHALL follow Requirement 13.3 to 13.6 with `lzma` in place of `zlib`: output above the bound is `overrun`; `lzma.LZMAError` is `underrun` with `consumed_to = start`; an incomplete stream or short output is `underrun`; a complete stream with `max_output_bytes` bytes and leftover `unused_data` is `unconsumed`; an exact end is `ok`.
-4. THE decoder SHALL NOT allocate more than the memory limit for a stream whose header declares a larger dictionary: that stream returns `underrun` with a detail naming the limit.
+3. THE states SHALL follow Requirement 13.3 to 13.6 with `lzma` in place of `zlib`: output above the bound is `overrun`; `lzma.LZMAError` is `malformed` with `consumed_to = start`; an incomplete stream or short output is `underrun`; a complete stream with `max_output_bytes` bytes and leftover `unused_data` is `unconsumed`; an exact end is `ok`.
+4. THE decoder SHALL NOT allocate more than the memory limit for a stream whose header declares a larger dictionary: that stream returns `malformed` with a detail naming the limit.
 
 ### Requirement 15: Never-raise and bounded cost
 
@@ -284,12 +296,12 @@ Requirements 3, 4, 5, 8 and 12 to 15 turn these calls into testable criteria.
 
 1. THE `web/pixels.py` `decode` SHALL render these, from the declarations the file states, with a note stating how the colour was read:
    - PNM P1: 1-bit, 1 = black, as P4 renders today.
-   - PNM P2 and P5: grey; a sample `v` of `maxval` M is shown as `v Ã— 255 // M`; for `bit_depth = 16` the sample is the big-endian word.
+   - PNM P2 and P5: grey; a sample `v` of `maxval` M is shown as `v × 255 // M`; for `bit_depth = 16` the sample is the big-endian word.
    - PNM P3 and P6: RGB in stored order, scaled the same way, 16-bit words big-endian.
    - TGA 8, 15/16, 24 and 32 bit as today, for run-length types too: the decoded bytes have the same layout.
    - PCX with `planes = 3` or `4` and 8 bits per plane: the planes of each scanline as R, G, B (a fourth plane is ignored, as a fourth byte is for 32-bit pixels). PCX with `planes` 2 to 4 and 1 bit per plane: each pixel's index is the planes' bits, plane 0 the lowest bit, looked up in the 16-entry RGB palette that the header declares at `0x10` (48 bytes).
    - TIFF with several strips or tiles, or compressed: the assembled bytes are rendered as for one uncompressed strip.
-   - TIFF and PNM 12-bit and 16-bit grey: 16 bits are read in the byte order the TIFF declares (`II` little, `MM` big; PNM big); 12 bits are packed most significant bit first; a sample `v` is shown as `v Ã— 255 // (2^bits âˆ’ 1)` (TIFF) or `v Ã— 255 // maxval` (PNM).
+   - TIFF and PNM 12-bit and 16-bit grey: 16 bits are read in the byte order the TIFF declares (`II` little, `MM` big; PNM big); 12 bits are packed most significant bit first; a sample `v` is shown as `v × 255 // (2^bits − 1)` (TIFF) or `v × 255 // maxval` (PNM).
 2. A layout that resolves and has no renderer (for example 16-bit RGB TIFF, or PCX with 2 to 4 planes of 2 bits) SHALL return `RenderFailure` with a reason naming the layout, as the 16-bit case does today. The design lists them.
 3. THE `decode` function SHALL keep returning a `PixelBuffer` or a `RenderFailure` and never raise.
 4. EVERY recovered-image test SHALL compare exact pixel values with values computed from the fixture's own definition.
@@ -321,7 +333,7 @@ Requirements 3, 4, 5, 8 and 12 to 15 turn these calls into testable criteria.
 #### Acceptance Criteria
 
 1. THE scope rules in `spike/samples/real/README.md` SHALL be rewritten as follows, and each is read from the file's header bytes:
-   - PCX: encoding byte 0 or 1, and `planes â‰¥ 1`.
+   - PCX: encoding byte 0 or 1, and `planes ≥ 1`.
    - TGA: image type 1, 2, 3, 9, 10 or 11.
    - TIFF: Compression 1, 5, 8, 32773, 32946 or 34925; PlanarConfiguration 1; Predictor absent or 1; every BitsPerSample entry equal (engine Decision Record item 20); strips or tiles. Samples per pixel and a looping IFD chain are not limits.
    - PNM: magic `P1`, `P2`, `P3`, `P5` or `P6` followed by a whitespace byte, or exactly `P4\n`.
@@ -340,7 +352,7 @@ Requirements 3, 4, 5, 8 and 12 to 15 turn these calls into testable criteria.
 1. `python -m tools.real_corpus` SHALL regenerate `docs/REAL-CORPUS-RESULTS.md` and `spike/real_corpus_results.json` after the scope update.
 2. THE canonical pixel comparer SHALL be extended so that EVERY file that is newly `RESOLVED` is compared with Pillow pixel for pixel: PNM grey and RGB, 8 and 16 bit, and 1-bit text; RLE TGA through the existing TGA path; PCX planes de-interleaved to RGB or to palette indices; TIFF strips, tiles and compressed strips through the existing TIFF path with its photometric rule, and 12-bit samples unpacked. A file that cannot be compared SHALL state why, and the reason SHALL be a measured fact about Pillow's mode, not a skip.
 3. EVERY mismatch SHALL be recorded as a mismatch, with its cause stated in the file's note. NO comparison, expectation or scope rule SHALL be changed to remove one.
-4. A file that is in scope, valid and `FAILED` SHALL be listed in `OPEN_IN_SCOPE_FAILURES` as a strict expected failure, as real-corpus Requirement 6 states. The files expected to land there are `pillow_hopper_1bit_plain.pbm` (Requirement 4.11) and `libtiff_deflate-last-strip-extra-data.tiff` (Principle call 2). THE note of each SHALL give the measured cause.
+4. A file that is in scope, valid and `FAILED` SHALL be listed in `OPEN_IN_SCOPE_FAILURES` as a strict expected failure, as real-corpus Requirement 6 states. The file expected to land there is `libtiff_deflate-last-strip-extra-data.tiff` (Principle call 2). `pillow_hopper_1bit_plain.pbm` is predicted to resolve under Requirement 4.4 and is not expected there. THE note of each file that does land SHALL give the measured cause.
 5. A file the engine now resolves that the manifest lists as invalid by construction (`goimage_invalid-palette-ref.tiff` is the expected case: Pillow refuses it for palette indices that the engine does not read) SHALL keep its expectation `FAILED` in the table's `expected` column and SHALL be reported as an unexpected `RESOLVED` with the cause stated. THE real-corpus test that asserts "five of six invalid files FAIL" SHALL be changed in its own task to assert the measured outcome, citing this criterion.
 6. THE results table, the README at the repository root, and `.kiro/specs/real-corpus/design.md` counts SHALL state the measured counts. THE measured counts SHALL be written into this spec's `design.md` beside the predicted ones.
 

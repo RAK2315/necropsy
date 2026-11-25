@@ -10,7 +10,7 @@ Six layouts, one mechanism each. The engine's shape does not change: probes read
 - renderers, emitters and a reference reader for each new layout;
 - measurement discipline: an expected diff per task, measured after it.
 
-Nothing here changes the gate (closure stays binary), the revision strategies (still three, one guarded), Generic Search, or the reason and termination vocabularies.
+Nothing here changes the gate (closure stays binary), the revision strategies (still three, one guarded), Generic Search, or the termination vocabulary. It adds two members to the reason vocabulary, `sample_above_maxval` and `decoder_malformed`, because the screen puts each reason into plain words and none of the ten existing ones is true for those cases.
 
 ## Byte layouts
 
@@ -126,9 +126,13 @@ The hypothesis encoding for TIFF stays `tiff_compression_<n>`, so every existing
 | State | pnm_text | rle_tga, packbits | lzw_tiff | deflate_zlib, lzma_xz |
 |---|---|---|---|---|
 | ok | `end` | `end` | `end` (EOI read, output full, `start + ceil(bits/8) = end`) | `end` |
-| overrun | index after the offending token (number above `maxval`, or write beyond the bound) | index after the packet's last byte | index after the byte holding the code's last bit | `end − len(unconsumed_tail)` |
-| underrun | stray token before `N` numbers: its first byte; region ended: `end` | region ended in a packet or before the output was full: `end` | region ended before EOI: `end`; malformed code: index after the byte holding its last bit; EOI with short output: that same index | corrupt or unreadable stream: `start`; stream incomplete or short: `end − len(unused_data)` when it ended, else `end` |
+| overrun | index after the number whose write would exceed the bound | index after the packet's last byte | index after the byte holding the code's last bit | `end − len(unconsumed_tail)` |
+| underrun | region ended before `N` numbers: `end` | region ended in a packet or before the output was full: `end` | region ended before EOI: `end`; EOI with short output: index after the byte holding the `EOI`'s last bit | stream incomplete or short: `end − len(unused_data)` when it ended, else `end` |
+| malformed | non-digit P2/P3 number, or a P1 byte that is not `0`, `1`, whitespace or comment: that byte's index | none (these formats have no meaningless packet) | a code above the table, or a first code that is neither `CLEAR` nor a literal: index after the byte holding its last bit | corrupt stream, or an `lzma` dictionary above the memory limit: `start` |
+| above_maxval | index after the number (P1: the digit) above `maxval`; detail names offset, value, maximum | none | none | none |
 | unconsumed | first byte of the first stray token | first leftover byte | `start + ceil(bits/8)` when `< end` | `end − len(unused_data)` |
+
+Closure maps states to reasons: `overrun` to `decoder_overrun`, `underrun` to `decoder_underrun`, `unconsumed` to `decoder_unconsumed`, `malformed` to `decoder_malformed`, `above_maxval` to `sample_above_maxval`. The decoder's `detail` goes on the `RejectionEntry`.
 
 Invalid arguments (`start < 0`, `end > len(data)`, `start > end`, `max_output_bytes < 0`): `underrun`, `consumed_to = start`, for every decoder.
 
@@ -136,7 +140,7 @@ LZW end rule, exactly: let `bits` be the sum of the widths of all codes read, in
 
 ### Algorithms, in outline
 
-- `pnm_text_decode`: scan once from `start` to `end`. Skip whitespace and comments. Read a token. If the output is full and a token appears, return `unconsumed`. Otherwise require all digits (else `underrun`); a token with more than 5 digits after leading zeros, or a value above `maxval`, is `overrun`; write the sample (a bit for `bit_depth = 1`, packed into the row's current byte; 1 or 2 bytes otherwise). No `int()` is called on a token longer than 5 significant digits, so Python's digit-limit cannot raise.
+- `pnm_text_decode`: scan once from `start` to `end`. Skip whitespace and comments. For P1 (`bit_depth` 1) each byte after that is one number: `0` or `1` is written, `2` to `9` is `above_maxval`, any other byte is `malformed`. For P2 and P3 read a token. If the output is full and a number or byte appears, return `unconsumed`. Otherwise require all digits (else `malformed`); a token with more than 5 digits after leading zeros, or a value above `maxval`, is `above_maxval`; a write beyond `max_output_bytes` is `overrun`; write the sample (a bit for `bit_depth = 1`, packed into the row's current byte; 1 or 2 bytes otherwise). No `int()` is called on a token longer than 5 significant digits, so Python's digit-limit cannot raise.
 - `rle_tga_decode` and `packbits_decode`: the loop of `rle_pcx_decode`: check the packet fits before writing, and stop when the output is full.
 - `lzw_tiff_decode`: a bit reader over `data[start:end]` (a Python int accumulator, MSB first); a list of `bytes` table entries, at most 4096; output as a `bytearray`, extended by table entries, bounded by `max_output_bytes`. The early-change thresholds are 511, 1023 and 2047 table entries.
 - `deflate_zlib_decode` and `lzma_xz_decode`: one decompressor object, one `decompress(chunk, max_length + 1)` call, then the state table above. A single call is enough because the whole range is passed at once.
@@ -149,7 +153,7 @@ The gate keeps its order: degenerate arguments, `data_end` (trailer registry or 
 2. **Declared row bytes (Requirement 6.4).** If `row_bytes` is set: `bit_depth % planes == 0` and `row_bytes ≥ planes × ceil(width × (bit_depth / planes) / 8)`, else `degenerate_hypothesis`. A single-plane hypothesis never sets `row_bytes`.
 3. **Cap (Requirement 2.13).** For an encoding in `DECODERS`: `expected > DECODE_CAP` is `degenerate_hypothesis` with a detail.
 4. **Ranges (Requirement 7).** If `ranges` is non-empty: bounds per range (`field_out_of_bounds`); Requirement 12 per range; pairwise disjoint; unit count against `rows_per_strip` or the tile grid; then for each range in order, the unit's expected bytes, then the decode or the `none` length rule; assemble. The loop stops at the first failing range.
-5. **Single range.** `none` as today, then, when `maxval` is set, the sample rule; or a decoder from `DECODERS`.
+5. **Single range.** `none` as today, then, when `maxval` is set, the sample rule (`sample_above_maxval`); or a decoder from `DECODERS`.
 6. Any other encoding: `unsupported_encoding` as today. That includes `tiff_compression_<n>` for every `n` not in `DECODERS`, and `tiff_compression_<c>_predictor_<p>`.
 
 Sample rule for `none` with `maxval`: with 1-byte samples, `max(region) ≤ maxval`; with 2-byte samples, the high bytes `region[0::2]` must not exceed `maxval >> 8`, and where equal the low byte must not exceed `maxval & 0xFF`. The first offender's offset and value go in the detail. No buffer is sized from `maxval`.
@@ -166,7 +170,7 @@ Strip assembly is `b"".join(unit bytes)`. Tile assembly copies each tile's rows 
 |---|---|---|---|---|
 | P5 | 8 or 16 | `none` | after the one whitespace byte | as read |
 | P6 | 24 or 48 | `none` | same | as read |
-| P1 | 1 | `pnm_text` | after the height token | 1 |
+| P1 | 1 | `pnm_text` | after the height token | 1 (each `0` or `1` character is one number; separators optional) |
 | P2 | 8 or 16 | `pnm_text` | after the maxval token | as read |
 | P3 | 24 or 48 | `pnm_text` | same | as read |
 
@@ -234,7 +238,7 @@ The list below is the prediction made from header bytes before any code exists. 
 |---|---|
 | 3, 5, 6, 7 | none (closure rule, renderer, decoder and dispatch only) |
 | 4 | `imagemagick_input_p5.pgm`, `imagemagick_input_p6.ppm`, `libtiff_minisblack-1c-8b.pgm`, `libtiff_rgb-3c-16b.ppm`, `libtiff_rgb-3c-8b.ppm`, `pillow_hopper_16bit.pgm`, `pillow_hopper_8bit.pgm`, `pillow_hopper_8bit.ppm`, `sdlimage_sample.pnm` (9) |
-| 8 | `imagemagick_input_p1.pbm`, `imagemagick_input_p2.pgm`, `imagemagick_input_p3.ppm` (3). `pillow_hopper_1bit_plain.pbm` stays FAILED: its digits run together, so a 36-digit token is above the maximum 1 (Requirement 4.11). |
+| 8 | `imagemagick_input_p1.pbm`, `imagemagick_input_p2.pgm`, `imagemagick_input_p3.ppm`, `pillow_hopper_1bit_plain.pbm` (4). The last one writes digits in runs; read digit by digit (Requirement 4.4) it holds 10,967 ones and 5,417 zeros, 16,384 = 128 × 128 digits, and nothing else but whitespace, measured from the file's bytes. |
 | 10 | none (decoder only) |
 | 11 | `pillow_200x32_l_tl_rle.tga`, `pillow_200x32_p_tl_rle.tga`, `pillow_200x32_rgb_tl_rle.tga`, `pillow_cross_scan_line.tga`, `pillow_la.tga`, `pillow_rgb32rle.tga`, `sdlimage_sample.tga` (7). `pillow_cross_scan_line_truncated.tga` stays FAILED (truncated data). |
 | 13, 14 | none |
@@ -249,22 +253,22 @@ The list below is the prediction made from header bytes before any code exists. 
 | 25 | `goimage_bw-deflate.tiff`, `goimage_video-001-paletted.tiff`, `goimage_invalid-palette-ref.tiff` (3). `libtiff_deflate-last-strip-extra-data.tiff` stays FAILED (Principle call 2). |
 | 26 | `pillow_hopper_lzma.tif` (1) |
 
-Total predicted: 36 new `RESOLVED`. The engine's `RESOLVED` count goes from 25 to 61, and `FAILED` from 56 to 20, of which the in-scope ones are `pillow_hopper_1bit_plain.pbm`, `libtiff_deflate-last-strip-extra-data.tiff`, `pillow_cross_scan_line_truncated.tga`, and the two that are invalid by construction today (`pillow_01r_00.pcx`, `pillow_p_8.tga`).
+Total predicted: 37 new `RESOLVED`. The engine's `RESOLVED` count goes from 25 to 62, and `FAILED` from 56 to 19, of which the in-scope ones are `libtiff_deflate-last-strip-extra-data.tiff`, `pillow_cross_scan_line_truncated.tga`, and the two that are invalid by construction today (`pillow_01r_00.pcx`, `pillow_p_8.tga`): four. The other 15 are out of scope.
 
 Two predictions carry known risk, named here so that a surprise is not a repair:
 
 - `goimage_invalid-palette-ref.tiff` is invalid by construction (Pillow refuses it for palette indices outside the palette). The engine does not read palette semantics. If the strips close, it is `RESOLVED`, and that contradicts the file's `FAILED` expectation. The measurement is written down (Requirement 19.5).
 - `libtiff_lzw-single-strip.tiff` decodes about 3 MB (7795 × 3122, 1 bit). Pure-Python LZW on that size may approach the engine's 5-second deadline. A `deadline_exceeded` result would be recorded as measured.
 
-The scope diff of Task 37 is the 39 files that the header rules move from out to in: the 36 above plus `pillow_hopper_1bit_plain.pbm`, `libtiff_deflate-last-strip-extra-data.tiff` and `pillow_cross_scan_line_truncated.tga`. The 16 files that stay out are the four CCITT TIFFs, `libtiff_ojpeg_zackthecat_subsamp22_single_strip.tiff`, `pillow_old-style-jpeg-compression.tif`, `libtiff_quad-tile.jpg.tiff`, `pillow_hopper_webp.tif`, `libtiff_logluv-3c-16b.tiff`, `pillow_tiff_strip_planar_raw.tif`, the four Predictor 2 files, `pillow_negative_size.ppm` and `pillow_ossfuzz-4836216264589312.pcx`.
+The scope diff of Task 37 is the 39 files that the header rules move from out to in: the 37 above plus `libtiff_deflate-last-strip-extra-data.tiff` and `pillow_cross_scan_line_truncated.tga`. The 16 files that stay out are the four CCITT TIFFs, `libtiff_ojpeg_zackthecat_subsamp22_single_strip.tiff`, `pillow_old-style-jpeg-compression.tif`, `libtiff_quad-tile.jpg.tiff`, `pillow_hopper_webp.tif`, `libtiff_logluv-3c-16b.tiff`, `pillow_tiff_strip_planar_raw.tif`, the four Predictor 2 files, `pillow_negative_size.ppm` and `pillow_ossfuzz-4836216264589312.pcx`.
 
 ## Decisions
 
 D1. **A new probe for PNM, not a widened PBM probe.** The PBM probe's contract is the exact signature `P4\n` and a two-token header line (engine Requirement 2.7), and its tests pin that. A second probe leaves every P4 result byte for byte as it is and gives text and binary PNM their own grammar. The cost is one more name in `PROBES` and in the web stage list.
 
-D2. **Sample above maximum is `decoder_overrun`.** The engine's reason vocabulary is fixed (engine Requirement 5.6) and the front end maps each reason to words. A new reason would reach the front end unannounced. "Overrun" already means that a write would exceed a bound; a sample value above the declared maximum exceeds a bound the file declares. The detail names the offset, value and maximum.
+D2. **Two new reasons, `sample_above_maxval` and `decoder_malformed`.** An earlier draft reused `decoder_overrun` and `decoder_underrun`. Every reason is put into plain words on the screen (`decoder_overrun`: "a run would write past the size of the picture"; `decoder_underrun`: "the data ran out before the picture was full"), and a sample above the declared maximum, a corrupt stream or a stray token is neither, so the screen would state something false. The vocabulary of engine Requirement 5.6 therefore gains these two (Requirement 2.16), each with the decoder state it comes from (`above_maxval`, `malformed`). `underrun` keeps only "the region ended before the output was full", and `overrun` only "the output would exceed the bound". `web/serialise.py` passes both through unchanged; Claude Code adds their words in `public/js/words.js`, and until then the screen shows what it shows for an unknown reason. Nothing under `public/` is edited here.
 
-D3. **Malformed streams are `underrun`.** Same reason: no new vocabulary. The `detail` says what was malformed.
+D3. **P1 digits are numbers.** Principle call 1 stands as written. Its word "number" is, in P1, one `0` or `1` character, because whitespace between P1 pixels is optional in the format's fixed layout (Requirement 4.4). The wording is folded into Decision Record item 28. P2 and P3 keep their whitespace rule. In P1 a digit `2` to `9` is above the maximum 1 (`sample_above_maxval`), and any non-digit that is not whitespace or a comment is `decoder_malformed`. This reads the two instructions that overlap ("any character other than 0, 1, whitespace or a comment is malformed" and "a P1 digit greater than the maximum is `sample_above_maxval`") so that each state has one meaning; the digits `2` to `9` are the case where they meet.
 
 D4. **Strips keep the single-strip path.** Count 1 leaves `ranges` empty and the hypothesis key unchanged. A multi-strip file takes the new path. This is why Requirement 8.10 can promise that no single-strip result moves.
 
@@ -280,7 +284,7 @@ D9. **`DECODE_CAP` is 8 MiB.** It is below the largest corpus strip with room to
 
 D10. **Multi-range emission is `file`.** See Emission.
 
-D11. **LZMA reads xz only.** The one corpus LZMA file is xz. A `.lzma` (alone) stream or a raw stream would be `underrun`.
+D11. **LZMA reads xz only.** The one corpus LZMA file is xz. A `.lzma` (alone) stream or a raw stream would be `malformed`.
 
 ## Limits
 
@@ -288,7 +292,7 @@ D11. **LZMA reads xz only.** The one corpus LZMA file is xz. A `.lzma` (alone) s
 - FillOrder (tag 266) is not read. A TIFF with FillOrder 2 is decoded as if it were 1 and will fail closure, or in the uncompressed case resolve with bits reversed. No corpus file declares FillOrder 2 (measured from header bytes). Reading it is a separate decision.
 - SampleFormat and ExtraSamples are not read; a floating-point or signed-sample TIFF resolves as integers and its renderer shows it so.
 - Old-style (LSB-first) LZW is not read.
-- A P1 file whose pixels are written without separators fails (Requirement 4.11). The Netpbm specification allows that form; the principle call does not, and the call is the rule. `pillow_hopper_1bit_plain.pbm` is the corpus file.
+- P2 and P3 files with no whitespace between numbers fail (Requirement 4.13). P1 files with runs of digits are read (Requirement 4.4).
 - Palette indices are not interpreted (a TIFF palette image resolves to its indices).
 - Several-range TIFF specs are emitted as `file` layouts.
 - Only xz LZMA; only zlib Deflate.
