@@ -24,7 +24,7 @@ function button(label, title) {
  * createReplay(payload, { onStep(step), onFinal() }) -> { root, start() }
  * onStep is called with the last rejection step of the current frame; onFinal when the final step is shown.
  */
-export function createReplay(payload, { onStep, onFinal }) {
+export function createReplay(payload, { onStep, onFinal, onFrame = () => {} }) {
   const steps = buildSteps(payload);
   const n = steps.length;
   const frames = batch(n, { frameMs: FRAME_MS, maxMs: 10000 });
@@ -80,6 +80,7 @@ export function createReplay(payload, { onStep, onFinal }) {
     counter.textContent = counterText([a, b], n);
     const s = steps[b];
     if (s.kind === 'final') onFinal(); else onStep(s);
+    onFrame({ step: b + 1, of: n, final: s.kind === 'final' });
     if (frame === frames.length - 1) stop();
     back.disabled = frame === 0;
     fwd.disabled = end.disabled = frame === frames.length - 1;

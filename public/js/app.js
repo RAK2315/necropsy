@@ -1,5 +1,6 @@
 import { renderResult, leaveResult } from './screens.js';
 import { stripElement } from './strip.js';
+import { stateText } from './words.js';
 import {
   multiDropNotice, sizeMessage, emptyMessage, unreadableMessage, othersNotExamined, serviceStatusMessage, UNREACHABLE_MESSAGE,
   sampleFailMessage, SAMPLE_LIST_FAIL, LIMIT_BYTES,
@@ -8,6 +9,10 @@ import {
 const MAX_UPLOAD = LIMIT_BYTES;
 const view = document.getElementById('view');
 const againBtn = document.getElementById('again');
+const stateLine = document.getElementById('state');
+
+/** The state line under the header (UI task 25). */
+function setState(s) { stateLine.textContent = stateText(s); stateLine.dataset.phase = s.phase; }
 
 function el(tag, attrs = {}, ...kids) {
   const e = document.createElement(tag);
@@ -34,7 +39,9 @@ async function requestAnalysis(bytes) {
 
 function open(payload, bytes, name, notice = null) {
   againBtn.hidden = false;
-  renderResult(view, payload, bytes, { name, notice });
+  const base = { name, size: bytes.length, payload };
+  renderResult(view, payload, bytes, { name, notice,
+    onProgress: ({ step, of, final }) => setState(final ? { ...base, phase: 'done' } : { ...base, phase: 'replaying', step, of }) });
 }
 
 const PRIMARY = 'pillow_odd_stride.pcx';     // the primary action's sample: a real file from Pillow's test suite
@@ -42,14 +49,15 @@ const PRIMARY = 'pillow_odd_stride.pcx';     // the primary action's sample: a r
 /** Fetch a served sample and examine it exactly as a dropped file: bytes in, analyse(bytes). */
 async function runSample(name) {
   let r;
-  try { r = await fetch('/samples/' + name); } catch (e) { showStart(sampleFailMessage(name, 0)); return; }
-  if (!r.ok) { showStart(sampleFailMessage(name, r.status)); return; }   // never analyse an error page
+  try { r = await fetch('/samples/' + name); } catch (e) { showStart(sampleFailMessage(name, 0), name); return; }
+  if (!r.ok) { showStart(sampleFailMessage(name, r.status), name); return; }   // never analyse an error page
   analyse(new Uint8Array(await r.arrayBuffer()), name);
 }
 
-async function showStart(message = '') {
+async function showStart(message = '', name = '') {
   leaveResult();               // Escape and 'Examine another file' both come here: stop the replay
   againBtn.hidden = true;
+  setState(message ? { phase: 'error', name, reason: message } : { phase: 'idle' });
   const input = el('input', { type: 'file', hidden: '' });
   const primary = el('button', { class: 'primary', type: 'button', 'data-cap': 'primary', text: 'See it recover a real file' });
   primary.addEventListener('click', () => runSample(PRIMARY));
@@ -72,17 +80,17 @@ async function showStart(message = '') {
     samples);
   view.replaceChildren(start);
 
-  const refuse = (text) => { msg.textContent = text; msg.classList.add('bad'); };
+  const refuse = (text, name = '') => { msg.textContent = text; msg.classList.add('bad'); setState({ phase: 'error', name, reason: text }); };
   const take = (files) => {
     const list = [...(files || [])];
     if (!list.length) { refuse('Nothing to examine: drop a file.'); return; }
     const file = list[0];
     const notice = multiDropNotice(list.map((f) => f.name));
-    if (file.size === 0) { refuse(emptyMessage(file.name) + othersNotExamined(list.length)); return; }
-    if (file.size > MAX_UPLOAD) { refuse(sizeMessage(file.size) + othersNotExamined(list.length)); return; }
+    if (file.size === 0) { refuse(emptyMessage(file.name) + othersNotExamined(list.length), file.name); return; }
+    if (file.size > MAX_UPLOAD) { refuse(sizeMessage(file.size) + othersNotExamined(list.length), file.name); return; }
     file.arrayBuffer()
       .then((buf) => analyse(new Uint8Array(buf), file.name, notice))
-      .catch(() => refuse(unreadableMessage(file.name) + othersNotExamined(list.length)));   // e.g. a dropped folder
+      .catch(() => refuse(unreadableMessage(file.name) + othersNotExamined(list.length), file.name));   // e.g. a dropped folder
   };
   drop.addEventListener('click', () => input.click());
   input.addEventListener('change', () => take(input.files));
@@ -123,8 +131,9 @@ async function showStart(message = '') {
 async function analyse(bytes, name, notice = null) {
   againBtn.hidden = true;
   view.replaceChildren(el('p', { class: 'busy', role: 'status', text: 'Analysing…' }));
+  setState({ phase: 'sending', name, size: bytes.length });
   const result = await requestAnalysis(bytes);
-  if (result.error) { showStart(result.message); return; }
+  if (result.error) { showStart(result.message, name); return; }
   open(result.payload, bytes, name, notice);
 }
 

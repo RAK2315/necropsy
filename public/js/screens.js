@@ -98,7 +98,7 @@ function resolvedPanel(payload, bytes, base) {
 
 const CARD_BOX = 184;
 
-function ambiguityScreen(root, payload, bytes, base) {
+function ambiguityScreen(root, payload, bytes, base, onProgress) {
   const cands = payload.candidates;
   const n = cands.length;
   const lead = el('section', 'amb-lead');
@@ -116,6 +116,7 @@ function ambiguityScreen(root, payload, bytes, base) {
   const tableSlot = el('div', 'table-slot');
   tableSlot.append(el('p', 'pane-note', 'Select a reading to list its fields.'));
   const replay = createReplay(payload, {
+    onFrame: onProgress,
     onStep: (s) => { pane.show(stepView(s)); paneNote.textContent = 'Replay: bytes read by this hypothesis.'; },
     onFinal: () => { union(); paneNote.textContent = 'Bytes read by any reading. Hover or focus a reading to see its layout.'; lead.classList.remove('pending'); right.classList.remove('pending'); },
   });
@@ -285,7 +286,7 @@ export function renderResult(root, payload, bytes, opts = {}) {
   const target = views(root, payload, bytes);
   const base = inputBase(opts.name);
   if (payload.status === 'UNRESOLVED_AMBIGUITY') {
-    activeReplay = ambiguityScreen(target, payload, bytes, base);
+    activeReplay = ambiguityScreen(target, payload, bytes, base, opts.onProgress);
     activeReplay.start();
     return;
   }
@@ -306,6 +307,7 @@ export function renderResult(root, payload, bytes, opts = {}) {
   }
   let built = false;
   const replay = createReplay(payload, {
+    onFrame: opts.onProgress,
     onStep: (s) => pane.show(stepView(s)),
     onFinal: () => {
       const records = pane.show(finalView);

@@ -107,6 +107,22 @@ export function verdictText(payload) {
   return 'Not recovered: no layout tried fits the data exactly';
 }
 
+/**
+ * The state line under the header (UI task 25): which file, which stage, whether anything is running, and the verdict.
+ * s = { phase: 'idle' | 'sending' | 'replaying' | 'done' | 'error', name, size, payload, step, of, reason }
+ */
+export function stateText(s) {
+  const file = s.name ? `${s.name} · ${fmt(s.size)} bytes` : '';
+  const join = (...p) => p.filter(Boolean).join(' · ');
+  switch (s.phase) {
+    case 'sending': return join(file, 'Examining…');
+    case 'replaying': return join(file, `Finished in ${fmt(s.payload.engine_ms)} ms`, `Replaying the search: step ${s.step} of ${s.of}`);
+    case 'done': return join(file, verdictText(s.payload));
+    case 'error': return join(s.name || '', `Not examined: ${s.reason}`);
+    default: return 'No file loaded. Try a sample or drop your own.';
+  }
+}
+
 /** "Bytes a to b-1" for a half-open range [a, b). */
 export const rangeText = (a, b) => (b > a ? `bytes ${fmt(a)} to ${fmt(b - 1)}` : 'no bytes');
 
