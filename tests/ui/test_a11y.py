@@ -334,7 +334,7 @@ SCREENS = r"""
   const cut = new Uint8Array(await (await fetch('/samples/mystery_b')).arrayBuffer()).slice(0, 300);
   const d2 = new DataTransfer(); d2.items.add(new File([cut], 'cut.pcx')); d2.items.add(new File(['x'], 'other.txt'));
   document.querySelector('.drop').dispatchEvent(new DragEvent('drop', { dataTransfer: d2, bubbles: true, cancelable: true }));
-  await __until(() => document.querySelector('.exam-right:not(.pending) .fail-reason'), 'failed');
+  await __until(() => document.querySelector('.verdict-bar:not(.pending) .fail-reason'), 'failed');
   pairs.push(...__pairs('failed'));
   return JSON.stringify(pairs);
 })()

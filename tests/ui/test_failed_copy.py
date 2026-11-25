@@ -12,8 +12,8 @@ from tests.conftest import corpus_bytes
 from tests.ui.conftest import run_in_browser
 from web.serialise import stage_of
 
-PROBE_SENTENCE = ("The bytes matched the PCX probe, so only readings under its declarations were tried. "
-                  "Generic search did not run.")
+PROBE_SENTENCE = ("The opening bytes match the PCX signature, so only layouts under its declarations were tried. "
+                  "The direct layout search did not run.")   # plain words since UI task 26
 
 
 def generic_failed_file() -> bytes:
@@ -30,7 +30,7 @@ def screen(base_url, data_js):
   document.querySelector('.drop').dispatchEvent(new DragEvent('drop', {{ dataTransfer: dt, bubbles: true, cancelable: true }}));
   const skip = await __until(() => document.querySelector('.rp-bar button[title="Skip to the end"]'), 'replay');
   if (!skip.disabled) skip.click();
-  await __until(() => document.querySelector('.exam-right:not(.pending) .fail-reason'), 'failed screen');
+  await __until(() => document.querySelector('.verdict-bar:not(.pending) .fail-reason'), 'failed screen');
   return JSON.stringify({{ reason: document.querySelector('.fail-reason').textContent,
                           scope: [...document.querySelectorAll('.fail-scope')].map(p => p.textContent) }});
 }})()
@@ -56,9 +56,9 @@ def test_generic_failed_keeps_the_generic_wording(base_url):
     got = screen(base_url, f"new Uint8Array([{data}])")
     termination = Engine().run(generic_failed_file()).termination
     assert termination == "no_hypothesis_checked"
-    assert got["reason"] == "No hypothesis reached the closure gate."
+    assert got["reason"] == "No layout reached the fit check."
     assert "probe" not in got["reason"].lower()
-    assert any(s.startswith("No probe signature matched, so generic search ran.") for s in got["scope"])
+    assert any(s.startswith("No format signature matched, so it searched layouts directly.") for s in got["scope"])
 
 
 def test_strip_tile_uses_the_same_sentence(base_url):

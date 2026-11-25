@@ -40,12 +40,16 @@ async function download(bytes, slug, button, status) {
 /** Build the panel for one payload. bytes are the file the user examined. */
 export function specPanel(payload, bytes) {
   const root = el('section', 'spec');
+  root.dataset.cap = 'spec';
   root.setAttribute('aria-label', 'Emitted Kiro spec');
-  root.append(el('p', 'spec-framing', FRAMING));
+  const head0 = el('div', 'region-head');
+  head0.append(el('h2', 'r-title', 'A spec for this file’s format'),
+    el('p', 'r-line', 'Requirements, a design and an acceptance test. Give the folder to Kiro or a developer; a parser that passes the test reads this file.'));
+  root.append(head0, el('p', 'spec-framing', FRAMING));
   const spec = payload.spec || {};
   if (spec.error) {
-    root.append(el('p', 'spec-error mono', spec.error),
-      el('p', 'spec-sub', 'A spec is emitted only for a RESOLVED or UNRESOLVED_AMBIGUITY result.'));
+    root.append(el('p', 'spec-sub', 'A spec is written only when at least one reading fits the data exactly.'),
+      el('p', 'spec-error tech', spec.error));
     return root;
   }
   const head = el('div', 'spec-head');
@@ -66,6 +70,7 @@ export function specPanel(payload, bytes) {
   const tabs = el('div', 'spec-tabs');
   tabs.setAttribute('role', 'tablist');
   const body = el('pre', 'spec-text mono');
+  body.dataset.verbatim = '';            // the emitter's own text, shown as written
   body.tabIndex = 0;
   body.setAttribute('role', 'tabpanel');
   const buttons = names.map((name, i) => {

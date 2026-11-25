@@ -1,14 +1,18 @@
 // Result screens: RESOLVED, UNRESOLVED_AMBIGUITY and FAILED.
+// UI clarity pass (tasks 26 to 28, built by Claude Code, not Kiro): a verdict heading above both columns, a title and
+// one plain line on every region, and plain words from words.js, with the engine's own terms kept in `.tech`.
 import {
-  closureLine, declaredVsActual, revisionDiffs, changeText, ambiguityStatement, COHERENCE_NOTE, cardsHTML, cardTitle,
-  terminationText, failureSentence, failureGroups, rejectionLine, hypothesisLine, stageOf, inputBase, STOPPED_AT_LIMIT,
+  closureLine, declaredVsActual, revisionDiffs, changeText, COHERENCE_NOTE, cardsHTML, cardTitle,
+  failureSentence, failureGroups, rejectionLine, hypothesisLine, stageOf, inputBase, STOPPED_AT_LIMIT,
 } from './logic.js';
 import { createPane, fieldTable } from './pane.js';
-import { CHIP } from './words.js';
 import { paint } from './image.js';
 import { specPanel } from './spec.js';
 import { createReplay } from './replay.js';
 import { downloadRow, savePNG, saveData } from './downloads.js';
+import {
+  CHIP, verdictText, sourceText, correctionText, proofText, reasonText, rejectionPlain, stageText, encodingText,
+} from './words.js';
 
 function el(tag, cls, text) {
   const e = document.createElement(tag);
@@ -17,7 +21,22 @@ function el(tag, cls, text) {
   return e;
 }
 
+const fmt = (n) => Number(n).toLocaleString('en-US');
 const path = (p) => (p.length ? p.join(' → ') : '');
+
+/** A region's title and one plain line (task 26). */
+function regionHead(title, line) {
+  const h = el('div', 'region-head');
+  h.append(el('h2', 'r-title', title), el('p', 'r-line', line));
+  return h;
+}
+
+function region(name, title, line, ...kids) {
+  const s = el('section', 'region');
+  s.dataset.region = name;
+  s.append(regionHead(title, line), ...kids);
+  return s;
+}
 
 /** The image frame used on every screen: a fixed box with the image, or a failure reason, in the same place. */
 export function imageFrame(cand, box, opts = {}) {
@@ -50,77 +69,102 @@ function chip(status) {
 
 function kv(label, value, cls = '') {
   const row = el('div', 'kv');
-  row.append(el('span', 'k', label), el('span', 'v mono ' + cls, value));
+  row.append(el('span', 'k', label), el('span', 'v ' + cls, value));
   return row;
 }
+
+const checksTech = (p) => `${p.total_checks} closure check${p.total_checks === 1 ? '' : 's'} · engine ${p.engine_ms} ms`;
+
+/** The full-width verdict heading above both columns, shown when the replay reaches its end. */
+function verdictBar(payload) {
+  const bar = el('section', 'verdict-bar pending');
+  bar.dataset.cap = 'verdict';
+  const head = el('div', 'verdict-head');
+  head.append(chip(payload.status), el('h1', 'verdict-text', verdictText(payload)));
+  bar.append(head);
+  if (payload.status === 'RESOLVED') {
+    const c = payload.candidates[0];
+    const steps = c.revision_path.map((s) => correctionText(s, c));
+    const how = steps.length
+      ? `${sourceText(c.probe_name)} ${steps.length === 1 ? 'One correction' : `${steps.length} corrections`}: ${steps.join('; ')}.`
+      : `${sourceText(c.probe_name)} No correction was needed.`;
+    bar.append(el('p', 'verdict-sub', how),
+      el('p', 'tech', `stage ${payload.stage} · ${checksTech(payload)}${c.revision_path.length ? ' · revision path ' + path(c.revision_path) : ''}`));
+  } else if (payload.status === 'UNRESOLVED_AMBIGUITY') {
+    bar.append(el('p', 'verdict-sub', `${sourceText(payload.candidates[0].probe_name)} Each reading below fits the data exactly. The bytes alone cannot separate them.`),
+      el('p', 'tech', `stage ${payload.stage} · ${checksTech(payload)}`));
+  } else {
+    bar.append(el('p', 'verdict-sub fail-reason', failureSentence(payload)),
+      el('p', 'tech', `termination ${payload.termination} · ${checksTech(payload)}`));
+  }
+  return bar;
+}
+
+// ---- RESOLVED ----
 
 function resolvedPanel(payload, bytes, base) {
   const c = payload.candidates[0];
   const side = el('div', 'exam-right');
-  const head = el('div', 'result-head');
-  head.append(chip('RESOLVED'), el('span', 'source', `from the ${c.probe_name === 'generic' ? 'generic search' : c.probe_name.toUpperCase() + ' probe'} · stage ${payload.stage}`));
-  side.append(head);
-
-  const { frame, done } = imageFrame(c, 264, { reveal: true });
-  side.append(frame, downloadRow(c, bytes, base));
 
   const dva = declaredVsActual(payload);
   if (dva) {
+    // The two findings side by side; nothing more is claimed (Rehaan, 25 Nov). Built from the payload, not a fixed string.
     const box = el('div', 'contradiction');
-    box.append(el('p', 'c-title', 'The header lies about its encoding'));
-    const grid = el('div', 'c-grid');
-    grid.append(el('span', 'k', 'declared'), el('span', 'mono declared', dva.declared),
-                el('span', 'k', 'actual'), el('span', 'mono actual', dva.actual));
-    box.append(grid, el('p', 'c-proof mono', closureLine(c)));
+    box.dataset.cap = 'contradiction';
+    box.append(el('p', 'c-title', `Declared: ${encodingText(dva.word)}. Only ${dva.actual === 'rle_pcx' ? 'run-length decoding' : encodingText(dva.actual)} fits.`),
+      el('p', 'tech', `encoding ${dva.declared} · fits as ${dva.actual}`));
     side.append(box);
-  } else {
-    side.append(el('p', 'closure mono', closureLine(c)));
   }
 
+  const { frame, done } = imageFrame(c, 264, { reveal: true });
+  frame.dataset.cap = 'image';
+  side.append(region('image', 'Recovered image', 'Decoded from this file’s own bytes.', frame, downloadRow(c, bytes, base)));
+
+  side.append(region('proof', 'Why it fits', 'The check every reading must pass: the data decodes to exactly the size this layout needs.',
+    el('p', 'closure', proofText(c)), el('p', 'tech', closureLine(c))));
+
   const facts = el('div', 'facts');
-  if (c.trailer) facts.append(kv('trailer', c.trailer));
+  if (c.trailer) facts.append(kv('trailer', `The last ${fmt(bytes.length - c.data_end)} bytes are read as a trailer, not pixels.`), kv('', c.trailer, 'tech'));
   if (c.revision_path.length) {
-    facts.append(kv('revision path', path(c.revision_path)));
     for (const d of revisionDiffs(payload)) {
       const t = changeText(d.step, d.before, d.after);
-      facts.append(kv('', t ? `${d.step}: ${t}` : d.step, 'sub'));
+      facts.append(kv('correction', correctionText(d.step, d.after)), kv('', t ? `${d.step}: ${t}` : d.step, 'tech'));
     }
   } else {
-    facts.append(kv('revision path', 'none: the file\u2019s declarations closed without revision'));
+    facts.append(kv('corrections', 'None: the file’s own declarations fit without correction.'));
   }
-  for (const alt of c.alternative_paths) facts.append(kv('second route', path(alt) + ', reaching the same answer'));
-  facts.append(kv('checks', `${payload.total_checks} closure check${payload.total_checks === 1 ? '' : 's'} · engine ${payload.engine_ms} ms`));
-  side.append(facts);
+  for (const alt of c.alternative_paths) facts.append(kv('second route', 'Another order of corrections reaches the same answer.'), kv('', path(alt), 'tech'));
+  facts.append(kv('checked', `${fmt(payload.total_checks)} layout${payload.total_checks === 1 ? '' : 's'} checked in ${fmt(payload.engine_ms)} ms`));
+  side.append(region('facts', 'How it got there', 'The corrections tried, and how many layouts were checked.', facts));
   return { side, done };
 }
 
 // ---- UNRESOLVED_AMBIGUITY ----
 
 const CARD_BOX = 184;
+const UNION_NOTE = 'Bytes read by any reading. Hover or focus a reading to see its layout.';
 
 function ambiguityScreen(root, payload, bytes, base, onProgress) {
   const cands = payload.candidates;
-  const n = cands.length;
-  const lead = el('section', 'amb-lead');
-  const head = el('div', 'result-head');
-  head.append(chip('UNRESOLVED_AMBIGUITY'), el('span', 'source', `stage ${payload.stage} · ${payload.total_checks} closure checks · engine ${payload.engine_ms} ms`));
-  lead.append(head, el('p', 'amb-statement', ambiguityStatement(n)), el('p', 'amb-note', COHERENCE_NOTE));
+  const bar = verdictBar(payload);
 
   const wrap = el('div', 'exam amb');
   const left = el('div', 'exam-left sticky');
   const pane = createPane(bytes);
+  pane.root.dataset.cap = 'hex';
   const labels = (i) => cardTitle(cands[i]);
   const union = () => pane.show({ cands, labels, regions: null });
   const records = union();
-  const paneNote = el('p', 'pane-note', 'Bytes read by any reading. Hover or focus a reading to see its layout.');
+  const paneNote = el('p', 'pane-note', UNION_NOTE);
   const tableSlot = el('div', 'table-slot');
   tableSlot.append(el('p', 'pane-note', 'Select a reading to list its fields.'));
   const replay = createReplay(payload, {
     onFrame: onProgress,
-    onStep: (s) => { pane.show(stepView(s)); paneNote.textContent = 'Replay: bytes read by this hypothesis.'; },
-    onFinal: () => { union(); paneNote.textContent = 'Bytes read by any reading. Hover or focus a reading to see its layout.'; lead.classList.remove('pending'); right.classList.remove('pending'); },
+    onStep: (s) => { pane.show(stepView(s)); paneNote.textContent = 'Replay: bytes read by the layout being tried.'; },
+    onFinal: () => { union(); paneNote.textContent = UNION_NOTE; bar.classList.remove('pending'); right.classList.remove('pending'); },
   });
-  left.append(replay.root, paneNote, pane.root, tableSlot);
+  left.append(replayRegion(replay), region('hex', 'The file’s bytes', 'Highlighted bytes were read as header fields by at least one reading.', paneNote, pane.root),
+    region('fields', 'What the header declares', 'Each value a reading takes from the file, and where it sits.', tableSlot));
 
   const grid = el('div', 'cards');
   grid.innerHTML = cardsHTML(payload);                 // markup is a pure function of the payload (tested for neutrality)
@@ -130,32 +174,35 @@ function ambiguityScreen(root, payload, bytes, base, onProgress) {
     if (c.render && c.render.data_b64) well.append(paint(c.render, CARD_BOX - 12, CARD_BOX - 12, { bitDepth: c.bit_depth }).canvas);
   }
   let selected = null;
+  const select = (i) => {
+    const card = grid.querySelector(`.card[data-index="${i}"]`);
+    if (selected !== null) grid.querySelector(`.card[data-index="${selected}"]`).classList.remove('open');
+    selected = i;
+    card.classList.add('open');
+    tableSlot.replaceChildren(el('p', 'pane-note', `Fields of ${cardTitle(cands[i])}`), fieldTable(cands[i], records, pane));
+  };
   for (const card of grid.querySelectorAll('.card')) {
     const i = Number(card.dataset.index);
+    card.dataset.cap = 'card';
     const show = () => { pane.show({ cands: [cands[i]], regions: cands[i] }); paneNote.textContent = `Layout of ${cardTitle(cands[i])}.`; };
-    const back = () => { union(); paneNote.textContent = 'Bytes read by any reading. Hover or focus a reading to see its layout.'; };
+    const back = () => { union(); paneNote.textContent = UNION_NOTE; };
     card.addEventListener('mouseenter', show);
     card.addEventListener('focus', show);
     card.addEventListener('mouseleave', back);
     card.addEventListener('blur', back);
-    const select = () => {
-      if (selected !== null) grid.querySelector(`.card[data-index="${selected}"]`).classList.remove('open');
-      selected = i;
-      card.classList.add('open');
-      tableSlot.replaceChildren(el('p', 'pane-note', `Fields of ${cardTitle(cands[i])}`), fieldTable(cands[i], records, pane));
-    };
     card.addEventListener('click', (e) => {
       const b = e.target.closest('.dl-btn');
       if (b) { e.stopPropagation(); if (b.dataset.act === 'png') savePNG(cands[i], base); else saveData(cands[i], bytes, base); return; }
-      select();
+      select(i);
     });
-    card.addEventListener('keydown', (e) => { if (e.target === card && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); select(); } });
+    card.addEventListener('keydown', (e) => { if (e.target === card && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); select(i); } });
   }
   const right = el('div', 'exam-right pending');
-  right.append(grid);
-  lead.classList.add('pending');
+  const note = el('p', 'amb-note', COHERENCE_NOTE);
+  note.append(' ', el('span', 'tech', 'row_mad_ratio'));
+  right.append(region('cards', 'Readings that fit', 'Each one fits the data exactly. The bytes alone cannot separate them.', grid, note));
   wrap.append(left, right);
-  root.append(lead, wrap);
+  root.append(bar, wrap);
   return replay;
 }
 
@@ -165,35 +212,27 @@ const GROUP_CAP = 200;
 
 function failedPanel(payload) {
   const side = el('div', 'exam-right');
-  const head = el('div', 'result-head');
-  head.append(chip('FAILED'), el('span', 'source', `termination ${payload.termination}`));
-  side.append(head, el('p', 'fail-reason', failureSentence(payload)));
-
   const total = payload.rejections.length + (payload.rejections_omitted || 0);
   const stages = new Set(payload.rejections.map((r) => stageOf(r.source)));
-  const facts = el('div', 'facts');
-  facts.append(kv('checks', `${payload.total_checks} closure check${payload.total_checks === 1 ? '' : 's'} · engine ${payload.engine_ms} ms`),
-               kv('rejections', String(total)));
-  side.append(facts);
 
   const generic = !stages.size || stages.has('generic');
   if (payload.termination === 'exhausted' && generic) {
-    side.append(el('p', 'fail-scope', 'No probe signature matched, so generic search ran. No closing layout was found within its stated axes and budget. That does not mean the file has no layout.'));
+    side.append(el('p', 'fail-scope', 'No format signature matched, so it searched layouts directly. No layout within that search’s limits fits the data exactly. That does not mean the file has no layout.'));
   }
   if (payload.termination === 'deadline_exceeded' || payload.termination === 'search_cap_exceeded') {
     side.append(el('p', 'fail-scope fail-limit', STOPPED_AT_LIMIT));
   }
   if (payload.termination === 'no_hypothesis_checked') {
     side.append(el('p', 'fail-scope', generic
-      ? 'No probe signature matched, so generic search ran. No combination of header length, width, height and bit depth fitted the file\u2019s size, so nothing was closure-checked. That does not mean the file has no layout.'
-      : 'Nothing was closure-checked.'));
+      ? 'No format signature matched, so it searched layouts directly. No combination of header length, width, height and bit depth matched the file’s size, so no layout reached the fit check. That does not mean the file has no layout.'
+      : 'No layout reached the fit check.'));
   }
   if (payload.termination === 'internal_error') {
-    for (const r of payload.rejections) if (r.detail) side.append(el('p', 'mono fail-detail', r.detail));
+    for (const r of payload.rejections) if (r.detail) side.append(el('p', 'tech fail-detail', r.detail));
   }
   if (payload.rejections_omitted > 0) {
-    side.append(el('p', 'fail-scope', `Showing ${payload.rejections.length} of ${total} rejections. The rest did not fit in one response. Counts for all of them:`));
-    const t = el('table', 'counts mono');
+    side.append(el('p', 'fail-scope', `Showing ${payload.rejections.length} of ${total} rejected layouts. The rest did not fit in one response. Counts for all of them:`));
+    const t = el('table', 'counts tech');
     for (const [stage, reasons] of Object.entries(payload.rejection_counts)) {
       for (const [reason, count] of Object.entries(reasons)) {
         const tr = el('tr');
@@ -205,19 +244,24 @@ function failedPanel(payload) {
   }
 
   const groups = el('div', 'groups');
+  groups.dataset.cap = 'failed-groups';
   for (const g of failureGroups(payload.rejections)) {
     const sec = el('section', 'stage');
-    sec.append(el('h3', 'stage-title', `${g.stage} · ${g.count}`));
+    const title = el('h3', 'stage-title', `${stageText(g.stage)} · ${g.count}`);
+    title.append(' ', el('span', 'tech', g.stage));
+    sec.append(title);
     for (const r of g.reasons) {
       const det = el('details', 'reason');
       if (g.count <= 12) det.open = true;
-      det.append(el('summary', 'mono', `${r.reason} · ${r.count}`));
-      const list = el('ol', 'rej mono');
+      const sum = el('summary', '', `${reasonText(r.reason)} · ${r.count}`);
+      sum.append(' ', el('span', 'tech', r.reason));
+      det.append(sum);
+      const list = el('ol', 'rej');
       for (const item of r.items.slice(0, GROUP_CAP)) {
         const li = el('li');
-        li.append(el('span', 'rl', rejectionLine(item)));
-        if (item.hypothesis) li.append(el('span', 'rh', hypothesisLine(item.hypothesis)));
-        if (item.detail && payload.termination !== 'internal_error') li.append(el('span', 'rh', item.detail));
+        li.append(el('span', 'rl', rejectionPlain(item)));
+        li.append(el('span', 'rh tech', [rejectionLine(item), item.hypothesis ? hypothesisLine(item.hypothesis) : ''].filter(Boolean).join(' · ')));
+        if (item.detail && payload.termination !== 'internal_error') li.append(el('span', 'rh tech', item.detail));
         list.append(li);
       }
       det.append(list);
@@ -226,12 +270,15 @@ function failedPanel(payload) {
     }
     groups.append(sec);
   }
-  side.append(groups);
+  const facts = el('div', 'facts');
+  facts.append(kv('checked', `${fmt(payload.total_checks)} layout${payload.total_checks === 1 ? '' : 's'} checked in ${fmt(payload.engine_ms)} ms`),
+               kv('rejected', fmt(total)));
+  side.append(region('groups', 'Layouts tried', 'Each layout that was tried, and why it did not fit.', facts, groups));
 
   if (payload.partial_candidates.length) {
     const sec = el('section', 'partial');
-    sec.append(el('h3', 'stage-title', 'Closed before the search stopped'),
-      el('p', 'fail-scope', 'These passed closure, but the search stopped before it could decide between them or rule others out. They are not an outcome.'));
+    sec.append(el('h3', 'stage-title', 'Fit before the search stopped'),
+      el('p', 'fail-scope', 'These fit the data exactly, but the search stopped before it could decide between them or rule others out. They are not an outcome.'));
     for (const c of payload.partial_candidates) sec.append(el('p', 'mono rh', cardTitle(c)));
     side.append(sec);
   }
@@ -246,6 +293,8 @@ function views(root, payload, bytes) {
   spec.hidden = true;
   const b1 = el('button', 'vtab', 'Examination');
   const b2 = el('button', 'vtab', 'Emitted spec');
+  b1.dataset.cap = 'tab-exam';
+  b2.dataset.cap = 'tab-spec';
   for (const b of [b1, b2]) b.type = 'button';
   let built = false;
   const show = (s) => {
@@ -261,10 +310,15 @@ function views(root, payload, bytes) {
   return exam;
 }
 
-/** The pane view for one replay step: the rejected hypothesis's own field reads, no regions. */
+/** The pane view for one replay step: the rejected layout's own field reads, no regions. */
 function stepView(step) {
   const h = step.rejection.hypothesis;
   return { cands: h ? [{ fields: h.fields }] : [], regions: null };
+}
+
+function replayRegion(replay) {
+  replay.root.dataset.cap = 'replay';
+  return region('replay', 'How the engine searched', 'Every layout it tried, in order, and why each one was rejected.', replay.root);
 }
 
 let activeReplay = null;    // the replay of the result on screen, if any
@@ -290,13 +344,19 @@ export function renderResult(root, payload, bytes, opts = {}) {
     activeReplay.start();
     return;
   }
+  const bar = verdictBar(payload);
   const pane = createPane(bytes);
+  pane.root.dataset.cap = 'hex';
   const wrap = el('div', 'exam');
   const left = el('div', 'exam-left');
   const right = el('div', 'exam-right pending');
   wrap.append(left, right);
-  target.append(wrap);
-  let finalView, buildRight, table = null;
+  target.append(bar, wrap);
+  let finalView, buildRight;
+  const hexLine = payload.status === 'RESOLVED'
+    ? 'Shaded by the role this reading gives them: header, data, trailer. Highlighted bytes were read as header fields.'
+    : 'No layout tried fits, so no byte has a role to shade.';
+  const hex = region('hex', 'The file’s bytes', hexLine, pane.root);
   if (payload.status === 'RESOLVED') {
     const c = payload.candidates[0];
     finalView = { cands: [c], regions: c };
@@ -315,11 +375,16 @@ export function renderResult(root, payload, bytes, opts = {}) {
         built = true;
         buildRight();
         right.classList.remove('pending');
-        if (payload.status === 'RESOLVED') { table = fieldTable(payload.candidates[0], records, pane); left.append(table); }
+        bar.classList.remove('pending');
+        if (payload.status === 'RESOLVED') {
+          const table = fieldTable(payload.candidates[0], records, pane);
+          table.dataset.cap = 'fields';
+          left.append(region('fields', 'What the header declares', 'Each value the file states about itself, and where it sits.', table));
+        }
       }
     },
   });
-  left.append(replay.root, pane.root);
+  left.append(replayRegion(replay), hex);
   activeReplay = replay;
   replay.start();
 }

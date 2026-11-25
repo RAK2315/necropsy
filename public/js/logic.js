@@ -152,6 +152,7 @@ export function declaredVsActual(payload) {
     declared: `${word} (byte ${'0x' + rec.offset.toString(16).toUpperCase().padStart(2, '0')} = 0x${Number(v).toString(16).toUpperCase().padStart(2, '0')})`,
     actual: c.encoding,
     offset: rec.offset,
+    word,
   };
 }
 
@@ -181,16 +182,17 @@ export function fitSize(w, h, boxW, boxH) {
 export const escapeHTML = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 
 export function ambiguityStatement(n) {
-  return `${n} readings fit these bytes exactly. Each one passes closure. The bytes cannot separate them, so NECROPSY does not choose.`;
+  return `${n} readings fit these bytes exactly. The bytes cannot separate them, so NECROPSY does not choose.`;
 }
 
+// coherence.row_coherence: mean adjacent-row difference over the mean, lower is smoother. A heuristic; it never decides.
 export const COHERENCE_NOTE =
-  'Coherence is a heuristic with known failure modes. It is shown for information only and does not choose between readings.';
+  'The row similarity score on each card is a heuristic with known failure modes. It is shown for information only and does not choose between readings.';
 
 export function coherenceText(c) {
   return c.coherence_status === 'scored' && typeof c.coherence_score === 'number'
-    ? `coherence (heuristic, ${c.coherence_method}): ${c.coherence_score.toFixed(4)}`
-    : `coherence (heuristic): ${c.coherence_status}`;
+    ? `row similarity score: ${c.coherence_score.toFixed(4)}`
+    : `row similarity score: ${String(c.coherence_status).replace(/_/g, ' ')}`;
 }
 
 /** Card identity is the candidate's own geometry, never a rank. */
@@ -205,9 +207,9 @@ export function cardModel(c, index) {
     index,
     title: cardTitle(c),
     lines: [
-      `row alignment ${c.row_alignment} · stride ${c.row_stride}`,
-      `encoding ${c.encoding}`,
-      `data region [${c.data_start}, ${c.data_end})`,
+      `${c.row_stride} byte${c.row_stride === 1 ? '' : 's'} per row` + (c.row_alignment > 1 ? `, padded to ${c.row_alignment}` : ''),
+      c.encoding === 'none' ? 'no compression' : c.encoding === 'rle_pcx' ? 'PCX run-length' : c.encoding,
+      c.data_end > c.data_start ? `data: bytes ${c.data_start} to ${c.data_end - 1}` : 'data: none',
     ],
     note: c.render && c.render.note ? c.render.note : '',
     failure: c.render && c.render.failure ? c.render.failure : '',
@@ -238,10 +240,10 @@ export function cardsHTML(payload) {
 
 export function terminationText(t) {
   return {
-    exhausted: 'Every hypothesis within the search axes was tried and none closed.',
-    no_hypothesis_checked: 'No hypothesis reached the closure gate.',
+    exhausted: 'Every layout within the search’s limits was tried, and none fits the data exactly.',
+    no_hypothesis_checked: 'No layout reached the fit check.',
     deadline_exceeded: 'The search stopped at the 5 second deadline.',
-    search_cap_exceeded: 'The search stopped at the 10,000 closure-check cap.',
+    search_cap_exceeded: 'The search stopped at its 10,000-check cap.',
     input_too_short: 'The file is shorter than 3 bytes.',
     internal_error: 'The engine hit an internal error. The detail is below.',
   }[t] ?? t;
@@ -355,7 +357,7 @@ export function failureSentence(payload) {
     for (const r of rejections) stages.add(stageOf(r.source));
     const probe = rejections.find((r) => stageOf(r.source) === 'probe');
     if (probe && stages.has('probe') && !stages.has('generic')) {
-      return `The bytes matched the ${probe.source.toUpperCase()} probe, so only readings under its declarations were tried. Generic search did not run.`;
+      return `The opening bytes match the ${probe.source.toUpperCase()} signature, so only layouts under its declarations were tried. The direct layout search did not run.`;
     }
   }
   return terminationText(payload.termination);

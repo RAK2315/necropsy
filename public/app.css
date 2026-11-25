@@ -73,14 +73,14 @@ button.primary:hover { background: #ffffff; border-color: #ffffff; }
 /* hex pane */
 .pane { position: relative; border: 1px solid var(--line); border-radius: 4px; background: var(--panel); font-size: 12.5px; }
 .hex-head, .hex-row { display: grid; grid-template-columns: 132px 60px 372px 140px; column-gap: 12px; align-items: center; padding: 0 12px; }
-.hex-head { height: 28px; color: var(--muted); border-bottom: 1px solid var(--line); font-size: 11.5px; }
+.hex-head { height: 28px; color: var(--muted); border-bottom: 1px solid var(--line); font-size: 12.5px; }
 .hex-head .hx { white-space: pre; }
 .hex-scroll { position: relative; height: 340px; overflow-y: auto; overflow-x: hidden; }
 .hex-scroll:focus-visible { outline: 2px solid var(--text); outline-offset: -2px; }
 .hex-sizer { position: relative; }
 .hex-layer { position: absolute; inset: 0; }
 .hex-row { position: absolute; left: 0; right: 0; height: 20px; line-height: 20px; }
-.hex-row .gut { color: var(--muted); font-family: var(--sans); font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hex-row .gut { color: var(--muted); font-family: var(--sans); font-size: 12.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .hex-row .off { color: var(--muted); }
 .hex-row .hx { display: flex; gap: 0; }
 .hex-row .b { width: 23.25px; text-align: center; color: var(--muted); }
@@ -100,13 +100,13 @@ button.primary:hover { background: #ffffff; border-color: #ffffff; }
 
 /* field table */
 table.fields { width: 100%; border-collapse: collapse; font-size: 12.5px; }
-table.fields th { text-align: left; font-weight: 400; color: var(--muted); font-size: 11.5px; padding: 4px 8px; border-bottom: 1px solid var(--line); }
+table.fields th { text-align: left; font-weight: 400; color: var(--muted); font-size: 12.5px; padding: 4px 8px; border-bottom: 1px solid var(--line); }
 table.fields td { padding: 3px 8px; border-bottom: 1px solid #1f252d; color: var(--muted); }
 table.fields td:nth-child(2) { color: var(--text); }
 table.fields td.v { color: var(--text); }
 table.fields tr:hover td, table.fields tr.hi td { background: #1f262f; }
 table.fields tr:focus-visible { outline: 1px solid var(--text); outline-offset: -1px; }
-table.fields .eq { color: var(--muted); font-family: var(--sans); font-size: 11px; }
+table.fields .eq { color: var(--muted); font-family: var(--sans); font-size: 12.5px; }
 /* examination layout */
 .exam { display: grid; grid-template-columns: 760px 1fr; gap: 28px; padding: 20px 24px 40px; max-width: 1400px; margin: 0 auto; }
 .exam-left { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
@@ -146,16 +146,16 @@ figcaption .note { color: var(--muted); font-size: 12px; }
 .sticky { position: sticky; top: 12px; align-self: start; }
 .pane-note { margin: 0; color: var(--muted); font-size: 12px; }
 .cards { display: grid; grid-template-columns: repeat(auto-fill, 208px); gap: 12px; }
-.card { width: 208px; height: 400px; display: flex; flex-direction: column; gap: 2px; padding: 11px; border: 1px solid var(--line);
+.card { width: 208px; height: 426px; display: flex; flex-direction: column; gap: 2px; padding: 11px; border: 1px solid var(--line);
         border-radius: 4px; background: var(--panel); cursor: pointer; overflow: hidden; }
 .card:hover { border-color: var(--faint); }
 .card:focus-visible { border-color: var(--faint); outline: 2px solid var(--text); outline-offset: 2px; }
 .card.open { border-color: var(--muted); }
 .card-well { flex: none; margin-bottom: 6px; border-color: var(--line); }
 .card-title { margin: 0 0 2px; font-size: 12.5px; line-height: 17px; height: 34px; overflow: hidden; font-weight: 500; color: var(--text); }
-.card-line { margin: 0; font-size: 11.5px; line-height: 17px; height: 17px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--muted); }
-.card-note { margin: 2px 0 0; font-size: 11px; line-height: 15px; height: 30px; overflow: hidden; color: var(--muted); }
-.card-coh { margin: 4px 0 0; font-size: 11px; line-height: 15px; height: 30px; overflow: hidden; color: var(--muted); }
+.card-line { margin: 0; font-size: 12.5px; line-height: 18px; height: 18px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--muted); }
+.card-note { margin: 2px 0 0; font-size: 12.5px; line-height: 17px; height: 34px; overflow: hidden; color: var(--muted); }
+.card-coh { margin: 4px 0 0; font-size: 12.5px; line-height: 17px; height: 34px; overflow: hidden; color: var(--muted); }
 
 /* failed */
 .fail-reason { margin: 0; font-size: 17px; color: var(--text); }
@@ -199,7 +199,7 @@ pre.spec-text { margin: -12px 0 0; height: 520px; overflow: auto; padding: 14px 
 .pending { visibility: hidden; }
 .replay { border: 1px solid var(--line); border-radius: 4px; background: var(--panel); padding: 8px 12px; display: flex; flex-direction: column; gap: 6px; }
 .rp-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; }
-.rp-label { font-family: var(--mono); font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--text);
+.rp-label { font-family: var(--mono); font-size: 12.5px; letter-spacing: .12em; text-transform: uppercase; color: var(--text);
             border: 1px solid var(--faint); border-radius: 3px; padding: 0 6px; }
 .rp-honest { color: var(--muted); font-size: 12px; }
 .rp-bar { display: flex; align-items: center; gap: 6px; }
@@ -208,10 +208,10 @@ pre.spec-text { margin: -12px 0 0; height: 520px; overflow: auto; padding: 14px 
 .rp-btn:disabled { opacity: .4; cursor: default; }
 .rp-speed { background: var(--bg); color: var(--muted); border: 1px solid var(--line); border-radius: 3px; font: 12px var(--sans); padding: 1px 4px; }
 .rp-counter { margin-left: auto; color: var(--muted); font-size: 12px; }
-.rp-log { margin: 0; padding: 0 0 0 34px; max-height: 74px; overflow-y: auto; font-size: 11.5px; color: var(--muted); position: relative; }
+.rp-log { margin: 0; padding: 0 0 0 34px; max-height: 84px; overflow-y: auto; font-size: 12.5px; color: var(--muted); position: relative; }
 .rp-item { padding: 1px 0; }
 .rp-item .rl { color: var(--muted); }
-.rp-item .rh { display: inline; margin-left: 10px; font-size: 11px; }
+.rp-item .rh { display: inline; margin-left: 10px; font-size: 12.5px; }
 .rp-item.done .rl { color: var(--muted); }
 .rp-item.now .rl { color: var(--text); }
 .rp-item.now { background: #1e242c; }
@@ -233,14 +233,14 @@ pre.spec-text { margin: -12px 0 0; height: 520px; overflow: auto; padding: 14px 
 .strip-body { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 4px; }
 .strip-wait { margin: auto 0; color: var(--muted); font-size: 13px; text-align: center; }
 .strip-well { width: 212px; height: 136px; }
-.strip-dims { margin: 0; color: var(--muted); font-size: 11.5px; }
+.strip-dims { margin: 0; color: var(--muted); font-size: 12.5px; }
 .strip-thumbs { display: grid; grid-template-columns: repeat(auto-fill, 34px); gap: 4px; align-content: start; }
 .strip-thumb { width: 34px; height: 34px; display: grid; place-items: center; background: #0d1014; border: 1px solid var(--line); border-radius: 2px; }
 .strip-term { margin: 0; color: var(--text); font-size: 13px; }
-ol.strip-rej { margin: 0; padding-left: 20px; font-size: 11px; color: var(--muted); }
+ol.strip-rej { margin: 0; padding-left: 20px; font-size: 12.5px; color: var(--muted); }
 ol.strip-rej li { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 ol.strip-rej .tech { margin-left: 8px; }
-.strip-more { margin: 0; color: var(--muted); font-size: 11.5px; }
+.strip-more { margin: 0; color: var(--muted); font-size: 12.5px; }
 .strip-line { margin: 0; color: var(--text); font-size: 14px; }
 /* downloads */
 .card-dl { display: flex; gap: 6px; margin-top: 6px; }
@@ -250,3 +250,18 @@ ol.strip-rej .tech { margin-left: 8px; }
 
 /* several files dropped */
 .notice { max-width: 1352px; margin: 12px auto 0; padding: 8px 14px; border: 1px solid var(--line); border-left: 2px solid var(--text); border-radius: 3px; background: var(--panel); color: var(--text); font-size: 13px; }
+
+/* region titles and the verdict heading (UI clarity pass, task 26) */
+.region { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.region-head { display: flex; flex-direction: column; gap: 0; }
+.r-title { margin: 0; font-size: 14px; font-weight: 600; color: var(--text); }
+.r-line { margin: 0; font-size: 13px; color: var(--muted); }
+.verdict-bar { max-width: 1400px; margin: 0 auto; padding: 14px 24px 2px; display: flex; flex-direction: column; gap: 4px; }
+.verdict-head { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.verdict-text { margin: 0; font-size: 22px; font-weight: 600; color: var(--text); line-height: 1.3; }
+.verdict-sub { margin: 0; font-size: 15px; color: var(--text); }
+.verdict-bar > .tech { margin: 0; }
+.contradiction .tech { margin: 4px 0 0; }
+.region > .tech, .facts .tech { margin: 0; }
+.kv .v.tech { font-size: 12px; color: var(--muted); }
+.rp-item .rl { font-family: var(--sans); }

@@ -1,5 +1,6 @@
 // Replay of the engine's recorded steps (Requirement 7). Driven only by the payload: no request, no invented step.
 import { buildSteps, batch, counterText, hypothesisLine, rejectionLine } from './logic.js';
+import { rejectionPlain, verdictText } from './words.js';
 import { prefersReducedMotion } from './image.js';
 
 const FRAME_MS = 600;                       // one frame at 1x; batch() keeps the whole replay within 10 s at 1x
@@ -49,15 +50,15 @@ export function createReplay(payload, { onStep, onFinal, onFrame = () => {} }) {
   counter.setAttribute('aria-live', 'polite');
   bar.append(back, play, fwd, end, speed, counter);
 
-  const log = el('ol', 'rp-log mono');
+  const log = el('ol', 'rp-log');
   const items = steps.map((s, i) => {
     const li = el('li', 'rp-item');
     li.value = i + 1;
     if (s.kind === 'rejection') {
-      li.append(el('span', 'rl', rejectionLine(s.rejection)));
-      if (s.rejection.hypothesis) li.append(el('span', 'rh', hypothesisLine(s.rejection.hypothesis)));
+      li.append(el('span', 'rl', rejectionPlain(s.rejection)));
+      li.append(el('span', 'rh tech', [rejectionLine(s.rejection), s.rejection.hypothesis ? hypothesisLine(s.rejection.hypothesis) : ''].filter(Boolean).join(' · ')));
     } else {
-      li.append(el('span', 'rl final', `result: ${s.status}`));
+      li.append(el('span', 'rl final', verdictText(payload)), el('span', 'rh tech', `result: ${s.status}`));
     }
     log.append(li);
     return li;

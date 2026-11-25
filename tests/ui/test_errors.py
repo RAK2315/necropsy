@@ -174,7 +174,7 @@ FAILED_SCREEN = r"""
   await __drop([new File([b], 'cut.pcx')]);
   const skip = await __until(() => document.querySelector('.rp-bar button[title="Skip to the end"]'), 'replay');
   if (!skip.disabled) skip.click();
-  await __until(() => document.querySelector('.exam-right:not(.pending) .fail-reason'), 'failed screen');
+  await __until(() => document.querySelector('.verdict-bar:not(.pending) .fail-reason'), 'failed screen');
   return JSON.stringify({ reason: document.querySelector('.fail-reason').textContent,
                           limit: [...document.querySelectorAll('.fail-limit')].map(p => p.textContent),
                           groups: document.querySelectorAll('.groups .stage').length });
@@ -187,7 +187,7 @@ STOPPED = ("The search stopped at its limit before it could try everything. That
 
 @pytest.mark.parametrize("termination,sentence", [
     ("deadline_exceeded", "The search stopped at the 5 second deadline."),
-    ("search_cap_exceeded", "The search stopped at the 10,000 closure-check cap."),
+    ("search_cap_exceeded", "The search stopped at its 10,000-check cap."),
 ])
 def test_failed_by_limit_keeps_10_1_and_adds_the_limit_note(base_url, termination, sentence):
     rewrite = f"(p) => {{ if (p.status === 'FAILED' && p.total_file_size === 300) p.termination = '{termination}'; return p; }}"
@@ -200,6 +200,6 @@ def test_failed_by_limit_keeps_10_1_and_adds_the_limit_note(base_url, terminatio
 def test_failed_exhausted_has_no_limit_note(base_url):
     got = run(base_url, FAILED_SCREEN)
     # the cut mystery_b matches the PCX probe, so Requirement 10.1 (amended) gives the probe-bounded sentence
-    assert got["reason"] == ("The bytes matched the PCX probe, so only readings under its declarations were tried. "
-                             "Generic search did not run.")
+    assert got["reason"] == ("The opening bytes match the PCX signature, so only layouts under its declarations were tried. "
+                             "The direct layout search did not run.")
     assert got["limit"] == []

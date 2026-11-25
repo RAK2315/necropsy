@@ -89,7 +89,7 @@ test('revisionDiffs takes hypotheses from rejections and never reconstructs', ()
 });
 
 test('declaredVsActual for the lying header', () => {
-  assert.deepEqual(L.declaredVsActual(lying), { declared: 'none (byte 0x02 = 0x00)', actual: 'rle_pcx', offset: 2 });
+  assert.deepEqual(L.declaredVsActual(lying), { declared: 'none (byte 0x02 = 0x00)', actual: 'rle_pcx', offset: 2, word: 'none' });
   const plain = { ...lying, candidates: [{ ...lying.candidates[0], revision_path: ['inclusive_bounds'] }] };
   assert.equal(L.declaredVsActual(plain), null);
 });

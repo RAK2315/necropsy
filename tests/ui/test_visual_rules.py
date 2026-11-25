@@ -23,7 +23,6 @@ ALLOWED_ACCENT = {
     ("span", "f"),          # a hex or ASCII cell inside a recovered field (".b.f", ".c.f")
     ("div", "well"),        # the recovered image's frame on the RESOLVED screen
     ("p", "closure"),       # the closure line
-    ("p", "c-proof"),       # the closure line inside the declared-versus-actual box
 }
 
 
@@ -53,7 +52,7 @@ def test_accent_only_on_recovered_data(report):
 def test_accent_is_actually_present_where_it_belongs(report):
     # guards against a probe that sees nothing: the resolved screen must show accent field bytes, frame and closure line
     seen = {(h["tag"], c) for h in report["accent"]["resolved"] for c in str(h["cls"]).split()}
-    for need in [("span", "f"), ("div", "well"), ("p", "c-proof")]:
+    for need in [("span", "f"), ("div", "well"), ("p", "closure")]:   # UI task 26: the proof line is p.closure on every RESOLVED screen
         assert need in seen, f"expected the accent on {need} on the RESOLVED screen"
     assert any(("p", "closure") == (h["tag"], c) for h in report["accent"]["resolved_tga"] for c in str(h["cls"]).split())
 

@@ -30,7 +30,7 @@ window.__accentUsers = () => {
   return out;
 };
 window.__pick = async (name) => { const b = await __until(() => [...document.querySelectorAll('.pick')].find(x => x.textContent === name), 'sample ' + name); b.click(); };
-window.__skip = async () => { const b = await __until(() => document.querySelector('.rp-bar button[title="Skip to the end"]'), 'replay'); if (!b.disabled) b.click(); await __until(() => !document.querySelector('.exam-right.pending, .amb-lead.pending'), 'outcome'); };
+window.__skip = async () => { const b = await __until(() => document.querySelector('.rp-bar button[title="Skip to the end"]'), 'replay'); if (!b.disabled) b.click(); await __until(() => !document.querySelector('.exam-right.pending, .verdict-bar.pending'), 'outcome'); };
 window.__home = async () => { document.getElementById('again').click(); await __until(() => document.querySelector('.pick'), 'start'); };
 `;
 

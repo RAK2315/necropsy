@@ -40,9 +40,11 @@ test('cards keep the payload order and carry no rank', () => {
 });
 
 test('coherence text formats', () => {
+  // UI task 26: plain words; the method name (row_mad_ratio) is shown once, in .tech, under the cards
   assert.equal(L.coherenceText({ coherence_status: 'scored', coherence_score: 0.123456, coherence_method: 'row_mad_ratio' }),
-    'coherence (heuristic, row_mad_ratio): 0.1235');
-  assert.equal(L.coherenceText({ coherence_status: 'unscorable', coherence_score: null }), 'coherence (heuristic): unscorable');
+    'row similarity score: 0.1235');
+  assert.equal(L.coherenceText({ coherence_status: 'unscorable', coherence_score: null }), 'row similarity score: unscorable');
+  assert.equal(L.coherenceText({ coherence_status: 'not_computed', coherence_score: null }), 'row similarity score: not computed');
 });
 
 test('a render failure sits in the same well as an image', () => {
@@ -52,7 +54,7 @@ test('a render failure sits in the same well as an image', () => {
 });
 
 test('the statement leads and states the count', () => {
-  assert.equal(L.ambiguityStatement(3), '3 readings fit these bytes exactly. Each one passes closure. The bytes cannot separate them, so NECROPSY does not choose.');
+  assert.equal(L.ambiguityStatement(3), '3 readings fit these bytes exactly. The bytes cannot separate them, so NECROPSY does not choose.');
 });
 
 test('no stylesheet rule singles out one card by position', () => {

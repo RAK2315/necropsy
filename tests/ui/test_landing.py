@@ -35,7 +35,7 @@ LANDING = r"""
   primary[0].click();
   await __until(() => document.querySelector('.exam-right:not(.pending) figcaption .dims'), 'result');
   out.result = { dims: document.querySelector('.exam-right figcaption .dims').textContent,
-                 status: document.querySelector('.exam-right .chip .tech').textContent };
+                 status: document.querySelector('[data-cap=chip] .tech').textContent };
   out.analyzed = performance.getEntriesByType('resource').filter(e => e.name.includes('/samples/pillow_odd_stride.pcx')).length;
   return JSON.stringify(out);
 })()
