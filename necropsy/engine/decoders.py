@@ -125,3 +125,27 @@ def _pnm_text_decode(data, start, end, width, height, bit_depth, maxval, max_out
     if len(out) != max_output_bytes:
         return _fail("underrun", end, "output is %d bytes, expected %d" % (len(out), max_output_bytes))
     return DecodeResult("ok", bytes(out), end, "")
+
+
+# Requirement 2.13: the largest decoded size a decoder encoding may be asked for (8 MiB).
+DECODE_CAP = 8 * 1024 * 1024
+
+
+def _run_pnm_text(data, start, end, h, max_output_bytes) -> DecodeResult:
+    return pnm_text_decode(data, start, end, h.width, h.height, h.bit_depth,
+                           h.maxval if h.maxval is not None else 0, max_output_bytes)
+
+
+# Data read by the closure gate: hypothesis encoding -> adapter(data, start, end, h, max_output_bytes).
+DECODERS = {
+    "pnm_text": _run_pnm_text,
+}
+
+# Requirement 2.12: decoder state -> closure rejection reason.
+STATUS_REASONS = {
+    "overrun": "decoder_overrun",
+    "underrun": "decoder_underrun",
+    "unconsumed": "decoder_unconsumed",
+    "malformed": "decoder_malformed",
+    "above_maxval": "sample_above_maxval",
+}

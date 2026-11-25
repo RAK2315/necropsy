@@ -187,6 +187,18 @@ def check_closure(h, data: bytes) -> ClosureVerdict:
             if r.status == "ok":
                 return _accept(r.data, h.header_size, end, trailer)
             return _reject("decoder_" + r.status)
+        from .decoders import DECODE_CAP, DECODERS, STATUS_REASONS
+        run = DECODERS.get(h.encoding)
+        if run is not None:
+            if expected > DECODE_CAP:
+                return ClosureVerdict(
+                    False, "degenerate_hypothesis", None, None, None, None, None,
+                    "expected decoded size %d is above the cap %d" % (expected, DECODE_CAP))
+            r = run(data, h.header_size, end, h, expected)
+            if r.status == "ok":
+                return _accept(r.data, h.header_size, end, trailer)
+            return ClosureVerdict(False, STATUS_REASONS.get(r.status, "internal_error"),
+                                  None, None, None, None, None, r.detail)
         return _reject("unsupported_encoding")
     except Exception:
         return _reject("internal_error")

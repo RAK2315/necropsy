@@ -314,7 +314,8 @@ These decisions are final. Each is recorded with its reason so later work does n
    - `unsupported_encoding`
    - `input_too_short`
    - `internal_error`
-   - `sample_above_maxval` (added by format-coverage Requirement 2.16, 25 Nov 2026; `decoder_malformed` follows in format-coverage Task 7)
+   - `sample_above_maxval` (added by format-coverage Requirement 2.16, 25 Nov 2026)
+   - `decoder_malformed` (added by format-coverage Requirement 2.16, Task 7)
 7. THE termination vocabulary of a `FailureReport` SHALL be exactly:
    - `exhausted`
    - `no_hypothesis_checked`
