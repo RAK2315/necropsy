@@ -1,4 +1,4 @@
-# UI clarity passes: tasks 24 to 39
+# UI clarity passes: tasks 24 to 46
 
 ## Who built this
 
@@ -199,3 +199,35 @@ Breaks: `docs/ui-clarity-breaks/p4.json`, output beside it. 5 breaks, each resto
 first run. One was not: making the result replay from the start again passed, because the test read the step counter
 only once the answer was shown, which with the break is after the replay ends. The test now reads the counter the moment
 the result opens; the rerun caught all 5.
+
+## Fourth pass: tasks 40 to 46
+
+Rehaan's call, 25 Nov: the page had become readable but not explainable. A reader with little background could see
+what NECROPSY said without understanding what had been checked or why it counted. He also asked for a header that stays
+on screen, the evidence back in the page, a favicon and a home link, a better landing page, and an end to formatting
+that read as generated. All seven were built by Claude Code, in one commit named `UI tasks 40 to 46`.
+
+| Task | What |
+|---|---|
+| 40 | The header and the state line stay at the top while the page scrolls, so "Examine another file" is always in reach. |
+| 41 | The evidence is part of the page again: the header values and the file's bytes are shown in full, with their sizes in their titles. This reverses task 30, now that the single column puts them last. |
+| 42 | Explanations, written from the engine's own values (glossary rule: translate, never diagnose; each function in `public/js/words.js` names the engine code it describes). "Why it fits" works the arithmetic through for the reading on screen. The replay shows what the current step means under its caption, and "Explain every step" opens that explanation on every line. Each correction says what it did, with the sizes before and after. A trailer says what it is. Each header value carries a plain name ("xmin: first column"). On the failed screen each stage and each reason says what it means. The byte view says how to read it. |
+| 43 | A file that fits at its first check still shows that check on the examining screen, and a file with several readings shows each one that fits as its own step. They are listed after the rejections, because the payload does not record where among them each fit was found, and the screen does not claim an order it does not have. |
+| 44 | A favicon (`public/favicon.svg`), a mark beside the name, and the name is a link back to the start. |
+| 45 | The landing page: what NECROPSY is and what to do, beside how it works as a three-step sequence with a sentence each; the three answers it can give, named; and the files to try in three groups that say where they came from (real pictures from ImageMagick's and Pillow's test suites, test files made for NECROPSY, files written by Pillow). The real-picture group now includes `pillow_odd_stride.pcx`, so `tools/copy_samples.py` lists it fourth. |
+| 46 | Formatting that read as generated: the side-stripe borders on the contradiction box and the multi-drop notice are gone, the logo is no longer tracked wide, and region titles, line lengths and spacing were set on one scale. A token that referred to itself (`--well: var(--well)`, from the second pass) left the image well without a background in the dark theme; it is fixed. |
+
+**Superseded.** Task 30 (the evidence collapsed by default) is reversed by task 41.
+
+**Verification.** `tests/ui/test_fourth_pass.py`: the header stays in view at the bottom of a scrolled result and the
+evidence is shown without a click; the explanations agree with the payload (the worked proof for mystery_i, the current
+step's explanation, one explanation per step once asked for with each rejection's own size and discrepancy, each
+correction's before and after sizes, the plain names of header values, a line for each failure reason and stage); the
+first-check and several-readings files show their checks, compared with the payload's candidates; the favicon is served,
+the name goes home, the three steps and the three sample groups are as stated; and the stylesheet has no side stripe and
+no wide-tracked logo. Older tests were updated for the new sample order, the evidence titles, the replay's sixth control,
+and the "Nothing to replay" wording. `tools/panel_probe.mjs` now waits up to 20 s for a result, because mystery_d's 18
+readings take about 10 s on the examining screen.
+
+Breaks: `docs/ui-clarity-breaks/p5.json`, output beside it. 14 breaks, all caught on the first run, each restore
+byte-identical.

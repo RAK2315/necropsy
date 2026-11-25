@@ -64,23 +64,27 @@ async function showStart(message = '', name = '') {
   const input = el('input', { type: 'file', hidden: '' });
   const primary = el('button', { class: 'primary', type: 'button', 'data-cap': 'primary', text: 'See it recover a real file' });
   primary.addEventListener('click', () => runSample(PRIMARY));
-  const hero = el('section', { class: 'hero', 'data-cap': 'hero' },
-    el('h1', { text: 'Get the picture back from an image file nothing can open.' }),
-    el('p', { class: 'hero-who', text: 'For archivists, investigators, and anyone holding an image in a format nothing reads any more.' }),
-    el('p', { class: 'hero-what', text: 'NECROPSY reads what the file says about itself, accepts a layout only if it fits the data exactly, and otherwise tells you why.' }),
-    el('div', { class: 'hero-act' }, primary,
-      el('span', { class: 'primary-note', text: `${PRIMARY} · from Pillow’s test suite` })));
-  const drop = el('button', { class: 'drop', type: 'button', 'data-cap': 'drop', text: 'Or drop your own file here, or click to choose one.' });
+  // the landing page (UI task 45): what it is and what to do on the left, how it works as a real three-step sequence on
+  // the right, then the three answers, then the files to try in groups that say where they came from
+  const drop = el('button', { class: 'drop', type: 'button', 'data-cap': 'drop', text: 'Or drop your own file here, or click to choose one' });
   const msg = el('p', { class: 'drop-msg' + (message ? ' bad' : ''), role: 'status', 'aria-live': 'polite', text: message });
+  const step = (title, text) => el('li', {}, el('strong', { text: title }), el('span', { text }));
   const how = el('section', { class: 'how', 'data-cap': 'how' }, el('h2', { text: 'How it works' }),
     el('ol', {},
-      el('li', { text: 'It reads what the file declares about itself: size, depth, compression, where the data starts.' }),
-      el('li', { text: 'It tries the layouts those declarations allow, and small corrections to them.' }),
-      el('li', { text: 'It accepts a layout only if it fits the data exactly. If none or several do, it says so.' })));
+      step('It reads what the file declares.', 'Most image files open with a header: a few bytes giving the width, height, colour depth, compression and where the pixels start. NECROPSY reads these for PCX, TGA, PBM and TIFF.'),
+      step('It tries the layouts those numbers allow.', 'If they do not quite fit, it tries a few standard corrections. With no header it recognises, it searches sizes directly.'),
+      step('It accepts only an exact fit.', 'A layout counts only if the picture data fills it exactly, with no byte missing or left over. If none fits, or several do, it says so and shows why.')));
+  const hero = el('section', { class: 'hero', 'data-cap': 'hero' },
+    el('div', { class: 'hero-copy' },
+      el('h1', { text: 'Get the picture back from an image file nothing can open.' }),
+      el('p', { class: 'hero-what', text: 'Image formats outlive the programs that read them. NECROPSY needs no reader for the format: it works out from the bytes alone how the picture is laid out, and checks the answer against every byte.' }),
+      el('p', { class: 'hero-who', text: 'For archivists, investigators, and anyone holding an image in a format nothing reads any more.' }),
+      el('div', { class: 'hero-act' }, primary,
+        el('span', { class: 'primary-note', text: `${PRIMARY}, a real file from Pillow’s test suite` })),
+      drop, input, msg),
+    how);
   const samples = el('section', { class: 'samples' }, el('h2', { text: 'More files to try' }));
-  const start = el('div', { class: 'start' }, hero, drop, input, msg, stripElement(requestAnalysis, present), how,
-    el('p', { class: 'scope', text: 'NECROPSY reads PCX, TGA, PBM and TIFF declarations, and otherwise searches for headerless raster layouts.' }),
-    samples);
+  const start = el('div', { class: 'start' }, hero, stripElement(requestAnalysis, present), samples);
   view.replaceChildren(start);
 
   const refuse = (text, name = '') => { msg.textContent = text; msg.classList.add('bad'); setState({ phase: 'error', name, reason: text }); };
@@ -108,8 +112,15 @@ async function showStart(message = '', name = '') {
     const r = await fetch('/samples/index.json');
     if (!r.ok) throw new Error(String(r.status));
     const index = await r.json();
-    const list = el('ul');
+    // three groups, in index order, each saying where its files came from (UI task 45)
+    const GROUPS = [
+      { test: (s) => !!s.licence, title: 'Real pictures', line: 'Image files from the test suites of ImageMagick and Pillow, two widely used image libraries, with their licence notices.' },
+      { test: (s) => s.name.startsWith('mystery_'), title: 'Test files made for NECROPSY', line: 'Small files built for its own tests, each a different case. The line under each says what the engine finds.' },
+      { test: () => true, title: 'Written by Pillow', line: 'Files saved by Pillow, the Python image library, as a check that NECROPSY reads files it did not make.' },
+    ];
+    const lists = GROUPS.map((g) => ({ ...g, ul: el('ul') }));
     for (const s of index) {
+      const list = lists.find((g) => g.test(s)).ul;
       const pick = el('button', { class: 'pick', type: 'button', 'data-cap': 'sample', 'data-name': s.name, text: s.name });
       // a sample takes exactly the path a dropped file takes: bytes in, analyse(bytes)
       pick.addEventListener('click', () => runSample(s.name));
@@ -125,7 +136,7 @@ async function showStart(message = '', name = '') {
       }
       list.append(li);
     }
-    samples.append(list);
+    for (const g of lists) if (g.ul.children.length) samples.append(el('div', { class: 'sample-group' }, el('h3', { text: g.title }), el('p', { class: 'group-line', text: g.line }), g.ul));
   } catch (e) {
     samples.append(el('p', { class: 'drop-msg bad', role: 'status', text: SAMPLE_LIST_FAIL }));
   }
@@ -165,7 +176,9 @@ async function present(payload, bytes, name, notice = null) {
   open(payload, bytes, name, notice);
 }
 
-againBtn.addEventListener('click', () => showStart());
+againBtn.addEventListener('click', () => { showStart(); scrollTo(0, 0); });
+// the brand goes back to the start without reloading the page (UI task 44)
+document.getElementById('home').addEventListener('click', (e) => { e.preventDefault(); showStart(); scrollTo(0, 0); });
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape' && !againBtn.hidden) { e.preventDefault(); showStart(); }
 });

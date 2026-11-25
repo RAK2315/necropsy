@@ -1,0 +1,56 @@
+BREAK  40 header scrolls away  (public/app.css)
+  with break : 1 failed in 10.32s  -> caught
+  failure    : E   AssertionError: 'Examine another file' scrolled away: {'scrolled': True, 'againTop': -2730, 'againShown': True, 'stateTop': -2689, 'details': 0, 'bytes': True, 'fields': True}
+  restored   : sha256 6a3d677d2d48 -> 6a3d677d2d48 identical
+BREAK  41 evidence collapsed again  (public/js/screens.js)
+  with break : 1 failed in 10.31s  -> caught
+  failure    : E   AssertionError: the evidence must be shown without a click: {'scrolled': True, 'againTop': 7, 'againShown': True, 'stateTop': 48, 'details': 1, 'bytes': True, 'fields': True}
+  restored   : sha256 bc88a64fab06 -> bc88a64fab06 identical
+BREAK  42 proof not worked through  (public/js/screens.js)
+  with break : 1 failed in 10.45s  -> caught
+  failure    : E   AssertionError: The data fits.
+  restored   : sha256 bc88a64fab06 -> bc88a64fab06 identical
+BREAK  42 a step explained with the wrong discrepancy  (public/js/words.js)
+  with break : 1 failed in 10.36s  -> caught
+  failure    : E   AssertionError: The engine tried what the file declares: a 7 × 7 picture at 8 bits per pixel, after a 128-byte header. The picture data is 10 bytes longer than a picture this size needs. A layout is accepted only if it uses every byte, so this one is set aside.
+  restored   : sha256 ce43ce4f6e1a -> ce43ce4f6e1a identical
+BREAK  42 explain-every-step does nothing  (public/app.css)
+  with break : 1 failed in 10.10s  -> caught
+  failure    : E   AssertionError: every step has its explanation once asked for
+  restored   : sha256 6a3d677d2d48 -> 6a3d677d2d48 identical
+BREAK  42 correction without its explanation  (public/js/screens.js)
+  with break : 1 failed in 10.43s  -> caught
+  failure    : E   AssertionError: assert 'counting both ends gives 8 × 8' in ''
+  restored   : sha256 bc88a64fab06 -> bc88a64fab06 identical
+BREAK  42 header values without plain names  (public/js/pane.js)
+  with break : 1 failed in 10.44s  -> caught
+  failure    : E   AssertionError: {'encoding': '', 'bit_depth': '', 'xmin': '', 'ymin': '', ...}
+  restored   : sha256 61533edbb83d -> 61533edbb83d identical
+BREAK  43 first-check files skip the examining steps  (public/js/live.js)
+  with break : 1 failed in 16.52s  -> caught
+  failure    : E   assert 0 == 1
+  restored   : sha256 9620b3ab2f70 -> 9620b3ab2f70 identical
+BREAK  43 readings that fit not shown as checks  (public/js/live.js)
+  with break : 1 failed in 13.07s  -> caught
+  failure    : E   AssertionError: ['result: UNRESOLVED_AMBIGUITY']
+  restored   : sha256 9620b3ab2f70 -> 9620b3ab2f70 identical
+BREAK  44 no favicon  (public/index.html)
+  with break : 1 failed in 9.45s  -> caught
+  failure    : E   AssertionError: {'error': "TypeError: Cannot read properties of null (reading 'getAttribute')
+  restored   : sha256 adaf9f57c55b -> adaf9f57c55b identical
+BREAK  44 brand not a way home  (public/js/app.js)
+  with break : 1 failed in 31.10s  -> caught
+  failure    : E   AssertionError: {'error': 'Error: timed out: start
+  restored   : sha256 a4fb68f93442 -> a4fb68f93442 identical
+BREAK  45 samples in one list again  (public/js/app.js)
+  with break : 1 failed in 10.13s  -> caught
+  failure    : E   AssertionError: assert ['Real pictures'] == ['Real pictur...en by Pillow']
+  restored   : sha256 a4fb68f93442 -> a4fb68f93442 identical
+BREAK  46 side stripe back  (public/app.css)
+  with break : 1 failed in 0.21s  -> caught
+  failure    : E   AssertionError: side-stripe borders: ['3']
+  restored   : sha256 6a3d677d2d48 -> 6a3d677d2d48 identical
+BREAK  46 wide-tracked logo back  (public/app.css)
+  with break : 1 failed in 0.21s  -> caught
+  failure    : E   AssertionError: the logo is tracked wide: .brand { display: inline-flex; align-items: center; gap: 9px; color: var(--text); text-decoration: none;
+  restored   : sha256 6a3d677d2d48 -> 6a3d677d2d48 identical

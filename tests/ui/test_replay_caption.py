@@ -91,4 +91,4 @@ def test_replay_announces_itself(base_url):
     assert not got["pendingNow"] and not got["pendingAtEnd"], "the answer is shown at once: the steps were shown while examining"
 
     n = Engine().run(corpus_bytes("mystery_d")).total_checks
-    assert got["single"] == {"head": f"Nothing to replay: all {n} layouts checked fit.", "controls": 0, "caption": False, "pending": False}
+    assert got["single"] == {"head": f"Nothing to replay: all {n} layouts the engine checked fit, so no layout was set aside.", "controls": 0, "caption": False, "pending": False}

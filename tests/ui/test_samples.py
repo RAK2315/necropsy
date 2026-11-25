@@ -22,7 +22,8 @@ def _index():
 
 def test_real_pictures_then_the_corpus_then_the_external_ones_then_the_real_one():
     names = [e["name"] for e in _index()]
-    assert names == ["imagemagick_input.tga", "pillow_hopper_1bit.pbm", "pillow_pil184.pcx"] + ["mystery_" + c for c in "abcdefghi"]         + ["external_a", "external_b", "pillow_odd_stride.pcx"]   # UI task 38: real pictures first
+    assert names == ["imagemagick_input.tga", "pillow_hopper_1bit.pbm", "pillow_pil184.pcx", "pillow_odd_stride.pcx"] + [
+        "mystery_" + c for c in "abcdefghi"] + ["external_a", "external_b"]   # UI tasks 38 and 45: real pictures first, grouped by origin
 
 
 @pytest.mark.parametrize("name", cs.NAMES)

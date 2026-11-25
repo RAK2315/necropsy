@@ -45,7 +45,10 @@ is coherent, and recovers the contents.
   dark themes, a visible "Examine another file", self-hosted Roboto
   and Poppins. A third pass, UI tasks 37 to 39: real pictures leading the
   samples, the engine's steps shown one by one while examining
-  (39 supersedes 37).
+  (39 supersedes 37). A fourth pass, UI tasks 40 to 46: sticky
+  header, evidence inline again (reverses 30), plain explanations
+  of every finding, first-try checks shown, favicon and home link,
+  new landing page, formatting cleanup.
   Record: `docs/UI-CLARITY-PASS.md`; commits named `UI task <n>:`.
   This is the entire visible surface of the product, and every account
   of who built what (README, Devpost story) says so plainly.

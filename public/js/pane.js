@@ -1,5 +1,6 @@
 // Hex pane and field table. Static: draws one view of the file. The replay reuses show() with other views.
 import { byteRoles, hex4, regions, valueText, equivalentNames } from './logic.js';
+import { fieldPlain } from './words.js';
 
 const ROW = 20;              // px per row; must match .hex-row in app.css
 const MARGIN = 12;           // extra rows rendered above and below the visible ones
@@ -183,6 +184,8 @@ export function fieldTable(cand, records, pane) {
     tr.tabIndex = 0;
     tr.dataset.id = id;
     const name = el('td', '', f.name);
+    const plain = fieldPlain(f.name);
+    if (plain) name.append(el('span', 'fp', plain));     // what the field holds, in plain words (UI task 42)
     if (eq.has(f.name)) name.append(el('span', 'eq', ' equivalent read'));
     tr.append(el('td', '', hex4(f.offset)), name, el('td', '', f.fmt), el('td', 'v', valueText(f)));
     const on = () => { pane.highlight(id); pane.scrollTo(f.offset); mark(id); };

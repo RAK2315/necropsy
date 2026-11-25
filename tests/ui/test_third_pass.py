@@ -62,7 +62,7 @@ def test_the_steps_play_one_by_one_while_examining(base_url):
     assert got["controls"] == 0, "no control on the examining screen: the steps play through"
     assert got["counter"] == f"step {n} of {n}", "the result opens at the end: the steps were already shown"
     assert got["answerAtOnce"], "the answer is there as soon as the result opens"
-    assert got["resultControls"] == 5
+    assert got["resultControls"] == 6     # back, play, forward, skip, speed, and "Explain every step" (UI task 42)
 
 
 PICTURES_JS = r"""

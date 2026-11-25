@@ -6,17 +6,28 @@
 <title>NECROPSY</title>
 <script src="/js/theme.js"></script>
 <link rel="preload" href="/fonts/roboto-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="/app.css">
 </head>
 <body>
+<div class="masthead">
 <header class="top">
-  <span class="brand-wrap"><span class="brand">NECROPSY</span><span class="tagline">Recover image files nothing can open</span></span>
+  <span class="brand-wrap">
+    <a id="home" class="brand" href="/" data-cap="home" aria-label="NECROPSY, back to the start">
+      <svg class="mark" viewBox="0 0 32 32" aria-hidden="true">
+        <rect x="1" y="1" width="30" height="30" rx="7" fill="none" stroke="currentColor" stroke-opacity=".35" stroke-width="2"/>
+        <g fill="currentColor" fill-opacity=".35"><rect x="7" y="7" width="5" height="5" rx="1"/><rect x="13.5" y="7" width="5" height="5" rx="1"/><rect x="20" y="7" width="5" height="5" rx="1"/><rect x="7" y="13.5" width="5" height="5" rx="1"/><rect x="7" y="20" width="5" height="5" rx="1"/><rect x="13.5" y="20" width="5" height="5" rx="1"/></g>
+        <g fill="currentColor"><rect x="13.5" y="13.5" width="5" height="5" rx="1"/><rect x="20" y="13.5" width="5" height="5" rx="1"/><rect x="20" y="20" width="5" height="5" rx="1"/></g>
+      </svg><span class="brand-name">NECROPSY</span></a>
+    <span class="tagline">Recover image files nothing can open</span>
+  </span>
   <span class="top-actions">
     <button id="again" class="again" type="button" data-cap="again" hidden>Examine another file</button>
     <button id="theme" class="quiet theme-btn" type="button" data-cap="theme">Light theme</button>
   </span>
 </header>
 <p id="state" class="state" data-cap="state" role="status" aria-live="polite"></p>
+</div>
 <main id="view"></main>
 <script type="module" src="/js/app.js"></script>
 </body>

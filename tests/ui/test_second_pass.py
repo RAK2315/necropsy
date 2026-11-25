@@ -68,38 +68,32 @@ def test_one_column_in_sequence_with_the_answer_above_the_fold(base_url):
         assert fold["image"] <= 900 and fold["closure"] <= 900, f"the answer and its proof must fit above 900 px: {fold}"
 
 
-# ---- 2. the evidence starts collapsed ----
+# ---- 2. the evidence: collapsed in the second pass; shown in full since UI task 41, titles still give the size ----
 
 EVIDENCE = HELPERS + r"""
 (async () => {
-  const read = () => [...document.querySelectorAll('details.ev')].map(d => ({ cap: d.dataset.cap, open: d.open,
-    label: d.querySelector('summary').textContent, hexShown: !!d.querySelector('.pane') && d.querySelector('.pane').checkVisibility() }));
+  const read = () => [...document.querySelectorAll('[data-region=evidence] .region')].map(r => ({ cap: r.dataset.cap || '',
+    title: r.querySelector('.r-title').textContent, shown: !!r.getClientRects().length }));
   const out = {};
   await __pick('mystery_i'); await __rest(); out.resolved = read();
-  document.querySelector('[data-cap=ev-bytes] summary').click(); out.opened = read()[0];
   await __home(); await __pick('mystery_d'); await __rest(); out.ambiguity = read();
-  document.querySelector('.card').click(); out.afterSelect = read()[1].open;
   await __home(); document.querySelector('[data-cap=tile-2]').click(); await __rest(); out.failed = read();
+  out.details = document.querySelectorAll('details.ev').length;
   return JSON.stringify(out);
 })()
 """
 
 
-def test_evidence_starts_collapsed_and_says_what_is_inside(base_url):
+def test_evidence_is_shown_and_says_what_is_inside(base_url):
     got = run_in_browser(base_url, EVIDENCE, reduced_motion=True)
     i = Engine().run(corpus_bytes("mystery_i")).candidate.hypothesis
     n_i, n_d = len(corpus_bytes("mystery_i")), len(corpus_bytes("mystery_d"))
-    readings = len(Engine().run(corpus_bytes("mystery_d")).candidates)
-    assert [(e["cap"], e["open"], e["label"]) for e in got["resolved"]] == [
-        ("ev-bytes", False, f"The file’s bytes ({n_i:,})"),
-        ("ev-fields", False, f"What the header declares ({len(i.fields)} values)")]
-    assert not got["resolved"][0]["hexShown"]
-    assert got["opened"]["open"] and got["opened"]["hexShown"], "one click opens the bytes"
-    assert [(e["open"], e["label"]) for e in got["ambiguity"]] == [
-        (False, f"The file’s bytes ({n_d:,})"), (False, f"What each reading declares ({readings} readings)")]
-    assert got["afterSelect"], "selecting a reading opens its header values"
-    assert [(e["cap"], e["open"]) for e in got["failed"]] == [("ev-bytes", True)], "FAILED keeps the bytes open"
-    assert got["failed"][0]["hexShown"]
+    assert got["resolved"] == [{"cap": "ev-fields", "title": f"What the header declares ({len(i.fields)} values)", "shown": True},
+                               {"cap": "ev-bytes", "title": f"The file’s bytes ({n_i:,})", "shown": True}]
+    assert got["ambiguity"] == [{"cap": "ev-fields", "title": "What the header declares", "shown": True},
+                                {"cap": "ev-bytes", "title": f"The file’s bytes ({n_d:,})", "shown": True}]
+    assert [(e["cap"], e["shown"]) for e in got["failed"]] == [("ev-bytes", True)]
+    assert got["details"] == 0
 
 
 # ---- 3. the image fills its frame ----

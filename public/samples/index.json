@@ -21,6 +21,13 @@
     "licence": "LICENSES/Pillow-MIT-CMU.txt"
   },
   {
+    "name": "pillow_odd_stride.pcx",
+    "size": 14313,
+    "description": "One reading fits: 371 × 150, 8-bit, once the header's bounds are counted inclusively.",
+    "provenance": "from Pillow's test suite (MIT-CMU)",
+    "licence": "LICENSES/Pillow-MIT-CMU.txt"
+  },
+  {
     "name": "mystery_a",
     "size": 11,
     "description": "One reading fits: 4 × 4, 1-bit, as the header declares."
@@ -76,12 +83,5 @@
     "size": 9260,
     "description": "One reading fits: 64 × 48, 24-bit, as the header declares.",
     "provenance": "written by Pillow 12.2.0"
-  },
-  {
-    "name": "pillow_odd_stride.pcx",
-    "size": 14313,
-    "description": "One reading fits: 371 × 150, 8-bit, once the header's bounds are counted inclusively.",
-    "provenance": "from Pillow's test suite (MIT-CMU)",
-    "licence": "LICENSES/Pillow-MIT-CMU.txt"
   }
 ]

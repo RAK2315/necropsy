@@ -12,7 +12,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 // Runs in the page. Every wait polls for a condition, never a fixed delay.
 const PAGE = `(async (sample) => {
-  const until = async (fn, what) => { for (let i = 0; i < 400; i++) { const v = fn(); if (v) return v; await new Promise(r => setTimeout(r, 25)); } throw new Error('timed out waiting for ' + what); };
+  const until = async (fn, what) => { for (let i = 0; i < 800; i++) { const v = fn(); if (v) return v; await new Promise(r => setTimeout(r, 25)); } throw new Error('timed out waiting for ' + what); };
   const pick = await until(() => [...document.querySelectorAll('.pick')].find(b => b.textContent === sample), 'sample list');
   pick.click();
   const specTab = await until(() => [...document.querySelectorAll('.vtab')].find(b => b.textContent === 'Emitted spec'), 'result');

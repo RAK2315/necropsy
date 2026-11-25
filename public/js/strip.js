@@ -80,8 +80,8 @@ function failedBody(p) {
 export function stripElement(requestAnalysis, open) {
   const root = el('section', 'strip');
   root.setAttribute('aria-label', 'Three real results');
-  root.append(el('h2', 'strip-title', 'Three honest answers'),
-    el('p', 'strip-head', 'Three real files, examined live as this page loaded. Open any of them to see the working.'));
+  root.append(el('h2', 'strip-title', 'The three answers it gives'),
+    el('p', 'strip-head', 'A picture; several pictures that fit equally well, from which it will not pick; or no picture, with every reason. These three files were examined as this page loaded. Open one to see the working.'));
   const row = el('div', 'strip-row');
   root.append(row);
   loadStrip(requestAnalysis).forEach((pending, i) => {

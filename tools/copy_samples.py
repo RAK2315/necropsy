@@ -35,7 +35,7 @@ REAL_SAMPLES = {
     REAL_SAMPLE: ("from Pillow's test suite (MIT-CMU)", LICENCE),
 }
 PICTURES = ["imagemagick_input.tga", "pillow_hopper_1bit.pbm", "pillow_pil184.pcx"]
-NAMES = PICTURES + ["mystery_" + c for c in "abcdefghi"] + ["external_a", "external_b", REAL_SAMPLE]
+NAMES = PICTURES + [REAL_SAMPLE] + ["mystery_" + c for c in "abcdefghi"] + ["external_a", "external_b"]   # grouped by origin (UI task 45)
 
 
 def source_of(name: str) -> Path:

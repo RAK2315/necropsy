@@ -12,6 +12,7 @@ import { createReplay } from './replay.js';
 import { downloadRow, savePNG, saveData } from './downloads.js';
 import {
   CHIP, verdictText, sourceText, correctionText, proofText, reasonText, rejectionPlain, stageText, encodingText,
+  proofExplain, correctionExplain, trailerExplain, reasonExplain, stageExplain,
 } from './words.js';
 
 function el(tag, cls, text) {
@@ -69,6 +70,14 @@ function chip(status) {
   return c;
 }
 
+/** One finding in the corrections list: what it was, what that means, and the engine's own term. */
+function fact(title, text, tech) {
+  const d = el('div', 'fact');
+  d.append(el('p', 'fact-title', title), el('p', 'fact-text', text));
+  if (tech) d.append(el('p', 'tech', tech));
+  return d;
+}
+
 function kv(label, value, cls = '') {
   const row = el('div', 'kv');
   row.append(el('span', 'k', label), el('span', 'v ' + cls, value));
@@ -113,28 +122,22 @@ function techLine(payload) {
   return p;
 }
 
-/** One collapsed piece of evidence behind a control that says what is inside and how big it is (change 2). */
-function drawer(cap, label, open, ...kids) {
-  const d = el('details', 'ev');
-  d.dataset.cap = cap;
-  d.open = open;
-  const sum = el('summary', 'ev-sum', label);
-  d.append(sum, ...kids);
-  return d;
-}
-
 /**
- * Level 4, the evidence: the technical line, then the file's bytes and the header values, each collapsed by default
- * except on FAILED, where the bytes are most of what there is to show.
+ * Level 4, the evidence: the header values and the file's bytes, shown in full (UI task 41: no longer collapsed, now
+ * that the single column orders the page), then the engine's own technical line.
  */
-function evidence(payload, bytes, hexRegion, fieldsRegion, fieldsLabel) {
-  const open = payload.status === 'FAILED';
-  const kids = [techLine(payload), drawer('ev-bytes', `The file’s bytes (${fmt(bytes.length)})`, open, hexRegion)];
-  if (fieldsRegion) kids.push(drawer('ev-fields', fieldsLabel, open, fieldsRegion));
-  const sec = region('evidence', 'The evidence', 'The raw bytes and the values read from them, for checking the work.', ...kids);
+function evidence(payload, bytes, hexRegion, fieldsRegion) {
+  hexRegion.dataset.cap = 'ev-bytes';
+  const kids = [];
+  if (fieldsRegion) { fieldsRegion.dataset.cap = 'ev-fields'; kids.push(fieldsRegion); }
+  kids.push(hexRegion, techLine(payload));
+  const sec = region('evidence', 'The evidence', 'What the answer rests on: the values the file states about itself, and every byte of the file, so the work can be checked by hand.', ...kids);
   sec.classList.add('level-4');
   return sec;
 }
+
+// How to read the byte view, for someone who has never seen one (UI task 42).
+const HEX_HOW = 'Every byte of the file, 16 to a row: its position on the left, its value in hexadecimal (00 to FF) in the middle, and the same byte as a text character on the right.';
 
 // ---- RESOLVED ----
 
@@ -161,22 +164,24 @@ function resolvedPanel(payload, bytes, base) {
   frame.dataset.cap = 'image';
   side.append(region('image', 'Recovered image', 'Decoded from this file’s own bytes.', frame, downloadRow(c, bytes, base)));
 
-  side.append(region('proof', 'Why it fits', 'The check every reading must pass: the data decodes to exactly the size this layout needs.',
-    el('p', 'closure', proofText(c)), el('p', 'tech', closureLine(c))));
+  side.append(region('proof', 'Why it fits', 'NECROPSY accepts a layout only when the picture data fills it exactly: no byte missing and none left over.',
+    el('p', 'closure', proofText(c)), el('p', 'proof-explain', proofExplain(c)), el('p', 'tech', closureLine(c))));
 
   const facts = el('div', 'facts');
-  if (c.trailer) facts.append(kv('trailer', `The last ${fmt(bytes.length - c.data_end)} bytes are read as a trailer, not pixels.`), kv('', c.trailer, 'tech'));
   if (c.revision_path.length) {
     for (const d of revisionDiffs(payload)) {
       const t = changeText(d.step, d.before, d.after);
-      facts.append(kv('correction', correctionText(d.step, d.after)), kv('', t ? `${d.step}: ${t}` : d.step, 'tech'));
+      const title = correctionText(d.step, d.after);
+      facts.append(fact(title.charAt(0).toUpperCase() + title.slice(1), correctionExplain(d.step, d.before, d.after), t ? `${d.step}: ${t}` : d.step));
     }
   } else {
-    facts.append(kv('corrections', 'None: the file’s own declarations fit without correction.'));
+    facts.append(fact('No correction needed', 'The size, depth and layout the file declares fit its data exactly as written.'));
   }
-  for (const alt of c.alternative_paths) facts.append(kv('second route', 'Another order of corrections reaches the same answer.'), kv('', path(alt), 'tech'));
-  facts.append(kv('checked', `${fmt(payload.total_checks)} layout${payload.total_checks === 1 ? '' : 's'} checked in ${fmt(payload.engine_ms)} ms`));
-  const how = region('facts', 'Corrections', 'The corrections tried, and how many layouts were checked.', facts);
+  if (c.trailer) facts.append(fact('Bytes after the picture', trailerExplain(c.trailer, bytes.length - c.data_end), c.trailer));
+  for (const alt of c.alternative_paths) facts.append(fact('A second route', 'Applying the same corrections in another order reaches the same answer.', path(alt)));
+  facts.append(fact(`${fmt(payload.total_checks)} layout${payload.total_checks === 1 ? '' : 's'} checked in ${fmt(payload.engine_ms)} ms`,
+    payload.total_checks === 1 ? 'The first layout tried fit.' : 'Every one that was set aside is listed in the search above, with the reason.'));
+  const how = region('facts', 'Corrections', 'When what a file declares does not fit its data exactly, the engine tries a few standard corrections, alone and together, and keeps the one that fits.', facts);
   return { side, how, done };
 }
 
@@ -204,9 +209,9 @@ function ambiguityScreen(root, payload, bytes, base, onProgress) {
     onStep: (s) => { pane.show(stepView(s)); paneNote.textContent = 'Replay: bytes read by the layout being tried.'; },
     onFinal: () => { union(); paneNote.textContent = UNION_NOTE; bar.classList.remove('pending'); right.classList.remove('pending'); right.querySelector('.answer-pending')?.remove(); },
   });
-  const hexRegion = region('hex', 'The file’s bytes', 'Highlighted bytes were read as header fields by at least one reading.', paneNote, pane.root);
-  const fieldsRegion = region('fields', 'What the header declares', 'Each value a reading takes from the file, and where it sits.', tableSlot);
-  const ev = evidence(payload, bytes, hexRegion, fieldsRegion, `What each reading declares (${cands.length} readings)`);
+  const hexRegion = region('hex', `The file’s bytes (${fmt(bytes.length)})`, `${HEX_HOW} Highlighted bytes are read as header values by at least one reading.`, paneNote, pane.root);
+  const fieldsRegion = region('fields', 'What the header declares', 'Each value a reading takes from the file: what it is, where it sits, and the value read there.', tableSlot);
+  const ev = evidence(payload, bytes, hexRegion, fieldsRegion);
 
   // at-a-glance grid (task 28): every reading at one size, in payload order, no score, no emphasis
   const glance = el('div', 'amb-grid');
@@ -231,7 +236,6 @@ function ambiguityScreen(root, payload, bytes, base, onProgress) {
     selected = i;
     card.classList.add('open');
     tableSlot.replaceChildren(el('p', 'pane-note', `Fields of ${cardTitle(cands[i])}`), fieldTable(cands[i], records, pane));
-    ev.querySelector('[data-cap=ev-fields]').open = true;      // the person asked for this reading's values
   };
   for (const card of grid.querySelectorAll('.card')) {
     const i = Number(card.dataset.index);
@@ -261,7 +265,7 @@ function ambiguityScreen(root, payload, bytes, base, onProgress) {
   const note = el('p', 'amb-note', COHERENCE_NOTE);
   note.append(' ', el('span', 'tech', 'row_mad_ratio'));
   right.append(region('glance', 'Every reading at a glance', 'Same size, in the order the engine found them. Select one to go to its card.', glance),
-    region('cards', 'Readings that fit', 'Each one fits the data exactly. The bytes alone cannot separate them.', grid, note));
+    region('cards', 'Readings that fit', 'Each one uses every byte of the picture data exactly, so the bytes alone cannot separate them. NECROPSY shows them all rather than pick one.', grid, note));
   const how = el('div', 'how-col level-3');
   how.append(replayRegion(replay));
   wrap.append(right, how, ev);
@@ -313,12 +317,13 @@ function failedPanel(payload) {
     const title = el('h3', 'stage-title', `${stageText(g.stage)} · ${g.count}`);
     title.append(' ', el('span', 'tech', g.stage));
     sec.append(title);
+    if (stageExplain(g.stage)) sec.append(el('p', 'stage-line', stageExplain(g.stage)));
     for (const r of g.reasons) {
       const det = el('details', 'reason');
       if (g.count <= 12) det.open = true;
       const sum = el('summary', '', `${reasonText(r.reason)} · ${r.count}`);
       sum.append(' ', el('span', 'tech', r.reason));
-      det.append(sum);
+      det.append(sum, el('p', 'reason-line', reasonExplain(r.reason)));     // what this reason means (UI task 42)
       const list = el('ol', 'rej');
       for (const item of r.items.slice(0, GROUP_CAP)) {
         const li = el('li');
@@ -336,7 +341,7 @@ function failedPanel(payload) {
   const facts = el('div', 'facts');
   facts.append(kv('checked', `${fmt(payload.total_checks)} layout${payload.total_checks === 1 ? '' : 's'} checked in ${fmt(payload.engine_ms)} ms`),
                kv('rejected', fmt(total)));
-  side.append(region('groups', 'Layouts tried', 'Each layout that was tried, and why it did not fit.', facts, groups));
+  side.append(region('groups', 'Layouts tried', 'Each layout the engine tried, grouped by where it came from and why it was set aside. One that fits would use every byte of the picture data exactly.', facts, groups));
 
   if (payload.partial_candidates.length) {
     const sec = el('section', 'partial');
@@ -419,15 +424,15 @@ export function renderResult(root, payload, bytes, opts = {}) {
   const answer = el('div', 'exam-right answer pending');
   const how = el('div', 'how-col');
   const hexLine = payload.status === 'RESOLVED'
-    ? 'Shaded by the role this reading gives them: header, data, trailer. Highlighted bytes were read as header fields.'
-    : 'No layout tried fits, so no byte has a role to shade.';
-  const hex = region('hex', 'The file’s bytes', hexLine, pane.root);
-  let finalView, buildAnswer, fieldsRegion = null, fieldsLabel = '';
+    ? `${HEX_HOW} Shading shows what this reading uses each byte for: header, picture data or trailer. Highlighted bytes hold the header values above; point at one to see which.`
+    : `${HEX_HOW} No layout fits, so no byte is given a role.`;
+  const hex = region('hex', `The file’s bytes (${fmt(bytes.length)})`, hexLine, pane.root);
+  let finalView, buildAnswer, fieldsRegion = null;
   if (payload.status === 'RESOLVED') {
     const c = payload.candidates[0];
     finalView = { cands: [c], regions: c };
-    fieldsRegion = region('fields', 'What the header declares', 'Each value the file states about itself, and where it sits.');
-    fieldsLabel = `What the header declares (${c.fields.length} value${c.fields.length === 1 ? '' : 's'})`;
+    fieldsRegion = region('fields', `What the header declares (${c.fields.length} value${c.fields.length === 1 ? '' : 's'})`,
+      'Each value the file states about itself: what it is, where it sits in the file, and the value read there.');
     buildAnswer = () => {                // built at the final step, so the image reveal starts then
       const r = resolvedPanel(payload, bytes, base);
       answer.replaceChildren(...r.side.childNodes);
@@ -437,7 +442,7 @@ export function renderResult(root, payload, bytes, opts = {}) {
     finalView = { cands: [], regions: null };
     buildAnswer = () => answer.replaceChildren(...failedPanel(payload).childNodes);
   }
-  flow.append(answer, how, evidence(payload, bytes, hex, fieldsRegion, fieldsLabel));
+  flow.append(answer, how, evidence(payload, bytes, hex, fieldsRegion));
   target.append(bar, flow);
   let built = false;
   const replay = createReplay(payload, {

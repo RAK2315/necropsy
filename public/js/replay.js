@@ -1,6 +1,6 @@
 // Replay of the engine's recorded steps (Requirement 7). Driven only by the payload: no request, no invented step.
 import { buildSteps, batch, counterText, hypothesisLine, rejectionLine } from './logic.js';
-import { rejectionPlain, verdictText, reasonText } from './words.js';
+import { rejectionPlain, verdictText, reasonText, stepExplain } from './words.js';
 
 // One frame at 1x. Slowed from 600 ms to 1 s in the second clarity pass (change 5) so a first-time viewer can read a step
 // without pausing; batch() keeps the whole replay within MAX_MS at 1x (Requirement 7.7's 10 s, raised to 20 s).
@@ -29,6 +29,10 @@ export function captionText(payload, step, index, total) {
     if (payload.status === 'RESOLVED') { const c = payload.candidates[0]; return `Fits: ${c.width} × ${c.height}, ${c.bit_depth}-bit.`; }
     return verdictText(payload) + (payload.status === 'FAILED' ? '.' : '');
   }
+  if (step.kind === 'fit') {
+    const c = step.candidate;
+    return `Step ${index + 1} of ${total}. Trying ${c.width} × ${c.height}, ${c.bit_depth}-bit, header ${c.header_size} bytes… fits.`;
+  }
   const r = step.rejection, h = r.hypothesis;
   const what = h ? `Trying ${h.width} × ${h.height}, ${h.bit_depth}-bit, header ${h.header_size} bytes…` : 'Checking the format’s own declarations…';
   return `Step ${index + 1} of ${total}. ${what} rejected: ${reasonText(r.reason, r.discrepancy)}.`;
@@ -37,18 +41,32 @@ export function captionText(payload, step, index, total) {
 /** The line shown instead of the controls when there is nothing to replay: no layout checked was rejected. */
 export function nothingToReplay(payload) {
   const n = payload.total_checks;
-  return n === 1 ? 'Nothing to replay: the one layout checked fits.' : `Nothing to replay: all ${n} layouts checked fit.`;
+  return n === 1 ? 'Nothing to replay: the first layout the engine tried fits, so no layout was set aside.'
+    : `Nothing to replay: all ${n} layouts the engine checked fit, so no layout was set aside.`;
 }
 
-/** One step as a log line: what was tried and why it was rejected in plain words, then the engine's own terms. */
+/**
+ * One step as a log line: what was tried and why it was set aside in plain words, the longer explanation (shown with
+ * "Explain every step", UI task 42), then the engine's own terms.
+ */
 export function stepItem(payload, s, i) {
   const li = el('li', 'rp-item');
   li.value = i + 1;
   if (s.kind === 'rejection') {
     li.append(el('span', 'rl', rejectionPlain(s.rejection)));
-    li.append(el('span', 'rh tech', [rejectionLine(s.rejection), s.rejection.hypothesis ? hypothesisLine(s.rejection.hypothesis) : ''].filter(Boolean).join(' · ')));
+  } else if (s.kind === 'fit') {
+    const c = s.candidate;
+    li.append(el('span', 'rl', `${c.width} × ${c.height}, ${c.bit_depth}-bit, header ${c.header_size.toLocaleString('en-US')} bytes: fits exactly`));
   } else {
-    li.append(el('span', 'rl final', verdictText(payload)), el('span', 'rh tech', `result: ${s.status}`));
+    li.append(el('span', 'rl final', verdictText(payload)));
+  }
+  li.append(el('span', 'rx', stepExplain(payload, s)));
+  if (s.kind === 'rejection') {
+    li.append(el('span', 'rh tech', [rejectionLine(s.rejection), s.rejection.hypothesis ? hypothesisLine(s.rejection.hypothesis) : ''].filter(Boolean).join(' · ')));
+  } else if (s.kind === 'fit') {
+    li.append(el('span', 'rh tech', `fits · ${hypothesisLine(s.candidate)}`));
+  } else {
+    li.append(el('span', 'rh tech', `result: ${s.status}`));
   }
   return li;
 }
@@ -80,16 +98,28 @@ export function createReplay(payload, { onStep, onFinal, onFrame = () => {} }) {
   const speed = el('select', 'rp-speed');
   speed.setAttribute('aria-label', 'Replay speed');
   for (const s of SPEEDS) { const o = el('option', '', `${s}\u00d7`); o.value = String(s); if (s === 1) o.selected = true; speed.append(o); }
+  // the longer explanation under every line of the log (UI task 42); the current step's is always under the caption
+  const explain = el('button', 'rp-btn rp-explain', 'Explain every step');
+  explain.type = 'button';
+  explain.dataset.cap = 'explain';
+  explain.setAttribute('aria-pressed', 'false');
+  explain.addEventListener('click', () => {
+    const on = !root.classList.contains('explain');
+    root.classList.toggle('explain', on);
+    explain.setAttribute('aria-pressed', String(on));
+  });
   const counter = el('span', 'rp-counter mono');
   counter.setAttribute('aria-live', 'polite');
-  bar.append(back, play, fwd, end, speed, counter);
+  bar.append(back, play, fwd, end, speed, explain, counter);
 
   const log = el('ol', 'rp-log');
   const items = steps.map((s, i) => { const li = stepItem(payload, s, i); log.append(li); return li; });
   const caption = el('p', 'rp-caption');
   caption.dataset.cap = 'replay-caption';
   caption.setAttribute('aria-live', 'polite');
-  root.append(head, bar, caption, log);
+  const why = el('p', 'rp-why');
+  why.dataset.cap = 'replay-why';
+  root.append(head, bar, caption, why, log);
   // one frame: every layout checked fits, so there is nothing to step through; the controls are not shown at all
   const single = frames.length === 1;
   if (single) {
@@ -97,6 +127,7 @@ export function createReplay(payload, { onStep, onFinal, onFrame = () => {} }) {
     bar.hidden = true;
     log.hidden = true;
     caption.hidden = true;
+    why.hidden = true;
   }
 
   let frame = -1;
@@ -115,6 +146,7 @@ export function createReplay(payload, { onStep, onFinal, onFrame = () => {} }) {
     counter.textContent = counterText([a, b], n);
     const s = steps[b];
     caption.textContent = captionText(payload, s, b, n);
+    why.textContent = stepExplain(payload, s);
     if (s.kind === 'final') onFinal(); else onStep(s);
     onFrame({ step: b + 1, of: n, final: s.kind === 'final' });
     if (frame === frames.length - 1) stop();
