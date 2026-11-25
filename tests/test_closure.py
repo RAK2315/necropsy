@@ -232,7 +232,8 @@ def test_closure_rle_ok_req_1_8():
     assert v.ok is True and v.decoded == b"\x07\x07\x01\x02"
 
 
-@pytest.mark.parametrize("enc", ["rle_tga", "tiff_compression_5", "x"])
+# rle_tga row removed by format-coverage task 11 (Requirement 5.9); task 12 owns the rest.
+@pytest.mark.parametrize("enc", ["tiff_compression_5", "x"])
 def test_closure_unsupported_encoding_req_1_13(enc):
     # 2x2 at 8 bpp over 4 bytes would close under "none"; the encoding alone rejects it.
     v = check_closure(hyp(2, 2, encoding=enc), bytes(4))

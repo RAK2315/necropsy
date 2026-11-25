@@ -68,7 +68,7 @@ def test_none_encoding_is_not_capped_req_2_13():
     assert v.reason == "arithmetic_mismatch"
 
 
-@pytest.mark.parametrize("enc", ["rle_tga", "tiff_compression_5", "x"])
+@pytest.mark.parametrize("enc", ["tiff_compression_5", "x"])
 def test_unknown_encoding_still_unsupported_req_2_13(enc):
     assert check_closure(hyp(2, 2, encoding=enc), bytes(4)).reason == "unsupported_encoding"
 

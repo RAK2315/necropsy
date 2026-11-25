@@ -1297,11 +1297,24 @@
   "scope": "out",
   "scope_reason": "RLE TGA (image type 11)",
   "invalid_by_construction": false,
-  "our_status": "FAILED",
-  "stage": null,
-  "termination": "exhausted",
-  "checks": 6,
-  "candidates": [],
+  "our_status": "RESOLVED",
+  "stage": "probe",
+  "termination": null,
+  "checks": 2,
+  "candidates": [
+   {
+    "width": 200,
+    "height": 32,
+    "bit_depth": 8,
+    "header_size": 18,
+    "row_alignment": 1,
+    "encoding": "rle_tga",
+    "probe": "tga",
+    "path": [],
+    "data_start": 18,
+    "data_end": 2688
+   }
+  ],
   "expected_status": "FAILED",
   "note": "",
   "pillow_error": null,
@@ -1311,8 +1324,10 @@
    200,
    32
   ],
-  "pixel_verdicts": [],
-  "pillow_pixels_sha256": null
+  "pixel_verdicts": [
+   "not comparable: encoding rle_tga not handled by the comparer"
+  ],
+  "pillow_pixels_sha256": "1d3a4a375990410a04b15e5f34195e24c1bba251d711f72ed363f9db746080ed"
  },
  {
   "file": "pillow_200x32_la_bl_raw.tga",
@@ -1396,11 +1411,24 @@
   "scope": "out",
   "scope_reason": "RLE TGA (image type 9)",
   "invalid_by_construction": false,
-  "our_status": "FAILED",
-  "stage": null,
-  "termination": "exhausted",
-  "checks": 6,
-  "candidates": [],
+  "our_status": "RESOLVED",
+  "stage": "probe",
+  "termination": null,
+  "checks": 2,
+  "candidates": [
+   {
+    "width": 200,
+    "height": 32,
+    "bit_depth": 8,
+    "header_size": 786,
+    "row_alignment": 1,
+    "encoding": "rle_tga",
+    "probe": "tga",
+    "path": [],
+    "data_start": 786,
+    "data_end": 7752
+   }
+  ],
   "expected_status": "FAILED",
   "note": "",
   "pillow_error": null,
@@ -1410,8 +1438,10 @@
    200,
    32
   ],
-  "pixel_verdicts": [],
-  "pillow_pixels_sha256": null
+  "pixel_verdicts": [
+   "not comparable: encoding rle_tga not handled by the comparer"
+  ],
+  "pillow_pixels_sha256": "a2340c38626f6a561b5b6406774a9f1bc99250ce3d8d7bb327cd26a2fa3aa3a7"
  },
  {
   "file": "pillow_200x32_rgb_bl_raw.tga",
@@ -1457,11 +1487,24 @@
   "scope": "out",
   "scope_reason": "RLE TGA (image type 10)",
   "invalid_by_construction": false,
-  "our_status": "FAILED",
-  "stage": null,
-  "termination": "exhausted",
-  "checks": 6,
-  "candidates": [],
+  "our_status": "RESOLVED",
+  "stage": "probe",
+  "termination": null,
+  "checks": 2,
+  "candidates": [
+   {
+    "width": 200,
+    "height": 32,
+    "bit_depth": 24,
+    "header_size": 18,
+    "row_alignment": 1,
+    "encoding": "rle_tga",
+    "probe": "tga",
+    "path": [],
+    "data_start": 18,
+    "data_end": 19282
+   }
+  ],
   "expected_status": "FAILED",
   "note": "",
   "pillow_error": null,
@@ -1471,8 +1514,10 @@
    200,
    32
   ],
-  "pixel_verdicts": [],
-  "pillow_pixels_sha256": null
+  "pixel_verdicts": [
+   "not comparable: encoding rle_tga not handled by the comparer"
+  ],
+  "pillow_pixels_sha256": "0d88e78be340cacf8768184f4b8fcb5f709a5c1edf910d086d2d241c7a9ca825"
  },
  {
   "file": "pillow_200x32_rgba_tl_raw.tga",
@@ -1844,11 +1889,24 @@
   "scope": "out",
   "scope_reason": "RLE TGA (image type 11)",
   "invalid_by_construction": false,
-  "our_status": "FAILED",
-  "stage": null,
-  "termination": "exhausted",
-  "checks": 6,
-  "candidates": [],
+  "our_status": "RESOLVED",
+  "stage": "probe",
+  "termination": null,
+  "checks": 2,
+  "candidates": [
+   {
+    "width": 64,
+    "height": 64,
+    "bit_depth": 16,
+    "header_size": 18,
+    "row_alignment": 1,
+    "encoding": "rle_tga",
+    "probe": "tga",
+    "path": [],
+    "data_start": 18,
+    "data_end": 7179
+   }
+  ],
   "expected_status": "FAILED",
   "note": "",
   "pillow_error": null,
@@ -1858,8 +1916,10 @@
    64,
    64
   ],
-  "pixel_verdicts": [],
-  "pillow_pixels_sha256": null
+  "pixel_verdicts": [
+   "not comparable: encoding rle_tga not handled by the comparer"
+  ],
+  "pillow_pixels_sha256": "2e4f7d2f92c455e44831bfa784eaf6c5b13c2f580460a7de85afa9167b22e255"
  },
  {
   "file": "pillow_negative_size.ppm",
@@ -2105,11 +2165,24 @@
   "scope": "out",
   "scope_reason": "RLE TGA (image type 10)",
   "invalid_by_construction": false,
-  "our_status": "FAILED",
-  "stage": null,
-  "termination": "exhausted",
-  "checks": 6,
-  "candidates": [],
+  "our_status": "RESOLVED",
+  "stage": "probe",
+  "termination": null,
+  "checks": 2,
+  "candidates": [
+   {
+    "width": 199,
+    "height": 199,
+    "bit_depth": 32,
+    "header_size": 18,
+    "row_alignment": 1,
+    "encoding": "rle_tga",
+    "probe": "tga",
+    "path": [],
+    "data_start": 18,
+    "data_end": 128486
+   }
+  ],
   "expected_status": "FAILED",
   "note": "",
   "pillow_error": null,
@@ -2119,8 +2192,10 @@
    199,
    199
   ],
-  "pixel_verdicts": [],
-  "pillow_pixels_sha256": null
+  "pixel_verdicts": [
+   "not comparable: encoding rle_tga not handled by the comparer"
+  ],
+  "pillow_pixels_sha256": "fb6b49c2139a430f4476ed05df7eb28c47ac99fd6be4434e7578edb8e3f1f886"
  },
  {
   "file": "pillow_rgba16.tga",
@@ -2357,11 +2432,24 @@
   "scope": "out",
   "scope_reason": "RLE TGA (image type 10)",
   "invalid_by_construction": false,
-  "our_status": "FAILED",
-  "stage": null,
-  "termination": "exhausted",
-  "checks": 6,
-  "candidates": [],
+  "our_status": "RESOLVED",
+  "stage": "probe",
+  "termination": null,
+  "checks": 2,
+  "candidates": [
+   {
+    "width": 23,
+    "height": 42,
+    "bit_depth": 24,
+    "header_size": 18,
+    "row_alignment": 1,
+    "encoding": "rle_tga",
+    "probe": "tga",
+    "path": [],
+    "data_start": 18,
+    "data_end": 2957
+   }
+  ],
   "expected_status": "FAILED",
   "note": "",
   "pillow_error": null,
@@ -2371,8 +2459,10 @@
    23,
    42
   ],
-  "pixel_verdicts": [],
-  "pillow_pixels_sha256": null
+  "pixel_verdicts": [
+   "not comparable: encoding rle_tga not handled by the comparer"
+  ],
+  "pillow_pixels_sha256": "cc52c11a41aa260d6735b1526550049ffd88ea1c0c35256375fa400d64bcbb7d"
  },
  {
   "file": "sdlimage_sample.tif",

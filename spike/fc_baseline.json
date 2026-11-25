@@ -615,9 +615,25 @@
   "termination": null
  },
  "real/pillow_200x32_l_tl_rle.tga": {
-  "candidates": [],
-  "status": "FAILED",
-  "termination": "exhausted"
+  "candidates": [
+   {
+    "key": [
+     200,
+     32,
+     8,
+     18,
+     1,
+     "rle_tga",
+     null
+    ],
+    "region": [
+     18,
+     2688
+    ]
+   }
+  ],
+  "status": "RESOLVED",
+  "termination": null
  },
  "real/pillow_200x32_la_bl_raw.tga": {
   "candidates": [
@@ -662,9 +678,25 @@
   "termination": null
  },
  "real/pillow_200x32_p_tl_rle.tga": {
-  "candidates": [],
-  "status": "FAILED",
-  "termination": "exhausted"
+  "candidates": [
+   {
+    "key": [
+     200,
+     32,
+     8,
+     786,
+     1,
+     "rle_tga",
+     null
+    ],
+    "region": [
+     786,
+     7752
+    ]
+   }
+  ],
+  "status": "RESOLVED",
+  "termination": null
  },
  "real/pillow_200x32_rgb_bl_raw.tga": {
   "candidates": [
@@ -688,9 +720,25 @@
   "termination": null
  },
  "real/pillow_200x32_rgb_tl_rle.tga": {
-  "candidates": [],
-  "status": "FAILED",
-  "termination": "exhausted"
+  "candidates": [
+   {
+    "key": [
+     200,
+     32,
+     24,
+     18,
+     1,
+     "rle_tga",
+     null
+    ],
+    "region": [
+     18,
+     19282
+    ]
+   }
+  ],
+  "status": "RESOLVED",
+  "termination": null
  },
  "real/pillow_200x32_rgba_tl_raw.tga": {
   "candidates": [
@@ -881,9 +929,25 @@
   "termination": "exhausted"
  },
  "real/pillow_la.tga": {
-  "candidates": [],
-  "status": "FAILED",
-  "termination": "exhausted"
+  "candidates": [
+   {
+    "key": [
+     64,
+     64,
+     16,
+     18,
+     1,
+     "rle_tga",
+     null
+    ],
+    "region": [
+     18,
+     7179
+    ]
+   }
+  ],
+  "status": "RESOLVED",
+  "termination": null
  },
  "real/pillow_negative_size.ppm": {
   "candidates": [],
@@ -990,9 +1054,25 @@
   "termination": null
  },
  "real/pillow_rgb32rle.tga": {
-  "candidates": [],
-  "status": "FAILED",
-  "termination": "exhausted"
+  "candidates": [
+   {
+    "key": [
+     199,
+     199,
+     32,
+     18,
+     1,
+     "rle_tga",
+     null
+    ],
+    "region": [
+     18,
+     128486
+    ]
+   }
+  ],
+  "status": "RESOLVED",
+  "termination": null
  },
  "real/pillow_rgba16.tga": {
   "candidates": [
@@ -1091,9 +1171,25 @@
   "termination": null
  },
  "real/sdlimage_sample.tga": {
-  "candidates": [],
-  "status": "FAILED",
-  "termination": "exhausted"
+  "candidates": [
+   {
+    "key": [
+     23,
+     42,
+     24,
+     18,
+     1,
+     "rle_tga",
+     null
+    ],
+    "region": [
+     18,
+     2957
+    ]
+   }
+  ],
+  "status": "RESOLVED",
+  "termination": null
  },
  "real/sdlimage_sample.tif": {
   "candidates": [

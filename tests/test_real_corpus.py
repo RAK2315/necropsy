@@ -74,8 +74,20 @@ PNM_TEXT_RESOLVED = {
     "imagemagick_input_p1.pbm", "imagemagick_input_p2.pgm", "imagemagick_input_p3.ppm",
     "pillow_hopper_1bit_plain.pbm",
 }
+# format-coverage Requirement 5.8, 5.9 and design.md row 11: rle_tga is decoded; six of the seven predicted files
+# resolve (pillow_cross_scan_line.tga stays FAILED, see the Task 11 commit). Task 12 owns the final expectations.
+RLE_TGA_RESOLVED = {
+    "pillow_200x32_l_tl_rle.tga", "pillow_200x32_p_tl_rle.tga", "pillow_200x32_rgb_tl_rle.tga",
+    "pillow_la.tga", "pillow_rgb32rle.tga", "sdlimage_sample.tga",
+}
 OUT_OF_SCOPE = [n for n in FILES if scope_of(n) == "out" and n != OSSFUZZ
-                and n not in PNM_RESOLVED and n not in PNM_TEXT_RESOLVED]
+                and n not in PNM_RESOLVED and n not in PNM_TEXT_RESOLVED and n not in RLE_TGA_RESOLVED]
+
+
+@pytest.mark.parametrize("name", sorted(RLE_TGA_RESOLVED))
+def test_rle_tga_files_resolve(name):
+    # Requirement 5.8, 5.9; format-coverage Task 11.
+    assert run(name)[1].status == "RESOLVED"
 
 
 @pytest.mark.parametrize("name", sorted(PNM_RESOLVED))

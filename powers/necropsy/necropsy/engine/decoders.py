@@ -137,8 +137,14 @@ def _run_pnm_text(data, start, end, h, max_output_bytes) -> DecodeResult:
 
 
 # Data read by the closure gate: hypothesis encoding -> adapter(data, start, end, h, max_output_bytes).
+def _run_rle_tga(data, start, end, h, max_output_bytes) -> DecodeResult:
+    # Requirement 5.2: pixel_bytes = ceil(bit_depth / 8)
+    return rle_tga_decode(data, start, end, (h.bit_depth + 7) // 8, max_output_bytes)
+
+
 DECODERS = {
     "pnm_text": _run_pnm_text,
+    "rle_tga": _run_rle_tga,
 }
 
 # Requirement 2.12: decoder state -> closure rejection reason.
