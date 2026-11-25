@@ -309,7 +309,7 @@ Everything here can be checked in [`.kiro/`](.kiro), [`docs/KIRO-LOG.md`](docs/K
 
 **Hooks.** `.kiro/hooks/kiro-usage-log.json` appends every file the Kiro agent saves or creates, with the time and git HEAD, to `docs/KIRO-LOG.md`: 633 rows so far. Files written by commands Kiro ran, rather than by its file tools, are not logged. A git pre-commit hook (`.githooks/pre-commit`) blocks a UTF-8 byte-order mark in `.kiro/`, because a BOM before `---` breaks steering front matter.
 
-**Agents.** Three custom agent definitions in `.kiro/agents/`: `dev` (read, write, shell) implements one task, runs its tests and commits it; `reviewer` (read and shell, no write tool) reviews without editing; `spec` (read and write) is told to write only inside `.kiro/specs/`. The limits are partly instructions: `reviewer` has a shell, and `spec`'s write tool is not path-restricted.
+**Agents.** Three custom agents are defined in `.kiro/agents/` with scoped permissions: `dev` (read, write, shell) implements one task, runs its tests and commits it; `reviewer` (read and shell, no write tool) reviews without editing; `spec` (read and write) is told to write only inside `.kiro/specs/`. In practice the work ran through the default agent: Kiro's session history records no invocation of any of the three. The only subagents it delegated to were its own built-in spec workflow agents (task execution, requirements, requirement detailing).
 
 **MCP and Powers.** Kiro built the MCP server and the Power from the `necropsy-mcp` spec, and both were checked from inside Kiro: through the workspace server, and through the Power installed in an empty workspace.
 
