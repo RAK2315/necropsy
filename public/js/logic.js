@@ -220,7 +220,7 @@ export function cardModel(c, index) {
 /** Markup for one card. A pure function of the model; the image is painted into .well afterwards. */
 export function cardHTML(m) {
   const well = m.failure ? `<p class="no-image">${escapeHTML(m.failure)}</p>` : '';
-  return `<article class="card" tabindex="0" data-index="${m.index}" aria-label="${escapeHTML(m.title)}">`
+  return `<article class="card" id="card-${m.index}" tabindex="0" data-index="${m.index}" aria-label="${escapeHTML(m.title)}">`
     + `<div class="well card-well" data-index="${m.index}">${well}</div>`
     + `<h3 class="card-title mono">${escapeHTML(m.title)}</h3>`
     + m.lines.map((l) => `<p class="card-line mono">${escapeHTML(l)}</p>`).join('')
@@ -229,6 +229,19 @@ export function cardHTML(m) {
     + `<div class="card-dl"><button type="button" class="dl-btn" data-act="png" data-index="${m.index}"${m.failure ? ' disabled title="no image to save"' : ''}>PNG</button>`
     + `<button type="button" class="dl-btn" data-act="data" data-index="${m.index}">data region</button></div>`
     + `</article>`;
+}
+
+/**
+ * The at-a-glance grid (UI task 28): one identical tile per reading, in payload order, linking to its card.
+ * A pure function of the payload. It shows no coherence at all, and no number but each tile's own size.
+ */
+export function ambGridHTML(payload) {
+  return payload.candidates.map((c, i) => {
+    const failure = c.render && c.render.failure ? `<span class="no-image">${escapeHTML(c.render.failure)}</span>` : '';
+    return `<a class="amb-tile" href="#card-${i}" data-index="${i}" aria-label="${escapeHTML(cardTitle(c))}">`
+      + `<span class="amb-well" data-index="${i}">${failure}</span>`
+      + `<span class="amb-dims mono">${escapeHTML(`${c.width} × ${c.height} · ${c.bit_depth}-bit`)}</span></a>`;
+  }).join('');
 }
 
 /** All cards in the payload's order, which is the engine's discovery order. */

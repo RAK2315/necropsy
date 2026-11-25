@@ -245,7 +245,7 @@ def test_every_canvas_is_named_from_the_payload(base_url):
     b = Engine().run((EXT / "external_b").read_bytes()).candidate.hypothesis
     assert got["start"] == [name(a)] + [name(h) for h in d]
     assert got["resolved"] == [name(b)]
-    assert got["ambiguity"] == [name(h) for h in d]
+    assert got["ambiguity"] == [name(h) for h in d] * 2     # the at-a-glance grid (UI task 28), then the cards
 
 
 # ---- 20.6: status text is announced ----

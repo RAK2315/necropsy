@@ -2,7 +2,7 @@
 // UI clarity pass (tasks 26 to 28, built by Claude Code, not Kiro): a verdict heading above both columns, a title and
 // one plain line on every region, and plain words from words.js, with the engine's own terms kept in `.tech`.
 import {
-  closureLine, declaredVsActual, revisionDiffs, changeText, COHERENCE_NOTE, cardsHTML, cardTitle,
+  closureLine, declaredVsActual, revisionDiffs, changeText, COHERENCE_NOTE, cardsHTML, cardTitle, ambGridHTML,
   failureSentence, failureGroups, rejectionLine, hypothesisLine, stageOf, inputBase, STOPPED_AT_LIMIT,
 } from './logic.js';
 import { createPane, fieldTable } from './pane.js';
@@ -143,6 +143,7 @@ function resolvedPanel(payload, bytes, base) {
 // ---- UNRESOLVED_AMBIGUITY ----
 
 const CARD_BOX = 184;
+const GRID_BOX = 64;
 const UNION_NOTE = 'Bytes read by any reading. Hover or focus a reading to see its layout.';
 
 function ambiguityScreen(root, payload, bytes, base, onProgress) {
@@ -166,6 +167,15 @@ function ambiguityScreen(root, payload, bytes, base, onProgress) {
   });
   left.append(replayRegion(replay), region('hex', 'The file’s bytes', 'Highlighted bytes were read as header fields by at least one reading.', paneNote, pane.root),
     region('fields', 'What the header declares', 'Each value a reading takes from the file, and where it sits.', tableSlot));
+
+  // at-a-glance grid (task 28): every reading at one size, in payload order, no score, no emphasis
+  const glance = el('div', 'amb-grid');
+  glance.dataset.cap = 'amb-grid';
+  glance.innerHTML = ambGridHTML(payload);             // markup is a pure function of the payload (tested for neutrality)
+  for (const well of glance.querySelectorAll('.amb-well')) {
+    const c = cands[Number(well.dataset.index)];
+    if (c.render && c.render.data_b64) well.append(paint(c.render, GRID_BOX - 8, GRID_BOX - 8, { bitDepth: c.bit_depth }).canvas);
+  }
 
   const grid = el('div', 'cards');
   grid.innerHTML = cardsHTML(payload);                 // markup is a pure function of the payload (tested for neutrality)
@@ -198,10 +208,19 @@ function ambiguityScreen(root, payload, bytes, base, onProgress) {
     });
     card.addEventListener('keydown', (e) => { if (e.target === card && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); select(i); } });
   }
+  for (const tile of glance.querySelectorAll('.amb-tile')) {
+    tile.addEventListener('click', (e) => {
+      e.preventDefault();
+      const card = grid.querySelector(`.card[data-index="${tile.dataset.index}"]`);
+      card.scrollIntoView({ block: 'nearest' });
+      card.focus();
+    });
+  }
   const right = el('div', 'exam-right pending');
   const note = el('p', 'amb-note', COHERENCE_NOTE);
   note.append(' ', el('span', 'tech', 'row_mad_ratio'));
-  right.append(region('cards', 'Readings that fit', 'Each one fits the data exactly. The bytes alone cannot separate them.', grid, note));
+  right.append(region('glance', 'Every reading at a glance', 'Same size, in the order the engine found them. Select one to go to its card.', glance),
+    region('cards', 'Readings that fit', 'Each one fits the data exactly. The bytes alone cannot separate them.', grid, note));
   if (!replay.single) right.prepend(answerPending(replay));
   wrap.append(left, right);
   root.append(bar, wrap);

@@ -98,3 +98,43 @@ test('download names (Requirement 17.5)', () => {
   assert.equal(L.inputBase(''), 'file');
   assert.equal(L.inputBase(undefined), 'file');
 });
+// ---- UI task 28 (Claude Code): the at-a-glance grid passes the same neutrality test as the cards, more strictly ----
+
+test('the grid shows no coherence at all: swapping the coherence values leaves its markup identical', () => {
+  const a = L.ambGridHTML(payloadWith(scored));
+  const b = L.ambGridHTML(payloadWith(reversed));
+  assert.equal(a, b);                                   // identical outright, not identical after masking
+  assert.equal(a, L.ambGridHTML(payloadWith(scored)));  // and a pure function of the payload
+  assert.ok(!/coher|similar|score|row_mad/i.test(a));
+});
+
+test('every grid tile has the same structure, keeps payload order and carries no rank', () => {
+  const html = L.ambGridHTML(payloadWith(scored));
+  const tiles = html.split('</a>').filter(Boolean);
+  assert.equal(tiles.length, geometry.length);
+  const shape = (t) => [...t.matchAll(/class="([^"]*)"/g)].map((m) => m[1]).join('|');
+  assert.equal(new Set(tiles.map(shape)).size, 1);
+  const labels = [...html.matchAll(/aria-label="([^"]*)"/g)].map((m) => m[1]);
+  assert.deepEqual(labels, geometry.map(([w, h, bd, hdr]) => `${w} × ${h} · ${bd}-bit · header ${hdr}`));
+  const shown = [...html.matchAll(/<span class="amb-dims mono">([^<]*)<\/span>/g)].map((m) => m[1]);
+  assert.deepEqual(shown, geometry.map(([w, h, bd]) => `${w} × ${h} · ${bd}-bit`));   // no number but the tile's own size
+  for (const word of ['best', 'likely', 'selected', 'recommended', 'preferred', '#1', 'rank', 'aria-pressed', 'aria-current', 'checked']) {
+    assert.ok(!html.toLowerCase().includes(word.toLowerCase()), word);
+  }
+  assert.deepEqual([...html.matchAll(/href="#card-(\d+)"/g)].map((m) => Number(m[1])), geometry.map((_, i) => i));
+});
+
+test('a grid tile with no preview is the same tile, with the reason', () => {
+  const p = payloadWith(scored);
+  p.candidates[1] = { ...p.candidates[1], render: { failure: 'no renderer for 16-bit pixels' } };
+  const html = L.ambGridHTML(p);
+  const tiles = html.split('</a>').filter(Boolean);
+  assert.match(tiles[1], /<span class="amb-well" data-index="1"><span class="no-image">no renderer for 16-bit pixels<\/span><\/span>/);
+  const outer = (t) => t.match(/^<a class="([^"]*)"/)[1];
+  assert.equal(new Set(tiles.map(outer)).size, 1);
+});
+
+test('no stylesheet rule singles out one grid tile by position', () => {
+  const css = readFileSync(new URL('../../../public/app.css', import.meta.url), 'utf8');
+  assert.ok(!/\.amb-(tile|well)[^{]*:(first|last|nth)-/.test(css));
+});

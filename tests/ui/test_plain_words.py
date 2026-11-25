@@ -104,7 +104,7 @@ def test_plain_words_titles_and_sizes(base_url):
                                                    "ambiguity", "ambiguity-selected", "failed-mid", "failed"}
 
     want = {"resolved": {"replay", "hex", "image", "proof", "facts", "fields"}, "odd": {"replay", "hex", "image", "proof", "facts", "fields"},
-            "ambiguity": {"replay", "hex", "fields", "cards"}, "failed": {"replay", "hex", "groups"}}
+            "ambiguity": {"replay", "hex", "fields", "glance", "cards"}, "failed": {"replay", "hex", "groups"}}
     for screen, names in want.items():
         regs = got["regions"][screen]
         assert {r["name"] for r in regs} == names, (screen, regs)
