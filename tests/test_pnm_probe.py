@@ -71,7 +71,7 @@ def test_unusable_values_still_seed_with_rejection(header, field):
 
 
 @pytest.mark.parametrize("data", [b"P4\n2 2\n", b"P7\n2 2\n255\n", b"P0\n2 2\n255\n", b"P5x2 2\n255\n",
-                                  b"P5", b"P1\n2 2\n0 1 1 0", b"P2\n2 2\n255\n1 2 3 4"])
+                                  b"P5"])
 def test_not_matched(data):
     assert probe_pnm(data) is None
 

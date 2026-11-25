@@ -30,6 +30,9 @@ EXCEPTIONS = {
     "mystery_h": ("pillow_fails", "Pillow raises OSError (buffer overrun): rows padded to 4 bytes; checked against "
                                   "make_samples in test_pixels.py instead"),
     "pillow_ossfuzz-4836216264589312.pcx": ("pillow_fails", "Pillow raises OSError (image file is truncated)"),
+    # format-coverage Task 8 resolves plain P1; its renderer is Task 9 (Requirement 16.1, 16.4). Remove these two then.
+    "imagemagick_input_p1.pbm": ("render_pending", "plain P1 is rendered by format-coverage Task 9"),
+    "pillow_hopper_1bit_plain.pbm": ("render_pending", "plain P1 is rendered by format-coverage Task 9"),
     "pillow_200x32_la_bl_raw.tga": ("no_renderer", "16-bit pixels have no renderer (Requirement 3.9)"),
     "pillow_rgba16.tga": ("no_renderer", "16-bit pixels have no renderer (Requirement 3.9)"),
 }
@@ -81,6 +84,9 @@ def test_render_matches_pillow(path):
         return
     if kind == "no_renderer":
         assert render.get("failure", "").startswith("no renderer for"), reason
+        return
+    if kind == "render_pending":
+        assert _rgb(render) != _pillow(data).tobytes(), reason
         return
     assert "data_b64" in render, f"{path.name}: no image ({render.get('failure')})"
     ref = _pillow(data)

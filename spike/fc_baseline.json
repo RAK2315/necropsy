@@ -160,19 +160,91 @@
   "termination": null
  },
  "real/imagemagick_input_p1.pbm": {
-  "candidates": [],
-  "status": "FAILED",
-  "termination": "no_hypothesis_checked"
+  "candidates": [
+   {
+    "key": [
+     70,
+     46,
+     1,
+     8,
+     1,
+     "pnm_text",
+     null,
+     [
+      1,
+      null,
+      [],
+      null,
+      null,
+      1
+     ]
+    ],
+    "region": [
+     8,
+     6538
+    ]
+   }
+  ],
+  "status": "RESOLVED",
+  "termination": null
  },
  "real/imagemagick_input_p2.pgm": {
-  "candidates": [],
-  "status": "FAILED",
-  "termination": "no_hypothesis_checked"
+  "candidates": [
+   {
+    "key": [
+     70,
+     46,
+     8,
+     12,
+     1,
+     "pnm_text",
+     null,
+     [
+      1,
+      null,
+      [],
+      null,
+      null,
+      255
+     ]
+    ],
+    "region": [
+     12,
+     9770
+    ]
+   }
+  ],
+  "status": "RESOLVED",
+  "termination": null
  },
  "real/imagemagick_input_p3.ppm": {
-  "candidates": [],
-  "status": "FAILED",
-  "termination": "no_hypothesis_checked"
+  "candidates": [
+   {
+    "key": [
+     70,
+     46,
+     24,
+     12,
+     1,
+     "pnm_text",
+     null,
+     [
+      1,
+      null,
+      [],
+      null,
+      null,
+      255
+     ]
+    ],
+    "region": [
+     12,
+     33500
+    ]
+   }
+  ],
+  "status": "RESOLVED",
+  "termination": null
  },
  "real/imagemagick_input_p4.pbm": {
   "candidates": [
@@ -702,9 +774,33 @@
   "termination": null
  },
  "real/pillow_hopper_1bit_plain.pbm": {
-  "candidates": [],
-  "status": "FAILED",
-  "termination": "no_hypothesis_checked"
+  "candidates": [
+   {
+    "key": [
+     128,
+     128,
+     1,
+     10,
+     1,
+     "pnm_text",
+     null,
+     [
+      1,
+      null,
+      [],
+      null,
+      null,
+      1
+     ]
+    ],
+    "region": [
+     10,
+     32394
+    ]
+   }
+  ],
+  "status": "RESOLVED",
+  "termination": null
  },
  "real/pillow_hopper_8bit.pgm": {
   "candidates": [

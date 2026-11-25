@@ -69,12 +69,24 @@ PNM_RESOLVED = {
     "libtiff_rgb-3c-16b.ppm", "libtiff_rgb-3c-8b.ppm", "pillow_hopper_16bit.pgm",
     "pillow_hopper_8bit.pgm", "pillow_hopper_8bit.ppm", "sdlimage_sample.pnm",
 }
-OUT_OF_SCOPE = [n for n in FILES if scope_of(n) == "out" and n != OSSFUZZ and n not in PNM_RESOLVED]
+# format-coverage Requirement 4.1, 4.2, 4.4, 4.13 and design.md row 8: the text PNM probe resolves these four files.
+PNM_TEXT_RESOLVED = {
+    "imagemagick_input_p1.pbm", "imagemagick_input_p2.pgm", "imagemagick_input_p3.ppm",
+    "pillow_hopper_1bit_plain.pbm",
+}
+OUT_OF_SCOPE = [n for n in FILES if scope_of(n) == "out" and n != OSSFUZZ
+                and n not in PNM_RESOLVED and n not in PNM_TEXT_RESOLVED]
 
 
 @pytest.mark.parametrize("name", sorted(PNM_RESOLVED))
 def test_binary_pnm_files_resolve(name):
     # Requirement 3.8: the probe's candidate closes; format-coverage Task 4.
+    assert run(name)[1].status == "RESOLVED"
+
+
+@pytest.mark.parametrize("name", sorted(PNM_TEXT_RESOLVED))
+def test_text_pnm_files_resolve(name):
+    # Requirement 4.1, 4.2, 4.4: the exact-count rule holds for these files; format-coverage Task 8.
     assert run(name)[1].status == "RESOLVED"
 
 

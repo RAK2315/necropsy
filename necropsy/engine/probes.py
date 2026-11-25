@@ -502,6 +502,7 @@ PNM_WHITESPACE = frozenset(b" \t\n\x0b\x0c\r")
 PNM_DIGITS = frozenset(b"0123456789")
 PNM_MAGIC_DIGITS = frozenset(b"12356")
 PNM_BINARY = {0x35: 8, 0x36: 24}   # "5" -> grey, "6" -> RGB: bits per pixel at maxval <= 255
+PNM_TEXT = {0x31: 1, 0x32: 8, 0x33: 24}  # "1" -> bits, "2" -> grey, "3" -> RGB (pnm_text)
 PNM_MAX_MAXVAL = 65535
 
 
@@ -552,20 +553,21 @@ def _probe_pnm(data: bytes) -> ProbeOutcome | None:
         return None
     if data[PNM_FIRST_SEPARATOR_OFFSET] not in PNM_WHITESPACE:
         return None
-    if data[1] not in PNM_BINARY:
-        return None  # P1, P2, P3 (plain text) are not read by this probe yet
+    is_text = data[1] in PNM_TEXT
+    is_p1 = data[1] == 0x31
 
     magic = read(data, "magic", PNM_MAGIC_OFFSET, "2s")
     if magic is None:
         return None
-    bits = PNM_BINARY[data[1]]
+    bits = PNM_TEXT[data[1]] if is_text else PNM_BINARY[data[1]]
     window = data[:PNM_SCAN_LIMIT]
     records = [magic]
     values: dict[str, int] = {}
     problems: list[str] = []
     header_size = PNM_FIRST_SEPARATOR_OFFSET
     index = PNM_FIRST_SEPARATOR_OFFSET
-    for name in ("width", "height", "maxval"):
+    names = ("width", "height") if is_p1 else ("width", "height", "maxval")
+    for name in names:
         index, saw, problem = _pnm_skip(window, index)
         if problem:
             problems.append(problem)
@@ -586,7 +588,9 @@ def _probe_pnm(data: bytes) -> ProbeOutcome | None:
         index = end
         header_size = end
     else:
-        if index < len(data) and data[index] in PNM_WHITESPACE:
+        if is_text:
+            pass  # text PNM: header ends after the last token, no whitespace byte consumed
+        elif index < len(data) and data[index] in PNM_WHITESPACE:
             header_size = index + 1
         else:
             problems.append("no single whitespace byte after maxval")
@@ -602,7 +606,10 @@ def _probe_pnm(data: bytes) -> ProbeOutcome | None:
         problems.append(f"maxval {maxval} is outside 1..{PNM_MAX_MAXVAL}")
         maxval = 0
     bit_depth = 0
-    if maxval:
+    if is_p1:
+        bit_depth = 1
+        maxval = 1
+    elif maxval:
         bit_depth = bits if maxval <= 255 else bits * 2
     seed = Hypothesis(
         width=width,
@@ -610,10 +617,10 @@ def _probe_pnm(data: bytes) -> ProbeOutcome | None:
         bit_depth=bit_depth,
         header_size=header_size,
         row_alignment=1,
-        encoding="none",
+        encoding="pnm_text" if is_text else "none",
         fields=tuple(records),
         probe_name="pnm",
-        maxval=maxval if "maxval" in values else None,
+        maxval=1 if is_p1 else (maxval if "maxval" in values else None),
     )
     rejections: tuple[RejectionEntry, ...] = ()
     if problems:
