@@ -8,6 +8,7 @@ REASONS = frozenset({
     "arithmetic_mismatch", "decoder_overrun", "decoder_underrun", "decoder_unconsumed",
     "degenerate_hypothesis", "field_out_of_bounds", "probe_precondition_failed",
     "unsupported_encoding", "input_too_short", "internal_error",
+    "sample_above_maxval",
 })
 
 TERMINATIONS = frozenset({

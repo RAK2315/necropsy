@@ -121,6 +121,27 @@ def readings(h, data: bytes) -> tuple:
         return (h,)
 
 
+def _first_sample_above(data: bytes, start: int, end: int, maxval: int, size: int):
+    """First (offset, value) of a 1-byte or big-endian 2-byte sample above maxval, else None.
+
+    Allocates nothing sized from maxval.
+    """
+    if size == 1:
+        if maxval >= 255:
+            return None
+        for i in range(start, end):
+            if data[i] > maxval:
+                return i, data[i]
+        return None
+    if maxval >= 65535:
+        return None
+    for i in range(start, end - 1, 2):
+        v = (data[i] << 8) | data[i + 1]
+        if v > maxval:
+            return i, v
+    return None
+
+
 def check_closure(h, data: bytes) -> ClosureVerdict:
     """Closure gate: decode [header_size, data_end) and require exact length and full consumption."""
     try:
@@ -150,6 +171,15 @@ def check_closure(h, data: bytes) -> ClosureVerdict:
                     return _reject("degenerate_hypothesis")
         if h.encoding == "none":
             if end - h.header_size == expected:
+                if h.maxval is not None:
+                    bad = _first_sample_above(data, h.header_size, end, h.maxval,
+                                              2 if h.bit_depth in (16, 48) else 1)
+                    if bad is not None:
+                        off, val = bad
+                        return ClosureVerdict(
+                            False, "sample_above_maxval", None, None, None, None, None,
+                            "sample at offset %d is %d, above the declared maximum %d"
+                            % (off, val, h.maxval))
                 return _accept(bytes(data[h.header_size:end]), h.header_size, end, trailer)
             return _reject("arithmetic_mismatch", (end - h.header_size) - expected)
         if h.encoding == "rle_pcx":
