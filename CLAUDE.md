@@ -145,6 +145,14 @@ own homework. Check it independently.
   addressed by Decision Record item 16: a file that broke its format's
   rules emits as a one-file layout.
 
+- Held-out set (25 Nov): 55 real files from GDAL, Apache Commons Imaging
+  and TwelveMonkeys, sealed OUTSIDE the repo in
+  `%LOCALAPPDATA%\necropsy-heldout\` (files, manifest, licences). Only
+  the hashes are committed: `spike/samples/heldout/COMMITMENT.md`.
+  Kiro hook `heldout-guard.json` blocks tool calls naming them. Evaluate
+  once, after the `format-coverage` spec is done; `python tools/heldout.py
+  verify` first. Never show Kiro the names or results before then.
+
 ## Still open
 - Demo video, under 3 minutes, public on YouTube.
 - The Kiro usage write-up and the Devpost submission.

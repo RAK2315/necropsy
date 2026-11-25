@@ -1,0 +1,15 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "Held-out guard",
+      "description": "Before any agent tool call, block it (exit 2) if its input names the held-out set. The held-out files are evaluated once by Claude Code after the format-coverage work; the agent must never read or tune against them. See spike/samples/heldout/COMMITMENT.md.",
+      "trigger": "PreToolUse",
+      "action": {
+        "type": "command",
+        "command": "python tools/heldout.py guard"
+      },
+      "timeout": 10
+    }
+  ]
+}
