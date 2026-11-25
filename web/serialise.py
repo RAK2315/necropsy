@@ -134,12 +134,25 @@ def _field(f) -> dict:
 
 
 def _hypothesis(h) -> dict:
-    return {
+    d = {
         "width": h.width, "height": h.height, "bit_depth": h.bit_depth, "header_size": h.header_size,
         "row_alignment": h.row_alignment, "encoding": h.encoding, "declared_data_end": h.data_end,
         "probe_name": h.probe_name, "bounds": list(h.bounds) if h.bounds else None,
         "revision_path": list(h.revision_path), "fields": [_field(f) for f in h.fields],
     }
+    if h.planes != 1:
+        d["planes"] = h.planes
+    if h.row_bytes is not None:
+        d["row_bytes"] = h.row_bytes
+    if h.ranges:
+        d["ranges"] = [list(r) for r in h.ranges]
+    if h.rows_per_strip is not None:
+        d["rows_per_strip"] = h.rows_per_strip
+    if h.tile is not None:
+        d["tile"] = list(h.tile)
+    if h.maxval is not None:
+        d["maxval"] = h.maxval
+    return d
 
 
 def _candidate(c, data, budget: dict) -> dict:

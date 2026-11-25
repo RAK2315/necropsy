@@ -6,7 +6,7 @@ import time
 from typing import Callable
 
 from necropsy.engine.budget import Budget
-from necropsy.engine.closure import ClosureVerdict, check_closure, readings, row_stride
+from necropsy.engine.closure import ClosureVerdict, check_closure, hypothesis_row_stride, readings
 from necropsy.engine.coherence import coherence_gap, row_coherence
 from necropsy.engine.generic import generic_search
 from necropsy.engine.probes import PROBES
@@ -82,7 +82,7 @@ class Engine:
                     winners.append((reading, verdict))
                 else:
                     rejections.append(RejectionEntry(
-                        verdict.reason, name, reading, verdict.discrepancy))
+                        verdict.reason, name, reading, verdict.discrepancy, verdict.detail))
 
         if winners:
             candidates: list[Candidate] = []
@@ -105,7 +105,7 @@ class Engine:
             if v is None:  # trailer rejection: no hypothesis, no closure check
                 rejections.append(RejectionEntry(reason, "generic", None, detail=detail))
             else:
-                rejections.append(RejectionEntry(v.reason, "generic", h, v.discrepancy))
+                rejections.append(RejectionEntry(v.reason, "generic", h, v.discrepancy, v.detail))
 
         outcome = generic_search(data, budget, on_reject)
         found = list(outcome.found)
@@ -150,7 +150,7 @@ class Engine:
                             else:
                                 rejections.append(RejectionEntry(
                                     v.reason, "revision:" + "->".join(c.revision_path),
-                                    c, v.discrepancy))
+                                    c, v.discrepancy, v.detail))
                                 # An end-of-file reading is never expanded: its base child is.
                                 if c is child:
                                     next_frontier.append(c)
@@ -180,7 +180,7 @@ class Engine:
         stop = budget.stop_reason()
         if stop:
             return stop
-        stride = row_stride(h.width, h.bit_depth, h.row_alignment)
+        stride = hypothesis_row_stride(h)
         score, status = row_coherence(verdict.decoded, h.height, stride)
         return self._build(h, verdict, stride, score, status, alternative_paths)
 
@@ -218,7 +218,7 @@ class Engine:
         # `computed` is the prefix of winners whose coherence step already ran;
         # those keep their score and status. The rest were never scored.
         partial = tuple(computed) + tuple(
-            self._build(h, v, row_stride(h.width, h.bit_depth, h.row_alignment),
+            self._build(h, v, hypothesis_row_stride(h),
                         None, "not_computed")
             for h, v in winners[len(computed):]
         )

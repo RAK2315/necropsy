@@ -12,6 +12,13 @@ def row_stride(width: int, bit_depth: int, row_alignment: int) -> int:
     return -(-raw // row_alignment) * row_alignment
 
 
+def hypothesis_row_stride(h) -> int:
+    """Declared row_bytes when set, otherwise the derived row stride."""
+    if h.row_bytes is not None:
+        return h.row_bytes
+    return row_stride(h.width, h.bit_depth, h.row_alignment)
+
+
 @dataclass(frozen=True)
 class RleResult:
     status: str  # ok | overrun | underrun | unconsumed
@@ -83,6 +90,7 @@ class ClosureVerdict:
     data_start: Optional[int]
     data_end: Optional[int]
     trailer: Optional[str]
+    detail: str = ""
 
 
 def _reject(reason: str, discrepancy: Optional[int] = None) -> ClosureVerdict:
@@ -120,7 +128,7 @@ def check_closure(h, data: bytes) -> ClosureVerdict:
                 or h.row_alignment not in (1, 2, 4)
                 or h.header_size < 0 or h.header_size > len(data)):
             return _reject("degenerate_hypothesis")
-        expected = row_stride(h.width, h.bit_depth, h.row_alignment) * h.height
+        expected = hypothesis_row_stride(h) * h.height
         if h.data_end is not None:
             if h.data_end > len(data) or h.data_end < h.header_size:
                 return _reject("field_out_of_bounds")

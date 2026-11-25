@@ -1,7 +1,7 @@
 """Structure-inference engine public interface."""
 
 from necropsy.engine.budget import Budget
-from necropsy.engine.closure import check_closure, row_stride
+from necropsy.engine.closure import check_closure, hypothesis_row_stride, row_stride
 from necropsy.engine.engine import Engine
 from necropsy.engine.types import (
     AMBIGUITY_REASON,
