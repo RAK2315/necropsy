@@ -36,6 +36,8 @@ def rle_pcx(h: Hypothesis) -> tuple[Hypothesis, ...]:
 
 @_safe
 def row_padding_variants(h: Hypothesis) -> tuple[Hypothesis, ...]:
+    if h.row_bytes is not None:     # Req 6.5: the file already declares its padding
+        return ()
     return tuple(replace(h, row_alignment=a, revision_path=h.revision_path + ("row_padding_variants",))
                  for a in (2, 4) if a != h.row_alignment)
 

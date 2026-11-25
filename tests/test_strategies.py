@@ -176,3 +176,43 @@ def test_each_strategy_never_raises(h):
         out = fn(h)
         assert isinstance(out, tuple), name
         assert all(isinstance(c, Hypothesis) for c in out), name
+
+
+# ---- Task 14 (format-coverage), Requirements 6.5, 6.8
+
+def test_row_padding_guarded_when_row_bytes_set():
+    # Req 6.5: declared row bytes -> no padding candidate, at any alignment.
+    for a in (1, 2, 4):
+        assert row_padding_variants(_pcx(row_alignment=a, row_bytes=210, planes=3)) == ()
+
+
+def test_row_padding_unguarded_when_row_bytes_unset():
+    # Req 6.8: single-plane (row_bytes None) results are unchanged: (2, 4).
+    out = row_padding_variants(_pcx(row_alignment=1, row_bytes=None, planes=1))
+    assert tuple(c.row_alignment for c in out) == (2, 4)
+
+
+def test_other_strategies_unchanged_with_row_bytes_set():
+    # Req 6.5: inclusive_bounds and rle_pcx apply unchanged.
+    p = _pcx(row_bytes=210, planes=3)
+    (b,) = inclusive_bounds(p)
+    assert b == replace(p, width=8, height=10,
+                        revision_path=("earlier", "inclusive_bounds"))
+    (r,) = rle_pcx(p)
+    assert r == replace(p, encoding="rle_pcx", revision_path=("earlier", "rle_pcx"))
+
+
+@settings(max_examples=100)
+@given(h=_hypotheses, rb=st.none() | _ints, planes=st.integers(-5, 300))
+def test_each_strategy_never_raises_with_row_bytes(h, rb, planes):
+    """Strategies never raise when row_bytes and planes are set.
+
+    **Validates: Requirements 6.5, 15.1**
+    """
+    h = replace(h, row_bytes=rb, planes=planes)
+    for name, fn in STRATEGIES:
+        out = fn(h)
+        assert isinstance(out, tuple), name
+        assert all(isinstance(c, Hypothesis) for c in out), name
+    if rb is not None:
+        assert row_padding_variants(h) == ()
