@@ -76,8 +76,8 @@ def test_replay_announces_itself(base_url):
     expected = [caption(x, i, n_steps) for i, x in enumerate(r.rejections)] + [f"Fits: {h.width} × {h.height}, {h.bit_depth}-bit."]
 
     assert got["live"] == "polite"
-    assert re.fullmatch(r"Replaying the engine’s search\. It finished in [0-9.]+ ms; this replay slows it down so you "
-                        r"can follow it\.", got["head"]), got["head"]
+    assert re.fullmatch(r"The engine’s search, step by step\. It finished in [0-9.]+ ms; press Play to watch it again at "
+                        r"reading speed\.", got["head"]), got["head"]
 
     frames = got["frames"]
     assert len(frames) > 2
@@ -88,9 +88,7 @@ def test_replay_announces_itself(base_url):
     assert all(a != b for a, b in zip(captions, captions[1:])), "the caption must change on every step"
     assert captions[-1] == expected[-1]
 
-    assert got["pendingNow"] and got["pendingText"] == "The answer appears here when the replay ends."
-    assert got["pendingButtons"] == 0, "UI task 37: no skip in the answer column while the first run plays"
-    assert not got["pendingAtEnd"]
+    assert not got["pendingNow"] and not got["pendingAtEnd"], "the answer is shown at once: the steps were shown while examining"
 
     n = Engine().run(corpus_bytes("mystery_d")).total_checks
     assert got["single"] == {"head": f"Nothing to replay: all {n} layouts checked fit.", "controls": 0, "caption": False, "pending": False}

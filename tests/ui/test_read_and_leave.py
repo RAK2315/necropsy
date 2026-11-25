@@ -45,6 +45,8 @@ def leave(how):
   await __until(() => document.querySelector('.pick'), 'start');
   [...document.querySelectorAll('.pick')].find(b => b.textContent === 'mystery_i').click();
   const counter = await __until(() => { const c = document.querySelector('.rp-counter'); return c && c.textContent ? c : null; }, 'replay');
+  // the result opens with its replay at the end (UI task 39); Play runs it again from the start
+  document.querySelector('.rp-bar button[title="Play or pause"]').click();
   const first = counter.textContent;
   await __until(() => counter.textContent !== first, 'replay running');        // it has advanced at least once
   const at = counter.textContent;
@@ -52,7 +54,7 @@ def leave(how):
   await __until(() => document.querySelector('.drop'), 'start screen');
   let changes = 0;
   new MutationObserver((m) => { changes += m.length; }).observe(counter, { childList: true, characterData: true, subtree: true });
-  await new Promise(r => setTimeout(r, 3000));     // at 1x a step is 600 ms: a running chain would change it about 5 times
+  await new Promise(r => setTimeout(r, 3000));     // at 1x a step is 1 s: a running chain would change it about 3 times
   return JSON.stringify({ at, after: counter.textContent, changes, attached: document.contains(counter) });
 })()
 """

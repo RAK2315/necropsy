@@ -10,6 +10,7 @@ In a real browser against the real app:
 and Rehaan's three requests: a light/dark switch, a visible "Examine another file", self-hosted Roboto and Poppins.
 """
 import math
+import re
 
 from necropsy.engine import Engine
 from tests.conftest import REPO_ROOT, corpus_bytes
@@ -149,7 +150,8 @@ FLOW = HELPERS + r"""
                    role: busy.getAttribute('role'), state: document.querySelector('[data-cap=state]').textContent };
     await __until(() => !document.querySelector('#view > .busy'), 'result');
     seen.ms = performance.now() - t0;
-    seen.pending = !!document.querySelector('.exam-right.pending [data-cap=answer-pending]');
+    seen.steps = busy.querySelectorAll('[data-cap=busy-steps] li').length;     // shown one by one before the result (UI task 39)
+    seen.counter = document.querySelector('.rp-counter').textContent;
     return seen;
   };
   await __until(() => document.querySelector('.pick'), 'start');
@@ -173,7 +175,8 @@ def test_a_sample_runs_the_upload_flow(base_url):
         assert g["text"] == f"Examining {name}…" and g["bar"] and g["role"] == "status", g
         assert g["state"].startswith(name) and g["state"].endswith("Examining…"), g
         assert g["ms"] >= 650, f"the busy screen must be seen, not flashed: {g['ms']:.0f} ms"
-        assert g["pending"], "the result arrives with its replay running, not as a finished screen"
+        assert g["steps"] > 1, "the engine's steps are shown on the examining screen"
+        assert re.fullmatch(r"step (\d+) of \1", g["counter"]), "the result opens with its replay at the end"
 
 
 # ---- 5. the replay, bigger and slower ----
@@ -185,6 +188,7 @@ REPLAY = HELPERS + r"""
   const px = (sel) => parseFloat(getComputedStyle(document.querySelector(sel)).fontSize);
   const out = { caption: px('[data-cap=replay-caption]'), log: px('.rp-item .rl'), head: px('.rp-honest'), button: px('.rp-btn'),
                 logHeight: document.querySelector('.rp-log').getBoundingClientRect().height };
+  document.querySelector('.rp-bar button[title="Play or pause"]').click();   // it opens at the end (UI task 39); Play runs it again
   const first = counter.textContent; const t0 = performance.now();
   await __until(() => counter.textContent !== first, 'next frame');
   out.frameMs = performance.now() - t0;

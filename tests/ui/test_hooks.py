@@ -19,9 +19,9 @@ SCENARIO = r"""
   out.start = caps();
   out.sampleNames = [...document.querySelectorAll('[data-cap=sample]')].every(b => b.dataset.name === b.textContent);
   (await __until(() => [...document.querySelectorAll('.pick')].find(b => b.textContent === 'mystery_i'), 'mystery_i')).click();
-  await __until(() => document.querySelector('[data-cap=replay-caption]') && document.querySelector('[data-cap=replay-caption]').textContent, 'replaying');
+  // the steps play on the examining screen (UI task 39)
+  await __until(() => document.querySelector('[data-cap=busy-caption]') && document.querySelector('[data-cap=busy-caption]').textContent, 'replaying');
   out.replaying = caps();
-  document.querySelector('[data-cap=skip]').click();
   await __until(() => document.querySelector('[data-cap=fields]'), 'resolved');
   out.resolved = caps();
   document.querySelector('[data-cap=tab-spec]').click();
@@ -35,7 +35,6 @@ SCENARIO = r"""
   document.querySelector('[data-cap=again]').click();
   await __until(() => document.querySelectorAll('.strip-tile[data-status]').length === 3, 'home 2');
   document.querySelector('[data-cap=tile-2]').click();
-  (await __until(() => document.querySelector('[data-cap=skip]'), 'failed replay')).click();
   await __until(() => document.querySelector('[data-cap=failed-groups]'), 'failed');
   out.failed = caps();
   return JSON.stringify(out);

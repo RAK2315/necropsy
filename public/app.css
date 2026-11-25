@@ -132,6 +132,16 @@ button.primary:hover { background: var(--strong); border-color: var(--strong); }
 .busy { display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 120px 24px; }
 .busy-text { margin: 0; color: var(--text); font-size: 19px; }
 .busy-bar { width: 260px; height: 6px; accent-color: var(--text); }
+/* the engine's steps, one by one, under "Examining <name>…" (UI task 39) */
+.busy.stepping { padding-top: 64px; }
+.busy-caption { margin: 4px 0 0; max-width: 760px; min-height: 2.9em; text-align: center; color: var(--text); font-size: 17px; line-height: 1.45; }
+.busy-steps { width: 100%; max-width: 760px; margin: 0; padding: 12px 16px 12px 46px; max-height: 340px; overflow-y: auto;
+              border: 1px solid var(--line); border-radius: 4px; background: var(--panel); font-size: 14px; line-height: 1.6; }
+.busy-steps .rp-item { color: var(--muted); }
+.busy-steps .rp-item.now { color: var(--text); }
+.busy-steps .rp-item { white-space: normal; overflow: visible; padding: 3px 0; }
+.busy-steps .rp-item .rh { display: block; margin-left: 0; }
+.busy-note { margin: 0; color: var(--muted); font-size: 13px; }
 /* hex pane */
 .pane { position: relative; border: 1px solid var(--line); border-radius: 4px; background: var(--panel); font-size: 12.5px; }
 .hex-head, .hex-row { display: grid; grid-template-columns: 132px 60px 372px 140px; column-gap: 12px; align-items: center; padding: 0 12px; }
@@ -273,13 +283,9 @@ pre.spec-text { margin: -12px 0 0; height: 520px; overflow: auto; padding: 14px 
                 border-top: 0; font-size: 12.5px; font-weight: 400; line-height: 1.55; color: var(--spec-text); white-space: pre-wrap; word-break: break-word; }
 /* replay */
 .verdict-bar.pending > :not(.verdict-wait) { visibility: hidden; }
-.exam-right.pending > :not(.answer-pending) { display: none; }
 .verdict-bar { position: relative; }
 .verdict-wait { position: absolute; top: 20px; left: 24px; margin: 0; color: var(--muted); font-size: 15px; }
 .verdict-bar:not(.pending) .verdict-wait { display: none; }
-.answer-pending { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; padding: 18px 20px;
-                  border: 1px dashed var(--line); border-radius: 4px; color: var(--muted); font-size: 14px; }
-.answer-pending p { margin: 0; }
 .rp-caption { margin: 0; min-height: 1.5em; font-size: 18px; line-height: 1.45; color: var(--text); }
 .replay { border: 1px solid var(--line); border-radius: 4px; background: var(--panel); padding: 14px 18px; display: flex; flex-direction: column; gap: 10px; }
 .rp-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; }

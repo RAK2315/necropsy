@@ -26,9 +26,8 @@ SCENARIO = r"""
   out.sendingFirst = (await __until(() => document.querySelector('.busy'), 'busy')) && text();   // the name, before the bytes arrive
   out.sending = await __until(() => /bytes · Examining/.test(text()) ? text() : null, 'busy with size');
   window.__slowApi = false;
-  out.replaying = await __until(() => /Replaying/.test(text()) ? text() : null, 'replaying');
-  document.querySelector('.rp-bar button[title="Skip to the end"]').click();
-  out.doneAtFinal = text();
+  out.replaying = await __until(() => /Replaying/.test(text()) ? text() : null, 'replaying');   // steps on the examining screen
+  out.doneAtFinal = await __until(() => document.querySelector('[data-cap=verdict]') && text(), 'result');
   await new Promise(r => setTimeout(r, 1500));
   out.doneLater = text();
   document.getElementById('again').click();
@@ -40,8 +39,7 @@ SCENARIO = r"""
   document.getElementById('again').click();
   await __until(() => document.querySelectorAll('.strip-tile[data-status]').length === 3, 'strip 3');
   document.querySelector('[data-cap=tile-2]').click();
-  await __until(() => document.querySelector('.rp-bar button[title="Skip to the end"]'), 'failed replay');
-  document.querySelector('.rp-bar button[title="Skip to the end"]').click();
+  await __until(() => document.querySelector('[data-cap=failed-groups]'), 'failed result');
   out.failed = text();
   document.getElementById('again').click();
   await __until(() => document.querySelector('.drop'), 'start');

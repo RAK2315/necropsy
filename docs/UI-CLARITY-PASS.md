@@ -1,4 +1,4 @@
-# UI clarity passes: tasks 24 to 38
+# UI clarity passes: tasks 24 to 39
 
 ## Who built this
 
@@ -168,3 +168,34 @@ run still do so programmatically; a hidden button still receives a scripted clic
 
 Breaks: `docs/ui-clarity-breaks/p3.json`, output beside it. 6 breaks, all caught on the first run, each restore
 byte-identical.
+
+## Task 39: the steps on the examining screen
+
+Rehaan's call, 25 Nov, the same day: under "Examining <name>…" the page should show the engine working through the
+file, step by step, rather than a progress bar and then a finished result. Built by Claude Code.
+
+Once the engine's answer arrives, its recorded steps are listed one by one under "Examining <name>…": a caption for the
+current step in plain words, each step's line (the plain reading, then the engine's own terms), and a progress bar that
+fills with them. 500 ms per step, at most 10 s in all (longer searches are shown a few steps at a time), and the last
+line holds for 900 ms. Then the result opens with the answer already shown and its replay at the end, so the replay is
+for going back over the steps, with its controls there from the start. The strip tiles open the same way. With reduced
+motion, or when there is nothing to replay, the result opens at once.
+
+It is still a replay of a search that has already finished, and the screen says so: a line under the list gives the
+engine's real time ("The engine finished in 1.06 ms; its steps are shown here at reading speed"), and the state line
+says "Replaying the search". Every line is the payload's own rejection, in order; none is invented.
+
+**Superseded.** Task 37 (controls hidden during the result's first run) no longer applies, because the result's replay
+no longer runs on arrival. The answer-pending placeholder of task 27 is removed, and the replay header now reads "The
+engine’s search, step by step. It finished in N ms; press Play to watch it again at reading speed." The capture hooks for
+the `replaying` screen are now `busy`, `busy-caption` and `busy-steps`.
+
+**Verification.** `tests/ui/test_third_pass.py::test_the_steps_play_one_by_one_while_examining` reads every line as it
+appears for mystery_h and compares the list with the payload's rejections, in order; checks the steps arrive one by one,
+the bar fills, the real-time line is there, no control is on the screen, and the result opens at its last step with the
+answer shown. Tests that waited for the replay to run on the result page were updated to wait for the result instead.
+
+Breaks: `docs/ui-clarity-breaks/p4.json`, output beside it. 5 breaks, each restore byte-identical. 4 were caught on the
+first run. One was not: making the result replay from the start again passed, because the test read the step counter
+only once the answer was shown, which with the break is after the replay ends. The test now reads the counter the moment
+the result opens; the rerun caught all 5.

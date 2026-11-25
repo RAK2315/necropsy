@@ -1,0 +1,17 @@
+[
+ {"name": "39 no steps on the examining screen", "file": "public/js/live.js",
+  "old": "  if (prefersReducedMotion() || frames.length <= 1) return;", "new": "  return;",
+  "test": "tests/ui/test_third_pass.py::test_the_steps_play_one_by_one_while_examining"},
+ {"name": "39 every step at once", "file": "public/js/live.js",
+  "old": "const MAX_MS = 10000;", "new": "const MAX_MS = 500;",
+  "test": "tests/ui/test_third_pass.py::test_the_steps_play_one_by_one_while_examining"},
+ {"name": "39 the result replays from the start again", "file": "public/js/replay.js",
+  "old": "    start() { show(frames.length - 1); },", "new": "    start() { show(0); go(); },",
+  "test": "tests/ui/test_third_pass.py::test_the_steps_play_one_by_one_while_examining"},
+ {"name": "39 the engine's real time not stated", "file": "public/js/live.js",
+  "old": "`The engine finished in ${payload.engine_ms} ms; its steps are shown here at reading speed.`", "new": "'Working through the file…'",
+  "test": "tests/ui/test_third_pass.py::test_the_steps_play_one_by_one_while_examining"},
+ {"name": "39 a step line that is not the engine's", "file": "public/js/live.js",
+  "old": "    for (let i = a; i <= b; i++) log.append(stepItem(payload, steps[i], i));", "new": "    for (let i = a; i <= b; i++) log.append(stepItem(payload, steps[Math.max(0, i - 1)], i));",
+  "test": "tests/ui/test_third_pass.py::test_the_steps_play_one_by_one_while_examining"}
+]

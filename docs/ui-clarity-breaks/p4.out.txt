@@ -1,0 +1,20 @@
+BREAK  39 no steps on the examining screen  (public/js/live.js)
+  with break : 1 failed in 10.31s  -> caught
+  failure    : E   KeyError: 'title'
+  restored   : sha256 e54fecb17910 -> e54fecb17910 identical
+BREAK  39 every step at once  (public/js/live.js)
+  with break : 1 failed in 10.10s  -> caught
+  failure    : E   KeyError: 'title'
+  restored   : sha256 e54fecb17910 -> e54fecb17910 identical
+BREAK  39 the result replays from the start again  (public/js/replay.js)
+  with break : 1 failed in 15.61s  -> caught
+  failure    : E   AssertionError: the result opens at the end: the steps were already shown
+  restored   : sha256 efa7aee31e8e -> efa7aee31e8e identical
+BREAK  39 the engine's real time not stated  (public/js/live.js)
+  with break : 1 failed in 15.66s  -> caught
+  failure    : E   AssertionError: assert (False)
+  restored   : sha256 e54fecb17910 -> e54fecb17910 identical
+BREAK  39 a step line that is not the engine's  (public/js/live.js)
+  with break : 1 failed in 15.68s  -> caught
+  failure    : E   AssertionError: the lines must be the engine's own steps, in order
+  restored   : sha256 e54fecb17910 -> e54fecb17910 identical

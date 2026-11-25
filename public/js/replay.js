@@ -1,7 +1,6 @@
 // Replay of the engine's recorded steps (Requirement 7). Driven only by the payload: no request, no invented step.
 import { buildSteps, batch, counterText, hypothesisLine, rejectionLine } from './logic.js';
 import { rejectionPlain, verdictText, reasonText } from './words.js';
-import { prefersReducedMotion } from './image.js';
 
 // One frame at 1x. Slowed from 600 ms to 1 s in the second clarity pass (change 5) so a first-time viewer can read a step
 // without pausing; batch() keeps the whole replay within MAX_MS at 1x (Requirement 7.7's 10 s, raised to 20 s).
@@ -41,6 +40,19 @@ export function nothingToReplay(payload) {
   return n === 1 ? 'Nothing to replay: the one layout checked fits.' : `Nothing to replay: all ${n} layouts checked fit.`;
 }
 
+/** One step as a log line: what was tried and why it was rejected in plain words, then the engine's own terms. */
+export function stepItem(payload, s, i) {
+  const li = el('li', 'rp-item');
+  li.value = i + 1;
+  if (s.kind === 'rejection') {
+    li.append(el('span', 'rl', rejectionPlain(s.rejection)));
+    li.append(el('span', 'rh tech', [rejectionLine(s.rejection), s.rejection.hypothesis ? hypothesisLine(s.rejection.hypothesis) : ''].filter(Boolean).join(' · ')));
+  } else {
+    li.append(el('span', 'rl final', verdictText(payload)), el('span', 'rh tech', `result: ${s.status}`));
+  }
+  return li;
+}
+
 /**
  * createReplay(payload, { onStep(step), onFinal() }) -> { root, start() }
  * onStep is called with the last rejection step of the current frame; onFinal when the final step is shown.
@@ -55,7 +67,7 @@ export function createReplay(payload, { onStep, onFinal, onFrame = () => {} }) {
   root.setAttribute('aria-label', 'Replay of the engine\u2019s recorded steps');
 
   const head = el('div', 'rp-head');
-  head.append(el('span', 'rp-honest', `Replaying the engine’s search. It finished in ${payload.engine_ms} ms; this replay slows it down so you can follow it.`));
+  head.append(el('span', 'rp-honest', `The engine’s search, step by step. It finished in ${payload.engine_ms} ms; press Play to watch it again at reading speed.`));
   const omitted = payload.rejections_omitted || 0;
   if (omitted > 0) head.append(el('span', 'rp-honest', `Replaying ${payload.rejections.length} of ${payload.rejections.length + omitted} recorded rejections; the rest did not fit in one response.`));
 
@@ -71,25 +83,9 @@ export function createReplay(payload, { onStep, onFinal, onFrame = () => {} }) {
   const counter = el('span', 'rp-counter mono');
   counter.setAttribute('aria-live', 'polite');
   bar.append(back, play, fwd, end, speed, counter);
-  // While the replay runs for the first time only the step counter shows: no Pause, step or Skip control until it has
-  // reached its end once (UI task 37, Rehaan). After that the controls appear, for going back over it.
-  const controls = [back, play, fwd, end, speed];
-  let firstRunDone = false;
-  function reveal() { if (firstRunDone) return; firstRunDone = true; for (const c of controls) c.hidden = false; }
 
   const log = el('ol', 'rp-log');
-  const items = steps.map((s, i) => {
-    const li = el('li', 'rp-item');
-    li.value = i + 1;
-    if (s.kind === 'rejection') {
-      li.append(el('span', 'rl', rejectionPlain(s.rejection)));
-      li.append(el('span', 'rh tech', [rejectionLine(s.rejection), s.rejection.hypothesis ? hypothesisLine(s.rejection.hypothesis) : ''].filter(Boolean).join(' · ')));
-    } else {
-      li.append(el('span', 'rl final', verdictText(payload)), el('span', 'rh tech', `result: ${s.status}`));
-    }
-    log.append(li);
-    return li;
-  });
+  const items = steps.map((s, i) => { const li = stepItem(payload, s, i); log.append(li); return li; });
   const caption = el('p', 'rp-caption');
   caption.dataset.cap = 'replay-caption';
   caption.setAttribute('aria-live', 'polite');
@@ -121,7 +117,7 @@ export function createReplay(payload, { onStep, onFinal, onFrame = () => {} }) {
     caption.textContent = captionText(payload, s, b, n);
     if (s.kind === 'final') onFinal(); else onStep(s);
     onFrame({ step: b + 1, of: n, final: s.kind === 'final' });
-    if (frame === frames.length - 1) { stop(); reveal(); }
+    if (frame === frames.length - 1) stop();
     back.disabled = frame === 0;
     fwd.disabled = end.disabled = frame === frames.length - 1;
   }
@@ -140,12 +136,9 @@ export function createReplay(payload, { onStep, onFinal, onFrame = () => {} }) {
 
   return {
     root,
-    start() {
-      if (prefersReducedMotion() || frames.length === 1) { show(frames.length - 1); return; }
-      for (const c of controls) c.hidden = true;
-      show(0);
-      go();
-    },
+    /** Open at the final step. The steps were already shown one by one on the examining screen (UI task 39, live.js);
+     * here the replay is for going back over them, so its controls are there from the start. */
+    start() { show(frames.length - 1); },
     single,
     /** Stop the timer chain for good: called when the result is left, so no onStep or onFinal runs after that. */
     dispose() { stop(); },

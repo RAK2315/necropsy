@@ -1,5 +1,6 @@
 import { renderResult, leaveResult } from './screens.js';
 import { stripElement } from './strip.js';
+import { playSteps } from './live.js';
 import { stateText } from './words.js';
 import {
   multiDropNotice, sizeMessage, emptyMessage, unreadableMessage, othersNotExamined, serviceStatusMessage, UNREACHABLE_MESSAGE,
@@ -77,7 +78,7 @@ async function showStart(message = '', name = '') {
       el('li', { text: 'It tries the layouts those declarations allow, and small corrections to them.' }),
       el('li', { text: 'It accepts a layout only if it fits the data exactly. If none or several do, it says so.' })));
   const samples = el('section', { class: 'samples' }, el('h2', { text: 'More files to try' }));
-  const start = el('div', { class: 'start' }, hero, drop, input, msg, stripElement(requestAnalysis, open), how,
+  const start = el('div', { class: 'start' }, hero, drop, input, msg, stripElement(requestAnalysis, present), how,
     el('p', { class: 'scope', text: 'NECROPSY reads PCX, TGA, PBM and TIFF declarations, and otherwise searches for headerless raster layouts.' }),
     samples);
   view.replaceChildren(start);
@@ -150,7 +151,18 @@ async function analyse(bytes, name, notice = null, t0 = performance.now()) {
   const [result] = await Promise.all([requestAnalysis(bytes), new Promise((r) => setTimeout(r, MIN_BUSY_MS - (performance.now() - t0)))]);
   if (!document.querySelector('#view > .busy')) return;    // the busy screen was replaced before the answer came
   if (result.error) { showStart(result.message, name); return; }
-  open(result.payload, bytes, name, notice);
+  present(result.payload, bytes, name, notice);
+}
+
+/** The engine's steps one by one on the examining screen (UI task 39), then the result. Strip tiles come here too. */
+async function present(payload, bytes, name, notice = null) {
+  examining(name, bytes.length);
+  const busy = document.querySelector('#view > .busy');
+  const base = { name, size: bytes.length, payload };
+  await playSteps(busy, payload, { alive: () => busy.isConnected,
+    onStep: ({ step, of }) => setState({ ...base, phase: 'replaying', step, of }) });
+  if (!busy.isConnected) return;     // left before the steps finished
+  open(payload, bytes, name, notice);
 }
 
 againBtn.addEventListener('click', () => showStart());

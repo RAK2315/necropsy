@@ -1,8 +1,8 @@
-"""UI tasks 37 and 38, built by Claude Code, not Kiro (Rehaan, 25 Nov; see docs/UI-CLARITY-PASS.md).
+"""UI tasks 37 to 39, built by Claude Code, not Kiro (Rehaan, 25 Nov; see docs/UI-CLARITY-PASS.md).
 
 In a real browser against the real app:
-  37. while the replay plays for the first time only its step counter shows: no Pause, step, speed or Skip control, and
-      no skip in the answer column. Once it has reached its end, the controls appear.
+  39. (supersedes 37) once the answer arrives, the engine's recorded steps are shown one by one under "Examining <name>…",
+      with no control, then the result opens with its replay at the end and its controls there, for going back over it.
   38. the demo shows real pictures: a photograph, a portrait scan and a signature from upstream test suites are listed
       first, and the first outcome tile is the photograph. Their results are the engine's, compared here with a fresh run.
 """
@@ -13,29 +13,56 @@ from tests.ui.conftest import run_in_browser
 REAL = REPO_ROOT / "spike" / "samples" / "real"
 PICTURES = ["imagemagick_input.tga", "pillow_hopper_1bit.pbm", "pillow_pil184.pcx"]
 
-FIRST_RUN = r"""
+LIVE = r"""
 (async () => {
   const shown = (e) => !!e && e.getClientRects().length > 0;
-  const controls = () => [...document.querySelectorAll('.rp-bar button, .rp-bar .rp-speed')].filter(shown).length;
-  (await __until(() => [...document.querySelectorAll('.pick')].find(b => b.textContent === 'mystery_i'), 'sample')).click();
-  await __until(() => document.querySelector('.rp-counter') && document.querySelector('.rp-counter').textContent, 'replay running');
-  const out = { during: controls(), counter: shown(document.querySelector('.rp-counter')),
-                pendingButtons: document.querySelectorAll('[data-cap=answer-pending] button').length,
-                skipVisible: shown(document.querySelector('[data-cap=skip]')) };
-  const speed = document.querySelector('.rp-speed'); speed.value = '4'; speed.dispatchEvent(new Event('change'));   // a 5 s wait, not 20
-  await __until(() => document.querySelector('.verdict-bar:not(.pending)'), 'first run ends');
-  out.after = controls(); out.skipAfter = shown(document.querySelector('[data-cap=skip]'));
+  (await __until(() => [...document.querySelectorAll('.pick')].find(b => b.textContent === 'mystery_h'), 'sample')).click();
+  const out = { seen: [], captions: [] };
+  // record each step line as it appears on the examining screen, until the result opens
+  for (;;) {
+    const busy = document.querySelector('#view > .busy');
+    if (!busy) break;
+    const items = [...busy.querySelectorAll('[data-cap=busy-steps] li .rh')].map(e => e.textContent);
+    if (items.length > out.seen.length) {
+      out.seen = items;
+      out.captions.push(busy.querySelector('[data-cap=busy-caption]').textContent);
+      out.title = busy.querySelector('.busy-text').textContent;
+      out.bar = [busy.querySelector('progress').value, busy.querySelector('progress').max];
+      out.note = busy.querySelector('.busy-note').textContent;
+      out.controls = busy.querySelectorAll('button, select').length;
+    }
+    await new Promise(r => setTimeout(r, 40));
+  }
+  // read the moment the result opens: it must already be at the end, not replaying from the start
+  out.counter = (await __until(() => document.querySelector('.rp-counter'), 'result')).textContent;
+  out.answerAtOnce = !!document.querySelector('.exam-right:not(.pending) figcaption .dims');
+  out.resultControls = [...document.querySelectorAll('.rp-bar button, .rp-bar .rp-speed')].filter(shown).length;
   return JSON.stringify(out);
 })()
 """
 
 
-def test_no_controls_until_the_first_run_ends(base_url):
-    got = run_in_browser(base_url, FIRST_RUN)
-    assert got["during"] == 0 and not got["skipVisible"], f"controls shown while the first run plays: {got}"
-    assert got["counter"], "the step counter must show while the replay runs"
-    assert got["pendingButtons"] == 0
-    assert got["after"] == 5 and got["skipAfter"], f"controls must appear once the replay has ended: {got}"
+def _line(r):
+    """public/js/logic.js rejectionLine and hypothesisLine, restated from the payload the page receives."""
+    h = r["hypothesis"]
+    return f"{r['source']}: {r['reason']}" + ("" if r.get("discrepancy") is None else f" (discrepancy={r['discrepancy']})") +         f" · {h['width']} × {h['height']} · {h['bit_depth']}-bit · header {h['header_size']} · align {h['row_alignment']} · {h['encoding']}"
+
+
+def test_the_steps_play_one_by_one_while_examining(base_url):
+    got = run_in_browser(base_url, LIVE)
+    import app as service
+    rej = service._analyse((REPO_ROOT / "spike" / "samples" / "mystery_h").read_bytes())["rejections"]
+    n = len(rej) + 1
+    assert got["title"] == "Examining mystery_h…"
+    assert got["seen"] == [_line(x) for x in rej] + ["result: RESOLVED"], "the lines must be the engine's own steps, in order"
+    assert len(got["captions"]) >= n - 1, f"the steps appeared in {len(got['captions'])} batches, not one by one"
+    assert got["captions"][-1].startswith("Fits: ")
+    assert got["bar"] == [n, n]
+    assert got["note"].startswith("The engine finished in ") and got["note"].endswith("ms; its steps are shown here at reading speed.")
+    assert got["controls"] == 0, "no control on the examining screen: the steps play through"
+    assert got["counter"] == f"step {n} of {n}", "the result opens at the end: the steps were already shown"
+    assert got["answerAtOnce"], "the answer is there as soon as the result opens"
+    assert got["resultControls"] == 5
 
 
 PICTURES_JS = r"""
