@@ -150,6 +150,20 @@ def check_closure(h, data: bytes) -> ClosureVerdict:
                 or h.header_size < 0 or h.header_size > len(data)):
             return _reject("degenerate_hypothesis")
         expected = hypothesis_row_stride(h) * h.height
+        if h.row_bytes is not None:
+            # Requirement 6.4: a declared scanline must be able to hold the width.
+            planes = h.planes
+            if planes < 1 or h.row_bytes <= 0 or h.bit_depth % planes != 0:
+                return ClosureVerdict(
+                    False, "degenerate_hypothesis", None, None, None, None, None,
+                    "row_bytes %s with bit_depth %d is not a whole number of bits per plane for %d planes"
+                    % (h.row_bytes, h.bit_depth, planes))
+            plane_bytes = -(-(h.width * (h.bit_depth // planes)) // 8)
+            if h.row_bytes < planes * plane_bytes:
+                return ClosureVerdict(
+                    False, "degenerate_hypothesis", None, None, None, None, None,
+                    "row_bytes %d is below planes x ceil(width x bits per plane / 8) = %d"
+                    % (h.row_bytes, planes * plane_bytes))
         if h.data_end is not None:
             if h.data_end > len(data) or h.data_end < h.header_size:
                 return _reject("field_out_of_bounds")
