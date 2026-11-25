@@ -1,0 +1,1503 @@
+{
+ "real/goimage_blue-purple-pink.lzwcompressed.tiff": {
+  "candidates": [],
+  "status": "FAILED",
+  "termination": "exhausted"
+ },
+ "real/goimage_bw-deflate.tiff": {
+  "candidates": [],
+  "status": "FAILED",
+  "termination": "exhausted"
+ },
+ "real/goimage_bw-gopher_ccittGroup3.tiff": {
+  "candidates": [],
+  "status": "FAILED",
+  "termination": "exhausted"
+ },
+ "real/goimage_bw-gopher_ccittGroup4.tiff": {
+  "candidates": [],
+  "status": "FAILED",
+  "termination": "exhausted"
+ },
+ "real/goimage_bw-packbits.tiff": {
+  "candidates": [],
+  "status": "FAILED",
+  "termination": "exhausted"
+ },
+ "real/goimage_bw-uncompressed.tiff": {
+  "candidates": [
+   {
+    "key": [
+     153,
+     55,
+     1,
+     8,
+     1,
+     "none",
+     1108
+    ],
+    "region": [
+     8,
+     1108
+    ]
+   }
+  ],
+  "status": "RESOLVED",
+  "termination": null
+ },
+ "real/goimage_invalid-palette-ref.tiff": {
+  "candidates": [],
+  "status": "FAILED",
+  "termination": "exhausted"
+ },
+ "real/goimage_no_compress.tiff": {
+  "candidates": [
+   {
+    "key": [
+     16,
+     15,
+     32,
+     8,
+     1,
+     "none",
+     968
+    ],
+    "region": [
+     8,
+     968
+    ]
+   }
+  ],
+  "status": "RESOLVED",
+  "termination": null
+ },
+ "real/goimage_no_rps.tiff": {
+  "candidates": [
+   {
+    "key": [
+     16,
+     15,
+     32,
+     8,
+     1,
+     "none",
+     968
+    ],
+    "region": [
+     8,
+     968
+    ]
+   }
+  ],
+  "status": "RESOLVED",
+  "termination": null
+ },
+ "real/goimage_video-001-gray.tiff": {
+  "candidates": [],
+  "status": "FAILED",
+  "termination": "exhausted"
+ },
+ "real/goimage_video-001-paletted.tiff": {
+  "candidates": [],
+  "status": "FAILED",
+  "termination": "exhausted"
+ },
+ "real/goimage_video-001-strip-64.tiff": {
+  "candidates": [],
+  "status": "FAILED",
+  "termination": "exhausted"
+ },
+ "real/goimage_video-001-tile-64x64.tiff": {
+  "candidates": [],
+  "status": "FAILED",
+  "termination": "exhausted"
+ },
+ "real/goimage_video-001-uncompressed.tiff": {
+  "candidates": [
+   {
+    "key": [
+     150,
+     103,
+     24,
+     8,
+     1,
+     "none",
+     46358
+    ],
+    "region": [
+     8,
+     46358
+    ]
+   }
+  ],
+  "status": "RESOLVED",
+  "termination": null
+ },
+ "real/imagemagick_input.pcx": {
+  "candidates": [],
+  "status": "FAILED",
+  "termination": "exhausted"
+ },
+ "real/imagemagick_input.tga": {
+  "candidates": [
+   {
+    "key": [
+     70,
+     46,
+     24,
+     18,
+     1,
+     "none",
+     null
+    ],
+    "region": [
+     18,
+     9678
+    ]
+   }
+  ],
+  "status": "RESOLVED",
+  "termination": null
+ },
+ "real/imagemagick_input_p1.pbm": {
+  "candidates": [],
+  "status": "FAILED",
+  "termination": "no_hypothesis_checked"
+ },
+ "real/imagemagick_input_p2.pgm": {
+  "candidates": [],
+  "status": "FAILED",
+  "termination": "no_hypothesis_checked"
+ },
+ "real/imagemagick_input_p3.ppm": {
+  "candidates": [],
+  "status": "FAILED",
+  "termination": "no_hypothesis_checked"
+ },
+ "real/imagemagick_input_p4.pbm": {
+  "candidates": [
+   {
+    "key": [
+     70,
+     46,
+     1,
+     9,
+     1,
+     "none",
+     null
+    ],
+    "region": [
+     9,
+     423
+    ]
+   }
+  ],
+  "status": "RESOLVED",
+  "termination": null
+ },
+ "real/imagemagick_input_p5.pgm": {
+  "candidates": [],
+  "status": "FAILED",
+  "termination": "no_hypothesis_checked"
+ },
+ "real/imagemagick_input_p6.ppm": {
+  "candidates": [],
+  "status": "FAILED",
+  "termination": "no_hypothesis_checked"
+ },
+ "real/imagers_issue-794.pbm": {
+  "candidates": [
+   {
+    "key": [
+     10,
+     10,
+     1,
+     9,
+     1,
+     "none",
+     null
+    ],
+    "region": [
+     9,
+     29
+    ]
+   }
+  ],
+  "status": "RESOLVED",
+  "termination": null
+ },
+ "real/imagers_narrow.pbm": {
+  "candidates": [
+   {
+    "key": [
+     1,
+     9,
+     1,
+     7,
+     1,
+     "none",
+     null
+    ],
+    "region": [
+     7,
+     16
+    ]
+   }
+  ],
+  "status": "RESOLVED",
+  "termination": null
+ },
+ "real/libtiff_deflate-last-strip-extra-data.tiff": {
+  "candidates": [],
+  "status": "FAILED",
+  "termination": "exhausted"
+ },
+ "real/libtiff_logluv-3c-16b.tiff": {
+  "candidates": [],
+  "status": "FAILED",
+  "termination": "exhausted"
+ },
+ "real/libtiff_lzw-single-strip.tiff": {
+  "candidates": [],
+  "status": "FAILED",
+  "termination": "exhausted"
+ },
+ "real/libtiff_minisblack-1c-8b.pgm": {
+  "candidates": [],
+  "status": "FAILED",
+  "termination": "no_hypothesis_checked"
+ },
+ "real/libtiff_minisblack-1c-8b.tiff": {
+  "candidates": [],
+  "status": "FAILED",
+  "termination": "exhausted"
+ },
+ "real/libtiff_miniswhite-1c-1b.pbm": {
+  "candidates": [
+   {
+    "key": [
+     157,
+     151,
+     1,
+     11,
+     1,
+     "none",
+     null
+    ],
+    "region": [
+     11,
+     3031
+    ]
+   }
+  ],
+  "status": "RESOLVED",
+  "termination": null
+ },
+ "real/libtiff_miniswhite-1c-1b.tiff": {
+  "candidates": [
+   {
+    "key": [
+     157,
+     151,
+     1,
+     8,
+     1,
+     "none",
+     3028
+    ],
+    "region": [
+     8,
+     3028
+    ]
+   }
+  ],
+  "status": "RESOLVED",
+  "termination": null
+ },
+ "real/libtiff_ojpeg_zackthecat_subsamp22_single_strip.tiff": {
+  "candidates": [],
+  "status": "FAILED",
+  "termination": "exhausted"
+ },
+ "real/libtiff_palette-1c-8b.tiff": {
+  "candidates": [],
+  "status": "FAILED",
+  "termination": "exhausted"
+ },
+ "real/libtiff_quad-tile.jpg.tiff": {
+  "candidates": [],
+  "status": "FAILED",
+  "termination": "exhausted"
+ },
+ "real/libtiff_rgb-3c-16b.ppm": {
+  "candidates": [],
+  "status": "FAILED",
+  "termination": "no_hypothesis_checked"
+ },
+ "real/libtiff_rgb-3c-8b.ppm": {
+  "candidates": [],
+  "status": "FAILED",
+  "termination": "no_hypothesis_checked"
+ },
+ "real/libtiff_rgb-3c-8b.tiff": {
+  "candidates": [],
+  "status": "FAILED",
+  "termination": "exhausted"
+ },
+ "real/libtiff_test_ifd_loop_to_self.tif": {
+  "candidates": [
+   {
+    "key": [
+     20,
+     20,
+     8,
+     8,
+     1,
+     "none",
+     408
+    ],
+    "region": [
+     8,
+     408
+    ]
+   }
+  ],
+  "status": "RESOLVED",
+  "termination": null
+ },
+ "real/libtiff_testfax4.tiff": {
+  "candidates": [],
+  "status": "FAILED",
+  "termination": "exhausted"
+ },
+ "real/pillow_01r_00.pcx": {
+  "candidates": [],
+  "status": "FAILED",
+  "termination": "exhausted"
+ },
+ "real/pillow_12bit.cropped.tif": {
+  "candidates": [],
+  "status": "FAILED",
+  "termination": "exhausted"
+ },
+ "real/pillow_1x1_l_tl_raw.tga": {
+  "candidates": [
+   {
+    "key": [
+     1,
+     1,
+     8,
+     18,
+     1,
+     "none",
+     null
+    ],
+    "region": [
+     18,
+     19
+    ]
+   }
+  ],
+  "status": "RESOLVED",
+  "termination": null
+ },
+ "real/pillow_200x32_l_bl_raw.tga": {
+  "candidates": [
+   {
+    "key": [
+     200,
+     32,
+     8,
+     18,
+     1,
+     "none",
+     null
+    ],
+    "region": [
+     18,
+     6418
+    ]
+   }
+  ],
+  "status": "RESOLVED",
+  "termination": null
+ },
+ "real/pillow_200x32_l_tl_rle.tga": {
+  "candidates": [],
+  "status": "FAILED",
+  "termination": "exhausted"
+ },
+ "real/pillow_200x32_la_bl_raw.tga": {
+  "candidates": [
+   {
+    "key": [
+     200,
+     32,
+     16,
+     18,
+     1,
+     "none",
+     null
+    ],
+    "region": [
+     18,
+     12818
+    ]
+   }
+  ],
+  "status": "RESOLVED",
+  "termination": null
+ },
+ "real/pillow_200x32_p_bl_raw.tga": {
+  "candidates": [
+   {
+    "key": [
+     200,
+     32,
+     8,
+     786,
+     1,
+     "none",
+     null
+    ],
+    "region": [
+     786,
+     7186
+    ]
+   }
+  ],
+  "status": "RESOLVED",
+  "termination": null
+ },
+ "real/pillow_200x32_p_tl_rle.tga": {
+  "candidates": [],
+  "status": "FAILED",
+  "termination": "exhausted"
+ },
+ "real/pillow_200x32_rgb_bl_raw.tga": {
+  "candidates": [
+   {
+    "key": [
+     200,
+     32,
+     24,
+     18,
+     1,
+     "none",
+     null
+    ],
+    "region": [
+     18,
+     19218
+    ]
+   }
+  ],
+  "status": "RESOLVED",
+  "termination": null
+ },
+ "real/pillow_200x32_rgb_tl_rle.tga": {
+  "candidates": [],
+  "status": "FAILED",
+  "termination": "exhausted"
+ },
+ "real/pillow_200x32_rgba_tl_raw.tga": {
+  "candidates": [
+   {
+    "key": [
+     200,
+     32,
+     32,
+     18,
+     1,
+     "none",
+     null
+    ],
+    "region": [
+     18,
+     25618
+    ]
+   }
+  ],
+  "status": "RESOLVED",
+  "termination": null
+ },
+ "real/pillow_cross_scan_line.tga": {
+  "candidates": [],
+  "status": "FAILED",
+  "termination": "exhausted"
+ },
+ "real/pillow_cross_scan_line_truncated.tga": {
+  "candidates": [],
+  "status": "FAILED",
+  "termination": "exhausted"
+ },
+ "real/pillow_hopper_16bit.pgm": {
+  "candidates": [],
+  "status": "FAILED",
+  "termination": "no_hypothesis_checked"
+ },
+ "real/pillow_hopper_1bit.pbm": {
+  "candidates": [
+   {
+    "key": [
+     128,
+     128,
+     1,
+     11,
+     1,
+     "none",
+     null
+    ],
+    "region": [
+     11,
+     2059
+    ]
+   }
+  ],
+  "status": "RESOLVED",
+  "termination": null
+ },
+ "real/pillow_hopper_1bit_plain.pbm": {
+  "candidates": [],
+  "status": "FAILED",
+  "termination": "no_hypothesis_checked"
+ },
+ "real/pillow_hopper_8bit.pgm": {
+  "candidates": [],
+  "status": "FAILED",
+  "termination": "no_hypothesis_checked"
+ },
+ "real/pillow_hopper_8bit.ppm": {
+  "candidates": [],
+  "status": "FAILED",
+  "termination": "no_hypothesis_checked"
+ },
+ "real/pillow_hopper_g4.tif": {
+  "candidates": [],
+  "status": "FAILED",
+  "termination": "exhausted"
+ },
+ "real/pillow_hopper_lzma.tif": {
+  "candidates": [],
+  "status": "FAILED",
+  "termination": "exhausted"
+ },
+ "real/pillow_hopper_lzw.tif": {
+  "candidates": [],
+  "status": "FAILED",
+  "termination": "exhausted"
+ },
+ "real/pillow_hopper_webp.tif": {
+  "candidates": [],
+  "status": "FAILED",
+  "termination": "exhausted"
+ },
+ "real/pillow_la.tga": {
+  "candidates": [],
+  "status": "FAILED",
+  "termination": "exhausted"
+ },
+ "real/pillow_negative_size.ppm": {
+  "candidates": [],
+  "status": "FAILED",
+  "termination": "no_hypothesis_checked"
+ },
+ "real/pillow_odd_stride.pcx": {
+  "candidates": [
+   {
+    "key": [
+     371,
+     150,
+     8,
+     128,
+     1,
+     "rle_pcx",
+     null
+    ],
+    "region": [
+     128,
+     13544
+    ]
+   }
+  ],
+  "status": "RESOLVED",
+  "termination": null
+ },
+ "real/pillow_old-style-jpeg-compression.tif": {
+  "candidates": [],
+  "status": "FAILED",
+  "termination": "exhausted"
+ },
+ "real/pillow_ossfuzz-4836216264589312.pcx": {
+  "candidates": [
+   {
+    "key": [
+     2,
+     1,
+     1,
+     128,
+     1,
+     "none",
+     null
+    ],
+    "region": [
+     128,
+     129
+    ]
+   }
+  ],
+  "status": "RESOLVED",
+  "termination": null
+ },
+ "real/pillow_p_16.tga": {
+  "candidates": [
+   {
+    "key": [
+     128,
+     128,
+     8,
+     560,
+     1,
+     "none",
+     null
+    ],
+    "region": [
+     560,
+     16944
+    ]
+   }
+  ],
+  "status": "RESOLVED",
+  "termination": null
+ },
+ "real/pillow_p_4_planes.pcx": {
+  "candidates": [],
+  "status": "FAILED",
+  "termination": "exhausted"
+ },
+ "real/pillow_p_8.tga": {
+  "candidates": [],
+  "status": "FAILED",
+  "termination": "exhausted"
+ },
+ "real/pillow_pil184.pcx": {
+  "candidates": [
+   {
+    "key": [
+     447,
+     144,
+     1,
+     128,
+     1,
+     "rle_pcx",
+     null
+    ],
+    "region": [
+     128,
+     5364
+    ]
+   }
+  ],
+  "status": "RESOLVED",
+  "termination": null
+ },
+ "real/pillow_rgb32rle.tga": {
+  "candidates": [],
+  "status": "FAILED",
+  "termination": "exhausted"
+ },
+ "real/pillow_rgba16.tga": {
+  "candidates": [
+   {
+    "key": [
+     2,
+     1,
+     16,
+     18,
+     1,
+     "none",
+     null
+    ],
+    "region": [
+     18,
+     22
+    ]
+   }
+  ],
+  "status": "RESOLVED",
+  "termination": null
+ },
+ "real/pillow_tga_id_field.tga": {
+  "candidates": [
+   {
+    "key": [
+     100,
+     100,
+     24,
+     24,
+     1,
+     "none",
+     null
+    ],
+    "region": [
+     24,
+     30024
+    ]
+   }
+  ],
+  "status": "RESOLVED",
+  "termination": null
+ },
+ "real/pillow_tiff_adobe_deflate.tif": {
+  "candidates": [],
+  "status": "FAILED",
+  "termination": "exhausted"
+ },
+ "real/pillow_tiff_strip_planar_raw.tif": {
+  "candidates": [],
+  "status": "FAILED",
+  "termination": "exhausted"
+ },
+ "real/pillow_tiff_strip_raw.tif": {
+  "candidates": [],
+  "status": "FAILED",
+  "termination": "exhausted"
+ },
+ "real/pillow_tiff_tiled_raw.tif": {
+  "candidates": [],
+  "status": "FAILED",
+  "termination": "exhausted"
+ },
+ "real/sdlimage_sample.pcx": {
+  "candidates": [],
+  "status": "FAILED",
+  "termination": "exhausted"
+ },
+ "real/sdlimage_sample.pnm": {
+  "candidates": [],
+  "status": "FAILED",
+  "termination": "no_hypothesis_checked"
+ },
+ "real/sdlimage_sample.tga": {
+  "candidates": [],
+  "status": "FAILED",
+  "termination": "exhausted"
+ },
+ "real/sdlimage_sample.tif": {
+  "candidates": [
+   {
+    "key": [
+     23,
+     42,
+     24,
+     8,
+     1,
+     "none",
+     2906
+    ],
+    "region": [
+     8,
+     2906
+    ]
+   }
+  ],
+  "status": "RESOLVED",
+  "termination": null
+ },
+ "samples/external_a": {
+  "candidates": [
+   {
+    "key": [
+     64,
+     48,
+     8,
+     128,
+     1,
+     "rle_pcx",
+     null
+    ],
+    "region": [
+     128,
+     393
+    ]
+   }
+  ],
+  "status": "RESOLVED",
+  "termination": null
+ },
+ "samples/external_b": {
+  "candidates": [
+   {
+    "key": [
+     64,
+     48,
+     24,
+     18,
+     1,
+     "none",
+     null
+    ],
+    "region": [
+     18,
+     9234
+    ]
+   }
+  ],
+  "status": "RESOLVED",
+  "termination": null
+ },
+ "samples/mystery_a": {
+  "candidates": [
+   {
+    "key": [
+     4,
+     4,
+     1,
+     7,
+     1,
+     "none",
+     null
+    ],
+    "region": [
+     7,
+     11
+    ]
+   }
+  ],
+  "status": "RESOLVED",
+  "termination": null
+ },
+ "samples/mystery_b": {
+  "candidates": [
+   {
+    "key": [
+     8,
+     8,
+     8,
+     128,
+     1,
+     "rle_pcx",
+     null
+    ],
+    "region": [
+     128,
+     186
+    ]
+   }
+  ],
+  "status": "RESOLVED",
+  "termination": null
+ },
+ "samples/mystery_c": {
+  "candidates": [
+   {
+    "key": [
+     16,
+     16,
+     24,
+     18,
+     1,
+     "none",
+     null
+    ],
+    "region": [
+     18,
+     786
+    ]
+   }
+  ],
+  "status": "RESOLVED",
+  "termination": null
+ },
+ "samples/mystery_d": {
+  "candidates": [
+   {
+    "key": [
+     8,
+     8,
+     8,
+     40,
+     1,
+     "none",
+     null
+    ],
+    "region": [
+     40,
+     104
+    ]
+   },
+   {
+    "key": [
+     8,
+     64,
+     1,
+     40,
+     1,
+     "none",
+     null
+    ],
+    "region": [
+     40,
+     104
+    ]
+   },
+   {
+    "key": [
+     1,
+     64,
+     8,
+     40,
+     1,
+     "none",
+     null
+    ],
+    "region": [
+     40,
+     104
+    ]
+   },
+   {
+    "key": [
+     1,
+     64,
+     1,
+     40,
+     1,
+     "none",
+     null
+    ],
+    "region": [
+     40,
+     104
+    ]
+   },
+   {
+    "key": [
+     64,
+     1,
+     8,
+     40,
+     1,
+     "none",
+     null
+    ],
+    "region": [
+     40,
+     104
+    ]
+   },
+   {
+    "key": [
+     64,
+     8,
+     1,
+     40,
+     1,
+     "none",
+     null
+    ],
+    "region": [
+     40,
+     104
+    ]
+   },
+   {
+    "key": [
+     40,
+     1,
+     8,
+     64,
+     1,
+     "none",
+     null
+    ],
+    "region": [
+     64,
+     104
+    ]
+   },
+   {
+    "key": [
+     40,
+     8,
+     1,
+     64,
+     1,
+     "none",
+     null
+    ],
+    "region": [
+     64,
+     104
+    ]
+   },
+   {
+    "key": [
+     8,
+     40,
+     1,
+     64,
+     1,
+     "none",
+     null
+    ],
+    "region": [
+     64,
+     104
+    ]
+   },
+   {
+    "key": [
+     1,
+     40,
+     8,
+     64,
+     1,
+     "none",
+     null
+    ],
+    "region": [
+     64,
+     104
+    ]
+   },
+   {
+    "key": [
+     1,
+     40,
+     1,
+     64,
+     1,
+     "none",
+     null
+    ],
+    "region": [
+     64,
+     104
+    ]
+   },
+   {
+    "key": [
+     256,
+     1,
+     1,
+     72,
+     1,
+     "none",
+     null
+    ],
+    "region": [
+     72,
+     104
+    ]
+   },
+   {
+    "key": [
+     220,
+     1,
+     1,
+     76,
+     1,
+     "none",
+     null
+    ],
+    "region": [
+     76,
+     104
+    ]
+   },
+   {
+    "key": [
+     8,
+     1,
+     8,
+     96,
+     1,
+     "none",
+     null
+    ],
+    "region": [
+     96,
+     104
+    ]
+   },
+   {
+    "key": [
+     8,
+     8,
+     1,
+     96,
+     1,
+     "none",
+     null
+    ],
+    "region": [
+     96,
+     104
+    ]
+   },
+   {
+    "key": [
+     1,
+     8,
+     8,
+     96,
+     1,
+     "none",
+     null
+    ],
+    "region": [
+     96,
+     104
+    ]
+   },
+   {
+    "key": [
+     1,
+     8,
+     1,
+     96,
+     1,
+     "none",
+     null
+    ],
+    "region": [
+     96,
+     104
+    ]
+   },
+   {
+    "key": [
+     64,
+     1,
+     1,
+     96,
+     1,
+     "none",
+     null
+    ],
+    "region": [
+     96,
+     104
+    ]
+   }
+  ],
+  "status": "UNRESOLVED_AMBIGUITY",
+  "termination": null
+ },
+ "samples/mystery_e": {
+  "candidates": [
+   {
+    "key": [
+     8,
+     8,
+     8,
+     86,
+     1,
+     "none",
+     150
+    ],
+    "region": [
+     86,
+     150
+    ]
+   }
+  ],
+  "status": "RESOLVED",
+  "termination": null
+ },
+ "samples/mystery_f": {
+  "candidates": [
+   {
+    "key": [
+     12,
+     10,
+     8,
+     12,
+     1,
+     "none",
+     null
+    ],
+    "region": [
+     12,
+     132
+    ]
+   },
+   {
+    "key": [
+     10,
+     12,
+     8,
+     12,
+     1,
+     "none",
+     null
+    ],
+    "region": [
+     12,
+     132
+    ]
+   },
+   {
+    "key": [
+     10,
+     10,
+     8,
+     32,
+     1,
+     "none",
+     null
+    ],
+    "region": [
+     32,
+     132
+    ]
+   },
+   {
+    "key": [
+     12,
+     8,
+     8,
+     36,
+     1,
+     "none",
+     null
+    ],
+    "region": [
+     36,
+     132
+    ]
+   },
+   {
+    "key": [
+     8,
+     12,
+     8,
+     36,
+     1,
+     "none",
+     null
+    ],
+    "region": [
+     36,
+     132
+    ]
+   },
+   {
+    "key": [
+     10,
+     8,
+     8,
+     52,
+     1,
+     "none",
+     null
+    ],
+    "region": [
+     52,
+     132
+    ]
+   },
+   {
+    "key": [
+     8,
+     10,
+     8,
+     52,
+     1,
+     "none",
+     null
+    ],
+    "region": [
+     52,
+     132
+    ]
+   },
+   {
+    "key": [
+     8,
+     8,
+     8,
+     68,
+     1,
+     "none",
+     null
+    ],
+    "region": [
+     68,
+     132
+    ]
+   }
+  ],
+  "status": "UNRESOLVED_AMBIGUITY",
+  "termination": null
+ },
+ "samples/mystery_g": {
+  "candidates": [
+   {
+    "key": [
+     8,
+     24,
+     8,
+     20,
+     1,
+     "none",
+     null
+    ],
+    "region": [
+     20,
+     212
+    ]
+   },
+   {
+    "key": [
+     8,
+     8,
+     24,
+     20,
+     1,
+     "none",
+     null
+    ],
+    "region": [
+     20,
+     212
+    ]
+   },
+   {
+    "key": [
+     24,
+     8,
+     8,
+     20,
+     1,
+     "none",
+     null
+    ],
+    "region": [
+     20,
+     212
+    ]
+   },
+   {
+    "key": [
+     24,
+     24,
+     1,
+     140,
+     1,
+     "none",
+     null
+    ],
+    "region": [
+     140,
+     212
+    ]
+   },
+   {
+    "key": [
+     8,
+     8,
+     8,
+     148,
+     1,
+     "none",
+     null
+    ],
+    "region": [
+     148,
+     212
+    ]
+   },
+   {
+    "key": [
+     8,
+     24,
+     1,
+     188,
+     1,
+     "none",
+     null
+    ],
+    "region": [
+     188,
+     212
+    ]
+   },
+   {
+    "key": [
+     24,
+     8,
+     1,
+     188,
+     1,
+     "none",
+     null
+    ],
+    "region": [
+     188,
+     212
+    ]
+   },
+   {
+    "key": [
+     8,
+     8,
+     1,
+     204,
+     1,
+     "none",
+     null
+    ],
+    "region": [
+     204,
+     212
+    ]
+   }
+  ],
+  "status": "UNRESOLVED_AMBIGUITY",
+  "termination": null
+ },
+ "samples/mystery_h": {
+  "candidates": [
+   {
+    "key": [
+     6,
+     6,
+     8,
+     128,
+     4,
+     "none",
+     null
+    ],
+    "region": [
+     128,
+     176
+    ]
+   }
+  ],
+  "status": "RESOLVED",
+  "termination": null
+ },
+ "samples/mystery_i": {
+  "candidates": [
+   {
+    "key": [
+     8,
+     8,
+     8,
+     128,
+     1,
+     "rle_pcx",
+     null
+    ],
+    "region": [
+     128,
+     186
+    ]
+   }
+  ],
+  "status": "RESOLVED",
+  "termination": null
+ }
+}
