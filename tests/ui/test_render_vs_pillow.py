@@ -33,6 +33,12 @@ EXCEPTIONS = {
     # format-coverage Task 8 resolves plain P1; its renderer is Task 9 (Requirement 16.1, 16.4). Remove these two then.
     "imagemagick_input_p1.pbm": ("render_pending", "plain P1 is rendered by format-coverage Task 9"),
     "pillow_hopper_1bit_plain.pbm": ("render_pending", "plain P1 is rendered by format-coverage Task 9"),
+    # Requirement 16.1 fixes the scaling of 16-bit PNM at v * 255 // maxval. Pillow differs by design: it rounds an RGB
+    # sample to nearest, (v * 255 + 32767) // 65535, where we floor, and, for
+    # grey, loads 16-bit as mode I, which convert("RGB") clips to 255. Each test asserts exactly that difference.
+    "libtiff_rgb-3c-16b.ppm": ("pnm16_pillow_rounds", "Pillow rounds to nearest; Requirement 16.1 requires v * 255 // maxval"),
+    "pillow_hopper_16bit.pgm": ("pnm16_pillow_clips", "Pillow's mode I clips to 255 on convert('RGB'); Requirement 16.1 requires "
+                                                       "v * 255 // maxval"),
     "pillow_200x32_la_bl_raw.tga": ("no_renderer", "16-bit pixels have no renderer (Requirement 3.9)"),
     "pillow_rgba16.tga": ("no_renderer", "16-bit pixels have no renderer (Requirement 3.9)"),
 }
@@ -84,6 +90,19 @@ def test_render_matches_pillow(path):
         return
     if kind == "no_renderer":
         assert render.get("failure", "").startswith("no renderer for"), reason
+        return
+    if kind in ("pnm16_pillow_rounds", "pnm16_pillow_clips"):
+        # Both files have maxval 65535 and no trailer, so the samples are the last w*h*channels big-endian words.
+        channels = 3 if kind == "pnm16_pillow_rounds" else 1
+        n = render["width"] * render["height"] * channels
+        words = [int.from_bytes(data[len(data) - 2 * n + 2 * i:len(data) - 2 * n + 2 * i + 2], "big") for i in range(n)]
+        assert data[:2] == (b"P6" if channels == 3 else b"P5") and b"\n65535\n" in data[:64]
+        spread = (lambda b: b) if channels == 3 else (lambda b: bytes(v for x in b for v in (x, x, x)))
+        assert _rgb(render) == spread(bytes(v * 255 // 65535 for v in words)), reason
+        theirs = _pillow(data).tobytes()
+        known = bytes((v * 255 + 32767) // 65535 for v in words) if channels == 3 else bytes(min(255, v) for v in words)
+        assert theirs == spread(known), reason
+        assert _rgb(render) != theirs
         return
     if kind == "render_pending":
         assert _rgb(render) != _pillow(data).tobytes(), reason
