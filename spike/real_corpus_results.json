@@ -472,8 +472,10 @@
    70,
    46
   ],
-  "pixel_verdicts": [],
-  "pillow_pixels_sha256": null
+  "pixel_verdicts": [
+   "not comparable: encoding pnm_text not handled by the comparer"
+  ],
+  "pillow_pixels_sha256": "4a3c981806a3cfc59a8f148011e690631b4ebd5132217666f57566d779b6ee41"
  },
  {
   "file": "imagemagick_input_p2.pgm",
@@ -508,8 +510,10 @@
    70,
    46
   ],
-  "pixel_verdicts": [],
-  "pillow_pixels_sha256": null
+  "pixel_verdicts": [
+   "not comparable: encoding pnm_text not handled by the comparer"
+  ],
+  "pillow_pixels_sha256": "fb44ca702deb10609521e2a499273bfb2f2a8825f34e014df441798e51fa6875"
  },
  {
   "file": "imagemagick_input_p3.ppm",
@@ -544,8 +548,10 @@
    70,
    46
   ],
-  "pixel_verdicts": [],
-  "pillow_pixels_sha256": null
+  "pixel_verdicts": [
+   "not comparable: encoding pnm_text not handled by the comparer"
+  ],
+  "pillow_pixels_sha256": "a698f2fe0c6c31f83d19554a6ec02bac79c961dd9a87e7ed217752e75eb615d7"
  },
  {
   "file": "imagemagick_input_p4.pbm",
@@ -1560,16 +1566,16 @@
  {
   "file": "pillow_cross_scan_line.tga",
   "format": "TGA",
-  "scope": "out",
-  "scope_reason": "RLE TGA (image type 11)",
+  "scope": "in",
+  "scope_reason": "RLE TGA (image type 11); in scope since format-coverage Task 12 because the engine decodes rle_tga (Requirement 5.9)",
   "invalid_by_construction": false,
   "our_status": "FAILED",
   "stage": null,
   "termination": "exhausted",
   "checks": 6,
   "candidates": [],
-  "expected_status": "FAILED",
-  "note": "",
+  "expected_status": "RESOLVED",
+  "note": "its RLE data needs one byte that lies inside its declared TGA 2.0 footer; Pillow decodes it because it ignores the footer. The file is 49 bytes. With the 26-byte footer excluded, the data region is [18, 23) = 02 00 FF FF 00: a raw packet of 3 pixels, then a raw packet header that needs 1 more pixel byte, and that byte would be byte 23, the first byte of the footer (decoder_underrun). Read to the end of the file, 25 bytes are left over (decoder_unconsumed). Both readings fail, so FAILED is correct under the spec.",
   "pillow_error": null,
   "pillow_decodes": true,
   "pillow_mode": "L",
@@ -1712,8 +1718,10 @@
    128,
    128
   ],
-  "pixel_verdicts": [],
-  "pillow_pixels_sha256": null
+  "pixel_verdicts": [
+   "not comparable: encoding pnm_text not handled by the comparer"
+  ],
+  "pillow_pixels_sha256": "78144e85d3b245e58631e5aac5b5b850a13691bdb155b7248b53648fffccc94b"
  },
  {
   "file": "pillow_hopper_8bit.pgm",

@@ -2317,8 +2317,8 @@
    "licence": "MIT-CMU",
    "licence_url": "https://github.com/python-pillow/Pillow/blob/main/LICENSE",
    "licence_note": "Pillow repository licence (MIT-CMU). No per-file licence or origin is stated in the repository for this file.",
-   "scope": "out",
-   "scope_reason": "RLE TGA (image type 11)",
+   "scope": "in",
+   "scope_reason": "RLE TGA (image type 11); in scope since format-coverage Task 12 because the engine decodes rle_tga (Requirement 5.9)",
    "header": {
     "image_type": 11,
     "rle": true,

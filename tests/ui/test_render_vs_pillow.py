@@ -37,6 +37,8 @@ EXCEPTIONS = {
     "pillow_hopper_16bit.pgm": ("pnm16_pillow_clips", "Pillow's mode I clips to 255 on convert('RGB'); Requirement 16.1 requires "
                                                        "v * 255 // maxval"),
     "pillow_200x32_la_bl_raw.tga": ("no_renderer", "16-bit pixels have no renderer (Requirement 3.9)"),
+    "pillow_la.tga": ("no_renderer", "RLE TGA, resolved since format-coverage Requirement 5.9; its 16-bit pixels have no "
+                                    "renderer (Requirement 3.9)"),
     "pillow_rgba16.tga": ("no_renderer", "16-bit pixels have no renderer (Requirement 3.9)"),
 }
 

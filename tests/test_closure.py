@@ -232,12 +232,18 @@ def test_closure_rle_ok_req_1_8():
     assert v.ok is True and v.decoded == b"\x07\x07\x01\x02"
 
 
-# rle_tga row removed by format-coverage task 11 (Requirement 5.9); task 12 owns the rest.
+# format-coverage Task 12 (Requirement 5.9): rle_tga has a decoder now, so its row is not an unsupported encoding.
 @pytest.mark.parametrize("enc", ["tiff_compression_5", "x"])
 def test_closure_unsupported_encoding_req_1_13(enc):
     # 2x2 at 8 bpp over 4 bytes would close under "none"; the encoding alone rejects it.
     v = check_closure(hyp(2, 2, encoding=enc), bytes(4))
     assert v.ok is False and v.reason == "unsupported_encoding"
+
+
+def test_closure_rle_tga_is_not_unsupported_req_5_9():
+    # 2x2 at 8 bpp: run packet 0x81 (2 pixels of 0x07) twice = 4 bytes, fully consumed.
+    v = check_closure(hyp(2, 2, encoding="rle_tga"), b"\x81\x07\x81\x09")
+    assert v.ok is True and v.decoded == b"\x07\x07\x09\x09"
 
 
 # ----------------------------------------------------------------- trailers

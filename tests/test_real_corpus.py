@@ -23,6 +23,7 @@ MANIFEST = {e["file"]: e for e in rc.load_manifest()}
 COMMITTED = {r["file"]: r for r in json.loads(rc.OUT.read_text(encoding="utf-8"))}
 OSSFUZZ = "pillow_ossfuzz-4836216264589312.pcx"
 RGBA16 = "pillow_rgba16.tga"
+CROSS_SCAN = "pillow_cross_scan_line.tga"
 FILES = sorted(MANIFEST)
 
 
@@ -48,7 +49,7 @@ def test_corpus_is_all_81_files_and_unmodified():
 
 def test_scope_counts():
     scopes = [scope_of(n) for n in FILES]
-    assert scopes.count("in") == 26 and scopes.count("out") == 55
+    assert scopes.count("in") == 27 and scopes.count("out") == 54
     assert len(rc.INVALID_BY_CONSTRUCTION) == 6
 
 
@@ -74,8 +75,9 @@ PNM_TEXT_RESOLVED = {
     "imagemagick_input_p1.pbm", "imagemagick_input_p2.pgm", "imagemagick_input_p3.ppm",
     "pillow_hopper_1bit_plain.pbm",
 }
-# format-coverage Requirement 5.8, 5.9 and design.md row 11: rle_tga is decoded; six of the seven predicted files
-# resolve (pillow_cross_scan_line.tga stays FAILED, see the Task 11 commit). Task 12 owns the final expectations.
+# format-coverage Requirement 5.8, 5.9 and design.md row 11: rle_tga is decoded; these six files resolve. The seventh
+# predicted file, pillow_cross_scan_line.tga, stays FAILED and is an open in-scope failure (Task 12; see
+# tools/real_corpus.py). The manifest scope of these six is rewritten from header bytes in Task 37.
 RLE_TGA_RESOLVED = {
     "pillow_200x32_l_tl_rle.tga", "pillow_200x32_p_tl_rle.tga", "pillow_200x32_rgb_tl_rle.tga",
     "pillow_la.tga", "pillow_rgb32rle.tga", "sdlimage_sample.tga",
@@ -157,13 +159,32 @@ def test_in_scope_pixels_equal_pillows(name):
     assert hashlib.sha256(ours[0]).hexdigest() == committed
 
 
-def test_no_open_in_scope_failures_are_recorded():
-    # The xfail machinery below stays for future entries; an empty set must be stated, not silently skipped.
-    assert OPEN == set()
+def test_open_in_scope_failures_are_exactly_these():
+    # format-coverage Task 12 (Requirement 5.9): one open failure, with the measured note.
+    assert OPEN == {CROSS_SCAN}
+    assert COMMITTED[CROSS_SCAN]["note"] == rc.NOTES[CROSS_SCAN]
+    assert COMMITTED[CROSS_SCAN]["note"].startswith(
+        "its RLE data needs one byte that lies inside its declared TGA 2.0 footer; "
+        "Pillow decodes it because it ignores the footer")
+    assert "invalid by construction" not in COMMITTED[CROSS_SCAN]["note"].lower()
+    assert CROSS_SCAN not in rc.INVALID_BY_CONSTRUCTION
+    assert scope_of(CROSS_SCAN) == "in"
+
+
+def test_cross_scan_line_fails_under_both_readings_req_5_9():
+    # 49 bytes: header 18, data 5, footer 26. Without the footer the data region is [18, 23) = 02 00 FF FF 00:
+    # a raw packet of 3 pixels (00 FF FF) then a raw header (00) whose pixel byte would be byte 23, in the footer.
+    from necropsy.engine.decoders import rle_tga_decode
+    data = (rc.REAL / CROSS_SCAN).read_bytes()
+    assert len(data) == 49 and data[18:23] == b"\x02\x00\xff\xff\x00"
+    assert rle_tga_decode(data, 18, 23, 1, 4).status == "underrun"
+    r = rle_tga_decode(data, 18, 49, 1, 4)
+    assert r.status == "unconsumed"
+    assert run(CROSS_SCAN)[1].status == "FAILED"
 
 
 @pytest.mark.parametrize("name", sorted(OPEN))
-@pytest.mark.xfail(strict=True, reason="in scope, valid, FAILED today; under diagnosis in another session")
+@pytest.mark.xfail(strict=True, reason="in scope, valid, FAILED: its RLE data needs one byte inside its TGA 2.0 footer (Req 5.9)")
 def test_open_in_scope_failures(name):
     assert run(name)[1].status == "RESOLVED"
 

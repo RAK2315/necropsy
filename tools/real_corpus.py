@@ -30,7 +30,8 @@ INVALID_BY_CONSTRUCTION = (
 )
 
 
-OPEN_IN_SCOPE_FAILURES = ()   # in scope, valid, FAILED; under diagnosis elsewhere, rows left as measured (none today)
+# In scope, valid, FAILED; rows left as measured. pillow_cross_scan_line.tga: format-coverage Task 12 (Requirement 5.9).
+OPEN_IN_SCOPE_FAILURES = ("pillow_cross_scan_line.tga",)
 NOTES = {
     "pillow_ossfuzz-4836216264589312.pcx": (
         "Invalid by construction, and RESOLVED by design. The PCX probe recognised the signature and declined "
@@ -44,6 +45,12 @@ NOTES = {
 }
 for _n in OPEN_IN_SCOPE_FAILURES:
     NOTES[_n] = "Open: in scope, valid, and FAILED. Under diagnosis in another session; row left as measured."
+NOTES["pillow_cross_scan_line.tga"] = (
+    "its RLE data needs one byte that lies inside its declared TGA 2.0 footer; Pillow decodes it because it ignores "
+    "the footer. The file is 49 bytes. With the 26-byte footer excluded, the data region is [18, 23) = 02 00 FF FF 00: "
+    "a raw packet of 3 pixels, then a raw packet header that needs 1 more pixel byte, and that byte would be byte 23, "
+    "the first byte of the footer (decoder_underrun). Read to the end of the file, 25 bytes are left over "
+    "(decoder_unconsumed). Both readings fail, so FAILED is correct under the spec.")
 
 
 def expectation(file: str, scope: str, invalid: bool) -> str:

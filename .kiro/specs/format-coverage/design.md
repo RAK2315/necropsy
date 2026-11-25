@@ -240,7 +240,7 @@ The list below is the prediction made from header bytes before any code exists. 
 | 4 | `imagemagick_input_p5.pgm`, `imagemagick_input_p6.ppm`, `libtiff_minisblack-1c-8b.pgm`, `libtiff_rgb-3c-16b.ppm`, `libtiff_rgb-3c-8b.ppm`, `pillow_hopper_16bit.pgm`, `pillow_hopper_8bit.pgm`, `pillow_hopper_8bit.ppm`, `sdlimage_sample.pnm` (9) |
 | 8 | `imagemagick_input_p1.pbm`, `imagemagick_input_p2.pgm`, `imagemagick_input_p3.ppm`, `pillow_hopper_1bit_plain.pbm` (4). The last one writes digits in runs; read digit by digit (Requirement 4.4) it holds 10,967 ones and 5,417 zeros, 16,384 = 128 × 128 digits, and nothing else but whitespace, measured from the file's bytes. |
 | 10 | none (decoder only) |
-| 11 | `pillow_200x32_l_tl_rle.tga`, `pillow_200x32_p_tl_rle.tga`, `pillow_200x32_rgb_tl_rle.tga`, `pillow_cross_scan_line.tga`, `pillow_la.tga`, `pillow_rgb32rle.tga`, `sdlimage_sample.tga` (7). `pillow_cross_scan_line_truncated.tga` stays FAILED (truncated data). |
+| 11 | `pillow_200x32_l_tl_rle.tga`, `pillow_200x32_p_tl_rle.tga`, `pillow_200x32_rgb_tl_rle.tga`, `pillow_la.tga`, `pillow_rgb32rle.tga`, `sdlimage_sample.tga` (6, measured in Task 11). `pillow_cross_scan_line_truncated.tga` stays FAILED (truncated data). `pillow_cross_scan_line.tga` stays FAILED too, which the first prediction missed: the file is 49 bytes; with its 26-byte TGA 2.0 footer excluded the data region is [18, 23) = `02 00 FF FF 00`, a raw packet of 3 pixels and then a raw packet header whose pixel byte would be byte 23, the first byte of the footer (`decoder_underrun`); read to the end of the file, 25 bytes are left over (`decoder_unconsumed`). Both readings fail. Pillow decodes it because it ignores the footer. |
 | 13, 14 | none |
 | 15 | `imagemagick_input.pcx`, `sdlimage_sample.pcx`, `pillow_p_4_planes.pcx` (3). `pillow_ossfuzz-4836216264589312.pcx` is unchanged (its encoding byte makes the probe decline). |
 | 17 | none (closure rule, no probe yet) |
@@ -253,14 +253,14 @@ The list below is the prediction made from header bytes before any code exists. 
 | 25 | `goimage_bw-deflate.tiff`, `goimage_video-001-paletted.tiff`, `goimage_invalid-palette-ref.tiff` (3). `libtiff_deflate-last-strip-extra-data.tiff` stays FAILED (Principle call 2). |
 | 26 | `pillow_hopper_lzma.tif` (1) |
 
-Total predicted: 37 new `RESOLVED`. The engine's `RESOLVED` count goes from 25 to 62, and `FAILED` from 56 to 19, of which the in-scope ones are `libtiff_deflate-last-strip-extra-data.tiff`, `pillow_cross_scan_line_truncated.tga`, and the two that are invalid by construction today (`pillow_01r_00.pcx`, `pillow_p_8.tga`): four. The other 15 are out of scope.
+Total predicted: 36 new `RESOLVED` (37 before the bytes of `pillow_cross_scan_line.tga` were read in Task 12). The engine's `RESOLVED` count goes from 25 to 61, and `FAILED` from 56 to 20, of which the in-scope ones are `libtiff_deflate-last-strip-extra-data.tiff`, `pillow_cross_scan_line.tga`, `pillow_cross_scan_line_truncated.tga`, and the two that are invalid by construction today (`pillow_01r_00.pcx`, `pillow_p_8.tga`): five. The other 15 are out of scope.
 
 Two predictions carry known risk, named here so that a surprise is not a repair:
 
 - `goimage_invalid-palette-ref.tiff` is invalid by construction (Pillow refuses it for palette indices outside the palette). The engine does not read palette semantics. If the strips close, it is `RESOLVED`, and that contradicts the file's `FAILED` expectation. The measurement is written down (Requirement 19.5).
 - `libtiff_lzw-single-strip.tiff` decodes about 3 MB (7795 × 3122, 1 bit). Pure-Python LZW on that size may approach the engine's 5-second deadline. A `deadline_exceeded` result would be recorded as measured.
 
-The scope diff of Task 37 is the 39 files that the header rules move from out to in: the 37 above plus `libtiff_deflate-last-strip-extra-data.tiff` and `pillow_cross_scan_line_truncated.tga`. The 16 files that stay out are the four CCITT TIFFs, `libtiff_ojpeg_zackthecat_subsamp22_single_strip.tiff`, `pillow_old-style-jpeg-compression.tif`, `libtiff_quad-tile.jpg.tiff`, `pillow_hopper_webp.tif`, `libtiff_logluv-3c-16b.tiff`, `pillow_tiff_strip_planar_raw.tif`, the four Predictor 2 files, `pillow_negative_size.ppm` and `pillow_ossfuzz-4836216264589312.pcx`.
+The scope diff of the whole spec is the 39 files that the header rules move from out to in: the 36 above plus `libtiff_deflate-last-strip-extra-data.tiff`, `pillow_cross_scan_line_truncated.tga` and `pillow_cross_scan_line.tga`. Task 12 moved `pillow_cross_scan_line.tga` itself (in scope, FAILED, an open failure with the note above); Task 37 moves the other 38. The 16 files that stay out are the four CCITT TIFFs, `libtiff_ojpeg_zackthecat_subsamp22_single_strip.tiff`, `pillow_old-style-jpeg-compression.tif`, `libtiff_quad-tile.jpg.tiff`, `pillow_hopper_webp.tif`, `libtiff_logluv-3c-16b.tiff`, `pillow_tiff_strip_planar_raw.tif`, the four Predictor 2 files, `pillow_negative_size.ppm` and `pillow_ossfuzz-4836216264589312.pcx`.
 
 ## Decisions
 

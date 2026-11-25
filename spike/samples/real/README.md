@@ -41,10 +41,10 @@ python -c "import json,collections as c;m=json.load(open('spike/samples/real/man
 | Format | Files | In stated scope | Out of stated scope |
 |---|---:|---:|---:|
 | PCX | 7 | 3 | 4 |
-| TGA | 19 | 11 | 8 |
+| TGA | 19 | 12 | 7 |
 | TIFF | 36 | 7 | 29 |
 | PBM/PGM/PPM | 19 | 5 | 14 |
-| **Total** | **81** | **26** | **55** |
+| **Total** | **81** | **27** | **54** |
 
 Licences: MIT-CMU 38, libtiff 15, BSD-3-Clause 14, ImageMagick 8, Zlib 4, MIT OR Apache-2.0 2.
 
@@ -55,7 +55,9 @@ Licences: MIT-CMU 38, libtiff 15, BSD-3-Clause 14, ImageMagick 8, Zlib 4, MIT OR
 - TIFF: compression 1 (none), exactly one strip, not tiled, planar configuration 1, and every BitsPerSample entry equal (Decision Record item 20). Samples per pixel is not a limit. A looping IFD chain is not a limit either, because the first IFD can still be read.
 - PNM: binary PBM with the exact `P4\n` signature the PBM probe reads.
 
-A file can be in scope by its header and still be invalid: 2 of the 26 in-scope files are invalid by construction (see below).
+A file can be in scope by its header and still be invalid: 2 of the 27 in-scope files are invalid by construction (see below).
+
+`pillow_cross_scan_line.tga` is in scope for format-coverage Task 12 only (the engine decodes `rle_tga`); Task 37 rewrites the rules for every file.
 
 In scope does not mean the engine recovers the file. `pillow_p_16.tga` is in scope by these rules and comes out `FAILED`, because the engine does not yet read the TGA 2.0 extension area and postage stamp. The top-level README states this as a limit.
 
@@ -174,7 +176,7 @@ Every row's SHA-256 is in `manifest.json`. `.gitattributes` in this folder stops
 | `pillow_200x32_rgb_bl_raw.tga` | TGA | 200x32 | in | MIT-CMU | decodes | uncompressed TGA (image type 2) |
 | `pillow_200x32_rgb_tl_rle.tga` | TGA | 200x32 | out | MIT-CMU | decodes | RLE TGA (image type 10) |
 | `pillow_200x32_rgba_tl_raw.tga` | TGA | 200x32 | in | MIT-CMU | decodes | uncompressed TGA (image type 2) |
-| `pillow_cross_scan_line.tga` | TGA | 2x2 | out | MIT-CMU | decodes | RLE TGA (image type 11) |
+| `pillow_cross_scan_line.tga` | TGA | 2x2 | in | MIT-CMU | decodes | RLE TGA (image type 11) |
 | `pillow_cross_scan_line_truncated.tga` | TGA | 64x64 | out | MIT-CMU | **refuses** | RLE TGA (image type 9) |
 | `pillow_hopper_16bit.pgm` | PNM | 128x128 | out | MIT-CMU | decodes | P5 (only binary PBM, P4, has a probe) |
 | `pillow_hopper_1bit.pbm` | PNM | 128x128 | in | MIT-CMU | decodes | binary PBM (P4) with the exact b'P4\n' signature the PBM probe reads |

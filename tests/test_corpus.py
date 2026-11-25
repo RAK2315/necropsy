@@ -202,13 +202,33 @@ def test_pillow_p_16_tga_resolves_req_7_16():
     assert bytes(c.decoded) == expected
 
 
-@pytest.mark.skip(reason="format-coverage task 11 (Requirement 5.9): rle_tga is decoded now; task 12 rewrites this test")
-def test_pillow_rgb32rle_tga_not_resolved_req_7_17():
+# Requirement 7.17 as amended by format-coverage Requirement 5.9: rle_tga is decoded, so the file RESOLVES.
+def test_pillow_rgb32rle_tga_resolves_req_7_17_req_5_9():
     from tests.conftest import SAMPLES_DIR
-    data = (SAMPLES_DIR / "real" / "pillow_rgb32rle.tga").read_bytes()
+    path = SAMPLES_DIR / "real" / "pillow_rgb32rle.tga"
+    data = path.read_bytes()
     r = Engine().run(data)
-    assert r.status != "RESOLVED"
-    tga = [e for e in r.rejections
-           if e.source == "tga" and e.hypothesis is not None and e.hypothesis.probe_name == "tga"]
-    assert tga, "the TGA seed must appear among the rejections"
-    assert all(e.reason == "unsupported_encoding" for e in tga)
+    assert r.status == "RESOLVED"
+    assert r.stage == "probe"
+    c = r.candidate
+    hy = c.hypothesis
+    assert hy.probe_name == "tga" and hy.encoding == "rle_tga"
+    assert (hy.width, hy.height, hy.bit_depth, hy.header_size) == (199, 199, 32, 18)
+    assert (c.data_start, c.data_end) == (18, 128486)
+    assert len(c.decoded) == 199 * 199 * 4
+    # Exact pixels against Pillow: stored order is B,G,R,A; rows are bottom to top when descriptor bit 5 is clear.
+    from PIL import Image
+    with Image.open(path) as im:
+        im.load()
+        assert im.mode == "RGBA"
+        expected = im.tobytes()
+    rows = [bytes(c.decoded[y * 796:(y + 1) * 796]) for y in range(199)]
+    if not data[17] & 0x20:
+        rows.reverse()
+    got = bytearray(b"".join(rows))
+    for o in range(0, len(got), 4):
+        got[o], got[o + 2] = got[o + 2], got[o]
+    # The engine returns the stored alpha byte unchanged; Pillow reports 255 when the descriptor declares no alpha
+    # bits (data[17] & 0x0F == 0). So R, G and B are compared exactly, and alpha is not.
+    assert data[17] & 0x0F == 0
+    assert bytes(b for i, b in enumerate(got) if i % 4 != 3) == bytes(b for i, b in enumerate(expected) if i % 4 != 3)
