@@ -126,6 +126,29 @@ _ENCODING_DEFINITIONS = {
         "THEN THE parser SHALL return an error. IF unread bytes remain when the output is "
         "complete, THEN THE parser SHALL return an error."
     ),
+    "pnm_text": (
+        "WHEN the encoding is `pnm_text`, THE parser SHALL read the data region as a sequence of "
+        "whitespace, comments and numbers, where whitespace is 0x20, 0x09, 0x0A, 0x0B, 0x0C or "
+        "0x0D and a comment is `#` and every byte up to and including the next 0x0A or 0x0D. "
+        "THE parser SHALL expect N numbers, where N is width \u00d7 height when bit_depth is 1, 8 "
+        "or 16 and width \u00d7 height \u00d7 3 when bit_depth is 24 or 48. WHEN bit_depth is 1, each "
+        "`0` or `1` byte is one number and whitespace between numbers is optional; any other digit "
+        "from `2` to `9` is a number above the maximum value, and any other byte that is not "
+        "whitespace or part of a comment is an error. WHEN bit_depth is not 1, a number is a "
+        "maximal run of bytes that are neither whitespace nor `#`, whitespace is required between "
+        "numbers, and a number with any byte that is not an ASCII digit is an error. IF a number is "
+        "greater than the maximum value (a number of more than five digits after its leading zeros "
+        "is greater than every maximum value), THEN THE parser SHALL return an error. "
+        "THE parser SHALL write each number: WHEN bit_depth is 1, the pixels are packed 8 per byte, "
+        "most significant bit first, each row padded with zero bits to a whole byte, and the number "
+        "1 is a set bit; OTHERWISE one byte per number when the maximum value is at most 255, and "
+        "two bytes big-endian when it is greater. IF the output would exceed row_stride \u00d7 height "
+        "bytes, THEN THE parser SHALL return an error. IF the data region is exhausted before N "
+        "numbers are written, THEN THE parser SHALL return an error. IF N numbers are written and "
+        "any byte of the data region other than whitespace and comments remains, THEN THE parser "
+        "SHALL return an error. WHEN N numbers are written and only whitespace and comments remain, "
+        "THE parser SHALL accept the data region."
+    ),
     "unsupported": (
         "WHEN the encoding is `unsupported`, THE parser SHALL return an error naming the "
         "declared value."
@@ -187,6 +210,34 @@ def _signature(lay: dict, origin: str) -> list:
         out.append(
             "THE parser SHALL end the header after the newline that closes the dimensions line, "
             "so that the data region starts at the offset of the following byte."
+        )
+    if origin == "pnm":
+        out.append(
+            "THE parser SHALL require byte 0x0000 to equal 0x50 (the character P), byte 0x0001 to "
+            "be one of 0x31, 0x32, 0x33, 0x35 or 0x36 (the characters 1, 2, 3, 5 or 6), and byte "
+            "0x0002 to be an ASCII whitespace byte (0x20, 0x09, 0x0A, 0x0B, 0x0C or 0x0D)."
+        )
+        out.append("IF the signature differs, THEN THE parser SHALL return an error.")
+        out.append(
+            "THE parser SHALL parse the text header only within the first 1,024 bytes of the file."
+        )
+        out.append(
+            "THE parser SHALL read the header as the magic (2 bytes), then one or more whitespace "
+            "bytes, then the width as a run of ASCII digits, then whitespace, then the height, "
+            "then, for magic P2, P3, P5 and P6 only, whitespace and the maximum value; a comment "
+            "(`#` and every byte up to and including the next 0x0A or 0x0D) is allowed wherever "
+            "a run of whitespace is allowed, and a token ends at the first byte that is not an "
+            "ASCII digit."
+        )
+        out.append(
+            "FOR magic P5 and P6, THE parser SHALL require exactly one whitespace byte after the "
+            "maximum value, with no comment between them, and SHALL start the data region at the "
+            "byte after it."
+        )
+        out.append(
+            "FOR magic P1, P2 and P3, THE parser SHALL start the data region at the byte after "
+            "the last header token (the height for P1, the maximum value for P2 and P3), "
+            "consuming no whitespace byte beyond it."
         )
     for f in lay.get("fields") or []:
         if f.get("expect") is not None:
@@ -377,6 +428,13 @@ def _data(lay: dict, cand, origin: str) -> list:
         out.append("THE parser SHALL NOT strip any trailer from the data region.")
     out.append("THE parser SHALL decode the data region using encoding %s." % _encoding_text(d.get("encoding")))
     out.extend(_encoding_definitions(d.get("encoding")))
+    if img.get("maxval") is not None:
+        out.append(
+            "THE parser SHALL take the maximum sample value as %d. WHEN the encoding is `none`, "
+            "THE parser SHALL read each sample of the data region (1 byte, or 2 bytes big-endian "
+            "when the bit depth is 16 or 48) and SHALL return an error WHEN any sample is greater "
+            "than the maximum sample value." % img["maxval"]
+        )
     if "rle_pcx" in path and lay.get("kind") != "file":
         out.append(
             "WHEN the file's own encoding declaration says the data is uncompressed, THE parser "
@@ -418,7 +476,12 @@ def _closure(lay: dict, cand) -> list:
             "WHEN the encoding is `none`, THE parser SHALL require data_end - data_start to "
             "equal row_stride \u00d7 height."
         )
-    if (isinstance(enc, str) and enc != "none") or isinstance(enc, dict):
+    if enc == "pnm_text":
+        out.append(
+            "WHEN the encoding is `pnm_text`, THE parser SHALL require the decoder to consume the "
+            "whole data region and produce exactly row_stride \u00d7 height bytes."
+        )
+    elif (isinstance(enc, str) and enc != "none") or isinstance(enc, dict):
         out.append(
             "WHEN the encoding is a run-length encoding, THE parser SHALL require the decoder "
             "to consume the whole data region and produce exactly row_stride \u00d7 height bytes."

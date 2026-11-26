@@ -251,6 +251,19 @@ def _candidate_layout(cand, slug: str, rejections=(), data_len=None) -> dict:
                         "row_alignment": h.row_alignment}
         out["data"] = {"start": h.header_size, "end": None, "encoding": "none",
                        "trailers": _trailers("pbm")}
+    elif origin == "pnm":
+        # Requirement 17.5: this file's literal values (the tokens are ASCII, which the
+        # schema cannot evaluate); the token reads are listed as fields for documentation.
+        # No PNM trailer exists (Requirement 3.8), so the data region ends at the file end.
+        out = _base("file", slug)
+        out["fields"] = [
+            {"name": f.name, "offset": f.offset, "fmt": f.fmt, "expect": None}
+            for f in h.fields
+        ]
+        out["image"] = {"width": h.width, "height": h.height, "bit_depth": h.bit_depth,
+                        "row_alignment": h.row_alignment, "maxval": h.maxval}
+        out["data"] = {"start": h.header_size, "end": None, "encoding": h.encoding,
+                       "trailers": []}
     else:
         out = _base("file", slug)
         first = {}

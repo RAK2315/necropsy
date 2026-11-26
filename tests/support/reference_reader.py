@@ -267,7 +267,7 @@ def _parse(layout, data):
         enc = enc["values"].get(str(declared), enc.get("otherwise"))
     if not isinstance(enc, str):
         raise _Err("encoding unresolved")
-    if enc not in ("none", "rle_pcx", "rle_tga"):
+    if enc not in ("none", "rle_pcx", "rle_tga", "pnm_text"):
         raise _Err("unsupported encoding %s" % (declared,))
 
     if start < 0 or end < start or end > len(data):
@@ -284,6 +284,16 @@ def _parse(layout, data):
         if end - start != expected:
             raise _Err("closure failed")
         pixels = bytes(data[start:end])
+        maxval = img.get("maxval")
+        if maxval is not None:   # Req 17.5: no sample may exceed the declared maximum
+            if not _is_int(maxval):
+                raise _Err("bad maxval")
+            _check_samples(pixels, maxval, 2 if depth in (16, 48) else 1)
+    elif enc == "pnm_text":
+        maxval = img.get("maxval")
+        if not _is_int(maxval) or maxval < 0 or maxval > 65535:
+            raise _Err("bad maxval")
+        pixels = _pnm_text(data, start, end, width, height, depth, maxval, expected)
     elif enc == "rle_tga":
         pixels = _rle_tga(data, start, end, expected, -(-depth // 8))
     else:
@@ -293,6 +303,87 @@ def _parse(layout, data):
         "row_alignment": align, "row_stride": stride, "encoding": enc, "data_start": start,
         "data_end": end, "pixels": pixels, "fields": fields,
     }
+
+
+def _check_samples(pixels, maxval, size):
+    """Error when a 1-byte or big-endian 2-byte sample is above maxval (Requirement 17.5)."""
+    if size == 1:
+        if maxval < 255 and pixels and max(pixels) > maxval:
+            raise _Err("sample above the maximum value")
+        return
+    if maxval < 65535:
+        for i in range(0, len(pixels) - 1, 2):
+            if (pixels[i] << 8 | pixels[i + 1]) > maxval:
+                raise _Err("sample above the maximum value")
+
+
+_WS = frozenset(b" \t\n\x0b\x0c\r")
+
+
+def _skip_ws(data, pos, end):
+    """Skip whitespace and comments (`#` through the next 0x0A or 0x0D)."""
+    while pos < end:
+        b = data[pos]
+        if b in _WS:
+            pos += 1
+        elif b == 0x23:
+            while pos < end and data[pos] not in (0x0A, 0x0D):
+                pos += 1
+            pos += 1
+        else:
+            break
+    return min(pos, end)
+
+
+def _pnm_text(data, start, end, width, height, depth, maxval, expected):
+    """Decode data[start:end] per the emitted pnm_text definition (Requirement 17.1).
+
+    Output is built only from numbers read, so nothing is sized from the layout.
+    """
+    if depth not in (1, 8, 16, 24, 48):
+        raise _Err("bad bit depth for pnm_text")
+    total = width * height * (3 if depth in (24, 48) else 1)
+    out = bytearray()
+    pos = start
+    count = 0
+    bits = 0
+    nbits = 0
+    col = 0
+    while count < total:
+        pos = _skip_ws(data, pos, end)
+        if pos >= end:
+            raise _Err("data region ends before all numbers are read")
+        if depth == 1:
+            b = data[pos]
+            if b not in (0x30, 0x31):
+                raise _Err("above the maximum value" if 0x32 <= b <= 0x39 else "malformed number")
+            pos += 1
+            bits = (bits << 1) | (b - 0x30)
+            nbits += 1
+            col += 1
+            if nbits == 8 or col == width:
+                out.append((bits << (8 - nbits)) & 0xFF)
+                bits = nbits = 0
+                if col == width:
+                    col = 0
+        else:
+            tok = pos
+            while pos < end and data[pos] not in _WS and data[pos] != 0x23:
+                pos += 1
+            token = data[tok:pos]
+            if not token.isdigit() or not token.isascii():
+                raise _Err("malformed number")
+            sig = token.lstrip(b"0")
+            if len(sig) > 5 or (int(sig) if sig else 0) > maxval:
+                raise _Err("number above the maximum value")
+            value = int(sig) if sig else 0
+            out.extend(value.to_bytes(2, "big") if maxval > 255 else bytes((value,)))
+        if len(out) > expected:
+            raise _Err("output exceeds the expected size")
+        count += 1
+    if _skip_ws(data, pos, end) < end:
+        raise _Err("unread bytes remain")
+    return bytes(out)
 
 
 def _rle_pcx(data, start, end, expected):
