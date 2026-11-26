@@ -13,7 +13,9 @@ from tests.ui.conftest import run_in_browser
 
 # Same wording as public/js/words.js reasonText, restated here so the page is checked against the engine, not itself.
 REASON = {
-    "decoder_overrun": "a run would write past the size of the picture",
+    "decoder_overrun": "unpacking would write past the size of the picture",
+    "decoder_malformed": "the data holds something its encoding gives no meaning",
+    "sample_above_maxval": "a value is above the maximum the file declares",
     "decoder_underrun": "the data ran out before the picture was full",
     "decoder_unconsumed": "decoding finished with bytes left over",
     "degenerate_hypothesis": "not a usable layout: a size is not positive, or the header overlaps the data",

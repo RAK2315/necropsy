@@ -19,12 +19,16 @@ export function reasonText(reason, discrepancy) {
       if (typeof discrepancy === 'number' && discrepancy > 0) return `the data is ${fmt(discrepancy)} byte${discrepancy === 1 ? '' : 's'} longer than this layout needs`;
       if (typeof discrepancy === 'number' && discrepancy < 0) return `the data is ${fmt(-discrepancy)} byte${discrepancy === -1 ? '' : 's'} shorter than this layout needs`;
       return 'the data is not the size this layout needs';
-    // closure.rle_pcx_decode returns "overrun": a run would take the output past max_output_bytes
-    case 'decoder_overrun': return 'a run would write past the size of the picture';
-    // closure.rle_pcx_decode returns "underrun": the range ended (or a run marker was its last byte) before the output was full
+    // closure.rle_pcx_decode and decoders.DECODERS return "overrun": the next write would take the output past max_output_bytes
+    case 'decoder_overrun': return 'unpacking would write past the size of the picture';
+    // closure.rle_pcx_decode and decoders.DECODERS return "underrun": the range ended before the output was full
     case 'decoder_underrun': return 'the data ran out before the picture was full';
-    // closure.rle_pcx_decode returns "unconsumed": the output was full before the range ended
+    // closure.rle_pcx_decode and decoders.DECODERS return "unconsumed": the output was full before the range ended
     case 'decoder_unconsumed': return 'decoding finished with bytes left over';
+    // decoders.DECODERS return "malformed": a byte, token or code the encoding gives no meaning (detail says which)
+    case 'decoder_malformed': return 'the data holds something its encoding gives no meaning';
+    // decoders._run_pnm_text "above_maxval", closure.check_closure (P5/P6): a sample is greater than the declared maximum value
+    case 'sample_above_maxval': return 'a value is above the maximum the file declares';
     // closure.check_closure: width, height or bit depth not positive, alignment not 1/2/4, header outside the file,
     // or a header field overlapping the data region
     case 'degenerate_hypothesis': return 'not a usable layout: a size is not positive, or the header overlaps the data';
@@ -32,7 +36,7 @@ export function reasonText(reason, discrepancy) {
     case 'field_out_of_bounds': return 'a declared position lies outside the file';
     // probes.*: a declared value the format does not allow (for example a PCX encoding byte other than 0 or 1)
     case 'probe_precondition_failed': return 'a declared value is outside what the format allows';
-    // closure.check_closure: an encoding other than none or rle_pcx
+    // closure.check_closure: an encoding that is neither none, rle_pcx nor in decoders.DECODERS
     case 'unsupported_encoding': return 'this encoding is recognised but not decoded';
     // engine.Engine._run_checked: len(data) < MIN_INPUT_BYTES
     case 'input_too_short': return 'the file is shorter than 3 bytes';
@@ -58,6 +62,13 @@ export function correctionText(step, cand) {
 export function encodingText(enc) {
   if (enc === 'none') return 'no compression';
   if (enc === 'rle_pcx') return 'PCX run-length';
+  if (enc === 'rle_tga') return 'TGA run-length';                       // decoders._run_rle_tga
+  if (enc === 'pnm_text') return 'numbers written as text';             // decoders._run_pnm_text
+  if (enc === 'tiff_compression_32773') return 'PackBits';              // decoders._run_packbits
+  if (enc === 'tiff_compression_5') return 'LZW';                       // decoders._run_lzw_tiff
+  if (enc === 'tiff_compression_8' || enc === 'tiff_compression_32946') return 'Deflate';   // decoders._run_deflate_zlib
+  if (enc === 'tiff_compression_34925') return 'LZMA';                  // decoders._run_lzma_xz
+  if (typeof enc === 'string' && enc.startsWith('tiff_compression_')) return `TIFF compression ${enc.slice(17)}`;
   return enc;
 }
 
@@ -181,12 +192,16 @@ export function reasonExplain(reason, d) {
       if (typeof d === 'number' && d > 0) return `The picture data is ${bytesWord(d)} longer than a picture this size needs. A layout is accepted only if it uses every byte, so this one is set aside.`;
       if (typeof d === 'number' && d < 0) return `The picture data is ${bytesWord(-d)} shorter than a picture this size needs, so it could not be filled.`;
       return 'The picture data is not the size this layout needs, so it cannot be used up exactly.';
-    case 'decoder_overrun':            // closure.rle_pcx_decode "overrun"
-      return 'The data was unpacked as run-length data (a repeated byte stored once with a count). It produced more pixels than a picture this size holds, so this size does not fit.';
-    case 'decoder_underrun':           // closure.rle_pcx_decode "underrun"
-      return 'Unpacking the run-length data used up every byte before a picture this size was full.';
-    case 'decoder_unconsumed':         // closure.rle_pcx_decode "unconsumed"
-      return 'Unpacking the run-length data filled a picture this size with stored bytes still unused. A layout must use every byte.';
+    case 'decoder_overrun':            // closure.rle_pcx_decode, decoders.DECODERS "overrun"
+      return 'The data was unpacked using the encoding this layout names. It produced more pixels than a picture this size holds, so this size does not fit.';
+    case 'decoder_underrun':           // closure.rle_pcx_decode, decoders.DECODERS "underrun"
+      return 'Unpacking the data used up every byte before a picture this size was full.';
+    case 'decoder_unconsumed':         // closure.rle_pcx_decode, decoders.DECODERS "unconsumed"
+      return 'Unpacking the data filled a picture this size with stored bytes still unused. A layout must use every byte.';
+    case 'decoder_malformed':          // decoders.DECODERS "malformed"
+      return 'While unpacking, the data held a byte, number or code that its encoding gives no meaning, so unpacking stopped there.';
+    case 'sample_above_maxval':        // decoders._run_pnm_text "above_maxval"; closure.check_closure for P5/P6
+      return 'The file declares the largest value a pixel may have. A pixel value here is larger than that, so this reading does not fit.';
     case 'degenerate_hypothesis':      // closure.check_closure
       return 'These numbers cannot describe a picture: a size is zero or less, or the header would overlap the pixels.';
     case 'field_out_of_bounds':        // closure.check_closure, trailers.trailer_data_end, TIFF offsets

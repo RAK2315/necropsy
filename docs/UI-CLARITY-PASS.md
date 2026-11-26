@@ -246,3 +246,17 @@ payload. The neutrality test's mask was moved to the new coherence element. Brea
 it rounded the score in Python (half to even, 1.4062) where the page rounds in JavaScript (half up, 1.4063). The test
 now rounds as the page does. The emphasis break was also re-aimed, because its first threshold (a score above 1) matched
 no value in the neutrality test's fixtures. The rerun caught all 3.
+
+## Task 48: plain words for the format-coverage reasons
+
+26 Nov, after the `format-coverage` spec. The engine gained two rejection reasons, `sample_above_maxval` and
+`decoder_malformed`, and the three existing decoder reasons are now also produced by the TGA run-length, PackBits,
+LZW, Deflate, LZMA and PNM-text decoders (`decoders.STATUS_REASONS`). `public/js/words.js` now has a line and an
+explanation for both new reasons, and the decoder lines no longer say "run" or "run-length", which was true only of
+the PCX decoder they were first written for. `encodingText` names the new encodings (TGA run-length, numbers written
+as text, PackBits, LZW, Deflate, LZMA) and any other TIFF compression by its number.
+
+**Verification.** `tests/ui/test_words_cover_reasons.py` reads `necropsy.engine.types.REASONS` and requires a case
+for every reason in `reasonText`, and for every decoder reason and `sample_above_maxval` in `reasonExplain`, and that
+no decoder line assumes run-length data. Against the previous `words.js` all three tests fail; against the new one
+all three pass. `tests/ui/test_replay_caption.py` restates the changed overrun wording.
