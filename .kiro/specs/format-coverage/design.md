@@ -332,3 +332,69 @@ Each layout is shown by dropping one corpus file onto the existing upload screen
 | Render | `tests/test_pixels_coverage.py` | exact RGB/grey values per layout |
 | Emission | `tests/test_emit_coverage.py` | reference reader passes plain pytest on emitted specs; do-nothing parser fails; byte-diff of unchanged specs |
 | Corpus | `tests/test_real_corpus.py` | live equals committed results; manifest equals scope script |
+
+## Verification (Task 40)
+
+Measured at `66c4e4c` (Task 39), with no code change since. Requirements 19.6, 20.2, 20.4, 20.7, 20.8.
+
+| Check | Command | Measured |
+|---|---|---|
+| Whole suite | `python -m pytest tests -q -p no:cacheprovider` | 1628 passed, 2 xfailed, 0 failed, 26 min 38 s. The two xfails are the strict expected failures of `OPEN_IN_SCOPE_FAILURES` (Requirement 19.4). |
+| UI logic | `node --test tests/ui/js/logic.test.mjs tests/ui/js/screens.test.mjs` | 27 tests, 27 pass, 0 fail |
+| Diff against the baseline | `python -m tools.fc_diff` | 92 files measured, 0 differences |
+| Scope script | `python -m tools.scope_from_headers --check` | exit 0: the committed manifest equals the script's output |
+| Break check, new layouts | `python tools/break_check.py tests/break_checks/new_layouts.json` | 13 of 13 caught (p5, p6, p2, p3, rle_tga, three_plane_pcx, multi_strip, tiled, packbits, lzw_single_strip, lzw_strips, deflate, lzma); the reference reader restored byte for byte each time |
+| Front end untouched (20.7) | `git diff --stat 33469d0 HEAD -- public`, `git diff --stat -- public` | empty: nothing under `public/` changed from the held-out seal `33469d0` (committed before the spec was written) to HEAD, and nothing in the working tree |
+| Held-out set (20.8) | none | not run and not read; the work was measured only on `spike/samples/` and `spike/samples/real/` |
+
+`spike/fc_baseline.json` was rewritten with `--write` after each task whose predicted changes were measured (the commit messages of Tasks 4, 8, 11, 18, 21, 23, 24 and 25 state each diff). So 0 differences here means HEAD equals the last measured state. The per-task accounting is the table "Expected diff per task" and those commit messages.
+
+### Predicted against measured
+
+| Row | Predicted | Measured | Mismatch |
+|---|---|---|---|
+| 4 | 9 | 9 | none |
+| 8 | 4 | 4 | none |
+| 11 | 7 at first, corrected to 6 | 6 | `pillow_cross_scan_line.tga` was predicted to resolve and stays FAILED: its RLE data needs a byte inside its TGA 2.0 footer (row 11). The row was corrected from 7 to 6 and the file is in `OPEN_IN_SCOPE_FAILURES` with the user-approved note. |
+| 15 | 3 | 3 | none |
+| 18 | 6 | 6 | none |
+| 21 | 1 | 1 | none |
+| 22 | 0 in status | 0 | none |
+| 23 | 1 | 1 | none |
+| 24 | 2 | 1, then 2 | `libtiff_lzw-single-strip.tiff` decoded its full output and ended without `EOI`, so the original Requirement 12.8 returned `underrun` (commit `160ed3c`). Requirement 12.8 was then amended, user-approved, as engine Decision Record item 33 ("LZW may end without `EOI` at the exact end of the strip"), which reverses the earlier approval of D8. The file resolves under the amended rule (`c4da045`). |
+| 25 | 3 | 3 | none. `goimage_invalid-palette-ref.tiff` resolves as the design's named risk predicted; it is reported as an unexpected `RESOLVED` under Requirement 19.5. |
+| 26 | 1 | 1 | none |
+| Total | 36 new `RESOLVED`; 61 / 20 | 36; 61 `RESOLVED` / 20 `FAILED` | none in the totals |
+
+Corpus counts from the committed `spike/real_corpus_results.json` (81 rows): in scope 65 (60 `RESOLVED`, 5 `FAILED`), out of scope 16 (15 `FAILED`, 1 `RESOLVED`, `pillow_ossfuzz-4836216264589312.pcx`, by design). Scope diff: 39 files from out to in, none from in to out, as predicted.
+
+### Every mismatch with Pillow
+
+Of the 60 in-scope `RESOLVED` files, 49 match Pillow pixel for pixel. The other 11, each with its cause in its row's note:
+
+- Equal to Pillow after WhiteIsZero inversion (tag 262 = 0; the engine returns stored bytes): `goimage_bw-deflate.tiff`, `goimage_bw-packbits.tiff`, `goimage_bw-uncompressed.tiff`, `libtiff_lzw-single-strip.tiff`, `libtiff_miniswhite-1c-1b.tiff`.
+- Documented scaling differences (Requirement 16.1, the engine uses `v * 255 // maxval`): `libtiff_rgb-3c-16b.ppm`, `pillow_hopper_16bit.pgm`, `pillow_12bit.cropped.tif`.
+- `pillow_rgb32rle.tga`: R, G, B equal; alpha not compared because the file declares none and Pillow reports 255.
+- `pillow_rgba16.tga`: the one recorded `mismatch` (2 of 8 canonical bytes). The 5-bit colour values match; Pillow reads bit 15 as alpha and the engine interprets no channel semantics.
+- `goimage_invalid-palette-ref.tiff`: not comparable, Pillow refuses the file (`UnidentifiedImageError`). Its expectation stays `FAILED` (Requirement 19.5).
+
+### Every open failure
+
+In scope and `FAILED`: five, as predicted.
+
+- `libtiff_deflate-last-strip-extra-data.tiff`: valid, in `OPEN_IN_SCOPE_FAILURES`. The last of 32 strips inflates past its 2000 bytes (`decoder_overrun`), so Principle call 2 fails it.
+- `pillow_cross_scan_line.tga`: valid, in `OPEN_IN_SCOPE_FAILURES` with the user-approved note (row 11).
+- `pillow_cross_scan_line_truncated.tga`, `pillow_01r_00.pcx`, `pillow_p_8.tga`: invalid by construction; `FAILED` is their expectation.
+
+### Process notes
+
+- Task 31 was folded into Task 30 (`e0eeab8`).
+- Follow-up `dd9ae2c` changed the emitted closure line so that the compressed TIFF encodings defer to their own end rules. The `rle_pcx` and `rle_tga` wording is unchanged.
+
+### Open items no task owns
+
+- TIFF palette rendering: ColorMap (tag 320) is not read, so `libtiff_palette-1c-8b.tiff` and `goimage_video-001-paletted.tiff` render grey where Pillow's renders are coloured (`render_pending` in `tests/ui/test_render_vs_pillow.py`). The decoded indices equal Pillow's.
+- 16-bit TGA has no renderer (`no_renderer`: `pillow_la.tga`, `pillow_rgba16.tga`, `pillow_200x32_la_bl_raw.tga`).
+- The "Scope" bullets of the repository README are stale. They still say TGA RLE and compressed TIFF are reported as unsupported, and that multi-strip TIFF and multi-plane PCX are `FAILED`.
+- The emitted specs of uncompressed TIFFs keep the run-length closure line wording.
+- 12-bit TIFF byte order: the spec does not say how 12-bit samples are read in big-endian (MM) files. The only 12-bit file in the corpus is little-endian (II).
