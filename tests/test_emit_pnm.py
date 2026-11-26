@@ -117,7 +117,13 @@ def test_non_pnm_emission_unchanged():
     snap = json.loads((pathlib.Path(__file__).parent / "data"
                        / "non_pnm_emit_sha256.json").read_text(encoding="ascii"))
     assert len(snap) >= 50
+    tiff_pinned = json.loads((pathlib.Path(__file__).parent / "data"
+                              / "tiff_pre_t33_emit_sha256.json").read_text(encoding="ascii"))
     for name, want in snap.items():
+        if name in tiff_pinned:
+            # Requirement 17.3 (Task 33) changes every TIFF requirements.md; those emissions are
+            # pinned, with that change undone, in tests/test_emit_tiff.py.
+            continue
         data = (SAMPLES_DIR / name).read_bytes()
         spec = emit_spec(Engine().run(data), data)
         got = {n: hashlib.sha256(t.encode("utf-8")).hexdigest() for n, t in sorted(spec.files)}

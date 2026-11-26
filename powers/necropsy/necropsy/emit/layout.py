@@ -47,6 +47,7 @@ _TIFF_ENTRIES = (
     ("samples_per_pixel", 277, 1),
     ("strip_byte_count", 279, None),
     ("planar_configuration", 284, 1),
+    ("predictor", 317, 1),   # Requirement 17.3: read and required to equal 1
 )
 
 _TIFF_BITS_ARRAY = {"max_count": 32, "value_field_size": 4, "pointer_fmt": "@I",
@@ -56,7 +57,7 @@ _TIFF_BITS_ARRAY = {"max_count": 32, "value_field_size": 4, "pointer_fmt": "@I",
 def _tiff_entry(name: str, tag: int, default) -> dict:
     # Only the tag-table entries named here carry an array rule or an expected value.
     return {"name": name, "tag": tag, "default": default,
-            "expect": 1 if name == "planar_configuration" else None,
+            "expect": 1 if name in ("planar_configuration", "predictor") else None,
             "array": dict(_TIFF_BITS_ARRAY) if name == "bits_per_sample" else None}
 
 
@@ -234,7 +235,11 @@ def _candidate_layout(cand, slug: str, rejections=(), data_len=None) -> dict:
         out["data"] = {
             "start": "strip_offset",
             "end": {"add": ["strip_offset", "strip_byte_count"]},
-            "encoding": {"field": "compression", "values": {"1": "none"},
+            # Requirement 17.3: the compressions the engine decodes.
+            "encoding": {"field": "compression",
+                         "values": {"1": "none", "32773": "packbits", "5": "lzw_tiff",
+                                    "8": "deflate_zlib", "32946": "deflate_zlib",
+                                    "34925": "lzma_xz"},
                          "otherwise": "unsupported"},
             "trailers": [],
         }

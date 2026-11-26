@@ -86,7 +86,7 @@ def test_reference_reader_passes_emitted_suite_without_skips(name, tmp_path):  #
     assert "skipped" not in out, out
 
 
-def test_mystery_b_requirements_define_rle_pcx_only():  # Req 9.28
+def test_mystery_b_requirements_define_rle_pcx_only():  # Req 9.28, 17.8
     files, _ = _emit("mystery_b")
     req = files["requirements.md"]
     assert "0xC0" in req
@@ -103,7 +103,7 @@ def test_mystery_b_requirements_define_rle_pcx_only():  # Req 9.28
     assert "unsupported" not in req
 
 
-def test_mystery_c_requirements_define_unsupported():  # Req 9.28
+def test_mystery_c_requirements_define_unsupported():  # Req 9.28, 17.8
     files, _ = _emit("mystery_c")
     req = files["requirements.md"]
     unsup = [l for l in req.splitlines()
@@ -194,7 +194,7 @@ def _layout(width, height):
     (b"\x01\xC2\x09", 3, 1, b"\x01\x09\x09"),                # literal then run
     (b"\xC1\xC5", 1, 1, b"\xC5"),                            # run of 1 of 0xC5
 ])
-def test_reference_reader_rle_pcx_ok(region, w, h, pixels):  # Req 9.28
+def test_reference_reader_rle_pcx_ok(region, w, h, pixels):  # Req 9.28, 17.8
     r = rr.parse(_layout(w, h), region)
     assert r["ok"], r
     assert r["pixels"] == pixels
@@ -206,13 +206,13 @@ def test_reference_reader_rle_pcx_ok(region, w, h, pixels):  # Req 9.28
     (b"\x01\x02", 3, 1),                # short output
     (b"\x01\x02\x03\x04", 3, 1),        # unread bytes
 ])
-def test_reference_reader_rle_pcx_errors(region, w, h):  # Req 9.28
+def test_reference_reader_rle_pcx_errors(region, w, h):  # Req 9.28, 17.8
     r = rr.parse(_layout(w, h), region)
     assert r["ok"] is False and r["error"], r
     assert "not supported" not in r["error"], r
 
 
-def test_reference_reader_unsupported_names_declared_value():  # Req 9.28
+def test_reference_reader_unsupported_names_declared_value():  # Req 9.28, 17.8
     lay = _layout(1, 1)
     lay["data"]["encoding"] = {"field": "t", "values": {"1": "none"}, "otherwise": "unsupported"}
     lay["fields"] = [{"name": "t", "offset": 0, "fmt": "<B", "expect": None}]
@@ -220,8 +220,8 @@ def test_reference_reader_unsupported_names_declared_value():  # Req 9.28
     assert r["ok"] is False and "10" in r["error"], r
 
 
-def test_reference_reader_imports_nothing_from_necropsy():  # Req 9.28
+def test_reference_reader_imports_nothing_from_necropsy():  # Req 9.28, 17.8
     src = open(rr.__file__, encoding="utf-8").read()
     assert not re.search(r"^\s*(from|import)\s+necropsy", src, re.M)
     imports = set(re.findall(r"^\s*(?:from|import)\s+(\w+)", src, re.M))
-    assert imports <= {"json", "re", "struct"}, imports
+    assert imports <= {"json", "re", "struct", "zlib", "lzma"}, imports  # Req 17.8: zlib and lzma are allowed

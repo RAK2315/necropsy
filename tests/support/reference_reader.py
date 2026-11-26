@@ -1,11 +1,13 @@
 """Reference reader: a generic interpreter of necropsy-layout/1.
 
-Contains no knowledge of any specific format. Imports only json, re, struct.
+Contains no knowledge of any specific format. Imports only json, lzma, re, struct and zlib.
 Never raises on arbitrary bytes or malformed layouts.
 """
 import json
+import lzma
 import re
 import struct
+import zlib
 
 _FENCE = re.compile(r"^```[ \t]*necropsy-layout[ \t]*\r?\n(.*?)^```[ \t]*\r?$",
                     re.DOTALL | re.MULTILINE)
@@ -267,7 +269,8 @@ def _parse(layout, data):
         enc = enc["values"].get(str(declared), enc.get("otherwise"))
     if not isinstance(enc, str):
         raise _Err("encoding unresolved")
-    if enc not in ("none", "rle_pcx", "rle_tga", "pnm_text"):
+    if enc not in ("none", "rle_pcx", "rle_tga", "pnm_text", "packbits", "lzw_tiff",
+                   "deflate_zlib", "lzma_xz"):
         raise _Err("unsupported encoding %s" % (declared,))
 
     if start < 0 or end < start or end > len(data):
@@ -296,6 +299,14 @@ def _parse(layout, data):
         pixels = _pnm_text(data, start, end, width, height, depth, maxval, expected)
     elif enc == "rle_tga":
         pixels = _rle_tga(data, start, end, expected, -(-depth // 8))
+    elif enc == "packbits":
+        pixels = _packbits(data, start, end, expected)
+    elif enc == "lzw_tiff":
+        pixels = _lzw_tiff(data, start, end, expected)
+    elif enc == "deflate_zlib":
+        pixels = _zlib_stream(data, start, end, expected)
+    elif enc == "lzma_xz":
+        pixels = _xz_stream(data, start, end, expected)
     else:
         pixels = _rle_pcx(data, start, end, expected)
     return {
@@ -447,6 +458,134 @@ def _rle_tga(data, start, end, expected, pixel_bytes):
     return bytes(out)
 
 
+def _packbits(data, start, end, expected):
+    """Decode data[start:end] per the emitted packbits definition (Requirement 17.1)."""
+    out = bytearray()
+    pos = start
+    while len(out) < expected and pos < end:
+        h = data[pos]
+        pos += 1
+        if h == 0x80:
+            continue
+        if h < 0x80:
+            n = h + 1
+            if pos + n > end:
+                raise _Err("region ends inside a packet")
+            if len(out) + n > expected:
+                raise _Err("packet exceeds the expected output")
+            out.extend(data[pos:pos + n])
+            pos += n
+        else:
+            n = 257 - h
+            if pos + 1 > end:
+                raise _Err("region ends inside a packet")
+            if len(out) + n > expected:
+                raise _Err("packet exceeds the expected output")
+            out.extend(data[pos:pos + 1] * n)
+            pos += 1
+    if len(out) < expected:
+        raise _Err("output shorter than expected")
+    if pos < end:
+        raise _Err("unread bytes remain")
+    return bytes(out)
+
+
+def _lzw_tiff(data, start, end, expected):
+    """Decode data[start:end] per the emitted lzw_tiff definition (Requirements 17.1, 12.8).
+
+    Codes are read MSB first. Each entry is checked against `expected` before it is written;
+    a table entry is at most 4094 bytes, so memory stays bounded.
+    """
+    total_bits = (end - start) * 8
+    out = bytearray()
+    table = [bytes((i,)) for i in range(256)] + [b"", b""]   # 258 entries; 256 CLEAR, 257 EOI
+    width = 9
+    prev = None
+    bitpos = 0
+    while True:
+        if total_bits - bitpos < width:
+            left = total_bits - bitpos
+            if len(out) == expected and left < 8:
+                return bytes(out)
+            if len(out) == expected:
+                raise _Err("a whole unread byte remains")
+            raise _Err("region ends before the output is complete")
+        code = 0
+        for _ in range(width):
+            byte = data[start + (bitpos >> 3)]
+            code = (code << 1) | ((byte >> (7 - (bitpos & 7))) & 1)
+            bitpos += 1
+        if code == 257:
+            if len(out) < expected:
+                raise _Err("EOI before the output is complete")
+            if start + (bitpos + 7) // 8 < end:
+                raise _Err("a whole byte follows EOI")
+            return bytes(out)
+        if code == 256:
+            del table[258:]
+            width = 9
+            prev = None
+            continue
+        if prev is None:
+            if code >= 256:
+                raise _Err("first code is not a literal")
+            entry = table[code]
+        elif code < len(table):
+            entry = table[code]
+        elif code == len(table):
+            entry = prev + prev[:1]
+        else:
+            raise _Err("code above the table size")
+        if len(out) + len(entry) > expected:
+            raise _Err("entry exceeds the expected output")
+        out.extend(entry)
+        if prev is not None and len(table) < 4094:
+            table.append(prev + entry[:1])
+            if len(table) == 511:
+                width = 10
+            elif len(table) == 1023:
+                width = 11
+            elif len(table) == 2047:
+                width = 12
+        prev = entry
+
+
+def _zlib_stream(data, start, end, expected):
+    """Inflate data[start:end] as one zlib stream per the emitted deflate_zlib definition."""
+    d = zlib.decompressobj()
+    try:
+        out = d.decompress(bytes(data[start:end]), expected + 1)
+    except zlib.error:
+        raise _Err("invalid zlib stream")
+    if len(out) > expected:
+        raise _Err("output exceeds the expected size")
+    if not d.eof:
+        raise _Err("zlib stream is not complete")
+    if len(out) < expected:
+        raise _Err("output shorter than expected")
+    if d.unused_data:
+        raise _Err("unread bytes remain")
+    return bytes(out)
+
+
+def _xz_stream(data, start, end, expected):
+    """Decompress data[start:end] as one xz stream per the emitted lzma_xz definition."""
+    d = lzma.LZMADecompressor(format=lzma.FORMAT_XZ, memlimit=67108864)
+    try:
+        out = d.decompress(bytes(data[start:end]), expected + 1)
+    except lzma.LZMAError:
+        raise _Err("invalid xz stream")
+    if len(out) > expected:
+        raise _Err("output exceeds the expected size")
+    if not d.eof:
+        raise _Err("xz stream is not complete")
+    if len(out) < expected:
+        raise _Err("output shorter than expected")
+    if d.unused_data:
+        raise _Err("unread bytes remain")
+    return bytes(out)
+
+
 def parse(layout, data):
     try:
         return _parse(layout, bytes(data))
@@ -484,7 +623,7 @@ def make_parser_module(markdown):
             _THIS_SOURCE = fh.read()
     return (
         '"""Generated parser module (reference reader embedded)."""\n'
-        "import json\nimport re\nimport struct\n\n"
+        "import json\nimport lzma\nimport re\nimport struct\nimport zlib\n\n"
         "MARKDOWN = " + repr(markdown) + "\n"
         "_READER_SOURCE = " + repr(_THIS_SOURCE) + "\n"
         "_NS = {'__name__': '_reference_reader', '__file__': __file__}\n"

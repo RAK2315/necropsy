@@ -460,7 +460,7 @@ def test_reference_reader_imports_only_json_re_struct():
             mods.update(a.name.split(".")[0] for a in node.names)
         elif isinstance(node, ast.ImportFrom):
             mods.add((node.module or "").split(".")[0])
-    assert mods == {"json", "re", "struct"}
+    assert mods == {"json", "re", "struct", "zlib", "lzma"}  # Req 17.8: zlib and lzma are allowed (Task 33)
 
 
 def test_reference_reader_reproduces_external_b_from_emitted_requirements():
