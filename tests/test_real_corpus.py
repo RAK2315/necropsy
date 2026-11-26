@@ -113,11 +113,16 @@ TIFF_LZW_RESOLVED = {"goimage_blue-purple-pink.lzwcompressed.tiff", "libtiff_lzw
 BW_DEFLATE = "goimage_bw-deflate.tiff"
 INVALID_PALETTE_REF = "goimage_invalid-palette-ref.tiff"
 TIFF_DEFLATE_RESOLVED = {BW_DEFLATE, "goimage_video-001-paletted.tiff", INVALID_PALETTE_REF}
+# format-coverage Requirement 14.1 to 14.3 and design.md row 26: the LZMA decoder (compression 34925) resolves this one-strip
+# xz TIFF. Its manifest scope is rewritten in Task 37; the full TIFF expectations belong to Task 28. Pixel comparison in
+# tools/real_corpus.py is pending (row carries "not comparable"); checked offline: the decoded 49,152 bytes (128 x 128 x 3)
+# equal both an independent lzma decompression of the strip and Pillow's pixels.
+TIFF_LZMA_RESOLVED = {"pillow_hopper_lzma.tif"}
 OUT_OF_SCOPE = [n for n in FILES if scope_of(n) == "out" and n != OSSFUZZ and n not in TIFF_TILES_RESOLVED
                 and n not in PNM_RESOLVED and n not in PNM_TEXT_RESOLVED and n not in RLE_TGA_RESOLVED
                 and n not in PCX_PLANAR_RESOLVED and n not in TIFF_STRIPS_RESOLVED
                 and n not in TIFF_PACKBITS_RESOLVED and n not in TIFF_LZW_RESOLVED
-                and n not in TIFF_DEFLATE_RESOLVED]
+                and n not in TIFF_DEFLATE_RESOLVED and n not in TIFF_LZMA_RESOLVED]
 
 
 @pytest.mark.parametrize("name", sorted(TIFF_STRIPS_RESOLVED))
@@ -148,6 +153,16 @@ def test_tiff_lzw_files_resolve(name):
 def test_tiff_deflate_files_resolve(name):
     # Requirement 13.1 to 13.6; format-coverage Task 25, design.md row 25.
     assert run(name)[1].status == "RESOLVED"
+
+
+def test_tiff_lzma_file_resolves_with_pillows_pixels():
+    # Requirement 14.1 to 14.3; format-coverage Task 26, design.md row 26. Pillow reads this file (RGB), so compare directly.
+    Image = pytest.importorskip("PIL.Image")
+    data, result = run("pillow_hopper_lzma.tif")
+    assert result.status == "RESOLVED"
+    im = Image.open(rc.REAL / "pillow_hopper_lzma.tif")
+    assert im.mode == "RGB" and im.size == (128, 128)
+    assert result.candidate.decoded == im.tobytes()
 
 
 @pytest.mark.parametrize("name", sorted(PCX_PLANAR_RESOLVED))

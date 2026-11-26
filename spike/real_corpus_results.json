@@ -1998,11 +1998,24 @@
   "scope": "out",
   "scope_reason": "compression LZMA",
   "invalid_by_construction": false,
-  "our_status": "FAILED",
-  "stage": null,
-  "termination": "exhausted",
-  "checks": 3,
-  "candidates": [],
+  "our_status": "RESOLVED",
+  "stage": "probe",
+  "termination": null,
+  "checks": 1,
+  "candidates": [
+   {
+    "width": 128,
+    "height": 128,
+    "bit_depth": 24,
+    "header_size": 8,
+    "row_alignment": 1,
+    "encoding": "tiff_compression_34925",
+    "probe": "tiff",
+    "path": [],
+    "data_start": 8,
+    "data_end": 30432
+   }
+  ],
   "expected_status": "FAILED",
   "note": "",
   "pillow_error": null,
@@ -2012,8 +2025,10 @@
    128,
    128
   ],
-  "pixel_verdicts": [],
-  "pillow_pixels_sha256": null
+  "pixel_verdicts": [
+   "not comparable: encoding tiff_compression_34925 not handled by the comparer"
+  ],
+  "pillow_pixels_sha256": "87ce2dc3eea0549d83beb8013872498a3ce5267acaa22fbd26335ccb680700d5"
  },
  {
   "file": "pillow_hopper_lzw.tif",

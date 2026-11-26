@@ -6,6 +6,8 @@ consumed_to is the index of the first byte not consumed.
 """
 from __future__ import annotations
 
+import lzma
+import lzma
 import zlib
 from dataclasses import dataclass
 from typing import Optional
@@ -155,6 +157,10 @@ def _run_deflate_zlib(data, start, end, h, max_output_bytes) -> DecodeResult:
     return deflate_zlib_decode(data, start, end, max_output_bytes)
 
 
+def _run_lzma_xz(data, start, end, h, max_output_bytes) -> DecodeResult:
+    return lzma_xz_decode(data, start, end, max_output_bytes)
+
+
 DECODERS = {
     "pnm_text": _run_pnm_text,
     "rle_tga": _run_rle_tga,
@@ -162,6 +168,7 @@ DECODERS = {
     "tiff_compression_5": _run_lzw_tiff,
     "tiff_compression_8": _run_deflate_zlib,
     "tiff_compression_32946": _run_deflate_zlib,
+    "tiff_compression_34925": _run_lzma_xz,
 }
 
 # Requirement 2.12: decoder state -> closure rejection reason.
@@ -409,4 +416,49 @@ def _deflate_zlib_decode(data, start, end, max_output_bytes) -> DecodeResult:
         return _fail("underrun", stream_end, "output is %d bytes, expected %d" % (len(out), max_output_bytes))
     if d.unused_data:
         return _fail("unconsumed", stream_end, "%d bytes remain after the zlib stream" % len(d.unused_data))
+    return DecodeResult("ok", out, end, "")
+
+
+# Requirement 14.2: the memory limit of the xz decompressor (64 MiB).
+LZMA_MEMLIMIT = 64 * 1024 * 1024
+
+
+def lzma_xz_decode(data, start, end, max_output_bytes) -> DecodeResult:
+    """Decompress an xz stream (TIFF Compression 34925) in data[start:end]. Never raises.
+
+    One LZMADecompressor (FORMAT_XZ, memlimit 64 MiB), called once with max_length = max_output_bytes + 1
+    (Requirement 14.2). States follow Requirements 14.3 and 14.4. The decompressor keeps unread input
+    internally, so an overrun reports consumed_to = end.
+    """
+    try:
+        return _lzma_xz_decode(data, start, end, max_output_bytes)
+    except Exception as exc:  # last line of defence; inner code is written not to raise
+        return _fail("underrun", start if isinstance(start, int) else 0, "internal error: " + type(exc).__name__)
+
+
+def _lzma_xz_decode(data, start, end, max_output_bytes) -> DecodeResult:
+    for v in (start, end, max_output_bytes):
+        if not isinstance(v, int) or isinstance(v, bool):
+            return _fail("underrun", 0, "non-integer argument")
+    if start < 0 or end > len(data) or start > end or max_output_bytes < 0:
+        return _fail("underrun", start, "invalid arguments")
+
+    d = lzma.LZMADecompressor(format=lzma.FORMAT_XZ, memlimit=LZMA_MEMLIMIT)
+    try:
+        out = d.decompress(bytes(data[start:end]), max_output_bytes + 1)  # max_length >= 1: never "unlimited"
+    except lzma.LZMAError as exc:
+        text = str(exc)
+        if "memory" in text.lower():
+            return _fail("malformed", start, "lzma stream needs more than the %d byte memory limit" % LZMA_MEMLIMIT)
+        return _fail("malformed", start, "lzma error: %s" % text)
+
+    if len(out) > max_output_bytes:
+        return _fail("overrun", end, "stream decompresses past %d bytes" % max_output_bytes)
+    if not d.eof:
+        return _fail("underrun", end, "xz stream is not complete after %d bytes of output" % len(out))
+    stream_end = end - len(d.unused_data)
+    if len(out) < max_output_bytes:
+        return _fail("underrun", stream_end, "output is %d bytes, expected %d" % (len(out), max_output_bytes))
+    if d.unused_data:
+        return _fail("unconsumed", stream_end, "%d bytes remain after the xz stream" % len(d.unused_data))
     return DecodeResult("ok", out, end, "")

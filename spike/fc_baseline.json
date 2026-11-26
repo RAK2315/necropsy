@@ -1302,9 +1302,25 @@
   "termination": "exhausted"
  },
  "real/pillow_hopper_lzma.tif": {
-  "candidates": [],
-  "status": "FAILED",
-  "termination": "exhausted"
+  "candidates": [
+   {
+    "key": [
+     128,
+     128,
+     24,
+     8,
+     1,
+     "tiff_compression_34925",
+     30432
+    ],
+    "region": [
+     8,
+     30432
+    ]
+   }
+  ],
+  "status": "RESOLVED",
+  "termination": null
  },
  "real/pillow_hopper_lzw.tif": {
   "candidates": [],

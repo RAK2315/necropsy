@@ -647,3 +647,112 @@ def test_deflate_never_raises(data, cap):
 def test_deflate_never_raises_on_arbitrary_range(data, s, e):
     r = deflate_zlib_decode(data, s, e, 8)
     assert isinstance(r, DecodeResult) and r.status in STATUSES
+
+
+# ---- lzma_xz_decode (format-coverage Requirement 14, Task 26) ----
+import lzma  # noqa: E402
+
+from necropsy.engine.decoders import lzma_xz_decode  # noqa: E402
+
+
+def lz(body, out, start=0, end=None):
+    return lzma_xz_decode(body, start, len(body) if end is None else end, out)
+
+
+def test_lzma_exact_stream_is_ok():  # Req 14.3
+    data = b"abcabcabc" * 20
+    enc = lzma.compress(data)
+    assert enc[:6] == b"\xfd7zXZ\x00"  # xz magic (Req 14.2)
+    r = lz(enc, len(data))
+    assert (r.status, r.data, r.consumed_to) == ("ok", data, len(enc))
+
+
+def test_lzma_trailing_bytes_are_unconsumed():  # Req 14.3
+    enc = lzma.compress(b"hello world")
+    r = lz(enc + b"\x00\x01", 11)
+    assert (r.status, r.data, r.consumed_to) == ("unconsumed", None, len(enc))
+
+
+def test_lzma_corrupt_stream_is_malformed_at_start():  # Req 14.3
+    enc = bytearray(lzma.compress(b"hello world"))
+    enc[-8] ^= 0xFF  # inside the index/footer
+    r = lz(b"zz" + bytes(enc), 11, start=2)
+    assert (r.status, r.data, r.consumed_to) == ("malformed", None, 2)
+    assert r.detail
+
+
+def test_lzma_not_an_xz_stream_is_malformed():  # D11: xz only
+    assert lz(bytes(range(32)), 4).status == "malformed"  # 32 bytes: past the 12-byte stream header
+    assert lz(lzma.compress(b"abc", format=lzma.FORMAT_ALONE), 3).status == "malformed"
+
+
+def test_lzma_truncated_stream_is_underrun_at_end():  # Req 14.3
+    enc = lzma.compress(bytes(range(256)) * 4)[:-10]
+    r = lz(enc, 1024)
+    assert (r.status, r.data, r.consumed_to) == ("underrun", None, len(enc))
+
+
+def test_lzma_short_output_is_underrun_after_the_stream():  # Req 14.3
+    enc = lzma.compress(b"abc")
+    r = lz(enc + b"xy", 10)
+    assert (r.status, r.consumed_to) == ("underrun", len(enc))
+
+
+def test_lzma_one_byte_too_long_is_overrun_without_output():  # Req 14.3
+    r = lz(lzma.compress(b"abcd"), 3)
+    assert r.status == "overrun" and r.data is None
+
+
+def test_lzma_honours_start_and_end_and_invalid_arguments():
+    enc = lzma.compress(b"xyz")
+    r = lz(b"zz" + enc + b"yy", 3, start=2, end=2 + len(enc))
+    assert (r.status, r.data, r.consumed_to) == ("ok", b"xyz", 2 + len(enc))
+    assert lz(enc, 3, start=5, end=len(enc) + 5).status == "underrun"
+    assert lzma_xz_decode(enc, 0, len(enc), -1).status == "underrun"
+
+
+def test_lzma_dictionary_above_memory_limit_is_malformed_naming_the_limit():  # Req 14.4
+    import tracemalloc
+    filters = [{"id": lzma.FILTER_LZMA2, "dict_size": 128 * 1024 * 1024, "preset": 0}]
+    enc = lzma.compress(b"abc" * 10, format=lzma.FORMAT_XZ, filters=filters)
+    tracemalloc.start()
+    try:
+        r = lz(enc, 30)
+        _, peak = tracemalloc.get_traced_memory()
+    finally:
+        tracemalloc.stop()
+    assert (r.status, r.data, r.consumed_to) == ("malformed", None, 0)
+    assert str(64 * 1024 * 1024) in r.detail
+    assert peak < 4 * 1024 * 1024
+
+
+def test_lzma_bomb_is_bounded_by_max_output_bytes():  # Req 14.2, 14.3, 15.4
+    import tracemalloc
+    bomb = lzma.compress(bytes(64 * 1024 * 1024), preset=1)  # 64 MiB of zeros in a few KB; preset 1 = 1 MiB dictionary (the decoder's own window)
+    assert len(bomb) < 1024 * 1024
+    tracemalloc.start()
+    try:
+        r = lz(bomb, 1000)
+        _, peak = tracemalloc.get_traced_memory()
+    finally:
+        tracemalloc.stop()
+    assert r.status == "overrun" and r.data is None
+    assert peak < 4 * 1024 * 1024  # never close to the 64 MiB the stream declares
+
+
+@given(st.binary(max_size=300), st.integers(-5, 5000))
+@settings(max_examples=200, deadline=None)
+def test_lzma_never_raises(data, cap):
+    r = lzma_xz_decode(data, 0, len(data), cap)
+    assert isinstance(r, DecodeResult) and r.status in STATUSES
+    if r.status == "ok":
+        assert len(r.data) == cap
+    else:
+        assert r.data is None
+
+
+@given(st.binary(max_size=64), st.integers(-10, 100), st.integers(-10, 100))
+@settings(max_examples=200, deadline=None)
+def test_lzma_never_raises_on_arbitrary_range(data, s, e):
+    r = lzma_xz_decode(data, s, e, 8)
+    assert isinstance(r, DecodeResult) and r.status in STATUSES
