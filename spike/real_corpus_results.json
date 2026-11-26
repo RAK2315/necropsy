@@ -852,11 +852,24 @@
   "scope": "out",
   "scope_reason": "compression LZW",
   "invalid_by_construction": false,
-  "our_status": "FAILED",
-  "stage": null,
-  "termination": "exhausted",
-  "checks": 3,
-  "candidates": [],
+  "our_status": "RESOLVED",
+  "stage": "probe",
+  "termination": null,
+  "checks": 1,
+  "candidates": [
+   {
+    "width": 7795,
+    "height": 3122,
+    "bit_depth": 1,
+    "header_size": 222,
+    "row_alignment": 1,
+    "encoding": "tiff_compression_5",
+    "probe": "tiff",
+    "path": [],
+    "data_start": 222,
+    "data_end": 76264
+   }
+  ],
   "expected_status": "FAILED",
   "note": "",
   "pillow_error": null,
@@ -866,8 +879,10 @@
    7795,
    3122
   ],
-  "pixel_verdicts": [],
-  "pillow_pixels_sha256": null
+  "pixel_verdicts": [
+   "not comparable: encoding tiff_compression_5 not handled by the comparer"
+  ],
+  "pillow_pixels_sha256": "0653bfcac51c01c8e48dc1695402e9700e1366bf51418f2b91dcf57a95db30ed"
  },
  {
   "file": "libtiff_minisblack-1c-8b.pgm",

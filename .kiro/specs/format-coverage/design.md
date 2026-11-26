@@ -125,9 +125,9 @@ The hypothesis encoding for TIFF stays `tiff_compression_<n>`, so every existing
 
 | State | pnm_text | rle_tga, packbits | lzw_tiff | deflate_zlib, lzma_xz |
 |---|---|---|---|---|
-| ok | `end` | `end` | `end` (EOI read, output full, `start + ceil(bits/8) = end`) | `end` |
+| ok | `end` | `end` | `end` (output full and either EOI read with `start + ceil(bits/8) = end`, or the strip ends with fewer than 8 bits and fewer than one code left) | `end` |
 | overrun | index after the number whose write would exceed the bound | index after the packet's last byte | index after the byte holding the code's last bit | `end − len(unconsumed_tail)` |
-| underrun | region ended before `N` numbers: `end` | region ended in a packet or before the output was full: `end` | region ended before EOI: `end`; EOI with short output: index after the byte holding the `EOI`'s last bit | stream incomplete or short: `end − len(unused_data)` when it ended, else `end` |
+| underrun | region ended before `N` numbers: `end` | region ended in a packet or before the output was full: `end` | region ended with the output short, EOI or not: `end`; EOI with short output: index after the byte holding the `EOI`'s last bit | stream incomplete or short: `end − len(unused_data)` when it ended, else `end` |
 | malformed | non-digit P2/P3 number, or a P1 byte that is not `0`, `1`, whitespace or comment: that byte's index | none (these formats have no meaningless packet) | a code above the table, or a first code that is neither `CLEAR` nor a literal: index after the byte holding its last bit | corrupt stream, or an `lzma` dictionary above the memory limit: `start` |
 | above_maxval | index after the number (P1: the digit) above `maxval`; detail names offset, value, maximum | none | none | none |
 | unconsumed | first byte of the first stray token | first leftover byte | `start + ceil(bits/8)` when `< end` | `end − len(unused_data)` |
@@ -136,7 +136,7 @@ Closure maps states to reasons: `overrun` to `decoder_overrun`, `underrun` to `d
 
 Invalid arguments (`start < 0`, `end > len(data)`, `start > end`, `max_output_bytes < 0`): `underrun`, `consumed_to = start`, for every decoder.
 
-LZW end rule, exactly: let `bits` be the sum of the widths of all codes read, including the `EOI`. The stream's last byte is byte `start + ceil(bits / 8) − 1`. Bits after the `EOI` inside that byte are padding. If that byte is `end − 1` the strip is consumed. If more bytes follow, at least one whole byte is unread and the result is `unconsumed`. If the region has no `EOI` before it runs out of bits, the result is `underrun`.
+LZW end rule, exactly: let `bits` be the sum of the widths of all codes read, including the `EOI`. The stream's last byte is byte `start + ceil(bits / 8) − 1`. Bits after the `EOI` inside that byte are padding. If that byte is `end − 1` the strip is consumed. If more bytes follow, at least one whole byte is unread and the result is `unconsumed`. If the region runs out of bits with no `EOI`, the result is `ok` when exactly `max_output_bytes` are written and the bits left are fewer than the current code width and fewer than 8 (Requirement 12.8 b); `unconsumed` when the output is full and a whole byte is left; `underrun` when the output is short.
 
 ### Algorithms, in outline
 
@@ -249,7 +249,7 @@ The list below is the prediction made from header bytes before any code exists. 
 | 21 | `pillow_tiff_tiled_raw.tif` (1) |
 | 22 | none in status. The four Predictor 2 files (`goimage_video-001-strip-64.tiff`, `goimage_video-001-tile-64x64.tiff`, `pillow_hopper_lzw.tif`, `pillow_tiff_adobe_deflate.tif`) keep FAILED and gain the rejection that names tag 317 and the value. |
 | 23 | `goimage_bw-packbits.tiff` (1) |
-| 24 | `goimage_blue-purple-pink.lzwcompressed.tiff`, `libtiff_lzw-single-strip.tiff` (2). `pillow_hopper_lzw.tif` stays FAILED (Predictor 2). |
+| 24 | `goimage_blue-purple-pink.lzwcompressed.tiff`, `libtiff_lzw-single-strip.tiff` (2; the second ends without `EOI` and resolves under Requirement 12.8 b, measured 26 Nov 2026). `pillow_hopper_lzw.tif` stays FAILED (Predictor 2). |
 | 25 | `goimage_bw-deflate.tiff`, `goimage_video-001-paletted.tiff`, `goimage_invalid-palette-ref.tiff` (3). `libtiff_deflate-last-strip-extra-data.tiff` stays FAILED (Principle call 2). |
 | 26 | `pillow_hopper_lzma.tif` (1) |
 
@@ -278,7 +278,7 @@ D6. **A disjointness rule between ranges.** Two units cannot own the same byte. 
 
 D7. **Predictor refusal by encoding name and by a probe rejection.** The encoding name sends the hypothesis to the existing `unsupported_encoding` path, so it can never reach a decoder. The probe rejection puts the tag and value in front of the reader.
 
-D8. **LZW requires `EOI`.** A strip that ends without it is `underrun`. The TIFF specification requires the code, and accepting its absence is a tolerance that Principle call 2 rules out.
+D8. **LZW may end without `EOI` at the exact end.** Reversed 26 Nov 2026 (engine Decision Record item 33). Principle call 2 asks for exact output and an end exactly at the declared end. A strip that meets both without `EOI` (output full, fewer bits left than one code, no whole byte) is `ok`, because requiring `EOI` is an encoder convention the file does not declare. Output full with a whole byte left is still `unconsumed`; a short output is still `underrun`.
 
 D9. **`DECODE_CAP` is 8 MiB.** It is below the largest corpus strip with room to spare (3 MB) and bounds both memory and the time of the pure-Python decoders. Requirement 15.3 measures the worst case and lowers the cap if the measure exceeds 2 seconds.
 

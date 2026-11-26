@@ -22,7 +22,8 @@ NOT_SAMPLES = {"README.md", "manifest.json", ".gitattributes", "source.ppm"}
 NO_PHOTOMETRIC = "no photometric interpretation declared; shown as BlackIsZero (0 = black)"
 
 # name: (kind, reason). Kinds: "pillow_fails" (Pillow cannot decode the file), "no_renderer" (Requirement 3.9),
-# "inverted_by_convention" (the file declares nothing; the two readers chose opposite conventions, and ours says so).
+# "inverted_by_convention" (the file declares nothing; the two readers chose opposite conventions, and ours says so),
+# "payload_limit" (the image is above the render's pixel budget, so nothing is rendered).
 EXCEPTIONS = {
     "mystery_e": ("inverted_by_convention",
                   "declares no photometric interpretation: Pillow assumes WhiteIsZero, the render shows BlackIsZero and its "
@@ -47,6 +48,10 @@ EXCEPTIONS = {
     # convert("RGB") clips to 255. The file's samples are all 30 or less, so ours is near black and Pillow's is v itself.
     "pillow_12bit.cropped.tif": ("tiff12_pillow_clips", "Pillow's I;16 clips to 255 on convert('RGB'); Requirement 16.1 "
                                                         "requires v * 255 // 4095"),
+    # Requirement 12.8 (b): resolved since the LZW end rule was amended. 7795 x 3122 is 24.3 million pixels, above the
+    # 500,000 pixel budget (Requirement 2.9), so the service sends no image. The engine's decoded bytes were compared with
+    # Pillow's offline (26 Nov 2026: all 24,335,990 pixels equal).
+    "libtiff_lzw-single-strip.tiff": ("payload_limit", "24.3 million pixels exceed the render's pixel budget (Requirement 2.9)"),
     "libtiff_palette-1c-8b.tiff": ("render_pending", "palette TIFF: ColorMap (tag 320) is not read, so the render is grey "
                                                       "where Pillow's is coloured"),
 }
@@ -99,6 +104,9 @@ def test_render_matches_pillow(path):
     if kind == "render_pending":
         # Fails once the render matches Pillow, which is the cue to remove the exception.
         assert "data_b64" not in render or _rgb(render) != _pillow(data).tobytes(), reason
+        return
+    if kind == "payload_limit":
+        assert render.get("failure") == "not rendered: payload limit", reason
         return
     if kind == "no_renderer":
         assert render.get("failure", "").startswith("no renderer for"), reason

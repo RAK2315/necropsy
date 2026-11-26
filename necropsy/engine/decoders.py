@@ -283,8 +283,9 @@ _LZW_BYTES = tuple(bytes((i,)) for i in range(256))
 def lzw_tiff_decode(data, start, end, max_output_bytes) -> DecodeResult:
     """Decode TIFF 6.0 LZW (Compression 5) in data[start:end]. Never raises.
 
-    The stream ends only at an EOI code. consumed_to after EOI is start + ceil(bits_read / 8);
-    the padding bits of the last byte are not leftover bytes (Requirement 12.9).
+    The stream ends at an EOI code, or (Requirement 12.8 b) at the end of the strip with exactly
+    max_output_bytes written and fewer bits left than one code and no whole byte. consumed_to after EOI is
+    start + ceil(bits_read / 8); the padding bits of the last byte are not leftover bytes (Requirement 12.9).
     """
     try:
         return _lzw_tiff_decode(data, start, end, max_output_bytes)
@@ -310,7 +311,15 @@ def _lzw_tiff_decode(data, start, end, max_output_bytes) -> DecodeResult:
     next_byte = start
 
     while True:
-        if total_bits - pos < width:
+        left = total_bits - pos
+        if left < width:
+            if len(out) == max_output_bytes:
+                # Requirement 12.8 (b): the strip ends with the output exactly full. Fewer bits than one code
+                # are left; if they do not hold a whole byte the strip is consumed, otherwise that byte is unread.
+                if left < 8:
+                    return DecodeResult("ok", bytes(out), end, "")
+                return _fail("unconsumed", start + (pos + 7) // 8,
+                             "%d bits remain after the output is full" % left)
             return _fail("underrun", end, "region ended before EOI after %d bytes of output" % len(out))
         while acc_bits < width:
             acc = (acc << 8) | data[next_byte]

@@ -394,6 +394,31 @@ def test_lzw_one_extra_byte_after_eoi_is_unconsumed():  # Req 12.9, 12.10
     assert (r.status, r.consumed_to) == ("unconsumed", len(enc))
 
 
+def no_eoi_stream(data):
+    """CLEAR then one literal code per byte (9 bits each, no table reuse), and no EOI."""
+    return pack_codes([(CLEAR, 9)] + [(b, 9) for b in data])
+
+
+def test_lzw_no_eoi_stream_that_ends_exactly_is_ok():  # Req 12.8 (b)
+    for data in (b"hello", b"abcdefg"):  # 54 bits (2 padding bits) and 72 bits (none)
+        enc = no_eoi_stream(data)
+        r = lzw(enc, len(data))
+        assert (r.status, r.data, r.consumed_to) == ("ok", data, len(enc))
+
+
+def test_lzw_no_eoi_with_one_whole_extra_byte_is_unconsumed():  # Req 12.8
+    enc = no_eoi_stream(b"abcdefg")  # exactly 72 bits
+    assert len(enc) == 9
+    r = lzw(enc + b"\x00", 7)
+    assert (r.status, r.data, r.consumed_to) == ("unconsumed", None, len(enc))
+
+
+def test_lzw_no_eoi_one_byte_short_is_underrun():  # Req 12.8
+    enc = no_eoi_stream(b"abcdefg")[:-1]
+    r = lzw(enc, 7)
+    assert (r.status, r.data, r.consumed_to) == ("underrun", None, len(enc))
+
+
 def test_lzw_padding_bits_in_the_last_byte_are_not_leftover():  # Req 12.9
     enc = pack_codes([(CLEAR, 9), (97, 9), (EOI, 9)])  # 27 bits, 5 padding bits
     assert len(enc) == 4
@@ -402,8 +427,10 @@ def test_lzw_padding_bits_in_the_last_byte_are_not_leftover():  # Req 12.9
 
 
 def test_lzw_cut_before_eoi_is_underrun_at_end():  # Req 12.8
+    # Cut before EOI with the output still short (needs 2 bytes, holds 1): underrun. With 1 byte wanted this stream
+    # would end exactly and be ok under Requirement 12.8 (b); test_lzw_no_eoi_stream_that_ends_exactly_is_ok.
     enc = pack_codes([(CLEAR, 9), (97, 9), (EOI, 9)])[:-1]
-    r = lzw(enc, 1)
+    r = lzw(enc, 2)
     assert (r.status, r.consumed_to) == ("underrun", len(enc))
 
 

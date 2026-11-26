@@ -500,9 +500,25 @@
   "termination": "exhausted"
  },
  "real/libtiff_lzw-single-strip.tiff": {
-  "candidates": [],
-  "status": "FAILED",
-  "termination": "exhausted"
+  "candidates": [
+   {
+    "key": [
+     7795,
+     3122,
+     1,
+     222,
+     1,
+     "tiff_compression_5",
+     76264
+    ],
+    "region": [
+     222,
+     76264
+    ]
+   }
+  ],
+  "status": "RESOLVED",
+  "termination": null
  },
  "real/libtiff_minisblack-1c-8b.pgm": {
   "candidates": [
