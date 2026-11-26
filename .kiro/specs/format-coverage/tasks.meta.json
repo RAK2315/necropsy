@@ -1,0 +1,705 @@
+{
+  "pbtResults": {},
+  "executionHistory": {
+    "1. Decision Record items 28 to 32, and the diff tool": [
+      {
+        "executionId": "4bd283d5-6d64-4279-a208-554bda916abb",
+        "chatSessionId": "sess_3a109660-832d-42cb-bacd-b9bbb8d9a978",
+        "timestamp": 1795624097693
+      },
+      {
+        "executionId": "4bd283d5-6d64-4279-a208-554bda916abb",
+        "chatSessionId": "sess_3a109660-832d-42cb-bacd-b9bbb8d9a978",
+        "timestamp": 1795624109970
+      },
+      {
+        "executionId": "4bd283d5-6d64-4279-a208-554bda916abb",
+        "chatSessionId": "sess_3a109660-832d-42cb-bacd-b9bbb8d9a978",
+        "timestamp": 1795625311900
+      }
+    ],
+    "2. Data model: optional hypothesis fields, key, stride helper": [
+      {
+        "executionId": "4bd283d5-6d64-4279-a208-554bda916abb",
+        "chatSessionId": "sess_3a109660-832d-42cb-bacd-b9bbb8d9a978",
+        "timestamp": 1795624097776
+      },
+      {
+        "executionId": "4bd283d5-6d64-4279-a208-554bda916abb",
+        "chatSessionId": "sess_3a109660-832d-42cb-bacd-b9bbb8d9a978",
+        "timestamp": 1795625317781
+      },
+      {
+        "executionId": "72545959-7c61-4c33-a093-79ea0a89acb5",
+        "chatSessionId": "sess_3a109660-832d-42cb-bacd-b9bbb8d9a978",
+        "timestamp": 1795626480422
+      }
+    ],
+    "3. Closure rule: samples above the declared maximum (PNM binary)": [
+      {
+        "executionId": "4bd283d5-6d64-4279-a208-554bda916abb",
+        "chatSessionId": "sess_3a109660-832d-42cb-bacd-b9bbb8d9a978",
+        "timestamp": 1795624097844
+      },
+      {
+        "executionId": "72545959-7c61-4c33-a093-79ea0a89acb5",
+        "chatSessionId": "sess_3a109660-832d-42cb-bacd-b9bbb8d9a978",
+        "timestamp": 1795626493551
+      },
+      {
+        "executionId": "72545959-7c61-4c33-a093-79ea0a89acb5",
+        "chatSessionId": "sess_3a109660-832d-42cb-bacd-b9bbb8d9a978",
+        "timestamp": 1795627409754
+      }
+    ],
+    "4. PNM probe, binary (P5, P6)": [
+      {
+        "executionId": "4bd283d5-6d64-4279-a208-554bda916abb",
+        "chatSessionId": "sess_3a109660-832d-42cb-bacd-b9bbb8d9a978",
+        "timestamp": 1795624097927
+      },
+      {
+        "executionId": "72545959-7c61-4c33-a093-79ea0a89acb5",
+        "chatSessionId": "sess_3a109660-832d-42cb-bacd-b9bbb8d9a978",
+        "timestamp": 1795627412755
+      },
+      {
+        "executionId": "72545959-7c61-4c33-a093-79ea0a89acb5",
+        "chatSessionId": "sess_3a109660-832d-42cb-bacd-b9bbb8d9a978",
+        "timestamp": 1795628014126
+      }
+    ],
+    "5. Render PNM grey and RGB, 8 and 16 bit": [
+      {
+        "executionId": "4bd283d5-6d64-4279-a208-554bda916abb",
+        "chatSessionId": "sess_3a109660-832d-42cb-bacd-b9bbb8d9a978",
+        "timestamp": 1795624097994
+      },
+      {
+        "executionId": "72545959-7c61-4c33-a093-79ea0a89acb5",
+        "chatSessionId": "sess_3a109660-832d-42cb-bacd-b9bbb8d9a978",
+        "timestamp": 1795628019691
+      },
+      {
+        "executionId": "72545959-7c61-4c33-a093-79ea0a89acb5",
+        "chatSessionId": "sess_3a109660-832d-42cb-bacd-b9bbb8d9a978",
+        "timestamp": 1795628146407
+      }
+    ],
+    "6. Decoder: `pnm_text`": [
+      {
+        "executionId": "4bd283d5-6d64-4279-a208-554bda916abb",
+        "chatSessionId": "sess_3a109660-832d-42cb-bacd-b9bbb8d9a978",
+        "timestamp": 1795624098044
+      },
+      {
+        "executionId": "72545959-7c61-4c33-a093-79ea0a89acb5",
+        "chatSessionId": "sess_3a109660-832d-42cb-bacd-b9bbb8d9a978",
+        "timestamp": 1795628151404
+      },
+      {
+        "executionId": "72545959-7c61-4c33-a093-79ea0a89acb5",
+        "chatSessionId": "sess_3a109660-832d-42cb-bacd-b9bbb8d9a978",
+        "timestamp": 1795628287910
+      }
+    ],
+    "7. Closure rule: decoder dispatch and the decode cap": [
+      {
+        "executionId": "4bd283d5-6d64-4279-a208-554bda916abb",
+        "chatSessionId": "sess_3a109660-832d-42cb-bacd-b9bbb8d9a978",
+        "timestamp": 1795624098091
+      },
+      {
+        "executionId": "72545959-7c61-4c33-a093-79ea0a89acb5",
+        "chatSessionId": "sess_3a109660-832d-42cb-bacd-b9bbb8d9a978",
+        "timestamp": 1795628292761
+      },
+      {
+        "executionId": "72545959-7c61-4c33-a093-79ea0a89acb5",
+        "chatSessionId": "sess_3a109660-832d-42cb-bacd-b9bbb8d9a978",
+        "timestamp": 1795628532961
+      }
+    ],
+    "8. PNM probe, text (P1, P2, P3)": [
+      {
+        "executionId": "4bd283d5-6d64-4279-a208-554bda916abb",
+        "chatSessionId": "sess_3a109660-832d-42cb-bacd-b9bbb8d9a978",
+        "timestamp": 1795624098144
+      },
+      {
+        "executionId": "72545959-7c61-4c33-a093-79ea0a89acb5",
+        "chatSessionId": "sess_3a109660-832d-42cb-bacd-b9bbb8d9a978",
+        "timestamp": 1795628538662
+      },
+      {
+        "executionId": "72545959-7c61-4c33-a093-79ea0a89acb5",
+        "chatSessionId": "sess_3a109660-832d-42cb-bacd-b9bbb8d9a978",
+        "timestamp": 1795630283678
+      }
+    ],
+    "9. Render plain-text PNM": [
+      {
+        "executionId": "4bd283d5-6d64-4279-a208-554bda916abb",
+        "chatSessionId": "sess_3a109660-832d-42cb-bacd-b9bbb8d9a978",
+        "timestamp": 1795624098200
+      },
+      {
+        "executionId": "72545959-7c61-4c33-a093-79ea0a89acb5",
+        "chatSessionId": "sess_3a109660-832d-42cb-bacd-b9bbb8d9a978",
+        "timestamp": 1795630287189
+      },
+      {
+        "executionId": "72545959-7c61-4c33-a093-79ea0a89acb5",
+        "chatSessionId": "sess_3a109660-832d-42cb-bacd-b9bbb8d9a978",
+        "timestamp": 1795630380657
+      }
+    ],
+    "10. Decoder: `rle_tga`": [
+      {
+        "executionId": "4bd283d5-6d64-4279-a208-554bda916abb",
+        "chatSessionId": "sess_3a109660-832d-42cb-bacd-b9bbb8d9a978",
+        "timestamp": 1795624098271
+      },
+      {
+        "executionId": "72545959-7c61-4c33-a093-79ea0a89acb5",
+        "chatSessionId": "sess_3a109660-832d-42cb-bacd-b9bbb8d9a978",
+        "timestamp": 1795630383884
+      },
+      {
+        "executionId": "72545959-7c61-4c33-a093-79ea0a89acb5",
+        "chatSessionId": "sess_3a109660-832d-42cb-bacd-b9bbb8d9a978",
+        "timestamp": 1795630573894
+      }
+    ],
+    "11. Closure rule: register `rle_tga`": [
+      {
+        "executionId": "4bd283d5-6d64-4279-a208-554bda916abb",
+        "chatSessionId": "sess_3a109660-832d-42cb-bacd-b9bbb8d9a978",
+        "timestamp": 1795624098335
+      },
+      {
+        "executionId": "72545959-7c61-4c33-a093-79ea0a89acb5",
+        "chatSessionId": "sess_3a109660-832d-42cb-bacd-b9bbb8d9a978",
+        "timestamp": 1795630578434
+      },
+      {
+        "executionId": "fb8d49a2-bdb9-4516-ab82-959cd31044c5",
+        "chatSessionId": "sess_3a109660-832d-42cb-bacd-b9bbb8d9a978",
+        "timestamp": 1795631353811
+      }
+    ],
+    "12. Expectations: RLE TGA is now decoded": [
+      {
+        "executionId": "4bd283d5-6d64-4279-a208-554bda916abb",
+        "chatSessionId": "sess_3a109660-832d-42cb-bacd-b9bbb8d9a978",
+        "timestamp": 1795624098411
+      },
+      {
+        "executionId": "fb8d49a2-bdb9-4516-ab82-959cd31044c5",
+        "chatSessionId": "sess_3a109660-832d-42cb-bacd-b9bbb8d9a978",
+        "timestamp": 1795631361303
+      },
+      {
+        "executionId": "fb8d49a2-bdb9-4516-ab82-959cd31044c5",
+        "chatSessionId": "sess_3a109660-832d-42cb-bacd-b9bbb8d9a978",
+        "timestamp": 1795633005917
+      }
+    ],
+    "13. Closure rule: declared row bytes and planes": [
+      {
+        "executionId": "4bd283d5-6d64-4279-a208-554bda916abb",
+        "chatSessionId": "sess_3a109660-832d-42cb-bacd-b9bbb8d9a978",
+        "timestamp": 1795624098469
+      },
+      {
+        "executionId": "fb8d49a2-bdb9-4516-ab82-959cd31044c5",
+        "chatSessionId": "sess_3a109660-832d-42cb-bacd-b9bbb8d9a978",
+        "timestamp": 1795633012638
+      },
+      {
+        "executionId": "fb8d49a2-bdb9-4516-ab82-959cd31044c5",
+        "chatSessionId": "sess_3a109660-832d-42cb-bacd-b9bbb8d9a978",
+        "timestamp": 1795633160996
+      }
+    ],
+    "14. Strategy guard: no padding variants for declared row bytes": [
+      {
+        "executionId": "4bd283d5-6d64-4279-a208-554bda916abb",
+        "chatSessionId": "sess_3a109660-832d-42cb-bacd-b9bbb8d9a978",
+        "timestamp": 1795624098528
+      },
+      {
+        "executionId": "fb8d49a2-bdb9-4516-ab82-959cd31044c5",
+        "chatSessionId": "sess_3a109660-832d-42cb-bacd-b9bbb8d9a978",
+        "timestamp": 1795633167461
+      },
+      {
+        "executionId": "fb8d49a2-bdb9-4516-ab82-959cd31044c5",
+        "chatSessionId": "sess_3a109660-832d-42cb-bacd-b9bbb8d9a978",
+        "timestamp": 1795633254246
+      }
+    ],
+    "15. PCX probe: multi-plane seed": [
+      {
+        "executionId": "4bd283d5-6d64-4279-a208-554bda916abb",
+        "chatSessionId": "sess_3a109660-832d-42cb-bacd-b9bbb8d9a978",
+        "timestamp": 1795624098586
+      },
+      {
+        "executionId": "fb8d49a2-bdb9-4516-ab82-959cd31044c5",
+        "chatSessionId": "sess_3a109660-832d-42cb-bacd-b9bbb8d9a978",
+        "timestamp": 1795633261326
+      },
+      {
+        "executionId": "bdc0bbf2-a0de-466d-bdbd-ce406608d44d",
+        "chatSessionId": "sess_3a109660-832d-42cb-bacd-b9bbb8d9a978",
+        "timestamp": 1795678359042
+      },
+      {
+        "executionId": "bdc0bbf2-a0de-466d-bdbd-ce406608d44d",
+        "chatSessionId": "sess_3a109660-832d-42cb-bacd-b9bbb8d9a978",
+        "timestamp": 1795679100257
+      }
+    ],
+    "16. Render multi-plane PCX": [
+      {
+        "executionId": "4bd283d5-6d64-4279-a208-554bda916abb",
+        "chatSessionId": "sess_3a109660-832d-42cb-bacd-b9bbb8d9a978",
+        "timestamp": 1795624098642
+      },
+      {
+        "executionId": "bdc0bbf2-a0de-466d-bdbd-ce406608d44d",
+        "chatSessionId": "sess_3a109660-832d-42cb-bacd-b9bbb8d9a978",
+        "timestamp": 1795679112228
+      },
+      {
+        "executionId": "bdc0bbf2-a0de-466d-bdbd-ce406608d44d",
+        "chatSessionId": "sess_3a109660-832d-42cb-bacd-b9bbb8d9a978",
+        "timestamp": 1795679275283
+      }
+    ],
+    "17. Closure rule: several data ranges, strips": [
+      {
+        "executionId": "4bd283d5-6d64-4279-a208-554bda916abb",
+        "chatSessionId": "sess_3a109660-832d-42cb-bacd-b9bbb8d9a978",
+        "timestamp": 1795624098698
+      },
+      {
+        "executionId": "bdc0bbf2-a0de-466d-bdbd-ce406608d44d",
+        "chatSessionId": "sess_3a109660-832d-42cb-bacd-b9bbb8d9a978",
+        "timestamp": 1795679281989
+      },
+      {
+        "executionId": "bdc0bbf2-a0de-466d-bdbd-ce406608d44d",
+        "chatSessionId": "sess_3a109660-832d-42cb-bacd-b9bbb8d9a978",
+        "timestamp": 1795679478806
+      }
+    ],
+    "18. TIFF probe: strip arrays": [
+      {
+        "executionId": "4bd283d5-6d64-4279-a208-554bda916abb",
+        "chatSessionId": "sess_3a109660-832d-42cb-bacd-b9bbb8d9a978",
+        "timestamp": 1795624098759
+      },
+      {
+        "executionId": "bdc0bbf2-a0de-466d-bdbd-ce406608d44d",
+        "chatSessionId": "sess_3a109660-832d-42cb-bacd-b9bbb8d9a978",
+        "timestamp": 1795679485227
+      },
+      {
+        "executionId": "bdc0bbf2-a0de-466d-bdbd-ce406608d44d",
+        "chatSessionId": "sess_3a109660-832d-42cb-bacd-b9bbb8d9a978",
+        "timestamp": 1795680096112
+      }
+    ],
+    "19. Render 12-bit and 16-bit grey": [
+      {
+        "executionId": "4bd283d5-6d64-4279-a208-554bda916abb",
+        "chatSessionId": "sess_3a109660-832d-42cb-bacd-b9bbb8d9a978",
+        "timestamp": 1795624098824
+      },
+      {
+        "executionId": "bdc0bbf2-a0de-466d-bdbd-ce406608d44d",
+        "chatSessionId": "sess_3a109660-832d-42cb-bacd-b9bbb8d9a978",
+        "timestamp": 1795680101812
+      },
+      {
+        "executionId": "bdc0bbf2-a0de-466d-bdbd-ce406608d44d",
+        "chatSessionId": "sess_3a109660-832d-42cb-bacd-b9bbb8d9a978",
+        "timestamp": 1795680332315
+      }
+    ],
+    "20. Closure rule: tile assembly": [
+      {
+        "executionId": "4bd283d5-6d64-4279-a208-554bda916abb",
+        "chatSessionId": "sess_3a109660-832d-42cb-bacd-b9bbb8d9a978",
+        "timestamp": 1795624098890
+      },
+      {
+        "executionId": "bdc0bbf2-a0de-466d-bdbd-ce406608d44d",
+        "chatSessionId": "sess_3a109660-832d-42cb-bacd-b9bbb8d9a978",
+        "timestamp": 1795680339247
+      },
+      {
+        "executionId": "bdc0bbf2-a0de-466d-bdbd-ce406608d44d",
+        "chatSessionId": "sess_3a109660-832d-42cb-bacd-b9bbb8d9a978",
+        "timestamp": 1795680541773
+      }
+    ],
+    "21. TIFF probe: tiles": [
+      {
+        "executionId": "4bd283d5-6d64-4279-a208-554bda916abb",
+        "chatSessionId": "sess_3a109660-832d-42cb-bacd-b9bbb8d9a978",
+        "timestamp": 1795624098948
+      },
+      {
+        "executionId": "bdc0bbf2-a0de-466d-bdbd-ce406608d44d",
+        "chatSessionId": "sess_3a109660-832d-42cb-bacd-b9bbb8d9a978",
+        "timestamp": 1795680547486
+      },
+      {
+        "executionId": "bdc0bbf2-a0de-466d-bdbd-ce406608d44d",
+        "chatSessionId": "sess_3a109660-832d-42cb-bacd-b9bbb8d9a978",
+        "timestamp": 1795681584717
+      }
+    ],
+    "22. TIFF probe: Predictor refusal": [
+      {
+        "executionId": "4bd283d5-6d64-4279-a208-554bda916abb",
+        "chatSessionId": "sess_3a109660-832d-42cb-bacd-b9bbb8d9a978",
+        "timestamp": 1795624098994
+      },
+      {
+        "executionId": "bdc0bbf2-a0de-466d-bdbd-ce406608d44d",
+        "chatSessionId": "sess_3a109660-832d-42cb-bacd-b9bbb8d9a978",
+        "timestamp": 1795681590695
+      },
+      {
+        "executionId": "bdc0bbf2-a0de-466d-bdbd-ce406608d44d",
+        "chatSessionId": "sess_3a109660-832d-42cb-bacd-b9bbb8d9a978",
+        "timestamp": 1795681828337
+      }
+    ],
+    "23. Decoder and registration: PackBits": [
+      {
+        "executionId": "4bd283d5-6d64-4279-a208-554bda916abb",
+        "chatSessionId": "sess_3a109660-832d-42cb-bacd-b9bbb8d9a978",
+        "timestamp": 1795624099039
+      },
+      {
+        "executionId": "bdc0bbf2-a0de-466d-bdbd-ce406608d44d",
+        "chatSessionId": "sess_3a109660-832d-42cb-bacd-b9bbb8d9a978",
+        "timestamp": 1795681834828
+      },
+      {
+        "executionId": "bdc0bbf2-a0de-466d-bdbd-ce406608d44d",
+        "chatSessionId": "sess_3a109660-832d-42cb-bacd-b9bbb8d9a978",
+        "timestamp": 1795683400301
+      }
+    ],
+    "24. Decoder and registration: LZW": [
+      {
+        "executionId": "4bd283d5-6d64-4279-a208-554bda916abb",
+        "chatSessionId": "sess_3a109660-832d-42cb-bacd-b9bbb8d9a978",
+        "timestamp": 1795624099085
+      },
+      {
+        "executionId": "bdc0bbf2-a0de-466d-bdbd-ce406608d44d",
+        "chatSessionId": "sess_3a109660-832d-42cb-bacd-b9bbb8d9a978",
+        "timestamp": 1795683406829
+      },
+      {
+        "executionId": "b4136557-42d3-4651-bfa7-e61e43f8c557",
+        "chatSessionId": "sess_3a109660-832d-42cb-bacd-b9bbb8d9a978",
+        "timestamp": 1795683900878
+      },
+      {
+        "executionId": "b4136557-42d3-4651-bfa7-e61e43f8c557",
+        "chatSessionId": "sess_3a109660-832d-42cb-bacd-b9bbb8d9a978",
+        "timestamp": 1795684283740
+      }
+    ],
+    "25. Decoder and registration: Deflate": [
+      {
+        "executionId": "4bd283d5-6d64-4279-a208-554bda916abb",
+        "chatSessionId": "sess_3a109660-832d-42cb-bacd-b9bbb8d9a978",
+        "timestamp": 1795624099134
+      },
+      {
+        "executionId": "b4136557-42d3-4651-bfa7-e61e43f8c557",
+        "chatSessionId": "sess_3a109660-832d-42cb-bacd-b9bbb8d9a978",
+        "timestamp": 1795684290172
+      },
+      {
+        "executionId": "b4136557-42d3-4651-bfa7-e61e43f8c557",
+        "chatSessionId": "sess_3a109660-832d-42cb-bacd-b9bbb8d9a978",
+        "timestamp": 1795689960875
+      }
+    ],
+    "26. Decoder and registration: LZMA": [
+      {
+        "executionId": "4bd283d5-6d64-4279-a208-554bda916abb",
+        "chatSessionId": "sess_3a109660-832d-42cb-bacd-b9bbb8d9a978",
+        "timestamp": 1795624099182
+      },
+      {
+        "executionId": "b4136557-42d3-4651-bfa7-e61e43f8c557",
+        "chatSessionId": "sess_3a109660-832d-42cb-bacd-b9bbb8d9a978",
+        "timestamp": 1795689967493
+      },
+      {
+        "executionId": "b4136557-42d3-4651-bfa7-e61e43f8c557",
+        "chatSessionId": "sess_3a109660-832d-42cb-bacd-b9bbb8d9a978",
+        "timestamp": 1795690322645
+      }
+    ],
+    "27. Refusals and the standard-library rule": [
+      {
+        "executionId": "4bd283d5-6d64-4279-a208-554bda916abb",
+        "chatSessionId": "sess_3a109660-832d-42cb-bacd-b9bbb8d9a978",
+        "timestamp": 1795624099227
+      },
+      {
+        "executionId": "b4136557-42d3-4651-bfa7-e61e43f8c557",
+        "chatSessionId": "sess_3a109660-832d-42cb-bacd-b9bbb8d9a978",
+        "timestamp": 1795690328834
+      },
+      {
+        "executionId": "b4136557-42d3-4651-bfa7-e61e43f8c557",
+        "chatSessionId": "sess_3a109660-832d-42cb-bacd-b9bbb8d9a978",
+        "timestamp": 1795690485403
+      }
+    ],
+    "28. Expectations: TIFF layouts now decoded": [
+      {
+        "executionId": "4bd283d5-6d64-4279-a208-554bda916abb",
+        "chatSessionId": "sess_3a109660-832d-42cb-bacd-b9bbb8d9a978",
+        "timestamp": 1795624099341
+      },
+      {
+        "executionId": "b4136557-42d3-4651-bfa7-e61e43f8c557",
+        "chatSessionId": "sess_3a109660-832d-42cb-bacd-b9bbb8d9a978",
+        "timestamp": 1795690496518
+      },
+      {
+        "executionId": "b4136557-42d3-4651-bfa7-e61e43f8c557",
+        "chatSessionId": "sess_3a109660-832d-42cb-bacd-b9bbb8d9a978",
+        "timestamp": 1795692136204
+      }
+    ],
+    "29. Emission: multi-plane PCX": [
+      {
+        "executionId": "4bd283d5-6d64-4279-a208-554bda916abb",
+        "chatSessionId": "sess_3a109660-832d-42cb-bacd-b9bbb8d9a978",
+        "timestamp": 1795624099423
+      },
+      {
+        "executionId": "b4136557-42d3-4651-bfa7-e61e43f8c557",
+        "chatSessionId": "sess_3a109660-832d-42cb-bacd-b9bbb8d9a978",
+        "timestamp": 1795692143481
+      },
+      {
+        "executionId": "b4136557-42d3-4651-bfa7-e61e43f8c557",
+        "chatSessionId": "sess_3a109660-832d-42cb-bacd-b9bbb8d9a978",
+        "timestamp": 1795692416565
+      }
+    ],
+    "30. Emission: `rle_tga`": [
+      {
+        "executionId": "4bd283d5-6d64-4279-a208-554bda916abb",
+        "chatSessionId": "sess_3a109660-832d-42cb-bacd-b9bbb8d9a978",
+        "timestamp": 1795624099477
+      },
+      {
+        "executionId": "b4136557-42d3-4651-bfa7-e61e43f8c557",
+        "chatSessionId": "sess_3a109660-832d-42cb-bacd-b9bbb8d9a978",
+        "timestamp": 1795692423691
+      },
+      {
+        "executionId": "8614c1e7-74d3-4c78-b055-5748f6303562",
+        "chatSessionId": "sess_3a109660-832d-42cb-bacd-b9bbb8d9a978",
+        "timestamp": 1795693008397
+      },
+      {
+        "executionId": "8614c1e7-74d3-4c78-b055-5748f6303562",
+        "chatSessionId": "sess_3a109660-832d-42cb-bacd-b9bbb8d9a978",
+        "timestamp": 1795693299441
+      }
+    ],
+    "31. Expectations: emitted TGA specs now name `rle_tga`": [
+      {
+        "executionId": "4bd283d5-6d64-4279-a208-554bda916abb",
+        "chatSessionId": "sess_3a109660-832d-42cb-bacd-b9bbb8d9a978",
+        "timestamp": 1795624099525
+      },
+      {
+        "executionId": "8614c1e7-74d3-4c78-b055-5748f6303562",
+        "chatSessionId": "sess_3a109660-832d-42cb-bacd-b9bbb8d9a978",
+        "timestamp": 1795693306406
+      }
+    ],
+    "32. Emission: PNM": [
+      {
+        "executionId": "4bd283d5-6d64-4279-a208-554bda916abb",
+        "chatSessionId": "sess_3a109660-832d-42cb-bacd-b9bbb8d9a978",
+        "timestamp": 1795624099576
+      },
+      {
+        "executionId": "8614c1e7-74d3-4c78-b055-5748f6303562",
+        "chatSessionId": "sess_3a109660-832d-42cb-bacd-b9bbb8d9a978",
+        "timestamp": 1795693316177
+      },
+      {
+        "executionId": "8614c1e7-74d3-4c78-b055-5748f6303562",
+        "chatSessionId": "sess_3a109660-832d-42cb-bacd-b9bbb8d9a978",
+        "timestamp": 1795693780672
+      }
+    ],
+    "33. Emission: TIFF compression mapping, predictor entry, decoders": [
+      {
+        "executionId": "4bd283d5-6d64-4279-a208-554bda916abb",
+        "chatSessionId": "sess_3a109660-832d-42cb-bacd-b9bbb8d9a978",
+        "timestamp": 1795624099638
+      },
+      {
+        "executionId": "8614c1e7-74d3-4c78-b055-5748f6303562",
+        "chatSessionId": "sess_3a109660-832d-42cb-bacd-b9bbb8d9a978",
+        "timestamp": 1795693787484
+      },
+      {
+        "executionId": "8614c1e7-74d3-4c78-b055-5748f6303562",
+        "chatSessionId": "sess_3a109660-832d-42cb-bacd-b9bbb8d9a978",
+        "timestamp": 1795694842519
+      }
+    ],
+    "34. Expectations: emitted TIFF specs": [
+      {
+        "executionId": "4bd283d5-6d64-4279-a208-554bda916abb",
+        "chatSessionId": "sess_3a109660-832d-42cb-bacd-b9bbb8d9a978",
+        "timestamp": 1795624099691
+      },
+      {
+        "executionId": "8614c1e7-74d3-4c78-b055-5748f6303562",
+        "chatSessionId": "sess_3a109660-832d-42cb-bacd-b9bbb8d9a978",
+        "timestamp": 1795694849664
+      },
+      {
+        "executionId": "8614c1e7-74d3-4c78-b055-5748f6303562",
+        "chatSessionId": "sess_3a109660-832d-42cb-bacd-b9bbb8d9a978",
+        "timestamp": 1795696479112
+      }
+    ],
+    "35. Emission: several data ranges": [
+      {
+        "executionId": "4bd283d5-6d64-4279-a208-554bda916abb",
+        "chatSessionId": "sess_3a109660-832d-42cb-bacd-b9bbb8d9a978",
+        "timestamp": 1795624099750
+      },
+      {
+        "executionId": "8614c1e7-74d3-4c78-b055-5748f6303562",
+        "chatSessionId": "sess_3a109660-832d-42cb-bacd-b9bbb8d9a978",
+        "timestamp": 1795696486119
+      },
+      {
+        "executionId": "8614c1e7-74d3-4c78-b055-5748f6303562",
+        "chatSessionId": "sess_3a109660-832d-42cb-bacd-b9bbb8d9a978",
+        "timestamp": 1795697185082
+      }
+    ],
+    "36. Emission: tests, break check, unchanged-spec check, validation": [
+      {
+        "executionId": "4bd283d5-6d64-4279-a208-554bda916abb",
+        "chatSessionId": "sess_3a109660-832d-42cb-bacd-b9bbb8d9a978",
+        "timestamp": 1795624099801
+      },
+      {
+        "executionId": "8614c1e7-74d3-4c78-b055-5748f6303562",
+        "chatSessionId": "sess_3a109660-832d-42cb-bacd-b9bbb8d9a978",
+        "timestamp": 1795697198185
+      },
+      {
+        "executionId": "8614c1e7-74d3-4c78-b055-5748f6303562",
+        "chatSessionId": "sess_3a109660-832d-42cb-bacd-b9bbb8d9a978",
+        "timestamp": 1795702322280
+      },
+      {
+        "executionId": "f014a3b7-ae40-4989-b16c-d17a3dda4ccf",
+        "chatSessionId": "sess_3a109660-832d-42cb-bacd-b9bbb8d9a978",
+        "timestamp": 1795703592966
+      },
+      {
+        "executionId": "f014a3b7-ae40-4989-b16c-d17a3dda4ccf",
+        "chatSessionId": "sess_3a109660-832d-42cb-bacd-b9bbb8d9a978",
+        "timestamp": 1795704304564
+      }
+    ],
+    "37. Scope: rules, script, manifest, README": [
+      {
+        "executionId": "4bd283d5-6d64-4279-a208-554bda916abb",
+        "chatSessionId": "sess_3a109660-832d-42cb-bacd-b9bbb8d9a978",
+        "timestamp": 1795624099855
+      },
+      {
+        "executionId": "f014a3b7-ae40-4989-b16c-d17a3dda4ccf",
+        "chatSessionId": "sess_3a109660-832d-42cb-bacd-b9bbb8d9a978",
+        "timestamp": 1795704311954
+      },
+      {
+        "executionId": "f014a3b7-ae40-4989-b16c-d17a3dda4ccf",
+        "chatSessionId": "sess_3a109660-832d-42cb-bacd-b9bbb8d9a978",
+        "timestamp": 1795706643512
+      }
+    ],
+    "38. Corpus comparer": [
+      {
+        "executionId": "4bd283d5-6d64-4279-a208-554bda916abb",
+        "chatSessionId": "sess_3a109660-832d-42cb-bacd-b9bbb8d9a978",
+        "timestamp": 1795624099891
+      },
+      {
+        "executionId": "f014a3b7-ae40-4989-b16c-d17a3dda4ccf",
+        "chatSessionId": "sess_3a109660-832d-42cb-bacd-b9bbb8d9a978",
+        "timestamp": 1795706651166
+      },
+      {
+        "executionId": "f014a3b7-ae40-4989-b16c-d17a3dda4ccf",
+        "chatSessionId": "sess_3a109660-832d-42cb-bacd-b9bbb8d9a978",
+        "timestamp": 1795707338702
+      }
+    ],
+    "39. Regenerate the results": [
+      {
+        "executionId": "4bd283d5-6d64-4279-a208-554bda916abb",
+        "chatSessionId": "sess_3a109660-832d-42cb-bacd-b9bbb8d9a978",
+        "timestamp": 1795624099933
+      },
+      {
+        "executionId": "f014a3b7-ae40-4989-b16c-d17a3dda4ccf",
+        "chatSessionId": "sess_3a109660-832d-42cb-bacd-b9bbb8d9a978",
+        "timestamp": 1795707345734
+      },
+      {
+        "executionId": "f014a3b7-ae40-4989-b16c-d17a3dda4ccf",
+        "chatSessionId": "sess_3a109660-832d-42cb-bacd-b9bbb8d9a978",
+        "timestamp": 1795707942737
+      }
+    ],
+    "40. Verification and report": [
+      {
+        "executionId": "4bd283d5-6d64-4279-a208-554bda916abb",
+        "chatSessionId": "sess_3a109660-832d-42cb-bacd-b9bbb8d9a978",
+        "timestamp": 1795624100019
+      },
+      {
+        "executionId": "f014a3b7-ae40-4989-b16c-d17a3dda4ccf",
+        "chatSessionId": "sess_3a109660-832d-42cb-bacd-b9bbb8d9a978",
+        "timestamp": 1795707948214
+      },
+      {
+        "executionId": "f014a3b7-ae40-4989-b16c-d17a3dda4ccf",
+        "chatSessionId": "sess_3a109660-832d-42cb-bacd-b9bbb8d9a978",
+        "timestamp": 1795710299054
+      }
+    ]
+  }
+}
