@@ -202,8 +202,8 @@ def _candidate_layout(cand, slug: str, rejections=(), data_len=None) -> dict:
                                   {"ceil_div": ["color_map_entry_size", 8]}]}]}
         encoding = {"field": "image_type",
                     "values": {"1": "none", "2": "none", "3": "none",
-                               "9": "unsupported", "10": "unsupported",
-                               "11": "unsupported"},
+                               "9": "rle_tga", "10": "rle_tga",
+                               "11": "rle_tga"},
                     "otherwise": "unsupported"}
         out["image"] = {"width": "width", "height": "height", "bit_depth": "bit_depth",
                         "row_alignment": h.row_alignment}

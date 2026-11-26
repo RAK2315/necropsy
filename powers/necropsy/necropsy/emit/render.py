@@ -112,6 +112,20 @@ _ENCODING_DEFINITIONS = {
         "an error. IF unread bytes remain when the output is complete, THEN THE parser SHALL "
         "return an error."
     ),
+    "rle_tga": (
+        "WHEN the encoding is `rle_tga`, THE parser SHALL take pixel_bytes as ceil(bit_depth / 8) "
+        "and decode by reading packets from the data start while fewer than row_stride \u00d7 height "
+        "bytes have been produced and the data region is not exhausted: a packet starts with one "
+        "header byte h. WHEN h is at least 0x80, the packet is a run: the next pixel_bytes bytes are "
+        "one pixel, written (h & 0x7F) + 1 times. WHEN h is below 0x80, the packet is raw: the "
+        "next (h + 1) \u00d7 pixel_bytes bytes are written as they are. THE packets SHALL form one "
+        "continuous stream over the whole image, and a packet that runs across the end of a row "
+        "SHALL NOT be rejected. IF a packet would take the output beyond row_stride \u00d7 height "
+        "bytes, THEN THE parser SHALL return an error. IF the data region ends inside a packet, "
+        "or the output is shorter than row_stride \u00d7 height when the data region is exhausted, "
+        "THEN THE parser SHALL return an error. IF unread bytes remain when the output is "
+        "complete, THEN THE parser SHALL return an error."
+    ),
     "unsupported": (
         "WHEN the encoding is `unsupported`, THE parser SHALL return an error naming the "
         "declared value."

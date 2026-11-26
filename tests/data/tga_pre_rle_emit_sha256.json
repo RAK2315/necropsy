@@ -1,0 +1,87 @@
+{
+  "imagemagick_input.tga": {
+    "design.md": "37fb674c67e18e96fe98152009d44c51c47384bd70f6394456d91bfdd6dac10e",
+    "requirements.md": "ab7691259017127b6fd7f48894efa531bb7b3cce9205524a182e517abfb2b6da",
+    "test_tga.py": "737bfd19cc7275f795d6e48d19b070408b2bbe29984c947faa2827d43a17b78e"
+  },
+  "mystery_c": {
+    "design.md": "837806913314d899aed3a24ff45466583a59d8a63b9d42c0d66fdfa39e7d8d7f",
+    "requirements.md": "1de24aa0b219ff700b4930a04e509528ccf88d360ec944ff3cc6f0f9b1cf4ebf",
+    "test_tga.py": "0330f6f40883909aa0b221ee5f0c7c52561e6a2869db3b210f3290cb33d13bbd"
+  },
+  "pillow_1x1_l_tl_raw.tga": {
+    "design.md": "c900381d607ee72aaf6a8d2d9bd6dc6d3d8a4e7819c8a1511ee0a691741eda5a",
+    "requirements.md": "ed47fc8a9990a65513d24ba002dadc20a52e65de192d6658fde51808e89ea005",
+    "test_tga.py": "13e2f478dd6f76550d8c13430a6d1bd5e768652c5a24a44fdde9e3880a119c70"
+  },
+  "pillow_200x32_l_bl_raw.tga": {
+    "design.md": "33ce88b20f3f18e7480d28af8391f14063745abe7d56eb81abf85be7611e94bf",
+    "requirements.md": "5d8c040dc8b55e1b9cfcdf3d4cf02c451b1835c2c6602dbaffc3c6724c69d597",
+    "test_tga.py": "94a157866952409ebd297374177a536449e310276798a6c4dbc96f339e784121"
+  },
+  "pillow_200x32_l_tl_rle.tga": {
+    "design.md": "d0ac06f2cf3dc8307699a73fc5c097ee90cb5fa310c6666f740cd4f98dd9d0c5",
+    "requirements.md": "a96a0d49ee974e0ea99825fe0c8f2e4e3fc980e5bacafaf666adc2f89d851c03",
+    "test_tga.py": "ec36d2642347100c9d7d2a1bc8b291e920ceddaaa759474243bbb7ec4b7f0e9a"
+  },
+  "pillow_200x32_la_bl_raw.tga": {
+    "design.md": "e9eff375fc528ec5e6d0811ad30d82d57f778c8c63b698dad21722e333ea1b41",
+    "requirements.md": "d4bf33c0c5e2b752020366c953ee3043a43f22ef0c06e29cb01be4de7efb37fd",
+    "test_tga.py": "07439ba7a146156493092c5318e7ecb941f77b59d00c66c8c35221afb99ba0d8"
+  },
+  "pillow_200x32_p_bl_raw.tga": {
+    "design.md": "89e293d532136ad26a473073ce1c5317b58bb39b9a1d79616933f43f86ba1ff4",
+    "requirements.md": "17f347e43e85ae573ab6c824faaa99f5ba2826ddd42d8b02379eec27bc390329",
+    "test_tga.py": "aac0a29051fa973bbd4d77c523207018043de021adf25818954f38731d4c39f3"
+  },
+  "pillow_200x32_p_tl_rle.tga": {
+    "design.md": "1cea71302ad863765fec92eee61d720d7f5ff4d25e923d7dd7c4a36be88f2ca2",
+    "requirements.md": "ddb075ca9539a799ceac78e925621188d9cd6722206bf7055f95269805a0af93",
+    "test_tga.py": "55b2582212a203c7e487d83e790fdf2f782501ee667af9c9db7afaa766d6b2d2"
+  },
+  "pillow_200x32_rgb_bl_raw.tga": {
+    "design.md": "14a2d4d790b3c7a9f06b5953c4f182f4c88a75b148ce5818c081a6b390c64e53",
+    "requirements.md": "dfb199c040fe2becda19b2a4f7c2380f269efa324b62d4f61d44f219b6f83861",
+    "test_tga.py": "ab2eedd52249cab8945e544a236637c714581cbf1fda2fedb27874ee22426eea"
+  },
+  "pillow_200x32_rgb_tl_rle.tga": {
+    "design.md": "d289c67c76dad260b554e8ce7df40fb8a7cda0fa0fd77c6fb3891779290cb6eb",
+    "requirements.md": "02136dccde0d0622bff0578a5cc5b2b4780173cc77ba5f4e70a017a3fdc80da8",
+    "test_tga.py": "6d7a1f1803810abfc006e552ac16e1865b640aae39a234fcef2b7e94459e5581"
+  },
+  "pillow_200x32_rgba_tl_raw.tga": {
+    "design.md": "77d402bda29193d6b7a0b08ff8ccc2fb1f3e6dce6a208c45437b2117aa8662e2",
+    "requirements.md": "e97fec18011518fcf455e12198701448963d2eebf534825792692cba1e7e8c2e",
+    "test_tga.py": "5bb8920b1ecfb2ab9ae8660d5954f2d55a023a74f674813a544e80ce27c3f456"
+  },
+  "pillow_la.tga": {
+    "design.md": "9b9ea58ecbbaa4cd4abbeb0bc43b7255adbcc04dc090c073c8c7054417e0507b",
+    "requirements.md": "f7c46ace75aa4622ada42871ab5fa852968bea2232f4a033b08e1997021420e7",
+    "test_tga.py": "aeeaa6b6b456e91612ceae93ab803c6178601d6f52509d1f2976e6be0864f581"
+  },
+  "pillow_p_16.tga": {
+    "design.md": "d37c0c5a719bbc7f5dc080a95f15aa1fd051a97fec25ccc18d4d8a19ff0390ec",
+    "requirements.md": "88e799cef6e15c8b6cbf642c5ed17e15177fa32b956e36a410cc3b5759e5e470",
+    "test_tga.py": "0f6c8397d1cc39d6acee6f65ae336f2dab98ebf2b88e3c1260824d01fa27a73a"
+  },
+  "pillow_rgb32rle.tga": {
+    "design.md": "8ea83449a89e299b7cf5bebec9bff0d522f031b6811091d2ec8d3bb5e7f6804b",
+    "requirements.md": "451236cfe6dd8b9df3a7441ca5bcc0420f655fa0e8720eeb52ba1d6ae46275c4",
+    "test_tga.py": "3c0c9627e2fbf5eb0c298a301e61ddf45f2344ce38054f89e8e54a5b4da7171c"
+  },
+  "pillow_rgba16.tga": {
+    "design.md": "3ca25a64d35b8db55d1f9254f8f800f28ee57dc7cea0ab39dd32174dbe0239c9",
+    "requirements.md": "e49c46a17353b834c3ca7a9dfc6d6d5fc638fc466929e079eab8ff175b4c92b4",
+    "test_tga.py": "4e3c2a829b72d57f474b5c3517630c6184471fef9b02576e00f2c916a0cdd91e"
+  },
+  "pillow_tga_id_field.tga": {
+    "design.md": "22b8765d478e5ac781d87ba7ccded4496db98103f5400a94eaa652c402abfb4a",
+    "requirements.md": "51b3820e1b2320e1a0bddef027ef78ec956df8a72d185cab1d4583f6fef9986d",
+    "test_tga.py": "34c60994600c74065e7d93a1e68c083a7f0995e11ef8dc662c06f367e388d992"
+  },
+  "sdlimage_sample.tga": {
+    "design.md": "c48c8cbd85e3219cef54187b57445af5968fa820ea3b885864a04cdb152b74b2",
+    "requirements.md": "09851d66ecd9e7f22dad9cb0c803a9937aa2a1cfc7c604196b4167c72b1561b4",
+    "test_tga.py": "d8882b757bacbe1cfc26a72c58fac0dfa8712efea1399c3e73c39881c095e52c"
+  }
+}

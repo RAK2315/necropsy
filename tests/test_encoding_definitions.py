@@ -3,6 +3,7 @@
 Expected values come from the requirements text. Inputs are corpus files and the
 engine's own results.
 """
+import hashlib
 import os
 import re
 import subprocess
@@ -110,17 +111,22 @@ def test_mystery_c_requirements_define_unsupported():  # Req 9.28
     assert unsup, "no unsupported definition"
 
 
-def test_mystery_c_requirements_have_no_rle_tga_and_map_unsupported():  # Req 9.29
+def test_mystery_c_requirements_name_rle_tga_for_9_10_11_and_none_for_1_2_3():
+    # Requirement 17.2 replaces engine Requirement 9.29 for image types 9, 10, 11:
+    # the engine decodes rle_tga, so the emitted spec names and defines it.
     files, _ = _emit("mystery_c")
     req = files["requirements.md"]
-    assert "rle_tga" not in req
+    assert "WHEN the encoding is `rle_tga`, THE parser SHALL" in req
     for t in ("9", "10", "11"):
-        assert f"{t} → `unsupported`" in req, t
-        assert f'"{t}": "unsupported"' in req, t
+        assert f"{t} \u2192 `rle_tga`" in req, t
+        assert f'"{t}": "rle_tga"' in req, t
+        assert f"{t} \u2192 `unsupported`" not in req, t
+    for t in ("1", "2", "3"):
+        assert f"{t} \u2192 `none`" in req, t
+        assert f'"{t}": "none"' in req, t
 
 
 # ---- additions for the items 21.1 did not cover (Req 9.28 to 9.31) ----
-import hashlib
 from tests.support import reference_reader as rr
 
 
@@ -142,21 +148,36 @@ def test_emitted_test_text_has_no_encoding_skip_or_refused():  # Req 9.30
         assert "pixels_sha256" in text, name
 
 
-def test_no_emitted_spec_names_rle_tga():  # Req 9.29
+def test_rle_tga_specs_name_define_and_decode_rle_tga():  # Req 17.2 (replaces engine Req 9.29), 20.4
     checked = 0
     for path in _all_sample_paths():
         data = path.read_bytes()
         result = Engine().run(data)
-        cand = getattr(result, "candidate", None)
-        if cand is not None and cand.hypothesis.encoding == "rle_tga":
-            continue  # format-coverage Task 11 (Req 5.9): engine decodes rle_tga; Task 31 rewrites this test
         spec = emit_spec(result, data)
         if hasattr(spec, "message"):
             continue  # not RESOLVED or AMBIGUOUS: no spec emitted
+        files = dict(spec.files)
+        req = files["requirements.md"]
+        if "image_type" not in req:
+            # Not a TGA spec: rle_tga is only named through the TGA image_type mapping.
+            for fname, text in files.items():
+                assert "rle_tga" not in text, (path.name, fname)
+            continue
         checked += 1
-        for fname, text in dict(spec.files).items():
-            assert "rle_tga" not in text, (path.name, fname)
-    assert checked >= 10
+        for t in ("9", "10", "11"):
+            assert f'"{t}": "rle_tga"' in req, (path.name, t)
+            assert f"{t} \u2192 `rle_tga`" in req, (path.name, t)
+        for t in ("1", "2", "3"):
+            assert f'"{t}": "none"' in req, (path.name, t)
+            assert f"{t} \u2192 `none`" in req, (path.name, t)
+        assert re.search(r"^\d+\. WHEN the encoding is `rle_tga`, THE parser SHALL", req, re.M), path.name
+        text = files["test_" + spec.slug.replace("-", "_") + ".py"]
+        assert 'pytest.skip("encoding' not in text, path.name
+        assert "refused" not in text, path.name
+        cand = getattr(result, "candidate", None)
+        if cand is not None:
+            assert hashlib.sha256(cand.decoded).hexdigest() in text, path.name
+    assert checked >= 5
 
 
 def _layout(width, height):

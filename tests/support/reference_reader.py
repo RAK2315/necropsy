@@ -267,7 +267,7 @@ def _parse(layout, data):
         enc = enc["values"].get(str(declared), enc.get("otherwise"))
     if not isinstance(enc, str):
         raise _Err("encoding unresolved")
-    if enc not in ("none", "rle_pcx"):
+    if enc not in ("none", "rle_pcx", "rle_tga"):
         raise _Err("unsupported encoding %s" % (declared,))
 
     if start < 0 or end < start or end > len(data):
@@ -284,6 +284,8 @@ def _parse(layout, data):
         if end - start != expected:
             raise _Err("closure failed")
         pixels = bytes(data[start:end])
+    elif enc == "rle_tga":
+        pixels = _rle_tga(data, start, end, expected, -(-depth // 8))
     else:
         pixels = _rle_pcx(data, start, end, expected)
     return {
@@ -314,6 +316,39 @@ def _rle_pcx(data, start, end, expected):
             pos += 1
         else:
             out.append(b)
+    if len(out) < expected:
+        raise _Err("output shorter than expected")
+    if pos < end:
+        raise _Err("unread bytes remain")
+    return bytes(out)
+
+
+def _rle_tga(data, start, end, expected, pixel_bytes):
+    """Decode data[start:end] per the emitted rle_tga definition (Requirement 17.2).
+
+    Packets form one stream; each packet is checked before it is written.
+    """
+    if pixel_bytes < 1:
+        raise _Err("non-positive pixel_bytes")
+    out = bytearray()
+    pos = start
+    while len(out) < expected and pos < end:
+        h = data[pos]
+        pos += 1
+        if h >= 0x80:
+            n, size = (h & 0x7F) + 1, pixel_bytes
+        else:
+            n, size = 1, (h + 1) * pixel_bytes
+        if pos + pixel_bytes > end if h >= 0x80 else pos + size > end:
+            raise _Err("region ends inside a packet")
+        if len(out) + (n * pixel_bytes if h >= 0x80 else size) > expected:
+            raise _Err("packet exceeds the expected output")
+        if h >= 0x80:
+            out.extend(data[pos:pos + pixel_bytes] * n)
+            pos += pixel_bytes
+        else:
+            out.extend(data[pos:pos + size])
+            pos += size
     if len(out) < expected:
         raise _Err("output shorter than expected")
     if pos < end:
