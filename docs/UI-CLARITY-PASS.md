@@ -275,3 +275,28 @@ behind the content, fading to `--bg` across the text column, and recorded as gen
 contrast, theme and visual-rule tests (`test_a11y`, `test_amb_grid`, `test_fourth_pass`, `test_second_pass`,
 `test_visual_rules`) pass: 48 passed, and the 27 front-end tests pass. Screenshots at 1280 and 1920 wide were checked by
 eye.
+
+## Task 50: the page describes itself before any script runs
+
+27 Nov. Two outside page checkers, run by Rehaan, found that crawlers and link previews saw almost nothing. The page
+is drawn by JavaScript, so the HTML they read held a one-word title, no description, no share image, no heading and
+no sign of who made it. `public/index.html` now carries:
+- a full title and a meta description, a canonical URL, and Open Graph and Twitter tags;
+- a 1200 × 630 share image (`public/img/og.jpg`, cropped from a capture of the live landing page);
+- `SoftwareApplication` structured data naming the source repository;
+- a static hero, with the same h1 and copy as the landing page, inside `main`, which the app replaces on load;
+- a footer stating the MIT licence, the GitHub source, that it was built spec-first with Kiro for Kiroween 2026, and
+  that examined files are never stored.
+
+The bigger findings (default fonts, a row of three identical cards, copy that could describe many products) are
+redesign items, recorded for the redesign Rehaan has deferred.
+
+**Verification.** `tests/ui/test_page_meta.py`: the title, the description, the canonical URL, a share image served
+at the size it declares, structured data that parses, one h1 and more than 60 words before any script runs, and the
+footer's source link. The landing, accessibility, visual-rule and fourth-pass browser tests were rerun.
+
+**An older test narrowed, not weakened.** Kiro's `test_no_external_urls_in_shipped_files` states its purpose as "the page
+requests nothing from a third-party origin", but it flagged every off-site URL in an attribute, so the footer's link
+to GitHub and the canonical URL failed it. Neither makes a request when the page loads. The test now exempts only an
+`<a href>` and a `<link rel="canonical">` in HTML, and a new test, `test_the_navigation_exemption_still_catches_requests`,
+proves that an off-site `img src`, stylesheet `link href` and `script src` are still caught.

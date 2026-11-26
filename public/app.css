@@ -416,3 +416,8 @@ ol.strip-rej .tech { margin-left: 8px; }
   .strip-row { grid-template-columns: 1fr; }
   .strip-tile { height: auto; min-height: 220px; }
 }
+
+/* UI task 50: a footer that says who made this and where the source is */
+.site-foot { max-width: 1400px; margin: 48px auto 0; padding: 18px 24px 28px; border-top: 1px solid var(--line); color: var(--muted); font-size: 13px; }
+.site-foot p { margin: 0; max-width: 90ch; }
+.site-foot a { color: var(--text); }

@@ -75,12 +75,33 @@ def _public_text_files():
     return [p for p in PUBLIC.rglob("*") if p.suffix in {".html", ".css", ".js", ".json"}]
 
 
+def _is_navigation_only(text: str, at: int) -> bool:
+    # UI task 50: a hyperlink (<a href>) and a canonical URL (<link rel="canonical">) make no request when the page
+    # loads; they are the page saying where its source lives and what its address is. Every other src, href or
+    # url() that points off-site would be a request to a third party, which is what this test forbids.
+    tag = text[text.rfind("<", 0, at):at]
+    return tag.startswith("<a ") or (tag.startswith("<link ") and 'rel="canonical"' in tag)
+
+
 def test_no_external_urls_in_shipped_files():
     hits = []
     for p in _public_text_files():
-        for m in re.finditer(r"""(?:src|href|url\()\s*=?\s*["']?(?:https?:)?//""", p.read_text(encoding="utf-8")):
+        text = p.read_text(encoding="utf-8")
+        for m in re.finditer(r"""(?:src|href|url\()\s*=?\s*["']?(?:https?:)?//""", text):
+            if p.suffix == ".html" and _is_navigation_only(text, m.start()):
+                continue
             hits.append(f"{p.relative_to(REPO_ROOT)}: {m.group(0)}")
     assert not hits, hits
+
+
+def test_the_navigation_exemption_still_catches_requests():
+    # The exemption must not let a real third-party request through.
+    for loads in ('<img src="https://x.example/a.png">', '<link rel="stylesheet" href="https://x.example/a.css">',
+                  '<script src="//x.example/a.js"></script>'):
+        m = re.search(r"""(?:src|href|url\()\s*=?\s*["']?(?:https?:)?//""", loads)
+        assert not _is_navigation_only(loads, m.start()), loads
+    link = '<a href="https://github.com/RAK2315/necropsy">'
+    assert _is_navigation_only(link, link.index("href"))
 
 
 FORBIDDEN_CSS = {
