@@ -142,6 +142,64 @@ def _first_sample_above(data: bytes, start: int, end: int, maxval: int, size: in
     return None
 
 
+def _detail_reject(reason: str, detail: str, discrepancy: Optional[int] = None) -> ClosureVerdict:
+    return ClosureVerdict(False, reason, discrepancy, None, None, None, None, detail)
+
+
+def _check_ranges(h, data: bytes) -> ClosureVerdict:
+    """Strips with encoding none (Requirements 7.5 to 7.8, 7.10 to 7.12).
+
+    Order: bounds per range, Requirement 12 per range, pairwise disjoint, unit count,
+    then each range in order. Allocates only from the file's own bytes, never from the
+    declared strip count.
+    """
+    ranges = h.ranges
+    n = len(ranges)
+    for i, rg in enumerate(ranges):
+        start, end = rg
+        if not (0 <= start <= end <= len(data)):
+            return _detail_reject("field_out_of_bounds",
+                                  "range %d [%d, %d) lies outside the %d-byte file" % (i, start, end, len(data)))
+    for i, (start, end) in enumerate(ranges):
+        if end <= start:
+            continue
+        for fr in h.fields:
+            try:
+                f_end = fr.offset + struct.calcsize(fr.fmt)
+            except Exception:
+                return _reject("degenerate_hypothesis")
+            if fr.offset < end and start < f_end:
+                return _detail_reject(
+                    "degenerate_hypothesis",
+                    "range %d [%d, %d) overlaps header field %s [%d, %d)" % (i, start, end, fr.name, fr.offset, f_end))
+    spans = sorted((s, e, i) for i, (s, e) in enumerate(ranges) if e > s)
+    for (s1, e1, i1), (s2, e2, i2) in zip(spans, spans[1:]):
+        if s2 < e1:
+            return _detail_reject("degenerate_hypothesis",
+                                  "ranges %d [%d, %d) and %d [%d, %d) overlap" % (i1, s1, e1, i2, s2, e2))
+    rps = h.rows_per_strip
+    if h.tile is not None or rps is None or rps <= 0:
+        return _detail_reject("degenerate_hypothesis", "ranges need rows_per_strip > 0 and no tile")
+    want = -(-h.height // rps)
+    if n != want:
+        return _detail_reject("degenerate_hypothesis",
+                              "%d ranges declared, ceil(%d / %d) = %d strips expected" % (n, h.height, rps, want))
+    if h.encoding != "none":
+        return _reject("unsupported_encoding")
+    stride = hypothesis_row_stride(h)
+    out = bytearray()
+    for i, (start, end) in enumerate(ranges):
+        rows = min(rps, h.height - i * rps)
+        unit = rows * stride
+        if end - start != unit:
+            return _detail_reject(
+                "arithmetic_mismatch",
+                "range %d [%d, %d) holds %d bytes, its %d rows need %d" % (i, start, end, end - start, rows, unit),
+                (end - start) - unit)
+        out += data[start:end]
+    return _accept(bytes(out), min(s for s, _ in ranges), max(e for _, e in ranges), None)
+
+
 def check_closure(h, data: bytes) -> ClosureVerdict:
     """Closure gate: decode [header_size, data_end) and require exact length and full consumption."""
     try:
@@ -164,6 +222,8 @@ def check_closure(h, data: bytes) -> ClosureVerdict:
                     False, "degenerate_hypothesis", None, None, None, None, None,
                     "row_bytes %d is below planes x ceil(width x bits per plane / 8) = %d"
                     % (h.row_bytes, planes * plane_bytes))
+        if h.ranges:
+            return _check_ranges(h, data)
         if h.data_end is not None:
             if h.data_end > len(data) or h.data_end < h.header_size:
                 return _reject("field_out_of_bounds")
