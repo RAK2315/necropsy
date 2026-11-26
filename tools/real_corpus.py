@@ -13,6 +13,7 @@ from __future__ import annotations
 import hashlib
 import json
 import math
+import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -78,6 +79,65 @@ def _crop_rows(decoded: bytes, stride: int, width: int, bit_depth: int, height: 
     return [decoded[y * stride: y * stride + row_bytes] for y in range(height)]
 
 
+DECODED_ENCODINGS = ("none", "rle_pcx", "rle_tga", "pnm_text", "tiff_compression_5", "tiff_compression_8",
+                     "tiff_compression_32946", "tiff_compression_32773", "tiff_compression_34925")
+
+
+def _pcx_planes(hdr: dict, cand, w: int, ht: int) -> tuple[bytes, tuple] | str:
+    """Multi-plane PCX (Requirement 6): each scanline is `planes` runs of bytes_per_line bytes, one run per plane."""
+    h = cand.hypothesis
+    planes, bpl, bpp = h.planes, hdr["bytes_per_line"], hdr["bits_per_plane"]
+    if len(cand.decoded) < ht * cand.row_stride or cand.row_stride != planes * bpl:
+        return "decoded buffer shorter than the declared rows"
+    out = bytearray()
+    for y in range(ht):
+        row = cand.decoded[y * cand.row_stride:(y + 1) * cand.row_stride]
+        if bpp == 8 and planes in (3, 4):           # de-interleave to R,G,B(,A)
+            for x in range(w):
+                out += bytes(row[p * bpl + x] for p in range(planes))
+        elif bpp == 1:                              # plane p holds bit p of the palette index
+            for x in range(w):
+                out.append(sum(((row[p * bpl + x // 8] >> (7 - x % 8)) & 1) << p for p in range(planes)))
+        else:
+            return f"PCX {planes} planes of {bpp} bits not handled by the comparer"
+    return bytes(out), (w, ht, planes if bpp == 8 else 1)
+
+
+def _samples(cand, w: int, ht: int, bits: int, per_pixel: int) -> list[int]:
+    """Unpack stored samples, most significant bit first (PNM 16-bit big-endian; TIFF 12-bit MSB-first)."""
+    out = []
+    for y in range(ht):
+        row = cand.decoded[y * cand.row_stride:(y + 1) * cand.row_stride]
+        acc = 0
+        nbits = 0
+        pos = 0
+        for _ in range(w * per_pixel):
+            while nbits < bits:
+                acc = (acc << 8) | row[pos]
+                pos += 1
+                nbits += 8
+            nbits -= bits
+            out.append((acc >> nbits) & ((1 << bits) - 1))
+            acc &= (1 << nbits) - 1
+    return out
+
+
+def _high_bit_depth(fmt: str, cand, w: int, ht: int, bd: int) -> tuple[bytes, tuple] | str:
+    """PNM above 8 bits per sample and TIFF 12-bit: samples unpacked, then shown at 8 bits as v * 255 // maxval
+    (Requirement 16.1). Pillow's own 8-bit conversion differs; see explain_difference."""
+    h = cand.hypothesis
+    if fmt == "TIFF":
+        bits, per_pixel, maxval = 12, 1, 4095
+    elif bd in (16, 48):
+        bits, per_pixel, maxval = 16, bd // 16, h.maxval
+    else:
+        return f"PNM bit depth {bd} not handled by the comparer"
+    if not maxval or len(cand.decoded) < ht * cand.row_stride:
+        return "decoded buffer shorter than the declared rows"
+    words = _samples(cand, w, ht, bits, per_pixel)
+    return bytes(v * 255 // maxval for v in words), (w, ht, per_pixel)
+
+
 def ours_canonical(entry: dict, data: bytes, cand) -> tuple[bytes, tuple] | str:
     """The engine's recovered pixels in canonical form, or a string saying why they cannot be compared.
 
@@ -89,8 +149,14 @@ def ours_canonical(entry: dict, data: bytes, cand) -> tuple[bytes, tuple] | str:
     w, ht, bd = h.width, h.height, h.bit_depth
     fmt = entry["format"]
     hdr = entry["header"]
-    if h.encoding != "none" and not (fmt == "PCX" and h.encoding == "rle_pcx"):
+    if h.encoding not in DECODED_ENCODINGS:
         return f"encoding {h.encoding} not handled by the comparer"
+    # Every decoder returns the raster as stored (decoded bytes, one row_stride per row), so the canonical form of a
+    # compressed layout is the canonical form of the same raster uncompressed.
+    if fmt == "PCX" and h.planes > 1:
+        return _pcx_planes(hdr, cand, w, ht)
+    if (fmt == "PNM" and bd in (16, 48)) or (fmt == "TIFF" and bd == 12):
+        return _high_bit_depth(fmt, cand, w, ht, bd)
     rows = _crop_rows(cand.decoded, cand.row_stride, w, bd, ht)
     if len(rows) != ht or any(len(r) != math.ceil(w * bd / 8) for r in rows):
         return "decoded buffer shorter than the declared rows"
@@ -147,6 +213,13 @@ def ours_canonical(entry: dict, data: bytes, cand) -> tuple[bytes, tuple] | str:
     return f"{fmt} bit depth {bd} not handled by the comparer"
 
 
+def _pillow_words(raw: bytes, mode: str) -> list[int]:
+    """Pillow's raw grey samples: mode I is native-endian int32, mode I;16 is little-endian uint16."""
+    if mode == "I":
+        return [int.from_bytes(raw[i:i + 4], sys.byteorder, signed=True) for i in range(0, len(raw), 4)]
+    return [int.from_bytes(raw[i:i + 2], "little") for i in range(0, len(raw), 2)]
+
+
 def pillow_canonical(path: Path, entry: dict) -> tuple[bytes, tuple] | str:
     from PIL import Image
     Image.MAX_IMAGE_PIXELS = None
@@ -166,6 +239,9 @@ def pillow_canonical(path: Path, entry: dict) -> tuple[bytes, tuple] | str:
                 return bytes(out), (w, h, 1)
             if mode in ("L", "P"):
                 return raw, (w, h, 1)
+            if mode in ("I", "I;16"):
+                # Pillow's own 8-bit conversion of a >8-bit grey sample clips to 255 (convert("L"), convert("RGB")).
+                return bytes(min(255, v) for v in _pillow_words(raw, mode)), (w, h, 1)
             if mode == "LA":
                 return raw, (w, h, 2)
             if mode == "RGB":
@@ -181,6 +257,64 @@ def pillow_canonical(path: Path, entry: dict) -> tuple[bytes, tuple] | str:
             return f"Pillow mode {mode} not handled by the comparer"
     except Exception as exc:  # Pillow refusing is recorded, not raised
         return f"Pillow error: {type(exc).__name__}: {exc}"
+
+
+WHITE_IS_ZERO_VERDICT = "stored bytes; equals Pillow after WhiteIsZero inversion (tag 262 = 0)"
+
+
+def _pillow_raw(path: Path) -> tuple[str, bytes]:
+    from PIL import Image
+    Image.MAX_IMAGE_PIXELS = None
+    with Image.open(path) as im:
+        im.load()
+        return im.mode, im.tobytes()
+
+
+def _tga_attributes_type(data: bytes) -> int | None:
+    """The attributes type byte of a TGA 2.0 extension area (offset 494), or None when there is no such area."""
+    if len(data) < 26 or not data[-18:] == b"TRUEVISION-XFILE.\x00":
+        return None
+    ext = int.from_bytes(data[-26:-22], "little")
+    return data[ext + 494] if ext and ext + 495 <= len(data) else None
+
+
+def explain_difference(entry: dict, path: Path, cand, ours: tuple, theirs: tuple) -> str | None:
+    """Name a difference that is fully explained, or return None. A verdict is returned only after the explanation has
+    been checked byte for byte against Pillow's pixels; anything else stays a mismatch (Requirement 19.3)."""
+    h = cand.hypothesis
+    fmt = entry["format"]
+    mode, raw = _pillow_raw(path)
+    if fmt == "PNM" and h.maxval == 65535 and h.bit_depth in (16, 48):
+        words = _samples(cand, h.width, h.height, 16, h.bit_depth // 16)
+        if mode == "RGB" and theirs[0] == bytes((v * 255 + 32767) // 65535 for v in words):
+            return ("16-bit samples: engine v * 255 // maxval (Requirement 16.1); Pillow rounds to nearest, "
+                    "(v * 255 + 32767) // 65535; every byte checked")
+        if mode == "I" and _pillow_words(raw, mode) == words and theirs[0] == bytes(min(255, v) for v in words):
+            return ("16-bit samples: engine v * 255 // maxval (Requirement 16.1); Pillow's mode I holds the same raw "
+                    "samples and its 8-bit conversion clips to 255; every byte checked")
+    if fmt == "TIFF" and h.bit_depth == 12 and mode == "I;16":
+        words = _samples(cand, h.width, h.height, 12, 1)
+        if _pillow_words(raw, mode) == words and theirs[0] == bytes(min(255, v) for v in words):
+            return ("12-bit samples: engine v * 255 // 4095 (Requirement 16.1); Pillow's mode I;16 holds the same raw "
+                    "samples and its 8-bit conversion clips to 255; every byte checked")
+    if fmt == "TGA" and h.bit_depth == 32 and ours[1][2] == 4 and theirs[1][2] == 4 and not entry["header"]["descriptor"] & 0x0F:
+        # Pillow fills alpha with 255 when the TGA 2.0 extension area's attributes type (offset 494) is 0, "no alpha".
+        if _tga_attributes_type(path.read_bytes()) == 0 and ours[0][0::4] == theirs[0][0::4] \
+                and ours[0][1::4] == theirs[0][1::4] and ours[0][2::4] == theirs[0][2::4] \
+                and set(theirs[0][3::4]) <= {255}:
+            return ("alpha not compared: the file declares no alpha (descriptor alpha bits 0, extension attributes "
+                    "type 0) and Pillow reports 255; R, G, B equal Pillow's")
+    return None
+
+
+def first_difference(ours: tuple, theirs: tuple) -> str:
+    """Where the canonical forms first differ: pixel (x, y), channel, both values. For reporting."""
+    (w, _h, ch), a, b = ours[1], ours[0], theirs[0]
+    for i, (p, q) in enumerate(zip(a, b)):
+        if p != q:
+            px = i // ch
+            return f"pixel ({px % w}, {px // w}) channel {i % ch}: ours {p}, Pillow {q}"
+    return "no differing byte in the common length"
 
 
 def _sha(b: bytes) -> str:
@@ -237,10 +371,19 @@ def run_one(entry: dict, with_pillow: bool = True) -> dict:
             elif ours[1] != theirs[1]:
                 verdicts.append(f"dimensions differ: ours {ours[1]}, Pillow {theirs[1]}")
             elif ours[0] == theirs[0]:
-                verdicts.append("match")
+                # 1-bit WhiteIsZero: the engine's bytes are the stored ones; the canonical form inverts them like Pillow.
+                white_is_zero = (entry["format"] == "TIFF" and c.hypothesis.bit_depth == 1
+                                 and entry["header"].get("photometric") == 0)
+                verdicts.append(WHITE_IS_ZERO_VERDICT if white_is_zero else "match")
             else:
-                n = sum(1 for a, b in zip(ours[0], theirs[0]) if a != b)
-                verdicts.append(f"mismatch: {n} of {len(ours[0])} canonical bytes differ")
+                why = explain_difference(entry, path, c, ours, theirs)
+                if why:
+                    verdicts.append(why)
+                else:
+                    n = sum(1 for a, b in zip(ours[0], theirs[0]) if a != b)
+                    verdicts.append(f"mismatch: {n} of {len(ours[0])} canonical bytes differ")
+    elif cands and not entry["pillow"]["decodes"] and with_pillow:
+        verdicts.append(f"not comparable: Pillow refuses the file ({(entry['pillow']['error'] or '').split(':')[0]})")
     row["pixel_verdicts"] = verdicts
     row["pillow_pixels_sha256"] = pillow_hash
     return row
