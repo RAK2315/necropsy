@@ -53,11 +53,14 @@ def _interleave(r: bytes, g: bytes, b: bytes) -> bytes:
 
 def decode(decoded, width, height, bit_depth, row_stride, probe_name,
            palette=None, bottom_left=False, channel_order="bgr", photometric=None,
-           palette_name=PALETTE_NAME, no_palette_why=None, maxval=None):
+           palette_name=PALETTE_NAME, no_palette_why=None, maxval=None, planes=1, header_palette=None):
     """Return a PixelBuffer, or a RenderFailure with a reason. Never raises.
 
     maxval: the PNM header's declared maximum. With probe_name "pnm" and bit_depth 8, 16, 24 or 48 the samples are
     scaled v * 255 // maxval (16-bit samples are big-endian words).
+
+    planes, header_palette: PCX with planes > 1 (bit_depth is then bits per plane times planes, row_stride the whole
+    scanline); header_palette is the 48 bytes at 0x10.
 
     channel_order: "bgr", "rgb" or "bgr-convention" (24/32 bit). photometric: None, 0 (WhiteIsZero), 1 (BlackIsZero)
     or "undeclared" (1/4/8-bit grey). palette_name names the colour source in the note; no_palette_why says why an
@@ -65,12 +68,51 @@ def decode(decoded, width, height, bit_depth, row_stride, probe_name,
     """
     try:
         return _decode(decoded, width, height, bit_depth, row_stride, probe_name, palette, bottom_left,
-                       channel_order, photometric, palette_name, no_palette_why, maxval)
+                       channel_order, photometric, palette_name, no_palette_why, maxval, planes, header_palette)
     except Exception as exc:  # last line of defence; the checks below bound every read
         return RenderFailure(f"internal error: {type(exc).__name__}")
 
 
 PNM_DEPTHS = (8, 16, 24, 48)
+HEADER_PALETTE_LENGTH = 48
+
+
+def _decode_pcx_planar(decoded, width, height, bit_depth, row_stride, planes, header_palette):
+    """PCX scanlines of `planes` planes (Requirements 16.1, 16.2). bit_depth is bits per plane times planes.
+
+    8 bits per plane, 3 or 4 planes: R, G, B planes (a fourth is ignored). 1 bit per plane, 2 to 4 planes: the planes'
+    bits form the index, plane 0 lowest, into the 16-entry RGB palette the header declares at 0x10.
+    """
+    per_plane, rem = divmod(bit_depth, planes)
+    layout = f"PCX with {planes} planes of {per_plane} bits"
+    if rem or not ((per_plane == 8 and planes in (3, 4)) or (per_plane == 1 and 2 <= planes <= 4)):
+        return RenderFailure(f"no renderer for {layout}")
+    plane_len, rem = divmod(row_stride, planes)
+    if rem or plane_len < -(-(width * per_plane) // 8) or len(decoded) < row_stride * height:
+        return RenderFailure("inconsistent geometry")
+    d = bytes(decoded)
+    if per_plane == 8:
+        r, g, b = bytearray(), bytearray(), bytearray()
+        for y in range(height):
+            o = y * row_stride
+            r += d[o: o + width]
+            g += d[o + plane_len: o + plane_len + width]
+            b += d[o + 2 * plane_len: o + 2 * plane_len + width]
+        return PixelBuffer(width, height, "rgb8", _interleave(r, g, b),
+                           f"{layout} · R, G, B planes{'; fourth plane ignored' if planes == 4 else ''} · {STORED_NOTE}")
+    if not (isinstance(header_palette, (bytes, bytearray)) and len(header_palette) == HEADER_PALETTE_LENGTH):
+        return RenderFailure(f"no renderer for {layout}: no 16-entry header palette")
+    p = bytes(header_palette)
+    out = bytearray()
+    for y in range(height):
+        o = y * row_stride
+        for x in range(width):
+            idx = 0
+            for k in range(planes):
+                idx |= ((d[o + k * plane_len + (x >> 3)] >> (7 - (x & 7))) & 1) << k
+            out += p[idx * 3: idx * 3 + 3]
+    return PixelBuffer(width, height, "rgb8", bytes(out),
+                       f"{layout} · index from plane bits, plane 0 lowest · palette: PCX header (0x10) · {STORED_NOTE}")
 
 
 def _decode_pnm(decoded, width, height, bit_depth, row_stride, maxval):
@@ -111,11 +153,13 @@ def _grey(data, photometric):
 
 
 def _decode(decoded, width, height, bit_depth, row_stride, probe_name, palette, bottom_left,
-            channel_order, photometric, palette_name, no_palette_why, maxval=None):
+            channel_order, photometric, palette_name, no_palette_why, maxval=None, planes=1, header_palette=None):
     if not isinstance(decoded, (bytes, bytearray)):
         return RenderFailure("inconsistent geometry")
     if not all(_is_int(v) and v > 0 for v in (width, height, bit_depth, row_stride)):
         return RenderFailure("inconsistent geometry")
+    if probe_name == "pcx" and _is_int(planes) and planes > 1:
+        return _decode_pcx_planar(decoded, width, height, bit_depth, row_stride, planes, header_palette)
     if probe_name == "pnm" and bit_depth in PNM_DEPTHS and _is_int(maxval):
         return _decode_pnm(decoded, width, height, bit_depth, row_stride, maxval)
     if bit_depth not in SUPPORTED_DEPTHS:

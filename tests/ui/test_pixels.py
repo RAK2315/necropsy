@@ -277,3 +277,64 @@ def test_plain_p2_scales_by_maxval():
 def test_plain_p3_renders_rgb_in_stored_order():
     buf = _engine_pixels(b"P3\n2 1\n15\n0 5 15 15 10 0\n")
     assert buf.channels == "rgb8" and buf.data == bytes([0, 85, 255, 255, 170, 0])
+
+
+# ---- multi-plane PCX (Requirements 16.1, 16.2, 16.3, 16.5) ----
+
+def test_pcx_three_planes_of_8_bits_are_r_g_b_per_scanline():
+    # width 2, 2 rows, bytes_per_line 2: each scanline is R plane, G plane, B plane
+    raw = bytes([1, 2,  3, 4,  5, 6,    7, 8,  9, 10,  11, 12])
+    buf = decode(raw, 2, 2, 24, 6, "pcx", planes=3)
+    assert isinstance(buf, PixelBuffer) and buf.channels == "rgb8"
+    assert buf.data == bytes([1, 3, 5, 2, 4, 6,  7, 9, 11, 8, 10, 12])
+
+
+def test_pcx_four_planes_of_8_bits_ignore_the_fourth_plane():
+    raw = bytes([1, 2,  3, 4,  5, 6,  99, 99])          # bytes_per_line 2, one row
+    buf = decode(raw, 2, 1, 32, 8, "pcx", planes=4)
+    assert buf.data == bytes([1, 3, 5, 2, 4, 6]) and "fourth plane ignored" in buf.note
+
+
+def test_pcx_one_bit_planes_index_the_header_palette_plane_0_lowest():
+    pal = bytes(v for i in range(16) for v in (i * 16, 255 - i * 16, i))
+    # width 4, 3 planes, bytes_per_line 1: pixel x has bit (7 - x) of each plane byte
+    # plane0 = 1010, plane1 = 1100, plane2 = 0110 -> indices 3, 4+0... computed per pixel below
+    raw = bytes([0b10100000, 0b11000000, 0b01100000])
+    idx = [(p0 >> 0) | (p1 << 1) | (p2 << 2) for p0, p1, p2 in zip((1, 0, 1, 0), (1, 1, 0, 0), (0, 1, 1, 0))]
+    assert idx == [3, 6, 5, 0]
+    buf = decode(raw, 4, 1, 3, 3, "pcx", planes=3, header_palette=pal)
+    assert buf.channels == "rgb8"
+    assert buf.data == b"".join(pal[i * 3:i * 3 + 3] for i in idx)
+
+
+def test_pcx_planes_with_no_renderer_name_the_layout():
+    assert decode(bytes(8), 4, 1, 8, 8, "pcx", planes=2) == RenderFailure("no renderer for PCX with 2 planes of 4 bits")
+    assert decode(bytes(8), 4, 1, 16, 8, "pcx", planes=2) == RenderFailure("no renderer for PCX with 2 planes of 8 bits")
+    r = decode(bytes(3), 4, 1, 3, 3, "pcx", planes=3)
+    assert isinstance(r, RenderFailure) and "palette" in r.reason
+
+
+def test_pcx_planar_through_the_engine_and_serialiser():
+    import struct
+    from web.serialise import to_payload
+    pal = bytes(v for i in range(16) for v in (i * 16, 255 - i * 16, i))
+    header = bytearray(128)
+    header[0], header[1], header[2], header[3] = 0x0A, 5, 0, 1       # manufacturer, version, no encoding, 1 bit/plane
+    struct.pack_into("<4H", header, 4, 0, 0, 3, 0)                  # xmin ymin xmax ymax: 4 x 1
+    header[0x10:0x40] = pal
+    header[0x41] = 3                                                # planes
+    struct.pack_into("<H", header, 0x42, 2)                         # bytes_per_line (even)
+    data = bytes(header) + bytes([0b10100000, 0, 0b11000000, 0, 0b01100000, 0])
+    out = to_payload(Engine().run(data), data, 1.0)
+    render = out["candidates"][0]["render"]
+    import base64
+    assert base64.b64decode(render["data_b64"]) == b"".join(pal[i * 3:i * 3 + 3] for i in (3, 6, 5, 0))
+
+
+@settings(max_examples=100, deadline=None)
+@given(decoded=st.binary(max_size=64), width=st.integers(0, 6), height=st.integers(0, 4),
+       bit_depth=st.integers(0, 40), row_stride=st.integers(0, 16), planes=st.integers(-1, 6),
+       palette=st.one_of(st.none(), st.binary(max_size=60)))
+def test_pcx_planar_decode_never_raises(decoded, width, height, bit_depth, row_stride, planes, palette):
+    out = decode(decoded, width, height, bit_depth, row_stride, "pcx", planes=planes, header_palette=palette)
+    assert isinstance(out, (PixelBuffer, RenderFailure))

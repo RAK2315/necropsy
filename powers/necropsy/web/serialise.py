@@ -28,10 +28,17 @@ def stage_of(source: str) -> str:
 
 def palette_for(cand, data):
     """The 768 bytes after the 0x0C marker of a pcx_palette_256 trailer, or None."""
-    if cand.trailer != "pcx_palette_256" or cand.hypothesis.bit_depth != 8:
+    if cand.trailer != "pcx_palette_256" or cand.hypothesis.bit_depth != 8 or cand.hypothesis.planes != 1:
         return None
     start = cand.data_end + 1                      # data_end is the marker's offset
     return data[start:start + 768] if start + 768 <= len(data) else None
+
+
+def header_palette_for(cand, data):
+    """The 48 bytes at 0x10 of a multi-plane PCX header (16 RGB entries), or None."""
+    if cand.hypothesis.probe_name != "pcx" or cand.hypothesis.planes <= 1 or len(data) < 0x40:
+        return None
+    return bytes(data[0x10:0x40])
 
 
 def _int_field(cand, name):
@@ -169,7 +176,8 @@ def _candidate(c, data, budget: dict) -> dict:
             pal, name = palette_for(c, data), "pcx_palette_256"
         out = decode(c.decoded, h.width, h.height, h.bit_depth, c.row_stride, h.probe_name,
                      pal, bottom_left_for(c), channel_order=channel_order_for(c), photometric=photometric_for(c),
-                     palette_name=name, no_palette_why=tga_why, maxval=h.maxval)
+                     palette_name=name, no_palette_why=tga_why, maxval=h.maxval,
+                     planes=h.planes, header_palette=header_palette_for(c, data))
         if isinstance(out, PixelBuffer):
             budget["spent"] += pixels
             render = {"width": out.width, "height": out.height, "channels": out.channels,
