@@ -54,9 +54,25 @@
   "termination": null
  },
  "real/goimage_bw-deflate.tiff": {
-  "candidates": [],
-  "status": "FAILED",
-  "termination": "exhausted"
+  "candidates": [
+   {
+    "key": [
+     153,
+     55,
+     1,
+     8,
+     1,
+     "tiff_compression_32946",
+     305
+    ],
+    "region": [
+     8,
+     305
+    ]
+   }
+  ],
+  "status": "RESOLVED",
+  "termination": null
  },
  "real/goimage_bw-gopher_ccittGroup3.tiff": {
   "candidates": [],
@@ -111,9 +127,42 @@
   "termination": null
  },
  "real/goimage_invalid-palette-ref.tiff": {
-  "candidates": [],
-  "status": "FAILED",
-  "termination": "exhausted"
+  "candidates": [
+   {
+    "key": [
+     150,
+     103,
+     8,
+     8,
+     1,
+     "tiff_compression_8",
+     9460,
+     [
+      1,
+      null,
+      [
+       [
+        8,
+        4340
+       ],
+       [
+        4340,
+        9460
+       ]
+      ],
+      54,
+      null,
+      null
+     ]
+    ],
+    "region": [
+     8,
+     9460
+    ]
+   }
+  ],
+  "status": "RESOLVED",
+  "termination": null
  },
  "real/goimage_no_compress.tiff": {
   "candidates": [
@@ -196,9 +245,42 @@
   "termination": null
  },
  "real/goimage_video-001-paletted.tiff": {
-  "candidates": [],
-  "status": "FAILED",
-  "termination": "exhausted"
+  "candidates": [
+   {
+    "key": [
+     150,
+     103,
+     8,
+     8,
+     1,
+     "tiff_compression_8",
+     9460,
+     [
+      1,
+      null,
+      [
+       [
+        8,
+        4340
+       ],
+       [
+        4340,
+        9460
+       ]
+      ],
+      54,
+      null,
+      null
+     ]
+    ],
+    "region": [
+     8,
+     9460
+    ]
+   }
+  ],
+  "status": "RESOLVED",
+  "termination": null
  },
  "real/goimage_video-001-strip-64.tiff": {
   "candidates": [],

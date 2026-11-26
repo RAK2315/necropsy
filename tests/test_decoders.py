@@ -544,3 +544,106 @@ def test_lzw_never_raises(data, cap):
 def test_lzw_never_raises_on_arbitrary_range(data, s, e):
     r = lzw_tiff_decode(data, s, e, 8)
     assert isinstance(r, DecodeResult) and r.status in STATUSES
+
+
+# ---- deflate_zlib_decode (format-coverage Requirement 13, Task 25) ----
+import zlib  # noqa: E402
+
+from necropsy.engine.decoders import deflate_zlib_decode  # noqa: E402
+
+
+def dz(body, out, start=0, end=None):
+    return deflate_zlib_decode(body, start, len(body) if end is None else end, out)
+
+
+def test_deflate_exact_stream_is_ok():  # Req 13.6
+    data = b"abcabcabc" * 20
+    enc = zlib.compress(data)
+    r = dz(enc, len(data))
+    assert (r.status, r.data, r.consumed_to) == ("ok", data, len(enc))
+
+
+def test_deflate_trailing_bytes_are_unconsumed():  # Req 13.6
+    data = b"hello world"
+    enc = zlib.compress(data)
+    r = dz(enc + b"\x00\x01", len(data))
+    assert (r.status, r.data, r.consumed_to) == ("unconsumed", None, len(enc))
+
+
+def test_deflate_corrupt_checksum_is_malformed_at_start():  # Req 13.4
+    enc = bytearray(zlib.compress(b"hello world"))
+    enc[-1] ^= 0xFF  # the Adler-32 checksum
+    r = dz(b"zz" + bytes(enc), 11, start=2)
+    assert (r.status, r.data, r.consumed_to) == ("malformed", None, 2)
+    assert r.detail
+
+
+def test_deflate_not_a_zlib_stream_is_malformed():  # Req 13.4
+    assert dz(b"\x00\x01\x02\x03", 4).status == "malformed"
+
+
+def test_deflate_truncated_stream_is_underrun_at_end():  # Req 13.5
+    enc = zlib.compress(bytes(range(256)) * 4)[:-6]
+    r = dz(enc, 1024)
+    assert (r.status, r.data, r.consumed_to) == ("underrun", None, len(enc))
+
+
+def test_deflate_short_output_is_underrun_after_the_stream():  # Req 13.5
+    enc = zlib.compress(b"abc")
+    r = dz(enc + b"xy", 10)
+    assert (r.status, r.consumed_to) == ("underrun", len(enc))
+    r = dz(enc, 10)
+    assert (r.status, r.consumed_to) == ("underrun", len(enc))
+
+
+def test_deflate_one_byte_too_long_is_overrun_without_output():  # Req 13.3
+    enc = zlib.compress(b"abcd")
+    r = dz(enc, 3)
+    assert r.status == "overrun" and r.data is None
+    assert r.consumed_to == len(enc)  # the whole input was read to make max_output_bytes + 1
+
+
+def test_deflate_empty_output_is_ok():
+    enc = zlib.compress(b"")
+    r = dz(enc, 0)
+    assert (r.status, r.data, r.consumed_to) == ("ok", b"", len(enc))
+
+
+def test_deflate_honours_start_and_end_and_invalid_arguments():
+    enc = zlib.compress(b"xyz")
+    r = dz(b"zz" + enc + b"yy", 3, start=2, end=2 + len(enc))
+    assert (r.status, r.data, r.consumed_to) == ("ok", b"xyz", 2 + len(enc))
+    assert dz(enc, 3, start=5, end=len(enc) + 5).status == "underrun"
+    assert deflate_zlib_decode(enc, 0, len(enc), -1).status == "underrun"
+
+
+def test_deflate_bomb_is_bounded_by_max_output_bytes():  # Req 13.2, 13.3, 15.4
+    import tracemalloc
+    bomb = zlib.compress(bytes(64 * 1024 * 1024), 9)  # 64 MiB of zeros in about 64 KB
+    assert len(bomb) < 1024 * 1024
+    tracemalloc.start()
+    try:
+        r = dz(bomb, 1000)
+        _, peak = tracemalloc.get_traced_memory()
+    finally:
+        tracemalloc.stop()
+    assert r.status == "overrun" and r.data is None
+    assert peak < 4 * 1024 * 1024  # never close to the 64 MiB the stream declares
+
+
+@given(st.binary(max_size=300), st.integers(-5, 5000))
+@settings(max_examples=200, deadline=None)
+def test_deflate_never_raises(data, cap):
+    r = deflate_zlib_decode(data, 0, len(data), cap)
+    assert isinstance(r, DecodeResult) and r.status in STATUSES
+    if r.status == "ok":
+        assert len(r.data) == cap
+    else:
+        assert r.data is None
+
+
+@given(st.binary(max_size=64), st.integers(-10, 100), st.integers(-10, 100))
+@settings(max_examples=200, deadline=None)
+def test_deflate_never_raises_on_arbitrary_range(data, s, e):
+    r = deflate_zlib_decode(data, s, e, 8)
+    assert isinstance(r, DecodeResult) and r.status in STATUSES

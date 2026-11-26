@@ -52,6 +52,14 @@ EXCEPTIONS = {
     # 500,000 pixel budget (Requirement 2.9), so the service sends no image. The engine's decoded bytes were compared with
     # Pillow's offline (26 Nov 2026: all 24,335,990 pixels equal).
     "libtiff_lzw-single-strip.tiff": ("payload_limit", "24.3 million pixels exceed the render's pixel budget (Requirement 2.9)"),
+    # format-coverage Task 25 (Requirement 13.1, design.md row 25): Deflate TIFFs now resolve. goimage_video-001-paletted.tiff
+    # is a palette TIFF, so its render is grey while Pillow's is coloured (ColorMap, tag 320, unread). The decoded indices
+    # equal Pillow's (committed row: "match"). goimage_invalid-palette-ref.tiff decodes the same region; Pillow refuses it
+    # (UnidentifiedImageError, an OSError). goimage_bw-deflate.tiff needs no exception: web/pixels.py honours photometric 0
+    # for 1-bit TIFF (_grey inverts WhiteIsZero), so its render equals Pillow's.
+    "goimage_video-001-paletted.tiff": ("render_pending", "palette TIFF: ColorMap (tag 320) is not read, so the render is "
+                                                         "grey where Pillow's is coloured"),
+    "goimage_invalid-palette-ref.tiff": ("pillow_fails", "Pillow refuses the file (UnidentifiedImageError); design.md row 25"),
     "libtiff_palette-1c-8b.tiff": ("render_pending", "palette TIFF: ColorMap (tag 320) is not read, so the render is grey "
                                                       "where Pillow's is coloured"),
 }

@@ -6,6 +6,7 @@ consumed_to is the index of the first byte not consumed.
 """
 from __future__ import annotations
 
+import zlib
 from dataclasses import dataclass
 from typing import Optional
 
@@ -150,11 +151,17 @@ def _run_lzw_tiff(data, start, end, h, max_output_bytes) -> DecodeResult:
     return lzw_tiff_decode(data, start, end, max_output_bytes)
 
 
+def _run_deflate_zlib(data, start, end, h, max_output_bytes) -> DecodeResult:
+    return deflate_zlib_decode(data, start, end, max_output_bytes)
+
+
 DECODERS = {
     "pnm_text": _run_pnm_text,
     "rle_tga": _run_rle_tga,
     "tiff_compression_32773": _run_packbits,
     "tiff_compression_5": _run_lzw_tiff,
+    "tiff_compression_8": _run_deflate_zlib,
+    "tiff_compression_32946": _run_deflate_zlib,
 }
 
 # Requirement 2.12: decoder state -> closure rejection reason.
@@ -366,3 +373,40 @@ def _lzw_tiff_decode(data, start, end, max_output_bytes) -> DecodeResult:
             if new_width:
                 width = new_width
         prev = entry
+
+
+def deflate_zlib_decode(data, start, end, max_output_bytes) -> DecodeResult:
+    """Inflate a zlib stream (TIFF Compression 8 and 32946) in data[start:end]. Never raises.
+
+    One zlib decompressor object, called once with max_length = max_output_bytes + 1 (Requirement 13.2),
+    so the output never grows past one byte over the bound. consumed_to follows Requirements 13.3 to 13.6.
+    """
+    try:
+        return _deflate_zlib_decode(data, start, end, max_output_bytes)
+    except Exception as exc:  # last line of defence; inner code is written not to raise
+        return _fail("underrun", start if isinstance(start, int) else 0, "internal error: " + type(exc).__name__)
+
+
+def _deflate_zlib_decode(data, start, end, max_output_bytes) -> DecodeResult:
+    for v in (start, end, max_output_bytes):
+        if not isinstance(v, int) or isinstance(v, bool):
+            return _fail("underrun", 0, "non-integer argument")
+    if start < 0 or end > len(data) or start > end or max_output_bytes < 0:
+        return _fail("underrun", start, "invalid arguments")
+
+    d = zlib.decompressobj()
+    try:
+        out = d.decompress(bytes(data[start:end]), max_output_bytes + 1)  # max_length >= 1: never "unlimited"
+    except zlib.error as exc:
+        return _fail("malformed", start, "zlib error: %s" % exc)
+
+    if len(out) > max_output_bytes:
+        return _fail("overrun", end - len(d.unconsumed_tail), "stream inflates past %d bytes" % max_output_bytes)
+    if not d.eof:
+        return _fail("underrun", end, "zlib stream is not complete after %d bytes of output" % len(out))
+    stream_end = end - len(d.unused_data)
+    if len(out) < max_output_bytes:
+        return _fail("underrun", stream_end, "output is %d bytes, expected %d" % (len(out), max_output_bytes))
+    if d.unused_data:
+        return _fail("unconsumed", stream_end, "%d bytes remain after the zlib stream" % len(d.unused_data))
+    return DecodeResult("ok", out, end, "")

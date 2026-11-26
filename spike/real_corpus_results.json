@@ -43,11 +43,24 @@
   "scope": "out",
   "scope_reason": "compression Deflate",
   "invalid_by_construction": false,
-  "our_status": "FAILED",
-  "stage": null,
-  "termination": "exhausted",
-  "checks": 3,
-  "candidates": [],
+  "our_status": "RESOLVED",
+  "stage": "probe",
+  "termination": null,
+  "checks": 1,
+  "candidates": [
+   {
+    "width": 153,
+    "height": 55,
+    "bit_depth": 1,
+    "header_size": 8,
+    "row_alignment": 1,
+    "encoding": "tiff_compression_32946",
+    "probe": "tiff",
+    "path": [],
+    "data_start": 8,
+    "data_end": 305
+   }
+  ],
   "expected_status": "FAILED",
   "note": "",
   "pillow_error": null,
@@ -57,8 +70,10 @@
    153,
    55
   ],
-  "pixel_verdicts": [],
-  "pillow_pixels_sha256": null
+  "pixel_verdicts": [
+   "stored bytes; equals Pillow after WhiteIsZero inversion (tag 262 = 0)"
+  ],
+  "pillow_pixels_sha256": "f1686fc100a21243edaedc78b25638f37a4ad2d09dbf7d3e8f6b535828bdd67f"
  },
  {
   "file": "goimage_bw-gopher_ccittGroup3.tiff",
@@ -188,13 +203,26 @@
   "scope": "out",
   "scope_reason": "compression Adobe Deflate, 2 strips",
   "invalid_by_construction": true,
-  "our_status": "FAILED",
-  "stage": null,
-  "termination": "exhausted",
-  "checks": 3,
-  "candidates": [],
+  "our_status": "RESOLVED",
+  "stage": "probe",
+  "termination": null,
+  "checks": 1,
+  "candidates": [
+   {
+    "width": 150,
+    "height": 103,
+    "bit_depth": 8,
+    "header_size": 8,
+    "row_alignment": 1,
+    "encoding": "tiff_compression_8",
+    "probe": "tiff",
+    "path": [],
+    "data_start": 8,
+    "data_end": 9460
+   }
+  ],
   "expected_status": "FAILED",
-  "note": "",
+  "note": "Row 25 of format-coverage design.md: RESOLVED. It decodes the same region as goimage_video-001-paletted.tiff; Pillow refuses it (UnidentifiedImageError), so there is no pixel comparison.",
   "pillow_error": "UnidentifiedImageError: cannot identify image file 'goimage_invalid-palette-ref.tiff'",
   "pillow_decodes": false,
   "pillow_mode": null,
@@ -320,11 +348,24 @@
   "scope": "out",
   "scope_reason": "compression Adobe Deflate, 2 strips",
   "invalid_by_construction": false,
-  "our_status": "FAILED",
-  "stage": null,
-  "termination": "exhausted",
-  "checks": 3,
-  "candidates": [],
+  "our_status": "RESOLVED",
+  "stage": "probe",
+  "termination": null,
+  "checks": 1,
+  "candidates": [
+   {
+    "width": 150,
+    "height": 103,
+    "bit_depth": 8,
+    "header_size": 8,
+    "row_alignment": 1,
+    "encoding": "tiff_compression_8",
+    "probe": "tiff",
+    "path": [],
+    "data_start": 8,
+    "data_end": 9460
+   }
+  ],
   "expected_status": "FAILED",
   "note": "",
   "pillow_error": null,
@@ -334,8 +375,10 @@
    150,
    103
   ],
-  "pixel_verdicts": [],
-  "pillow_pixels_sha256": null
+  "pixel_verdicts": [
+   "match"
+  ],
+  "pillow_pixels_sha256": "499c41f2c01e1d74add3899fbaa032ddaf566fca2c2fcdf1871d4641589ae745"
  },
  {
   "file": "goimage_video-001-strip-64.tiff",

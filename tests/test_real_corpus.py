@@ -105,10 +105,19 @@ TIFF_PACKBITS_RESOLVED = {"goimage_bw-packbits.tiff"}
 # libtiff_lzw-single-strip.tiff, also listed in row 24, ends without EOI: 3,043,950 bytes out, 5 bits left at width 10.
 # Requirement 12.8 (b), as amended (Decision Record item 33 of the engine spec), accepts that end.
 TIFF_LZW_RESOLVED = {"goimage_blue-purple-pink.lzwcompressed.tiff", "libtiff_lzw-single-strip.tiff"}
+# format-coverage Requirement 13.1 to 13.6 and design.md row 25: the Deflate decoder (compression 8 and 32946) resolves these
+# three files. Their manifest scope is rewritten in Task 37; the full TIFF expectations belong to Task 28.
+# goimage_bw-deflate.tiff: the engine returns stored bytes; they equal Pillow's after WhiteIsZero inversion (tag 262 = 0).
+# goimage_video-001-paletted.tiff: pixels equal Pillow's (mode P indices).
+# goimage_invalid-palette-ref.tiff: decodes the same region as the paletted file; Pillow refuses it (UnidentifiedImageError).
+BW_DEFLATE = "goimage_bw-deflate.tiff"
+INVALID_PALETTE_REF = "goimage_invalid-palette-ref.tiff"
+TIFF_DEFLATE_RESOLVED = {BW_DEFLATE, "goimage_video-001-paletted.tiff", INVALID_PALETTE_REF}
 OUT_OF_SCOPE = [n for n in FILES if scope_of(n) == "out" and n != OSSFUZZ and n not in TIFF_TILES_RESOLVED
                 and n not in PNM_RESOLVED and n not in PNM_TEXT_RESOLVED and n not in RLE_TGA_RESOLVED
                 and n not in PCX_PLANAR_RESOLVED and n not in TIFF_STRIPS_RESOLVED
-                and n not in TIFF_PACKBITS_RESOLVED and n not in TIFF_LZW_RESOLVED]
+                and n not in TIFF_PACKBITS_RESOLVED and n not in TIFF_LZW_RESOLVED
+                and n not in TIFF_DEFLATE_RESOLVED]
 
 
 @pytest.mark.parametrize("name", sorted(TIFF_STRIPS_RESOLVED))
@@ -132,6 +141,12 @@ def test_tiff_packbits_files_resolve(name):
 @pytest.mark.parametrize("name", sorted(TIFF_LZW_RESOLVED))
 def test_tiff_lzw_files_resolve(name):
     # Requirement 12.1 to 12.10; format-coverage Task 24.
+    assert run(name)[1].status == "RESOLVED"
+
+
+@pytest.mark.parametrize("name", sorted(TIFF_DEFLATE_RESOLVED))
+def test_tiff_deflate_files_resolve(name):
+    # Requirement 13.1 to 13.6; format-coverage Task 25, design.md row 25.
     assert run(name)[1].status == "RESOLVED"
 
 
@@ -168,6 +183,14 @@ def test_out_of_scope_is_a_stated_refusal(name):
 
 @pytest.mark.parametrize("name", [n for n in rc.INVALID_BY_CONSTRUCTION if n != OSSFUZZ])
 def test_five_invalid_files_fail(name):
+    if name == INVALID_PALETTE_REF:
+        # Documented exception, format-coverage design.md row 25: the Deflate decoder resolves this file (it decodes the
+        # same region as goimage_video-001-paletted.tiff). Pillow refuses it, which the committed row records.
+        assert run(name)[1].status == "RESOLVED"
+        assert COMMITTED[name]["pillow_decodes"] is False
+        assert COMMITTED[name]["pillow_error"].startswith("UnidentifiedImageError")
+        assert run(name)[1].candidate.decoded == run("goimage_video-001-paletted.tiff")[1].candidate.decoded
+        return
     assert run(name)[1].status == "FAILED"
 
 
@@ -270,3 +293,27 @@ def test_committed_pillow_hashes_hold_with_a_live_decode(name):
     theirs = rc.pillow_canonical(rc.REAL / name, MANIFEST[name])
     assert isinstance(theirs, tuple)
     assert hashlib.sha256(theirs[0]).hexdigest() == COMMITTED[name]["pillow_pixels_sha256"]
+
+
+BW_VERDICT = "stored bytes; equals Pillow after WhiteIsZero inversion (tag 262 = 0)"
+
+
+def test_bw_deflate_verdict_is_recorded_as_a_documented_difference():
+    # Design.md row 25. Tag 262 = 0 (WhiteIsZero): the engine returns stored bytes, Pillow inverts on load.
+    assert COMMITTED[BW_DEFLATE]["pixel_verdicts"] == [BW_VERDICT]
+
+
+@pytest.mark.skipif(not rc_has_pillow(), reason="Pillow not installed")
+def test_bw_deflate_stored_bits_inverted_equal_pillows_pixels():
+    # All 153 x 55 pixels; the padding bits of each 20-byte row (7 bits) are excluded. Requirement 13.1; design.md row 25.
+    from PIL import Image
+    data, result = run(BW_DEFLATE)
+    c = result.candidate
+    assert (c.hypothesis.width, c.hypothesis.height, c.hypothesis.bit_depth) == (153, 55, 1)
+    with Image.open(rc.REAL / BW_DEFLATE) as im:
+        im.load()
+        assert im.mode == "1" and im.size == (153, 55)
+        for y in range(55):
+            for x in range(153):
+                stored = (c.decoded[y * c.row_stride + x // 8] >> (7 - x % 8)) & 1
+                assert (1 - stored) == (1 if im.getpixel((x, y)) else 0), (x, y)
