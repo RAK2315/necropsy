@@ -272,8 +272,13 @@ def _parse(layout, data):
 
     if start < 0 or end < start or end > len(data):
         raise _Err("data region out of range")
-    raw_row = -(-(width * depth) // 8)
-    stride = -(-raw_row // align) * align
+    if img.get("row_bytes") is not None:
+        stride = _eval(img["row_bytes"], env)    # Req 17.4: declared scanline bytes
+        if stride < 1:
+            raise _Err("non-positive row_bytes")
+    else:
+        raw_row = -(-(width * depth) // 8)
+        stride = -(-raw_row // align) * align
     expected = stride * height
     if enc == "none":
         if end - start != expected:
@@ -283,7 +288,7 @@ def _parse(layout, data):
         pixels = _rle_pcx(data, start, end, expected)
     return {
         "ok": True, "width": width, "height": height, "bit_depth": depth,
-        "row_alignment": align, "encoding": enc, "data_start": start,
+        "row_alignment": align, "row_stride": stride, "encoding": enc, "data_start": start,
         "data_end": end, "pixels": pixels, "fields": fields,
     }
 

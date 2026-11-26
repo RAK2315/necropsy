@@ -328,6 +328,12 @@ def _data(lay: dict, cand, origin: str) -> list:
         % (_ex(img.get("width")), _ex(img.get("height")), _ex(img.get("bit_depth")),
            img.get("row_alignment"), "" if img.get("row_alignment") == 1 else "s")
     )
+    if img.get("row_bytes") is not None:
+        out.append(
+            "THE parser SHALL read each scanline as `planes` planes of `bytes_per_line` bytes, "
+            "plane 0 first, so that the row stride is row_bytes = %s bytes and rows are not "
+            "padded further." % _ex(img["row_bytes"])
+        )
     if origin == "pbm":
         out.append(
             "THE parser SHALL start the data region at the offset after the header's closing "
@@ -380,11 +386,19 @@ def _closure(lay: dict, cand) -> list:
     out = []
     obs = lay.get("observed") or {}
     enc = (lay.get("data") or {}).get("encoding")
-    out.append(
-        "THE parser SHALL accept the data region only when its decoded size equals "
-        "`row_stride` \u00d7 `height` bytes, where row_stride = "
-        "ceil(ceil(width \u00d7 bit_depth / 8) / row_alignment) \u00d7 row_alignment."
-    )
+    planar = (lay.get("image") or {}).get("row_bytes") is not None
+    if planar:
+        out.append(
+            "THE parser SHALL accept the data region only when its decoded size equals "
+            "`row_stride` \u00d7 `height` bytes, where row_stride = row_bytes = %s."
+            % _ex(lay["image"]["row_bytes"])
+        )
+    else:
+        out.append(
+            "THE parser SHALL accept the data region only when its decoded size equals "
+            "`row_stride` \u00d7 `height` bytes, where row_stride = "
+            "ceil(ceil(width \u00d7 bit_depth / 8) / row_alignment) \u00d7 row_alignment."
+        )
     if enc == "none" or isinstance(enc, dict):
         out.append(
             "WHEN the encoding is `none`, THE parser SHALL require data_end - data_start to "
@@ -400,13 +414,23 @@ def _closure(lay: dict, cand) -> list:
         start, end = obs["data_start"], obs["data_end"]
         raw = -(-(w * b) // 8)
         stride = -(-raw // a) * a
+        if planar and cand is not None:
+            stride = cand.row_stride
         expected = cand.expected_decoded_bytes if cand is not None else stride * h
-        out.append(
-            "WHEN parsing the source file, THE parser SHALL find row_stride = ceil(ceil(%d \u00d7 %d / 8) / %d) "
-            "\u00d7 %d = %d bytes, an expected size of %d \u00d7 %d = %d bytes, and a data region "
-            "[%d, %d) of %d bytes, so that closure holds."
-            % (w, b, a, a, stride, stride, h, stride * h, start, end, end - start)
-        )
+        if planar:
+            out.append(
+                "WHEN parsing the source file, THE parser SHALL find row_stride = row_bytes = %d "
+                "bytes, an expected size of %d \u00d7 %d = %d bytes, and a data region "
+                "[%d, %d) of %d bytes, so that closure holds."
+                % (stride, stride, h, stride * h, start, end, end - start)
+            )
+        else:
+            out.append(
+                "WHEN parsing the source file, THE parser SHALL find row_stride = ceil(ceil(%d \u00d7 %d / 8) / %d) "
+                "\u00d7 %d = %d bytes, an expected size of %d \u00d7 %d = %d bytes, and a data region "
+                "[%d, %d) of %d bytes, so that closure holds."
+                % (w, b, a, a, stride, stride, h, stride * h, start, end, end - start)
+            )
         if expected != stride * h:
             out[-1] = out[-1][:-1] + " (decoder output: %d bytes)." % expected
     except Exception:
@@ -461,8 +485,15 @@ def _error_document(message: str) -> str:
     return _document(intro, _GLOSSARY, req)
 
 
+def _is_planar(layout: dict) -> bool:
+    lays = layout.get("candidates") or [layout]
+    return any(isinstance(l, dict) and (l.get("image") or {}).get("row_bytes") is not None
+               for l in lays)
+
+
 def _acceptance_line(layout: dict, ambiguous: bool) -> str:
     module = _safe_slug(layout.get("slug")).replace("-", "_")
+    extra = ", `row_stride`" if _is_planar(layout) else ""
     entry = "parse_candidates(data)" if ambiguous else "parse(data)"
     if ambiguous:
         shape = "a list with one dict per candidate"
@@ -471,10 +502,10 @@ def _acceptance_line(layout: dict, ambiguous: bool) -> str:
     return ("THE file `test_%s.py` SHALL be the acceptance suite for a parser that the reader "
             "implements from this document. It SHALL import a module named `parser_%s` exposing "
             "`%s`, returning %s whose keys `ok`, `fields`, `width`, `height`, `bit_depth`, "
-            "`row_alignment` and `pixels` are the ones the tests read. THE module `parser_%s` "
+            "`row_alignment`%s and `pixels` are the ones the tests read. THE module `parser_%s` "
             "SHALL NOT be emitted, so `pytest` on the folder as emitted SHALL stop with "
             "`ModuleNotFoundError` until the reader supplies it."
-            % (module, module, entry, shape, module))
+            % (module, module, entry, shape, extra, module))
 
 
 def _origin(lay: dict, cand) -> str:
@@ -971,6 +1002,9 @@ def _render_tests(layout: dict, result, data) -> str:
         head.append("    %s," % repr(rec))
     head.append("]")
     body = _TESTS_AMBIGUOUS if ambiguous else _TESTS_SINGLE
+    if _is_planar(layout):
+        # Requirement 17.4: the scanline length is declared, so the parser reports it.
+        body = body.replace('_stride(r["width"], r["bit_depth"], r["row_alignment"])', 'r["row_stride"]')
     text = "\n".join(head) + "\n\n" + _TESTS_COMMON + body
     compile(text, "test_%s.py" % module, "exec")
     return text

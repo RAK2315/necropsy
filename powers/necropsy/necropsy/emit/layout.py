@@ -187,6 +187,10 @@ def _candidate_layout(cand, slug: str, rejections=(), data_len=None) -> dict:
             encoding = {"field": "encoding", "values": {"0": "none", "1": "rle_pcx"}}
         out["image"] = {"width": width, "height": height, "bit_depth": "bit_depth",
                         "row_alignment": h.row_alignment}
+        if h.planes > 1 and h.row_bytes is not None:
+            # Requirement 17.4: the scanline is `planes` planes of bytes_per_line bytes.
+            out["image"]["bit_depth"] = {"mul": ["bit_depth", "planes"]}
+            out["image"]["row_bytes"] = {"mul": ["planes", "bytes_per_line"]}
         out["data"] = {"start": 128, "end": None, "encoding": encoding,
                        "trailers": _trailers("pcx")}
     elif origin == "tga":

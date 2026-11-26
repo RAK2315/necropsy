@@ -1,0 +1,32 @@
+{
+  "external/external_a": {
+    "design.md": "93fefa20d72944565727aea45258323c14eae80c44ee3c5f921216ba2ebe8a2a",
+    "requirements.md": "b5eaee196e40955351b28985fd771a986ca7866a017f9cdd5f26bf5505c6156b",
+    "test_pcx.py": "206f042e9d79112e74c7ad7620fcdb246227436cace92eded9db2d2e41ed22b8"
+  },
+  "mystery_b": {
+    "design.md": "974bb7881d3bb6769186ec876314dc11fcdf1454f8567800094318bbc2a29f88",
+    "requirements.md": "97e025ddc6b65c89ea21c473d188ac0f8bd058398037cec64c315631fdf57b48",
+    "test_pcx.py": "225ec93296889246646627d9f085e529df625b2968e176c86c3fca03b5c7f801"
+  },
+  "mystery_h": {
+    "design.md": "d2897f7d57ef5f8d7cd7220b3ba4b57672206ea387298c3e640fe6f251a82706",
+    "requirements.md": "68b8c3e8ffa34a9026aaca146f50431670417acb6401849a5adcf01c2b5f1f14",
+    "test_pcx.py": "74b58a43be5d410dd3e4af06995c352af8c3405c22c4118ca163eaa48b238826"
+  },
+  "mystery_i": {
+    "design.md": "613fb132185d00b95f9a87911b18312d49fe9958929c43f459a0e8374db62361",
+    "requirements.md": "f543cb215dfb658e5286b6149a73fa1d0a87da6624ce79a298e621cc2162a0c0",
+    "test_pcx.py": "378e612aa33eb9012b5fb6e0e54e5864f1db235f331ec49cc3266bba010b7958"
+  },
+  "real/pillow_odd_stride.pcx": {
+    "design.md": "9a89c51aba6dcb0428259d5f784bee6fc2ec68ba3e34ea152016bd27f22bf386",
+    "requirements.md": "9e8a1d6d4ddeb30290945c2021a1b098f52457e6d7b5e0488e5baabf90339efe",
+    "test_pcx.py": "0285a9e65dd646d48e7180d4f84e9fddb18f5c23859eec76ef7df1adc4ee8103"
+  },
+  "real/pillow_pil184.pcx": {
+    "design.md": "6515d8fad6b177443e31b5c119aa07719723e6166880f6cc58a54b4966e07fe7",
+    "requirements.md": "4f04f8e0eb6e59060202c6747955f564daeeece64f91e3462e26bba96b2f622f",
+    "test_pcx.py": "081362c3ccc139265d00ce7ad64b3f94c09ee5ee182e58e1e832c5d491a20fc2"
+  }
+}
