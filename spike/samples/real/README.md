@@ -61,7 +61,7 @@ The previous rules (one PCX plane, uncompressed TGA, uncompressed single-strip T
 
 A file can be in scope by its header and still be invalid: 4 of the 65 in-scope files are invalid by construction (see below).
 
-In scope does not mean the engine recovers the file. `pillow_p_16.tga` is in scope by these rules and comes out `FAILED`, because the engine does not yet read the TGA 2.0 extension area and postage stamp. The top-level README states this as a limit. The measured outcome of every file is in `docs/REAL-CORPUS-RESULTS.md`.
+In scope does not mean the engine recovers the file: 5 of the 65 in-scope files come out `FAILED` (3 invalid by construction and 2 open failures), and one invalid file resolves. The measured outcome of every file is in `docs/REAL-CORPUS-RESULTS.md`.
 
 ## Pillow
 

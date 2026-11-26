@@ -145,13 +145,18 @@ own homework. Check it independently.
   addressed by Decision Record item 16: a file that broke its format's
   rules emits as a one-file layout.
 
-- Held-out set (25 Nov): 55 real files from GDAL, Apache Commons Imaging
-  and TwelveMonkeys, sealed OUTSIDE the repo in
-  `%LOCALAPPDATA%\necropsy-heldout\` (files, manifest, licences). Only
-  the hashes are committed: `spike/samples/heldout/COMMITMENT.md`.
-  Kiro hook `heldout-guard.json` blocks tool calls naming them. Evaluate
-  once, after the `format-coverage` spec is done; `python tools/heldout.py
-  verify` first. Never show Kiro the names or results before then.
+- format-coverage spec (26 Nov): Kiro, 40 tasks, `66e85d3`. Adds PNM
+  P1-P6, TGA RLE, multi-plane PCX, multi-strip/tiled TIFF, PackBits/LZW/
+  Deflate/LZMA. Decision Record now 33 items. Real corpus 61 RESOLVED /
+  20 FAILED. Suite at `66e85d3`: 1628 passed, 2 xfailed (~21 min).
+- Held-out set: 55 files (GDAL, TwelveMonkeys, Commons Imaging), sealed
+  25 Nov (`33469d0`), run ONCE 26 Nov, published with results in
+  `spike/samples/heldout/` (RESULTS.md). It is spent: never rerun it to
+  tune, never show it to Kiro. The guard hook stays on and now also
+  blocks `samples/heldout`. Any later fix to a held-out miss must say so.
+- Open engine gaps (Kiro's lane): TIFF ColorMap unread, 16-bit TGA no
+  renderer, 4-bit RGBA TIFF drawn as grey, TGA extension size < 495
+  rejected, `P4 ` with a space unmatched, design.md corpus counts.
 
 ## Still open
 - Demo video, under 3 minutes, public on YouTube.

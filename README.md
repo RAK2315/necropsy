@@ -23,6 +23,7 @@
   <a href="#from-spec-to-working-parser">Spec to parser</a> ·
   <a href="#how-it-works">How it works</a> ·
   <a href="#proof">Proof</a> ·
+  <a href="#held-out-files">Held-out files</a> ·
   <a href="#for-agents-mcp-server-and-kiro-power">MCP and Power</a> ·
   <a href="#built-with-kiro">Built with Kiro</a>
 </p>
@@ -130,10 +131,10 @@ Inside the engine, every hypothesis passes through the same binary gate. Nothing
 
 ```mermaid
 flowchart TD
-    bytes[/"Raw bytes"/] --> probes{"Probes: PCX, TGA, PBM, TIFF<br/>does a signature match?"}
+    bytes[/"Raw bytes"/] --> probes{"Probes: PCX, TGA, PBM, PNM, TIFF<br/>does a signature match?"}
     probes -- "yes: read the file's declarations" --> seed["Seed hypothesis"]
     probes -- "no probe matched" --> generic["Generic search<br/>header 4 to 256, six integer reads,<br/>bit depths 1, 4, 8, 16, 24, 32<br/>10,000 checks, 5 s"]
-    seed --> gate{{"Closure gate<br/>decoded bytes = stride x height<br/>and the whole region consumed"}}
+    seed --> gate{{"Closure gate<br/>each data range decoded by its declared encoding<br/>decoded bytes = stride x rows, every range consumed"}}
     gate -- "fails" --> revision["Revision, breadth-first to depth 3<br/>inclusive_bounds, rle_pcx, row_padding_variants"]
     revision --> gate
     generic --> gate
@@ -149,10 +150,10 @@ flowchart TD
 
 The engine lives in `necropsy/engine/` and uses only the Python standard library.
 
-1. **Probes read what a file declares.** Four probes (PCX, TGA, PBM, TIFF) read the file's own declarations at their fixed offsets: the PCX encoding byte, the TIFF byte-order mark and BitsPerSample array, the TGA image descriptor and colour map. A signature match always produces a seed, even when the values read are wrong, so a damaged file can still be revised. When a probe matches, the file's declarations are the reading, and generic search does not run.
+1. **Probes read what a file declares.** Five probes (PCX, TGA, PBM, PNM, TIFF) read the file's own declarations at their fixed offsets: the PCX encoding byte, planes and bytes per line, the TGA image type, descriptor and colour map, the PNM magic, size and maximum value, and the TIFF byte-order mark, BitsPerSample array, compression, predictor, and its strip or tile arrays. A signature match always produces a seed, even when the values read are wrong, so a damaged file can still be revised. When a probe matches, the file's declarations are the reading, and generic search does not run.
 2. **Revision recovers what a file does not state.** A seed that fails closure is revised by three strategies: `inclusive_bounds`, `rle_pcx` and `row_padding_variants`. The search is breadth-first to depth 3 and collects every closing candidate at a depth before deciding, so the order strategies are listed in never picks the answer.
 3. **Generic search handles files with no header at all.** It tries header lengths 4 to 256 in steps of 4, widths and heights read as `<H`, `>H`, `<I`, `>I`, `<i` and `>i`, and bit depths 1, 4, 8, 16, 24 and 32, within 10,000 closure checks and 5.0 seconds per run.
-4. **Closure is the gate.** `row_stride = round_up(ceil(width × bit_depth / 8), row_alignment)`. The decoded size must equal `row_stride × height`, and the decoder must stop exactly at the end of the data region. Trailers a file writes about itself (the 769-byte PCX palette, the 26-byte TGA 2.0 footer) come from a registry the gate reads as data. A matched trailer counts as one reading, not a fact: the engine also checks the reading that runs to the end of the file, and reports both if both close.
+4. **Closure is the gate.** `row_stride = round_up(ceil(width × bit_depth / 8), row_alignment)`. Each data range (one region, or a TIFF's strips or tiles) is decoded by the encoding the file declares: none, PCX or TGA run-length, PackBits, LZW, Deflate, LZMA, or PNM numbers written as text. The decoded size must equal `row_stride` times the rows the range holds, and the decoder must stop exactly at the end of the range, with nothing left over. Trailers a file writes about itself (the 769-byte PCX palette, the 26-byte TGA 2.0 footer) come from a registry the gate reads as data. A matched trailer counts as one reading, not a fact: the engine also checks the reading that runs to the end of the file, and reports both if both close.
 5. **Coherence is shown, never used to decide.** Each candidate gets a row-coherence figure (`row_mad_ratio`). On `mystery_d`, the true 8×8 at 8 bpp and a wrong 64×8 at 1 bpp both score 0.3342, and a wrong 8×64 at 1 bpp scores 0.1646, which reads as more coherent than the truth. That measurement is why coherence never gates, promotes or orders anything.
 
 The principle underneath, from the engine spec's Decision Record: **a probe reads declarations and never applies conventions.** "This data is RLE compressed" is a declaration, so a probe reads it. "Width is `xmax − xmin + 1`" is a convention the file does not state, so revision discovers it.
@@ -187,24 +188,54 @@ For each ambiguous file, the true layout is among the closing candidates. Files 
 
 | | Files | Result |
 |---|---:|---|
-| In scope | 65 | **54 RESOLVED and pixel-identical to Pillow** (5 of them after Pillow's WhiteIsZero inversion). 4 RESOLVED with a documented verdict: three 16-bit and 12-bit files where the engine scales samples by `v * 255 // maxval` and Pillow rounds or clips, and `pillow_rgb32rle.tga`, which declares no alpha. 1 RESOLVED with a known interpretation difference (`pillow_rgba16.tga`: Pillow reads bit 15 as alpha, the engine returns raw words). 1 RESOLVED that is invalid by construction and that Pillow refuses (`goimage_invalid-palette-ref.tiff`). 3 FAILED that are invalid by construction. 2 FAILED that are open failures: `pillow_cross_scan_line.tga` and `libtiff_deflate-last-strip-extra-data.tiff`, which Pillow decodes. |
-| Out of scope | 16 | 15 FAILED (CCITT, JPEG, WebP, LogLuv, planar and Predictor 2 TIFF, and one malformed PPM). 1 RESOLVED only as a literal one-file layout, with no format claim made. |
+| In scope | 65 | **54 RESOLVED with decoded pixels identical to Pillow's** (5 of them after Pillow's WhiteIsZero inversion). 3 RESOLVED where only 16-bit or 12-bit scaling differs: the engine shows `v × 255 // maxval`, Pillow rounds or clips. 1 RESOLVED with alpha not compared (`pillow_rgb32rle.tga` declares no alpha; Pillow reports 255). 1 RESOLVED with a recorded mismatch (`pillow_rgba16.tga`: 2 of 8 bytes, because Pillow reads bit 15 as alpha). 1 RESOLVED that is invalid by construction and that Pillow refuses (`goimage_invalid-palette-ref.tiff`, below). 3 FAILED that are invalid by construction. 2 FAILED that Pillow decodes, listed as open failures with their measured reason. |
+| Out of scope | 16 | 15 FAILED with the reason named (CCITT, JPEG, old-style JPEG, WebP, LogLuv, planar configuration 2, Predictor 2, and one malformed PPM). 1 RESOLVED only as a literal one-file layout, with no format claim made. |
 
-Engine totals: 61 RESOLVED, 20 FAILED. **Two in-scope files that Pillow can decode fail, and both are listed as open failures with their measured reason.** The full table is [`docs/REAL-CORPUS-RESULTS.md`](docs/REAL-CORPUS-RESULTS.md), regenerated by `python -m tools.real_corpus`.
+Engine totals: **61 RESOLVED, 20 FAILED**, up from 25 and 56 before the `format-coverage` spec. The two open failures:
+
+- `pillow_cross_scan_line.tga`: its run-length data needs one byte that lies inside its own declared TGA 2.0 footer. Pillow decodes it because it does not read the footer.
+- `libtiff_deflate-last-strip-extra-data.tiff`: its last strip inflates to 8,000 bytes where its rows need 2,000. Its upstream name, `deflate-last-strip-extra-data`, says as much. Principle call 2 does not accept a strip that decodes to more than its rows.
+
+`goimage_invalid-palette-ref.tiff` is invalid because its pixel values point past the end of its palette. It now RESOLVES, because the engine reads palette indices as stored and does not check them against the palette. This is a known limit, not a recovery.
+
+The full table is [`docs/REAL-CORPUS-RESULTS.md`](docs/REAL-CORPUS-RESULTS.md), regenerated by `python -m tools.real_corpus`.
 
 ### The recovered image is what the file declares
 
-The image on screen follows the file's own declarations: B,G,R order for TGA, R,G,B for TIFF, TIFF's WhiteIsZero, and the TGA colour map from its declared first entry. Across the corpus, wherever Pillow can open the file and NECROPSY renders it, the two images are identical on 28 of 29 readings. The one difference is `mystery_e`, a TIFF that declares no photometric interpretation: NECROPSY shows it as BlackIsZero and says so on screen.
+The image on screen follows the file's own declarations: B,G,R order for TGA, R,G,B for TIFF, TIFF's WhiteIsZero, the TGA colour map from its declared first entry, the PCX header palette for planar files, and the PNM maximum value. A check separate from the corpus tool compared the picture the web service actually sends (`web.serialise.to_payload`) with Pillow's decode, on all 61 real files that resolve: **50 are identical byte for byte.** Of the other 11:
+
+- 2 palette TIFFs show grey where Pillow shows colour: the decoded indices are right, but the TIFF ColorMap tag is not read.
+- 3 TGA files with 16-bit pixels have no picture: there is no renderer for them yet.
+- 3 are 16-bit or 12-bit, where the picture is scaled to 8 bits differently from Pillow (above).
+- 1 is not previewed because it is too large for the payload (a 7795 × 3122 LZW TIFF).
+- 2 are files Pillow refuses.
+
+Among the samples, `mystery_e` is a TIFF that declares no photometric interpretation: NECROPSY shows it as BlackIsZero and says so on screen.
+
+### Held-out files
+
+The `format-coverage` work (PNM P1 to P6, TGA run-length, multi-plane PCX, multi-strip, tiled and compressed TIFF) was measured on a set of real files that the agent building it never saw.
+
+- **Fixed before the work began.** On 25 Nov, before Kiro wrote any `format-coverage` code, Claude Code took 55 real files from three decoder test suites the corpus above does not use (GDAL, TwelveMonkeys, Apache Commons Imaging), all under permissive licences and pinned to commits. The files were kept outside the repository. Only their hashes were committed ([`COMMITMENT.md`](spike/samples/heldout/COMMITMENT.md), commit `33469d0`).
+- **Kept away from the agent.** A Kiro `PreToolUse` hook (`.kiro/hooks/heldout-guard.json`) blocked any agent tool call that named them.
+- **Run once.** On 26 Nov, Claude Code evaluated the finished engine on them once. The published manifest matches the committed hashes, which `python tools/heldout.py verify` checks.
+
+| | Files | Result |
+|---|---:|---|
+| In scope | 52 | **43 RESOLVED**: 39 with pixels identical to Pillow's; 3 that Pillow refuses; 1 with no renderer (16-bit TGA). 9 FAILED: 4 invalid by construction, which Pillow also refuses; 1 valid file that Pillow also refuses; **4 valid files that Pillow decodes and NECROPSY does not**. |
+| Out of scope | 3 | 3 FAILED with the reason named (Predictor 2, planar configuration 2). |
+
+The four misses are a TGA 2.0 extension-area size rule that rejects two TGA files (one of them written by Autodesk 3ds Max), a binary PBM whose magic is followed by a space instead of a newline, and a PackBits strip that ends inside a packet. Of the three files Pillow refuses, two multi-plane PCX files render identically to sibling files that Pillow does read. The third, a 4-bit RGBA TIFF, resolves but is drawn wrongly, as grey. Every file, cause and caveat is in [`spike/samples/heldout/RESULTS.md`](spike/samples/heldout/RESULTS.md). The numbers above are the single run, as it came out.
 
 ### Tests
 
-At commit `a54b7ce`, in GitHub Actions (Ubuntu):
+At commit `66e85d3`, run locally (Windows, Python 3.10.11):
 
-- **Python suite: 995 passed**, 1 skipped (the real-corpus test for open in-scope failures, whose list is empty), after UI task 39 (25 Nov).
+- **Python suite: 1628 passed, 2 expected failures** (the two open in-scope failures above, held as strict expected failures, so the suite fails if either starts to pass before the record is updated).
 - **Front-end tests: 27 passed.**
-- **Property tests:** 35 Hypothesis `@given` tests across 13 files cover the 17 numbered correctness properties in the engine design, including "Never raises", "Closure soundness", "Coherence cannot change the outcome" and "Emitted layout reproduces the engine".
+- **Property tests:** 76 Hypothesis `@given` tests across 34 files, covering the 17 numbered correctness properties in the engine design, including "Never raises", "Closure soundness", "Coherence cannot change the outcome" and "Emitted layout reproduces the engine". Every new decoder and probe has a never-raises property test.
 - **Browser checks:** tests that drive the real page in headless Chrome or Edge (keyboard, contrast, error copy, downloads) run in CI.
-- **Break checks:** `tools/break_check.py` applies a deliberate defect, confirms the named test fails, and restores the file byte for byte. One of them replaces the parser with a do-nothing parser and confirms every emitted RLE spec fails it.
+- **Break checks:** `tools/break_check.py` applies a deliberate defect, confirms the named test fails, and restores the file byte for byte. One of them replaces the parser with a do-nothing parser and confirms every emitted RLE spec fails it. For the new layouts, Kiro's 13 breaks (`tests/break_checks/new_layouts.json`) and 6 written independently by Claude Code against the principle calls (`tests/break_checks/principle_calls.json`: leftover bytes after a Deflate stream, after an LZW end code, after a full LZW strip, after a full TGA picture; Predictor 2 decoded as 1; a PNM sample above its maximum) were all caught, and every file was restored byte for byte.
 
 [`.github/workflows/tests.yml`](.github/workflows/tests.yml) runs both suites on every push and pull request.
 
@@ -233,7 +264,7 @@ The final acceptance pass ran on the live URL at 1280×720, each beat in a fresh
 
 NECROPSY is also a tool other agents can call. `necropsy_mcp/` exposes the engine over MCP (stdio, official SDK `mcp==2.3.0`):
 
-- **`analyse`** returns the web payload with three things removed to keep it readable: the pixel buffers, the emitted spec, and each field's `value_repr`. Tests prove it equals the web serialiser's output minus exactly those keys, byte for byte, on all 92 corpus files. The largest result in the corpus is 25,890 characters (`mystery_d`), under the 30,000 at which Kiro truncates a tool result.
+- **`analyse`** returns the web payload with three things removed to keep it readable: the pixel buffers, the emitted spec, and each field's `value_repr`. Tests prove it equals the web serialiser's output minus exactly those keys, byte for byte, on all 92 corpus files. The largest result in the corpus is 25,891 characters (`mystery_d`), under the 30,000 at which Kiro truncates a tool result.
 - **`emit_spec`** returns the spec folder's files inline and writes nothing.
 
 [`powers/necropsy/`](powers/necropsy) packages the same server as a **Kiro Power**, with a bundled copy of the engine and an `unknown-file` skill that tells the agent to report every candidate and choose none. Installed in a separate empty workspace and asked about `mystery_d`, Kiro listed all 18 candidates and chose none. Install steps are in [`powers/necropsy/README.md`](powers/necropsy/README.md).
@@ -281,10 +312,12 @@ node --test tests/ui/js/logic.test.mjs tests/ui/js/screens.test.mjs
 NECROPSY's claim is that it never reports what it did not establish, and that includes its own limits.
 
 - **Raster images.** A layout is width, height, bit depth, row alignment, header and data region.
-- **Uncompressed and PCX RLE are decoded.** TGA RLE and compressed TIFF are recognised from their declarations and reported as unsupported.
-- **Single-strip TIFF, single-plane PCX.** Multi-strip TIFF and multi-plane PCX come out `FAILED`.
+- **Formats:** PCX (one or more planes, uncompressed or run-length), TGA (image types 1, 2, 3 and run-length 9, 10, 11), PBM, PGM and PPM (P1 to P6), and TIFF (one strip, several strips or tiles; uncompressed, PackBits, LZW, Deflate or LZMA).
+- **Refused, with the reason named:** CCITT G3 and G4, JPEG, old-style JPEG, WebP, SGILog and ZSTD TIFF; planar configuration 2; any TIFF Predictor other than 1. These are recognised from the file's declarations and never decoded as something else.
+- **Not read:** the TIFF ColorMap (palette TIFFs show their indices as grey), TIFF FillOrder, old-style LSB-first LZW, and LZMA in any form but xz.
+- **The TGA 2.0 extension area must declare at least 495 bytes.** Files that declare less are not recovered: two in the held-out set declare 494 and 0, and the first names Autodesk 3ds Max as its writer.
 - **Rows are shown as stored.** The TGA origin bit is read and reported, not acted on.
-- **16-bit images are recovered but not previewed.** They resolve with their full evidence; the UI has no 16-bit renderer.
+- **Not previewed:** 16-bit TGA pixels, and any image over the payload's pixel budget. These resolve with their full evidence but show no picture.
 - **A probe match decides the reading.** A headerless file whose bytes 1 and 2 happen to pass the TGA probe's signature check is examined only as TGA.
 - **Generic search is bounded.** `FAILED` means nothing closed within the axes and budget above, not that no layout exists.
 
@@ -292,7 +325,7 @@ NECROPSY's claim is that it never reports what it did not establish, and that in
 
 Everything here can be checked in [`.kiro/`](.kiro), [`docs/KIRO-LOG.md`](docs/KIRO-LOG.md) and the git history.
 
-**Specs.** Five specs, each with `requirements.md`, `design.md` and `tasks.md`, every task checked:
+**Specs.** Six specs, each with `requirements.md`, `design.md` and `tasks.md`, every task checked:
 
 | Spec | Requirements | Tasks |
 |---|---:|---:|
@@ -301,14 +334,15 @@ Everything here can be checked in [`.kiro/`](.kiro), [`docs/KIRO-LOG.md`](docs/K
 | [`gate-adversary`](.kiro/specs/gate-adversary) | 3 | 3 |
 | [`real-corpus`](.kiro/specs/real-corpus) | 6 | 4 |
 | [`necropsy-mcp`](.kiro/specs/necropsy-mcp) | 6 | 8 |
+| [`format-coverage`](.kiro/specs/format-coverage) | 20 | 40 (task 31 folded into 30) |
 
-**The Decision Record.** The engine requirements open with 27 numbered decisions. Each records a design decision or reversal and the alternatives not taken; most also record the measurement behind it. The design states 17 numbered correctness properties.
+**The Decision Record.** The engine requirements open with 33 numbered decisions. Items 28 to 33 came with the `format-coverage` spec: the five principle calls it was written against, and one reversal (item 33: an LZW strip may end without its end code when its output is exactly full and no whole byte is left). Each records a design decision or reversal and the alternatives not taken; most also record the measurement behind it. The design states 17 numbered correctness properties.
 
 **Steering.** Five files in `.kiro/steering/`. Always on: `project.md` (scope, free-tier hosting, commit discipline) and `parsers.md` (structured errors, never raise, a property test for each parser). Path-scoped: `engine.md` (standard library only, bounds-checked lengths, explicit endianness), `tests.md` (offline, deterministic, fixtures from documented byte layouts) and `ui.md` (the UI calls the engine and never re-implements inference).
 
 `ui.md` never applied. Its pattern was `necropsy/ui/**`, a path that never existed, because the UI was built in `public/` and `web/`, so Kiro never included it automatically. It was found on 25 Nov 2026 during a UI audit; the front end, read by hand, formats the engine's payload and runs no inference of its own. The pattern was corrected on 25 Nov to `public/**` and `web/**`, and `tests/test_steering.py` now fails if any steering pattern matches no tracked file.
 
-**Hooks.** `.kiro/hooks/kiro-usage-log.json` appends every file the Kiro agent saves or creates, with the time and git HEAD, to `docs/KIRO-LOG.md`: 633 rows so far. Files written by commands Kiro ran, rather than by its file tools, are not logged. A git pre-commit hook (`.githooks/pre-commit`) blocks a UTF-8 byte-order mark in `.kiro/`, because a BOM before `---` breaks steering front matter.
+**Hooks.** `.kiro/hooks/kiro-usage-log.json` appends every file the Kiro agent saves or creates, with the time and git HEAD, to `docs/KIRO-LOG.md`: 1,155 rows so far. `.kiro/hooks/heldout-guard.json` runs before every agent tool call and blocks any call that names the held-out files ([above](#held-out-files)). Files written by commands Kiro ran, rather than by its file tools, are not logged. A git pre-commit hook (`.githooks/pre-commit`) blocks a UTF-8 byte-order mark in `.kiro/`, because a BOM before `---` breaks steering front matter.
 
 **Agents.** Three custom agents are defined in `.kiro/agents/` with scoped permissions: `dev` (read, write, shell) implements one task, runs its tests and commits it; `reviewer` (read and shell, no write tool) reviews without editing; `spec` (read and write) is told to write only inside `.kiro/specs/`. In practice the work ran through the default agent: Kiro's session history records no invocation of any of the three. The only subagents it delegated to were its own built-in spec workflow agents (task execution, requirements, requirement detailing).
 
@@ -318,10 +352,10 @@ Everything here can be checked in [`.kiro/`](.kiro), [`docs/KIRO-LOG.md`](docs/K
 
 **Division of work.**
 
-- **Kiro wrote**, through its spec workflow, the specs, the engine, emitter, report, web service, the original front end (UI tasks 1 to 23), MCP server, Power, the example parser and their tests. 103 of the 179 commits at `2f40422` are per-task commits named `Task <n>: ...` (one, `Tasks 10 and 11`, covers two).
+- **Kiro wrote**, through its spec workflow, the specs, the engine, emitter, report, web service, the original front end (UI tasks 1 to 23), MCP server, Power, the example parser and their tests. 146 of the 249 commits at `66e85d3` are per-task commits named `Task <n>: ...`. Kiro wrote the `format-coverage` spec and ran its 40 tasks from a single prompt; the questions it stopped to ask are recorded in its commits.
 - **Claude Code built the final UI clarity passes**, outside Kiro's spec workflow, on Rehaan's call of 25 Nov 2026: UI tasks 24 to 28, which are the landing page, the state line under the header, a title and plain-word line on every region (the glossary in `public/js/words.js`), the replay caption and pending placeholder, and the ambiguity grid. A second pass on 25 Nov, also Rehaan's call, added UI tasks 29 to 36: a single-column result in reading order, the evidence (bytes and header values) collapsed by default, the recovered image scaled to fill its frame, a sample click that runs the same busy upload flow as a dropped file, a bigger and slower replay, a light and dark theme switch, a more visible "Examine another file" button, and self-hosted Roboto and Poppins fonts. A third pass, also on 25 Nov, added UI tasks 37 to 39: three real pictures from ImageMagick's and Pillow's test suites lead the sample list, and the engine's recorded steps are shown one by one on the examining screen before the result opens (task 39 supersedes 37, which hid the replay's controls during its first run). A fourth pass the same day added UI tasks 40 to 46: the header stays on screen, the evidence is shown in full again (reversing task 30), every finding is explained in plain words (why the reading fits, what each step and correction did, what each header value holds), files that fit at the first check show that check too, a favicon and a home link, a rewritten landing page, and a formatting cleanup. UI task 47 set the reading cards out as labelled rows. That is the whole visible surface of the product as it stands. Claude Code also wrote those tasks' tests, edited older Kiro-written UI tests where the markup changed, and fixed `.kiro/steering/ui.md`. Commits are named `UI task <n>:`; the record, with every break-and-restore run, is [`docs/UI-CLARITY-PASS.md`](docs/UI-CLARITY-PASS.md).
 - **Claude Code** also did the scaffolding, git, CI, deploy configuration, the steering, hook and agent files, this README and its icon, and the prompts Rehaan gave Kiro (written in a separate Claude chat until 20 Nov, in Claude Code after that).
-- **Claude Code also verified Kiro's work independently**, from the spec rather than the code: the independent reimplementation above, pixel comparisons against Pillow, and a do-nothing parser run against every emitted RLE spec. Commits made with Claude Code carry a `Co-Authored-By: Claude` trailer: 49 of them up to and including the `UI task 39` commit.
+- **Claude Code also verified Kiro's work independently**, from the spec rather than the code: the independent reimplementation above, pixel comparisons against Pillow, a do-nothing parser run against every emitted RLE spec, and, for `format-coverage`, its own render-versus-Pillow check, six break checks on the principle calls, and the held-out set (sourced, sealed and run once). It also made the principle calls that spec was written against, on Rehaan's delegation, and recorded them as such. Commits made with Claude Code carry a `Co-Authored-By: Claude` trailer: 53 of the 249 at `66e85d3`.
 
 ## Repository layout
 
@@ -336,7 +370,7 @@ powers/necropsy/       Kiro Power: the server bundled with a skill
 public/                static front end and the sample files it offers
 examples/              a parser Kiro wrote from an emitted spec, clean room
 tests/                 engine, emitter and property tests; tests/ui/ for the service and front end
-spike/                 corpus generator, samples, real files, independent verification
+spike/                 corpus generator, samples, real files, held-out files, independent verification
 tools/                 usage-log hook, BOM guard, browser probes, deploy helpers
 docs/                  Kiro usage log, acceptance captures, README images
 .github/workflows/     CI
