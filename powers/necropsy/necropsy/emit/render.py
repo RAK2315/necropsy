@@ -580,6 +580,26 @@ def _data(lay: dict, cand, origin: str) -> list:
     return out
 
 
+_COMPRESSED_TIFF_ENCODINGS = ("packbits", "lzw_tiff", "deflate_zlib", "lzma_xz")
+_TIFF_COMPRESSION_NAMES = {
+    "tiff_compression_32773": "packbits", "tiff_compression_5": "lzw_tiff",
+    "tiff_compression_8": "deflate_zlib", "tiff_compression_32946": "deflate_zlib",
+    "tiff_compression_34925": "lzma_xz",
+}
+
+
+def _compressed_tiff_name(enc, cand):
+    """The emitted name of the candidate's compressed TIFF encoding, or None.
+
+    A TIFF layout of kind `format` carries the whole compression mapping (a dict), so the
+    candidate's own encoding decides which name the closure line states."""
+    if isinstance(enc, str):
+        return enc if enc in _COMPRESSED_TIFF_ENCODINGS else None
+    if isinstance(enc, dict) and cand is not None:
+        return _TIFF_COMPRESSION_NAMES.get(getattr(cand.hypothesis, "encoding", None))
+    return None
+
+
 def _closure(lay: dict, cand) -> list:
     out = []
     obs = lay.get("observed") or {}
@@ -625,6 +645,17 @@ def _closure(lay: dict, cand) -> list:
         out.append(
             "WHEN the encoding is `pnm_text`, THE parser SHALL require the decoder to consume the "
             "whole data region and produce exactly row_stride \u00d7 height bytes."
+        )
+    elif _compressed_tiff_name(enc, cand) is not None:
+        # Requirement 17.1 (each encoding is defined in the emitted text, including the state of
+        # every end condition) and 17.11 (only the rle_pcx and rle_tga closure line is kept
+        # as it was). The end rules this line defers to: Requirement 11 (packbits), 12.8 (lzw_tiff:
+        # padding bits and a missing EOI at the exact end are accepted), 13.3 to 13.6
+        # (deflate_zlib) and 14.3 (lzma_xz). These are not run-length encodings.
+        out.append(
+            "WHEN the encoding is %s, THE parser SHALL require the decoder to end as its "
+            "definition above states and to produce exactly the expected bytes for each data range."
+            % _compressed_tiff_name(enc, cand)
         )
     elif (isinstance(enc, str) and enc != "none") or isinstance(enc, dict):
         out.append(

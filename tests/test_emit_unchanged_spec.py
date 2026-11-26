@@ -17,6 +17,13 @@ from tools import fc_diff
 PINS = json.loads((Path(__file__).parent / "data" / "emit_pre_t29_sha256.json").read_text(encoding="ascii"))
 _BLOCK = re.compile(r"```necropsy-layout\n(.*?)\n```", re.S)
 _DEFINED = ("rle_tga", "packbits", "lzw_tiff", "deflate_zlib", "lzma_xz")
+# Task 36 follow-up (Requirement 17.1, 17.11): the closure line of the four compressed TIFF
+# encodings names them and defers to their end rules; undone here to the line the pins hold.
+_NEW_CLOSURE = re.compile(r"WHEN the encoding is (packbits|lzw_tiff|deflate_zlib|lzma_xz), THE parser SHALL "
+                          r"require the decoder to end as its definition above states and to produce "
+                          r"exactly the expected bytes for each data range\.$")
+_RUN_LENGTH = ("WHEN the encoding is a run-length encoding, THE parser SHALL require the decoder to "
+               "consume the whole data region and produce exactly row_stride \u00d7 height bytes.")
 
 
 def _strip_numbers(text):
@@ -49,7 +56,7 @@ def _undo(name, text):
     text = re.sub(r"(?<=, )(9|10|11) \u2192 `rle_tga`", "\\1 \u2192 `unsupported`", text)
     text = re.sub(r"\(1 \u2192 `none`, [^)]*`packbits`[^)]*\), otherwise `unsupported`",
                   "(1 \u2192 `none`), otherwise `unsupported`", text)
-    keep = [ln for ln in _strip_numbers(text).split("\n")
+    keep = [_RUN_LENGTH if _NEW_CLOSURE.match(ln) else ln for ln in _strip_numbers(text).split("\n")
             if not re.match(r"WHEN the encoding is `(%s)`" % "|".join(_DEFINED), ln)
             and "tag entry `predictor`" not in ln]
     return "\n".join(keep)

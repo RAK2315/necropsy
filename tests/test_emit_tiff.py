@@ -230,7 +230,14 @@ def _undo_17_3(name, text):
     text = _BLOCK.sub(block, text)
     text = re.sub(r"\(1 \u2192 `none`, [^)]*\), otherwise `unsupported`",
                   "(1 \u2192 `none`), otherwise `unsupported`", text)
-    keep = [ln for ln in _numbers_stripped(text).split("\n")
+    # Task 36 follow-up (Requirements 17.1, 17.11): the closure line of the compressed encodings
+    # names them; undone to the run-length line the pins hold.
+    new_closure = re.compile(r"WHEN the encoding is (packbits|lzw_tiff|deflate_zlib|lzma_xz), THE parser "
+                             r"SHALL require the decoder to end as its definition above states and to "
+                             r"produce exactly the expected bytes for each data range\.$")
+    run_length = ("WHEN the encoding is a run-length encoding, THE parser SHALL require the decoder to "
+                  "consume the whole data region and produce exactly row_stride \u00d7 height bytes.")
+    keep = [run_length if new_closure.match(ln) else ln for ln in _numbers_stripped(text).split("\n")
             if not re.match(r"WHEN the encoding is `(packbits|lzw_tiff|deflate_zlib|lzma_xz)`", ln)
             and "tag entry `predictor`" not in ln]
     return "\n".join(keep)
