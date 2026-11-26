@@ -216,7 +216,9 @@ def test_single_strip_fields_equal_pre_task_18_snapshot_for_real_files():
             continue  # multi-strip now: its field list legitimately grew
         if any(n == "tile_width" for n, *_ in fields):
             continue  # tiled (Req 9.1, 9.2, task 21): tile fields are new by design
-        assert fields == expected, name
+        # Req 10.1 (task 22) is the specific rule: a present tag 317 is recorded as a field,
+        # an absent one adds none. Only that field may differ from the snapshot (Req 8.10).
+        assert [f for f in fields if f[0] != "predictor"] == expected, name
         assert out.seed.ranges == () and out.seed.rows_per_strip is None, name
         checked += 1
     assert checked == 19  # 23 snapshot files minus 4 tiled files carved out above (Req 9.1, 9.2)

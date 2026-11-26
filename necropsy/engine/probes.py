@@ -339,6 +339,7 @@ TIFF_TAG_NAMES = {
     277: "samples_per_pixel",
     279: "strip_byte_count",
     284: "planar_configuration",
+    317: "predictor",
     322: "tile_width",
     323: "tile_length",
 }
@@ -355,6 +356,7 @@ TIFF_TILE_OFFSET_TAG = 324      # SHORT or LONG, count n
 TIFF_TILE_BYTE_COUNT_TAG = 325  # SHORT or LONG, count n
 TIFF_TILE_WIDTH_TAG = 322       # SHORT or LONG, count 1
 TIFF_TILE_LENGTH_TAG = 323      # SHORT or LONG, count 1
+TIFF_PREDICTOR_TAG = 317        # SHORT or LONG, count 1; absent = 1 (Req 10.1)
 TIFF_MAX_RANGES = 16384         # largest strip array count the probe reads
 TIFF_ROWS_PER_STRIP_DEFAULT = 2**32 - 1
 TIFF_ARRAY_NAMES = {
@@ -460,6 +462,7 @@ def _probe_tiff(data: bytes) -> ProbeOutcome | None:
     array_attempted: set[int] = set()
     array_problems: list[str] = []
     seen_tags: set[int] = set()
+    predictor_unreadable = ""   # Req 10.3: tag 317 present in a form the probe cannot read
     ifd_offset = ifd.value[0]
     count_rec = read(data, "ifd_entry_count", ifd_offset, order + "H")
     if count_rec is None:
@@ -481,6 +484,14 @@ def _probe_tiff(data: bytes) -> ProbeOutcome | None:
                 continue
             tag_id, type_id = tag.value[0], kind.value[0]
             seen_tags.add(tag_id)
+            if (tag_id == TIFF_PREDICTOR_TAG and not predictor_unreadable
+                    and (count.value[0] != 1 or type_id not in TIFF_TYPE_FORMATS)):
+                predictor_unreadable = (
+                    f"predictor (tag 317) is present with type {type_id} and count "
+                    f"{count.value[0]}; it is not established, so it is not implemented"
+                    "; the data is not decoded as if it were 1"
+                )
+                continue
             if (tag_id in TIFF_ARRAY_NAMES
                     and (count.value[0] != 1 or tag_id in TIFF_TILE_ARRAY_TAGS)
                     and type_id in TIFF_TYPE_SIZES):
@@ -570,13 +581,26 @@ def _probe_tiff(data: bytes) -> ProbeOutcome | None:
         if ranges:
             strip_offset = min(s for s, _ in ranges)
             data_end = max(e for _, e in ranges)
+    predictor = values.get(TIFF_PREDICTOR_TAG, 1)
+    encoding = "none" if compression == 1 else f"tiff_compression_{compression}"
+    predictor_problem = ""
+    if predictor_unreadable:
+        encoding = f"tiff_compression_{compression}_predictor_unreadable"
+        predictor_problem = predictor_unreadable
+    elif predictor != 1:
+        # Req 10.2, 10.4: refused for every Compression value; the name never reaches a decoder.
+        encoding = f"tiff_compression_{compression}_predictor_{predictor}"
+        predictor_problem = (
+            f"predictor (tag 317) = {predictor} is declared and not implemented; "
+            "the data is not decoded as if it were 1"
+        )
     seed = Hypothesis(
         width=values.get(256, 0),
         height=height,
         bit_depth=values.get(258, 0) * samples,
         header_size=strip_offset,
         row_alignment=1,
-        encoding="none" if compression == 1 else f"tiff_compression_{compression}",
+        encoding=encoding,
         data_end=data_end,
         fields=tuple(records),
         probe_name="tiff",
@@ -640,6 +664,8 @@ def _probe_tiff(data: bytes) -> ProbeOutcome | None:
         problems.append("tags 273 (strip_offset) and 324 (tile_offset) are both present")
     if planar != 1:
         problems.append(f"planar_configuration {planar} is not 1")
+    if predictor_problem:
+        problems.append(predictor_problem)
     if problems:
         rejections.append(
             RejectionEntry("probe_precondition_failed", "tiff", seed, detail="; ".join(problems))
