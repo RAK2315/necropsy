@@ -1,0 +1,93 @@
+[
+    {
+        "name":  "do-nothing parser fails the emitted tests of the p5 layout",
+        "file":  "tests/support/reference_reader.py",
+        "old":  "        return _parse(layout, bytes(data))",
+        "new":  "        return {\"ok\": False, \"error\": \"encoding not supported\"}",
+        "test":  "tests/test_emit_new_layouts.py -k \"(test_emitted_suite_passes or test_reference_reader_equals) and p5\""
+    },
+    {
+        "name":  "do-nothing parser fails the emitted tests of the p6 layout",
+        "file":  "tests/support/reference_reader.py",
+        "old":  "        return _parse(layout, bytes(data))",
+        "new":  "        return {\"ok\": False, \"error\": \"encoding not supported\"}",
+        "test":  "tests/test_emit_new_layouts.py -k \"(test_emitted_suite_passes or test_reference_reader_equals) and p6\""
+    },
+    {
+        "name":  "do-nothing parser fails the emitted tests of the p2 layout",
+        "file":  "tests/support/reference_reader.py",
+        "old":  "        return _parse(layout, bytes(data))",
+        "new":  "        return {\"ok\": False, \"error\": \"encoding not supported\"}",
+        "test":  "tests/test_emit_new_layouts.py -k \"(test_emitted_suite_passes or test_reference_reader_equals) and p2\""
+    },
+    {
+        "name":  "do-nothing parser fails the emitted tests of the p3 layout",
+        "file":  "tests/support/reference_reader.py",
+        "old":  "        return _parse(layout, bytes(data))",
+        "new":  "        return {\"ok\": False, \"error\": \"encoding not supported\"}",
+        "test":  "tests/test_emit_new_layouts.py -k \"(test_emitted_suite_passes or test_reference_reader_equals) and p3\""
+    },
+    {
+        "name":  "do-nothing parser fails the emitted tests of the rle_tga layout",
+        "file":  "tests/support/reference_reader.py",
+        "old":  "        return _parse(layout, bytes(data))",
+        "new":  "        return {\"ok\": False, \"error\": \"encoding not supported\"}",
+        "test":  "tests/test_emit_new_layouts.py -k \"(test_emitted_suite_passes or test_reference_reader_equals) and rle_tga\""
+    },
+    {
+        "name":  "do-nothing parser fails the emitted tests of the three_plane_pcx layout",
+        "file":  "tests/support/reference_reader.py",
+        "old":  "        return _parse(layout, bytes(data))",
+        "new":  "        return {\"ok\": False, \"error\": \"encoding not supported\"}",
+        "test":  "tests/test_emit_new_layouts.py -k \"(test_emitted_suite_passes or test_reference_reader_equals) and three_plane_pcx\""
+    },
+    {
+        "name":  "do-nothing parser fails the emitted tests of the multi_strip layout",
+        "file":  "tests/support/reference_reader.py",
+        "old":  "        return _parse(layout, bytes(data))",
+        "new":  "        return {\"ok\": False, \"error\": \"encoding not supported\"}",
+        "test":  "tests/test_emit_new_layouts.py -k \"(test_emitted_suite_passes or test_reference_reader_equals) and multi_strip\""
+    },
+    {
+        "name":  "do-nothing parser fails the emitted tests of the tiled layout",
+        "file":  "tests/support/reference_reader.py",
+        "old":  "        return _parse(layout, bytes(data))",
+        "new":  "        return {\"ok\": False, \"error\": \"encoding not supported\"}",
+        "test":  "tests/test_emit_new_layouts.py -k \"(test_emitted_suite_passes or test_reference_reader_equals) and tiled\""
+    },
+    {
+        "name":  "do-nothing parser fails the emitted tests of the packbits layout",
+        "file":  "tests/support/reference_reader.py",
+        "old":  "        return _parse(layout, bytes(data))",
+        "new":  "        return {\"ok\": False, \"error\": \"encoding not supported\"}",
+        "test":  "tests/test_emit_new_layouts.py -k \"(test_emitted_suite_passes or test_reference_reader_equals) and packbits\""
+    },
+    {
+        "name":  "do-nothing parser fails the emitted tests of the lzw_single_strip layout",
+        "file":  "tests/support/reference_reader.py",
+        "old":  "        return _parse(layout, bytes(data))",
+        "new":  "        return {\"ok\": False, \"error\": \"encoding not supported\"}",
+        "test":  "tests/test_emit_new_layouts.py -k \"(test_emitted_suite_passes or test_reference_reader_equals) and lzw_single_strip\""
+    },
+    {
+        "name":  "do-nothing parser fails the emitted tests of the lzw_strips layout",
+        "file":  "tests/support/reference_reader.py",
+        "old":  "        return _parse(layout, bytes(data))",
+        "new":  "        return {\"ok\": False, \"error\": \"encoding not supported\"}",
+        "test":  "tests/test_emit_new_layouts.py -k \"(test_emitted_suite_passes or test_reference_reader_equals) and lzw_strips\""
+    },
+    {
+        "name":  "do-nothing parser fails the emitted tests of the deflate layout",
+        "file":  "tests/support/reference_reader.py",
+        "old":  "        return _parse(layout, bytes(data))",
+        "new":  "        return {\"ok\": False, \"error\": \"encoding not supported\"}",
+        "test":  "tests/test_emit_new_layouts.py -k \"(test_emitted_suite_passes or test_reference_reader_equals) and deflate\""
+    },
+    {
+        "name":  "do-nothing parser fails the emitted tests of the lzma layout",
+        "file":  "tests/support/reference_reader.py",
+        "old":  "        return _parse(layout, bytes(data))",
+        "new":  "        return {\"ok\": False, \"error\": \"encoding not supported\"}",
+        "test":  "tests/test_emit_new_layouts.py -k \"(test_emitted_suite_passes or test_reference_reader_equals) and lzma\""
+    }
+]
