@@ -2,7 +2,7 @@
 
 Written from the text of Requirement 9.26 only. "Unchanged" for mystery_e is checked by
 absence: the entry and the EARS line are not in any emitted file, and the tag-table entry
-names equal the eight the spec lists for tags 256, 257, 258, 259, 273, 277, 279, 284. No
+names equal the eight the spec lists for tags 256, 257, 258, 259, 273, 277, 279, 284, plus predictor (Requirement 17.3). No
 value is taken from the new code.
 """
 from __future__ import annotations
@@ -20,6 +20,9 @@ MYSTERY_E = ROOT / "spike" / "samples" / "mystery_e"
 
 EIGHT = ["width", "height", "bits_per_sample", "compression", "strip_offset",
          "samples_per_pixel", "strip_byte_count", "planar_configuration"]
+# Requirement 17.3 (format-coverage Task 34): the emitted TIFF layout carries a ninth entry, predictor (tag 317),
+# directly after planar_configuration; the optional entry still follows it.
+WITH_PREDICTOR = EIGHT + ["predictor"]
 ENTRY = {"name": "photometric_interpretation", "tag": 262, "default": None,
          "expect": None, "array": None, "optional": True}
 
@@ -47,7 +50,7 @@ def test_goimage_layout_has_optional_entry_after_planar_configuration():
     _, files = _emit(GOIMAGE)
     layout = extract_layout(files["requirements.md"])
     entries = layout["tag_table"]["entries"]
-    assert [e["name"] for e in entries] == EIGHT + ["photometric_interpretation"]
+    assert [e["name"] for e in entries] == WITH_PREDICTOR + ["photometric_interpretation"]
     assert entries[-1] == ENTRY
     assert list(entries[-1]) == list(ENTRY)  # key order as stated in 9.26
     assert layout["tag_table"]["entries"][:8] == [e for e in entries if e["name"] in EIGHT]
@@ -69,7 +72,7 @@ def test_mystery_e_emission_has_no_optional_entry_or_line():
     for text in files.values():
         assert "photometric" not in text and "262" not in text.replace("0x262", "")
     layout = extract_layout(files["requirements.md"])
-    assert [e["name"] for e in layout["tag_table"]["entries"]] == EIGHT
+    assert [e["name"] for e in layout["tag_table"]["entries"]] == WITH_PREDICTOR
     assert not any("optional" in e for e in layout["tag_table"]["entries"])
 
 
