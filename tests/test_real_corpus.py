@@ -1,7 +1,8 @@
 """Differential test over spike/samples/real/ (real-corpus spec).
 
 Expectations are stated here, not read from the engine:
-- every out-of-scope file is FAILED, with its termination recorded;
+- every out-of-scope file is FAILED, with its termination recorded, except the files the format-coverage work now decodes
+  (carved out below until the manifest scope rewrite of Task 37; the TIFF ones carry their own expectations, Task 28);
 - of the six invalid-by-construction files, five FAIL and ossfuzz RESOLVES with a literal two-pixel reading;
 - every in-scope valid file RESOLVES and its pixels equal Pillow's.
 Five in-scope files do not meet the last expectation today. They are strict xfails under diagnosis elsewhere;
@@ -163,6 +164,71 @@ def test_tiff_lzma_file_resolves_with_pillows_pixels():
     im = Image.open(rc.REAL / "pillow_hopper_lzma.tif")
     assert im.mode == "RGB" and im.size == (128, 128)
     assert result.candidate.decoded == im.tobytes()
+
+
+# format-coverage Task 28: the TIFF expectations the decoders made wrong. Before Tasks 18 to 26 every file below was
+# FAILED (Requirement 20.4 replaces that expectation). Each file resolves under the stated encoding.
+TIFF_ENCODING = {
+    **{n: "none" for n in TIFF_STRIPS_RESOLVED | TIFF_TILES_RESOLVED},       # Requirements 8.1, 8.11, 9.1, 9.6
+    "goimage_bw-packbits.tiff": "tiff_compression_32773",                    # Requirement 11.1
+    "goimage_blue-purple-pink.lzwcompressed.tiff": "tiff_compression_5",     # Requirement 12.1
+    "libtiff_lzw-single-strip.tiff": "tiff_compression_5",                   # Requirement 12.1, 12.8 (b)
+    BW_DEFLATE: "tiff_compression_32946",                                    # Requirement 13.1
+    "goimage_video-001-paletted.tiff": "tiff_compression_8",                 # Requirement 13.1
+    INVALID_PALETTE_REF: "tiff_compression_8",                               # Requirement 13.1
+    "pillow_hopper_lzma.tif": "tiff_compression_34925",                      # Requirement 14.1
+}
+TIFF_PREDICTOR_FAILED = [
+    "goimage_video-001-strip-64.tiff", "goimage_video-001-tile-64x64.tiff", "pillow_hopper_lzw.tif",
+    "pillow_tiff_adobe_deflate.tif",
+]
+
+
+def test_every_carved_out_tiff_has_an_encoding_expectation():
+    carved = (TIFF_STRIPS_RESOLVED | TIFF_TILES_RESOLVED | TIFF_PACKBITS_RESOLVED | TIFF_LZW_RESOLVED
+              | TIFF_DEFLATE_RESOLVED | TIFF_LZMA_RESOLVED)
+    assert set(TIFF_ENCODING) == carved and len(carved) == 14
+
+
+@pytest.mark.parametrize("name", sorted(TIFF_ENCODING))
+def test_decoded_tiff_resolves_under_its_encoding(name):
+    result = run(name)[1]
+    assert result.status == "RESOLVED" and result.candidate.hypothesis.encoding == TIFF_ENCODING[name]
+    assert result.candidate.hypothesis.probe_name == "tiff"
+
+
+@pytest.mark.parametrize("name", TIFF_PREDICTOR_FAILED)
+def test_predictor_tiffs_stay_failed_req_10_5(name):
+    # Requirement 10.5: a declared Predictor other than 1 is refused for every compression; the file stays FAILED.
+    _, result = run(name)
+    assert result.status == "FAILED" and result.termination == "exhausted"
+    assert any("predictor (tag 317)" in r.detail for r in result.rejections)
+
+
+@pytest.mark.parametrize("name", ["goimage_blue-purple-pink.lzwcompressed.tiff", "goimage_video-001-paletted.tiff"])
+def test_decoded_compressed_tiff_bytes_equal_pillows(name):
+    # Requirements 12.1 and 13.1. Pillow reads mode RGB or P at one byte per sample, so its bytes are the engine's.
+    Image = pytest.importorskip("PIL.Image")
+    result = run(name)[1]
+    with Image.open(rc.REAL / name) as im:
+        im.load()
+        assert im.mode in ("RGB", "P")
+        assert result.candidate.decoded == im.tobytes()
+
+
+def test_decoded_packbits_bits_equal_pillows_pixels():
+    # Requirement 11.1. The engine returns stored bits; Pillow inverts WhiteIsZero (tag 262 = 0) on load.
+    Image = pytest.importorskip("PIL.Image")
+    name = "goimage_bw-packbits.tiff"
+    c = run(name)[1].candidate
+    assert (c.hypothesis.width, c.hypothesis.height, c.hypothesis.bit_depth) == (153, 55, 1)
+    with Image.open(rc.REAL / name) as im:
+        im.load()
+        invert = im.tag_v2.get(262) == 0
+        for y in range(55):
+            for x in range(153):
+                stored = (c.decoded[y * c.row_stride + x // 8] >> (7 - x % 8)) & 1
+                assert (1 - stored if invert else stored) == (1 if im.getpixel((x, y)) else 0), (x, y)
 
 
 @pytest.mark.parametrize("name", sorted(PCX_PLANAR_RESOLVED))

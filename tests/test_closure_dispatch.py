@@ -68,7 +68,8 @@ def test_none_encoding_is_not_capped_req_2_13():
     assert v.reason == "arithmetic_mismatch"
 
 
-@pytest.mark.parametrize("enc", ["tiff_compression_5", "x"])
+# Task 28 (Requirement 12.1, 20.4): compression 5 (LZW) has a decoder; compression 7 (JPEG) does not.
+@pytest.mark.parametrize("enc", ["tiff_compression_7", "x"])
 def test_unknown_encoding_still_unsupported_req_2_13(enc):
     assert check_closure(hyp(2, 2, encoding=enc), bytes(4)).reason == "unsupported_encoding"
 

@@ -183,7 +183,9 @@ def test_emit_spec_equals_the_engine_on_every_file_within_the_limit(results):
 
 def test_emit_spec_for_failed_is_the_emit_error_and_not_a_tool_error(results):
     failed = [p for p in WITHIN if Engine().run(p.read_bytes()).status == "FAILED"]
-    assert len(failed) > 20
+    # format-coverage Task 28 (Requirements 8.11, 9.6, 11.1, 12.1, 13.1, 14.1, 20.4): the TIFF decoders resolve files that
+    # used to FAIL, so the FAILED files within the size limit fell from more than 20 to 17 (measured 26 Nov 2026).
+    assert len(failed) >= 10
     for p in failed:
         r = results[key(p)]["emit"]
         assert r.is_error is False and r.structured_content["error"] == "nothing_recovered"

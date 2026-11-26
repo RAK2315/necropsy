@@ -253,6 +253,8 @@ The list below is the prediction made from header bytes before any code exists. 
 | 25 | `goimage_bw-deflate.tiff`, `goimage_video-001-paletted.tiff`, `goimage_invalid-palette-ref.tiff` (3). `libtiff_deflate-last-strip-extra-data.tiff` stays FAILED (Principle call 2). |
 | 26 | `pillow_hopper_lzma.tif` (1) |
 
+Measured after Task 27 in `spike/real_corpus_results.json` (81 rows): 61 `RESOLVED`, 20 `FAILED`; the 36 rows above sum to 36 (9 + 4 + 6 + 3 + 6 + 1 + 1 + 2 + 3 + 1, row 24 counted as 2), and the 20 `FAILED` are the five in-scope and fifteen out-of-scope files named below. Task 28 checked this by reading the committed rows.
+
 Total predicted: 36 new `RESOLVED` (37 before the bytes of `pillow_cross_scan_line.tga` were read in Task 12). The engine's `RESOLVED` count goes from 25 to 61, and `FAILED` from 56 to 20, of which the in-scope ones are `libtiff_deflate-last-strip-extra-data.tiff`, `pillow_cross_scan_line.tga`, `pillow_cross_scan_line_truncated.tga`, and the two that are invalid by construction today (`pillow_01r_00.pcx`, `pillow_p_8.tga`): five. The other 15 are out of scope.
 
 Two predictions carry known risk, named here so that a surprise is not a repair:

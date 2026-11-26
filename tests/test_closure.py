@@ -233,7 +233,9 @@ def test_closure_rle_ok_req_1_8():
 
 
 # format-coverage Task 12 (Requirement 5.9): rle_tga has a decoder now, so its row is not an unsupported encoding.
-@pytest.mark.parametrize("enc", ["tiff_compression_5", "x"])
+# Task 28 (Requirements 11.1, 12.1, 13.1, 14.1, 20.4): compressions 5, 8, 32773, 32946 and 34925 have decoders, so the
+# example of an encoding with no decoder is now compression 7 (JPEG), which Requirement 2.2 refuses.
+@pytest.mark.parametrize("enc", ["tiff_compression_7", "x"])
 def test_closure_unsupported_encoding_req_1_13(enc):
     # 2x2 at 8 bpp over 4 bytes would close under "none"; the encoding alone rejects it.
     v = check_closure(hyp(2, 2, encoding=enc), bytes(4))
