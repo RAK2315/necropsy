@@ -339,6 +339,8 @@ TIFF_TAG_NAMES = {
     277: "samples_per_pixel",
     279: "strip_byte_count",
     284: "planar_configuration",
+    322: "tile_width",
+    323: "tile_length",
 }
 TIFF_BITS_PER_SAMPLE_TAG = 258
 TIFF_MAX_SAMPLES = 32           # largest BitsPerSample count the probe reads
@@ -349,10 +351,17 @@ TIFF_TYPE_FORMATS = {3: "H", 4: "I"}
 TIFF_ROWS_PER_STRIP_TAG = 278   # SHORT or LONG, count 1; absent = 2^32 - 1
 TIFF_STRIP_OFFSET_TAG = 273
 TIFF_STRIP_BYTE_COUNT_TAG = 279
-TIFF_TILE_OFFSET_TAG = 324      # presence only here; tiles are read by a later task
+TIFF_TILE_OFFSET_TAG = 324      # SHORT or LONG, count n
+TIFF_TILE_BYTE_COUNT_TAG = 325  # SHORT or LONG, count n
+TIFF_TILE_WIDTH_TAG = 322       # SHORT or LONG, count 1
+TIFF_TILE_LENGTH_TAG = 323      # SHORT or LONG, count 1
 TIFF_MAX_RANGES = 16384         # largest strip array count the probe reads
 TIFF_ROWS_PER_STRIP_DEFAULT = 2**32 - 1
-TIFF_ARRAY_NAMES = {273: "strip_offset", 279: "strip_byte_count"}
+TIFF_ARRAY_NAMES = {
+    273: "strip_offset", 279: "strip_byte_count",
+    324: "tile_offset", 325: "tile_byte_count",
+}
+TIFF_TILE_ARRAY_TAGS = (TIFF_TILE_OFFSET_TAG, TIFF_TILE_BYTE_COUNT_TAG)
 
 
 def _read_range_array(
@@ -472,7 +481,8 @@ def _probe_tiff(data: bytes) -> ProbeOutcome | None:
                 continue
             tag_id, type_id = tag.value[0], kind.value[0]
             seen_tags.add(tag_id)
-            if (tag_id in TIFF_ARRAY_NAMES and count.value[0] != 1
+            if (tag_id in TIFF_ARRAY_NAMES
+                    and (count.value[0] != 1 or tag_id in TIFF_TILE_ARRAY_TAGS)
                     and type_id in TIFF_TYPE_SIZES):
                 if tag_id in array_attempted or tag_id in values:
                     continue
@@ -532,16 +542,29 @@ def _probe_tiff(data: bytes) -> ProbeOutcome | None:
     counts_list = [r.value[0] for r in arrays.get(279, [])]
     if 279 in values and 279 not in arrays:
         counts_list = [values[279]]
-    multi = len(offsets_list) > 1
+    tile_offsets = [r.value[0] for r in arrays.get(TIFF_TILE_OFFSET_TAG, [])]
+    tile_counts = [r.value[0] for r in arrays.get(TIFF_TILE_BYTE_COUNT_TAG, [])]
+    tile_mode = TIFF_TILE_OFFSET_TAG in seen_tags
+    tile_dims = (values.get(TIFF_TILE_WIDTH_TAG, 0), values.get(TIFF_TILE_LENGTH_TAG, 0))
+    tile_ok = (bool(tile_offsets) and len(tile_offsets) == len(tile_counts)
+               and tile_dims[0] > 0 and tile_dims[1] > 0)
+    multi = len(offsets_list) > 1 and not tile_mode
     ranges: tuple[tuple[int, int], ...] = ()
     rows_per_strip = None
+    tile = None
     strip_offset = values.get(273, 0)
     data_end = strip_offset + values.get(279, 0)
     if not multi:
         # Req 8.3 / 8.10: a single-strip file keeps its pre-task-18 field list. Tag 278 is
         # still read above so the strip-count check below can use it.
         records = [r for r in records if r.name != TIFF_TAG_NAMES[TIFF_ROWS_PER_STRIP_TAG]]
-    if multi:
+    if tile_mode and tile_ok:
+        # Req 9.2: ranges in array order; tile k is at column k mod across, row k div across.
+        ranges = tuple((o, o + c) for o, c in zip(tile_offsets, tile_counts))
+        tile = tile_dims
+        strip_offset = min(s for s, _ in ranges)
+        data_end = max(e for _, e in ranges)
+    elif multi:
         ranges = tuple((o, o + c) for o, c in zip(offsets_list, counts_list))
         rows_per_strip = min(rps_declared, height)
         if ranges:
@@ -559,6 +582,7 @@ def _probe_tiff(data: bytes) -> ProbeOutcome | None:
         probe_name="tiff",
         ranges=ranges,
         rows_per_strip=rows_per_strip,
+        tile=tile,
     )
 
     rejections: list[RejectionEntry] = []
@@ -567,9 +591,12 @@ def _probe_tiff(data: bytes) -> ProbeOutcome | None:
             RejectionEntry("field_out_of_bounds", "tiff", seed, detail=out_of_bounds)
         )
     problems = []
+    required = TIFF_REQUIRED_TAGS
+    if tile_mode:   # Req 9.4: 273 and 279 are not required when 324 is present
+        required = (256, 257, 258)
     missing = [
         TIFF_TAG_NAMES[t]
-        for t in TIFF_REQUIRED_TAGS
+        for t in required
         if t not in values and t not in arrays and t not in array_attempted
         and not (t == TIFF_BITS_PER_SAMPLE_TAG and bps_unestablished)
     ]
@@ -577,6 +604,22 @@ def _probe_tiff(data: bytes) -> ProbeOutcome | None:
         problems.append("missing tags: " + ", ".join(missing))
     problems.extend(bps_problems)
     problems.extend(array_problems)
+    if tile_mode:
+        absent = []
+        for t in (TIFF_TILE_WIDTH_TAG, TIFF_TILE_LENGTH_TAG):
+            if values.get(t, 0) == 0:
+                absent.append(f"{TIFF_TAG_NAMES[t]} (tag {t})")
+        if not tile_counts and TIFF_TILE_BYTE_COUNT_TAG not in array_attempted:
+            absent.append(f"tile_byte_count (tag {TIFF_TILE_BYTE_COUNT_TAG})")
+        if absent:
+            problems.append("tile tags missing or zero: " + ", ".join(absent))
+        if tile_offsets and tile_counts and len(tile_offsets) != len(tile_counts):
+            problems.append(
+                f"tile_offset count {len(tile_offsets)} differs from "
+                f"tile_byte_count count {len(tile_counts)}"
+            )
+    elif TIFF_STRIP_OFFSET_TAG not in seen_tags:
+        problems.append("neither tag 273 (strip_offset) nor tag 324 (tile_offset) is present")
     n_off = len(offsets_list) if offsets_list else (1 if 273 in values else 0)
     n_cnt = len(counts_list)
     if n_off and n_cnt and n_off != n_cnt:

@@ -2468,11 +2468,24 @@
   "scope": "out",
   "scope_reason": "tiled",
   "invalid_by_construction": false,
-  "our_status": "FAILED",
-  "stage": null,
-  "termination": "exhausted",
-  "checks": 3,
-  "candidates": [],
+  "our_status": "RESOLVED",
+  "stage": "probe",
+  "termination": null,
+  "checks": 1,
+  "candidates": [
+   {
+    "width": 278,
+    "height": 374,
+    "bit_depth": 24,
+    "header_size": 8,
+    "row_alignment": 1,
+    "encoding": "none",
+    "probe": "tiff",
+    "path": [],
+    "data_start": 8,
+    "data_end": 442376
+   }
+  ],
   "expected_status": "FAILED",
   "note": "",
   "pillow_error": null,
@@ -2482,8 +2495,10 @@
    278,
    374
   ],
-  "pixel_verdicts": [],
-  "pillow_pixels_sha256": null
+  "pixel_verdicts": [
+   "match"
+  ],
+  "pillow_pixels_sha256": "1d4460fa59aa117b8266e2e050bdf5e9ba1319f159f791926b97d91ae5631187"
  },
  {
   "file": "sdlimage_sample.pcx",

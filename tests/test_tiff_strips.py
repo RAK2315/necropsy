@@ -214,10 +214,12 @@ def test_single_strip_fields_equal_pre_task_18_snapshot_for_real_files():
         fields = [[f.name, f.offset, f.fmt, repr(f.value)] for f in out.seed.fields]
         if any(n == "strip_offset[0]" for n, *_ in fields):
             continue  # multi-strip now: its field list legitimately grew
+        if any(n == "tile_width" for n, *_ in fields):
+            continue  # tiled (Req 9.1, 9.2, task 21): tile fields are new by design
         assert fields == expected, name
         assert out.seed.ranges == () and out.seed.rows_per_strip is None, name
         checked += 1
-    assert checked == 23
+    assert checked == 19  # 23 snapshot files minus 4 tiled files carved out above (Req 9.1, 9.2)
 
 
 def test_single_strip_synthetic_has_no_rows_per_strip_field_but_still_checks_it():

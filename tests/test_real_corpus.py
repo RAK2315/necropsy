@@ -92,7 +92,10 @@ TIFF_STRIPS_RESOLVED = {
     "goimage_video-001-gray.tiff", "libtiff_minisblack-1c-8b.tiff", "libtiff_palette-1c-8b.tiff",
     "libtiff_rgb-3c-8b.tiff", "pillow_12bit.cropped.tif", "pillow_tiff_strip_raw.tif",
 }
-OUT_OF_SCOPE = [n for n in FILES if scope_of(n) == "out" and n != OSSFUZZ
+# format-coverage Requirement 9.1 to 9.6 and design.md row 21: the tile-array probe resolves this uncompressed tiled
+# TIFF. Its manifest scope is rewritten in Task 37; the full TIFF expectations belong to Task 28.
+TIFF_TILES_RESOLVED = {"pillow_tiff_tiled_raw.tif"}
+OUT_OF_SCOPE = [n for n in FILES if scope_of(n) == "out" and n != OSSFUZZ and n not in TIFF_TILES_RESOLVED
                 and n not in PNM_RESOLVED and n not in PNM_TEXT_RESOLVED and n not in RLE_TGA_RESOLVED
                 and n not in PCX_PLANAR_RESOLVED and n not in TIFF_STRIPS_RESOLVED]
 
@@ -100,6 +103,12 @@ OUT_OF_SCOPE = [n for n in FILES if scope_of(n) == "out" and n != OSSFUZZ
 @pytest.mark.parametrize("name", sorted(TIFF_STRIPS_RESOLVED))
 def test_tiff_strip_files_resolve(name):
     # Requirement 8.1 to 8.4, 8.9, 8.11; format-coverage Task 18.
+    assert run(name)[1].status == "RESOLVED"
+
+
+@pytest.mark.parametrize("name", sorted(TIFF_TILES_RESOLVED))
+def test_tiff_tile_files_resolve(name):
+    # Requirement 9.1 to 9.6; format-coverage Task 21.
     assert run(name)[1].status == "RESOLVED"
 
 

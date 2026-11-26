@@ -1418,9 +1418,73 @@
   "termination": null
  },
  "real/pillow_tiff_tiled_raw.tif": {
-  "candidates": [],
-  "status": "FAILED",
-  "termination": "exhausted"
+  "candidates": [
+   {
+    "key": [
+     278,
+     374,
+     24,
+     8,
+     1,
+     "none",
+     442376,
+     [
+      1,
+      null,
+      [
+       [
+        8,
+        49160
+       ],
+       [
+        49160,
+        98312
+       ],
+       [
+        98312,
+        147464
+       ],
+       [
+        147464,
+        196616
+       ],
+       [
+        196616,
+        245768
+       ],
+       [
+        245768,
+        294920
+       ],
+       [
+        294920,
+        344072
+       ],
+       [
+        344072,
+        393224
+       ],
+       [
+        393224,
+        442376
+       ]
+      ],
+      null,
+      [
+       128,
+       128
+      ],
+      null
+     ]
+    ],
+    "region": [
+     8,
+     442376
+    ]
+   }
+  ],
+  "status": "RESOLVED",
+  "termination": null
  },
  "real/sdlimage_sample.pcx": {
   "candidates": [
