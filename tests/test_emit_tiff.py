@@ -243,7 +243,15 @@ def test_tiff_emission_unchanged_except_req_17_3():
     assert len(snap) >= 20
     for name, want in snap.items():
         data = (SAMPLES_DIR / name).read_bytes()
-        spec = emit_spec(Engine().run(data), data)
+        result = Engine().run(data)
+        cands = list(getattr(result, "candidates", ()) or ())
+        if getattr(result, "candidate", None) is not None:
+            cands.append(result.candidate)
+        if any(c.hypothesis.ranges for c in cands):
+            # Requirement 17.6 (Task 35): a candidate with several ranges is a layout of kind
+            # `file` with `data.ranges`; those emissions are tested in tests/test_emit_ranges.py.
+            continue
+        spec = emit_spec(result, data)
         got = {n: hashlib.sha256(_undo_17_3(n, t).encode("utf-8")).hexdigest() for n, t in sorted(spec.files)}
         assert got == want, name
 

@@ -273,6 +273,15 @@ def _parse(layout, data):
                    "deflate_zlib", "lzma_xz"):
         raise _Err("unsupported encoding %s" % (declared,))
 
+    if d.get("ranges") is not None:   # Req 17.6, 17.8: strips or tiles, assembled from the layout
+        stride = -(-(-(-(width * depth) // 8)) // align) * align
+        pixels, lo, hi = _assemble_ranges(data, d["ranges"], img, enc, width, height, depth,
+                                          stride, fields)
+        return {
+            "ok": True, "width": width, "height": height, "bit_depth": depth,
+            "row_alignment": align, "row_stride": stride, "encoding": enc, "data_start": lo,
+            "data_end": hi, "pixels": pixels, "fields": fields,
+        }
     if start < 0 or end < start or end > len(data):
         raise _Err("data region out of range")
     if img.get("row_bytes") is not None:
@@ -314,6 +323,101 @@ def _parse(layout, data):
         "row_alignment": align, "row_stride": stride, "encoding": enc, "data_start": start,
         "data_end": end, "pixels": pixels, "fields": fields,
     }
+
+
+_RANGE_CAP = 8388608   # the cap the emitted document states for one range or an assembled image
+
+
+def _decode_range(enc, data, s, e, unit):
+    """Decode data[s:e] to exactly `unit` bytes with a compression encoding, or `none`."""
+    if enc == "none":
+        if e - s != unit:
+            raise _Err("range length differs from its expected size")
+        return bytes(data[s:e])
+    if unit > _RANGE_CAP:
+        raise _Err("expected size above the cap")
+    if enc == "packbits":
+        return _packbits(data, s, e, unit)
+    if enc == "lzw_tiff":
+        return _lzw_tiff(data, s, e, unit)
+    if enc == "deflate_zlib":
+        return _zlib_stream(data, s, e, unit)
+    if enc == "lzma_xz":
+        return _xz_stream(data, s, e, unit)
+    raise _Err("encoding not supported with ranges")
+
+
+def _assemble_ranges(data, rg, img, enc, width, height, depth, stride, fields):
+    """Assemble strips (joined) or tiles (placed, cropped) from data.ranges (Requirement 17.6).
+
+    Everything declared is checked before anything is allocated from it: range bounds, overlaps,
+    the unit count, then each unit against the cap. The output holds only decoded bytes, or a
+    buffer of at most _RANGE_CAP bytes once every tile has decoded.
+    """
+    if not isinstance(rg, list) or not rg:
+        raise _Err("no ranges")
+    spans = []
+    for r in rg:
+        if (not isinstance(r, list) or len(r) != 2 or not _is_int(r[0]) or not _is_int(r[1])
+                or not 0 <= r[0] <= r[1] <= len(data)):
+            raise _Err("range out of bounds")
+        spans.append((r[0], r[1]))
+    n = len(spans)
+    live = sorted(s for s in spans if s[1] > s[0])
+    for (s1, e1), (s2, e2) in zip(live, live[1:]):
+        if s2 < e1:
+            raise _Err("ranges overlap")
+    marks = sorted((f[1], f[1] + struct.calcsize(f[2])) for f in fields)
+    j = 0
+    top = -1
+    for s, e in live:
+        while j < len(marks) and marks[j][0] < e:
+            top = max(top, marks[j][1])
+            j += 1
+        if top > s:
+            raise _Err("a range overlaps a header field")
+    lo = min(s for s, _ in spans)
+    hi = max(e for _, e in spans)
+    tile = img.get("tile")
+    if tile is not None:
+        if (not isinstance(tile, list) or len(tile) != 2 or not _is_int(tile[0])
+                or not _is_int(tile[1]) or tile[0] <= 0 or tile[1] <= 0):
+            raise _Err("bad tile")
+        tw, tl = tile
+        if (tw * depth) % 8 != 0:
+            raise _Err("tile width does not start a column on a byte")
+        across = -(-width // tw)
+        down = -(-height // tl)
+        if n != across * down:
+            raise _Err("range count differs from the tile count")
+        total = stride * height
+        if total > _RANGE_CAP:
+            raise _Err("assembled image above the cap")
+        tile_row = (tw * depth) // 8
+        unit = tile_row * tl
+        tiles = [_decode_range(enc, data, s, e, unit) for s, e in spans]
+        out = bytearray(total)
+        for i, piece in enumerate(tiles):
+            x = (i % across) * tile_row
+            y = (i // across) * tl
+            copy = min(tile_row, stride - x)
+            if copy <= 0:
+                continue
+            for r in range(min(tl, height - y)):
+                dst = (y + r) * stride + x
+                out[dst:dst + copy] = piece[r * tile_row:r * tile_row + copy]
+        return bytes(out), lo, hi
+    rps = img.get("rows_per_strip")
+    if not _is_int(rps) or rps <= 0:
+        raise _Err("bad rows_per_strip")
+    if n != -(-height // rps):
+        raise _Err("range count differs from the strip count")
+    if enc != "none" and stride * height > _RANGE_CAP:
+        raise _Err("assembled image above the cap")
+    out = bytearray()
+    for i, (s, e) in enumerate(spans):
+        out += _decode_range(enc, data, s, e, min(rps, height - i * rps) * stride)
+    return bytes(out), lo, hi
 
 
 def _check_samples(pixels, maxval, size):

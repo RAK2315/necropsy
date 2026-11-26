@@ -445,6 +445,57 @@ def _declared(t: dict) -> list:
     return out
 
 
+_RANGE_CAP = 8388608   # engine Requirement 2.13: the largest decoded size asked of a decoder
+
+
+def _ranges_text(d: dict, img: dict) -> list:
+    """Requirements 17.6 and 17.8: the data region is several ranges, strips or tiles."""
+    n = len(d.get("ranges") or [])
+    out = [
+        "THE parser SHALL take the data region as the %d ranges `[start, end)` listed in "
+        "`data.ranges` of the layout block, in that order, and SHALL return `data_start` as the "
+        "smallest start and `data_end` as the largest end of the ranges." % n,
+        "IF a range lies outside the file, or two non-empty ranges overlap, or a range overlaps "
+        "a header field read above, THEN THE parser SHALL return an error.",
+    ]
+    if img.get("tile") is not None:
+        tw, tl = img["tile"]
+        out += [
+            "THE parser SHALL take each range as one tile of %d columns by %d rows, with "
+            "tile_row_bytes = %d \u00d7 bit depth / 8, which SHALL be a whole number, and "
+            "SHALL require the number of ranges to equal ceil(width / %d) \u00d7 ceil(height / %d), "
+            "the tiles running left to right and then top to bottom: range k is the tile in column "
+            "(k mod across) and tile row (k div across), where across = ceil(width / %d)."
+            % (tw, tl, tw, tw, tl, tw),
+            "THE parser SHALL decode each range separately to exactly tile_row_bytes \u00d7 %d bytes, "
+            "a whole tile even where it extends past the image edge, and WHEN the encoding is `none` "
+            "SHALL require the range to hold exactly that many bytes." % tl,
+            "THE parser SHALL assemble the image of row_stride \u00d7 height bytes by copying row r of "
+            "each tile to row (tile row \u00d7 %d + r) at byte offset (tile column \u00d7 tile_row_bytes), "
+            "copying min(tile_row_bytes, row_stride - that offset) bytes per row and dropping the rows "
+            "at or beyond height, so that the right and bottom tiles are cropped." % tl,
+        ]
+    else:
+        rps = img.get("rows_per_strip")
+        out += [
+            "THE parser SHALL take each range as one strip of %s rows, the last strip holding the "
+            "remaining rows, and SHALL require the number of ranges to equal ceil(height / %s); "
+            "range i is the strip i." % (rps, rps),
+            "THE parser SHALL decode each range separately to exactly (rows in the strip) \u00d7 "
+            "row_stride bytes, and WHEN the encoding is `none` SHALL require the range to hold "
+            "exactly that many bytes.",
+            "THE parser SHALL join the decoded strips in range order to make the image of "
+            "row_stride \u00d7 height bytes.",
+        ]
+    out.append(
+        "WHEN the encoding is not `none`, IF a range's expected decoded size is above %d bytes, "
+        "THEN THE parser SHALL return an error before decoding it. IF the size of the assembled "
+        "image is above %d bytes for a tiled layout, or for a layout whose encoding is not `none`, "
+        "THEN THE parser SHALL return an error before allocating it." % (_RANGE_CAP, _RANGE_CAP)
+    )
+    return out
+
+
 def _data(lay: dict, cand, origin: str) -> list:
     out = []
     d = lay.get("data") or {}
@@ -462,14 +513,19 @@ def _data(lay: dict, cand, origin: str) -> list:
             "plane 0 first, so that the row stride is row_bytes = %s bytes and rows are not "
             "padded further." % _ex(img["row_bytes"])
         )
-    if origin == "pbm":
+    ranged = d.get("ranges") is not None
+    if ranged:
+        out.extend(_ranges_text(d, img))
+    elif origin == "pbm":
         out.append(
             "THE parser SHALL start the data region at the offset after the header's closing "
             "newline, which is %s in the source file." % _ex(d.get("start"))
         )
     else:
         out.append("THE parser SHALL start the data region at %s." % _ex(d.get("start")))
-    if d.get("end") is not None:
+    if ranged:
+        pass
+    elif d.get("end") is not None:
         out.append("THE parser SHALL end the data region at %s." % _ex(d["end"]))
     else:
         out.append("THE parser SHALL end the data region at the end of the file, unless a trailer applies.")
@@ -489,7 +545,14 @@ def _data(lay: dict, cand, origin: str) -> list:
         out.extend(_declared(t))
     if not trailers:
         out.append("THE parser SHALL NOT strip any trailer from the data region.")
-    out.append("THE parser SHALL decode the data region using encoding %s." % _encoding_text(d.get("encoding")))
+    if ranged:
+        out.append("THE parser SHALL decode each range using encoding %s." % _encoding_text(d.get("encoding")))
+        out.append(
+            "In the definitions of the encodings below, `the data region` means one range and "
+            "`row_stride \u00d7 height` means the expected decoded size of that range."
+        )
+    else:
+        out.append("THE parser SHALL decode the data region using encoding %s." % _encoding_text(d.get("encoding")))
     out.extend(_encoding_definitions(d.get("encoding")))
     if img.get("maxval") is not None:
         out.append(
@@ -522,6 +585,25 @@ def _closure(lay: dict, cand) -> list:
     obs = lay.get("observed") or {}
     enc = (lay.get("data") or {}).get("encoding")
     planar = (lay.get("image") or {}).get("row_bytes") is not None
+    ranges = (lay.get("data") or {}).get("ranges")
+    if ranges is not None:
+        out.append(
+            "THE parser SHALL accept the ranges only when every range decodes (or, for `none`, "
+            "holds) exactly its expected size, every decoder consumes its whole range, and the "
+            "assembled image is `row_stride` \u00d7 `height` bytes, where row_stride = "
+            "ceil(ceil(width \u00d7 bit_depth / 8) / row_alignment) \u00d7 row_alignment."
+        )
+        try:
+            w, h, b, a = obs["width"], obs["height"], obs["bit_depth"], obs["row_alignment"]
+            stride = -(-(-(-(w * b) // 8)) // a) * a
+            out.append(
+                "WHEN parsing the source file, THE parser SHALL find row_stride = %d bytes, an "
+                "assembled image of %d \u00d7 %d = %d bytes, and %d ranges inside the envelope [%d, %d)."
+                % (stride, stride, h, stride * h, len(ranges), obs["data_start"], obs["data_end"])
+            )
+        except Exception:
+            out.append("WHEN parsing the source file, THE parser SHALL satisfy the closure rule.")
+        return out
     if planar:
         out.append(
             "THE parser SHALL accept the data region only when its decoded size equals "
@@ -777,6 +859,9 @@ def _path_text(path) -> str:
 def _closure_line(cand) -> str:
     h = cand.hypothesis
     start, end = cand.data_start, cand.data_end
+    if h.ranges:
+        return "closure: %d ranges within [%d, %d) assembled to %d bytes = %d x %d, every range fully consumed" % (
+            len(h.ranges), start, end, cand.row_stride * h.height, cand.row_stride, h.height)
     if h.encoding == "none":
         return "closure: [%d, %d) holds %d bytes = %d x %d" % (
             start, end, end - start, cand.row_stride, h.height)

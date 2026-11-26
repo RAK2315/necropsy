@@ -166,10 +166,47 @@ def _rule_breaking_layout(cand, slug: str, note: str = _BROKE_RULES_NOTE) -> dic
     return out
 
 
+_RANGES_NOTE = ("This layout describes this one file only, not the format, because the schema has "
+                "no array rule for strip and tile offsets: the ranges below are this file's literal "
+                "ranges.")
+
+# Requirement 17.6: the engine's TIFF encoding names, as the emitted document names them.
+_TIFF_ENCODING_NAMES = {
+    "none": "none", "tiff_compression_32773": "packbits", "tiff_compression_5": "lzw_tiff",
+    "tiff_compression_8": "deflate_zlib", "tiff_compression_32946": "deflate_zlib",
+    "tiff_compression_34925": "lzma_xz",
+}
+
+
+def _ranges_layout(cand, slug: str, broke_rules: bool) -> dict:
+    """Requirement 17.6: a TIFF candidate with several ranges, as this one file's literals."""
+    h = cand.hypothesis
+    out = _base("file", slug)
+    first = {}
+    for f in h.fields:
+        first.setdefault(f.name, f)
+    out["fields"] = [{"name": n, "offset": f.offset, "fmt": f.fmt, "expect": None}
+                     for n, f in first.items()]
+    out["image"] = {"width": h.width, "height": h.height, "bit_depth": h.bit_depth,
+                    "row_alignment": h.row_alignment}
+    if h.tile is not None:
+        out["image"]["tile"] = [h.tile[0], h.tile[1]]
+    else:
+        out["image"]["rows_per_strip"] = h.rows_per_strip
+    out["data"] = {"start": cand.data_start, "end": cand.data_end,
+                   "encoding": _TIFF_ENCODING_NAMES.get(h.encoding, h.encoding),
+                   "ranges": [[s, e] for s, e in h.ranges], "trailers": []}
+    out["note"] = _RANGES_NOTE + (" " + _BROKE_RULES_NOTE if broke_rules else "")
+    out["observed"] = _observed(cand)
+    return out
+
+
 def _candidate_layout(cand, slug: str, rejections=(), data_len=None) -> dict:
     h = cand.hypothesis
     origin = h.probe_name
     path = h.revision_path
+    if origin == "tiff" and h.ranges:
+        return _ranges_layout(cand, slug, _broke_rules(origin, rejections))
     if _broke_rules(origin, rejections):
         return _rule_breaking_layout(cand, slug)
     if _overrides(path):
