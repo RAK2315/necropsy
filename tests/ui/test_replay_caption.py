@@ -32,9 +32,19 @@ def reason(r):
     return REASON[r.reason]
 
 
+ENCODING = {"rle_pcx": "PCX run-length"}   # words.js encodingText, for the encodings mystery_i's steps use
+
+
+def short(h):
+    # words.js layoutShort (UI task 51): row padding and encoding are named, so neighbouring attempts read differently
+    pad = f", rows padded to {h.row_alignment} bytes" if h.row_alignment > 1 else ""
+    enc = f", {ENCODING[h.encoding]}" if h.encoding != "none" else ""
+    return f"{h.width} × {h.height}, {h.bit_depth}-bit, header {h.header_size:,} bytes{pad}{enc}"
+
+
 def caption(r, i, n):
     h = r.hypothesis
-    what = f"Trying {h.width} × {h.height}, {h.bit_depth}-bit, header {h.header_size} bytes…" if h else "Checking the format’s own declarations…"
+    what = f"Trying {short(h)}…" if h else "Checking the format’s own declarations…"
     return f"Step {i + 1} of {n}. {what} rejected: {reason(r)}."
 
 

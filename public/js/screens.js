@@ -10,6 +10,7 @@ import { paint } from './image.js';
 import { specPanel } from './spec.js';
 import { createReplay } from './replay.js';
 import { downloadRow, savePNG, saveData } from './downloads.js';
+import { ghost, GHOST } from './ghost.js';
 import {
   CHIP, verdictText, sourceText, correctionText, proofText, reasonText, rejectionPlain, stageText, encodingText,
   proofExplain, correctionExplain, trailerExplain, reasonExplain, stageExplain,
@@ -64,7 +65,7 @@ export function fillFrame(cand, maxW, maxH, opts = {}) {
 
 /** The outcome chip: the plain word leads; the engine's enum follows, small, for the README, API and specs. */
 function chip(status) {
-  const c = el('span', 'chip ' + (status === 'FAILED' ? 'chip-failed' : 'chip-ok'), CHIP[status] + ' ');
+  const c = el('span', 'chip ' + (status === 'FAILED' ? 'chip-failed' : status === 'UNRESOLVED_AMBIGUITY' ? 'chip-amb' : 'chip-ok'), CHIP[status] + ' ');
   c.dataset.cap = 'chip';
   c.append(el('span', 'tech', status));
   return c;
@@ -103,8 +104,10 @@ function verdictBar(payload) {
     bar.append(el('p', 'verdict-sub', how));
   } else if (payload.status === 'UNRESOLVED_AMBIGUITY') {
     bar.append(el('p', 'verdict-sub', `${sourceText(payload.candidates[0].probe_name)} Each reading below fits the data exactly. The bytes alone cannot separate them.`));
+    bar.append(ghost(GHOST.several(payload.candidates.length), 'shrug', 'ghost-verdict'));     // UI task 51
   } else {
     bar.append(el('p', 'verdict-sub fail-reason', failureSentence(payload)));
+    bar.append(ghost(GHOST.none, 'flat', 'ghost-verdict'));                                     // UI task 51
   }
   return bar;
 }

@@ -1,6 +1,6 @@
 // Replay of the engine's recorded steps (Requirement 7). Driven only by the payload: no request, no invented step.
 import { buildSteps, batch, counterText, hypothesisLine, rejectionLine } from './logic.js';
-import { rejectionPlain, verdictText, reasonText, stepExplain } from './words.js';
+import { rejectionPlain, verdictText, reasonText, stepExplain, layoutShort } from './words.js';
 
 // One frame at 1x. Slowed from 600 ms to 1 s in the second clarity pass (change 5) so a first-time viewer can read a step
 // without pausing; batch() keeps the whole replay within MAX_MS at 1x (Requirement 7.7's 10 s, raised to 20 s).
@@ -34,7 +34,7 @@ export function captionText(payload, step, index, total) {
     return `Step ${index + 1} of ${total}. Trying ${c.width} × ${c.height}, ${c.bit_depth}-bit, header ${c.header_size} bytes… fits.`;
   }
   const r = step.rejection, h = r.hypothesis;
-  const what = h ? `Trying ${h.width} × ${h.height}, ${h.bit_depth}-bit, header ${h.header_size} bytes…` : 'Checking the format’s own declarations…';
+  const what = h ? `Trying ${layoutShort(h)}…` : 'Checking the format’s own declarations…';
   return `Step ${index + 1} of ${total}. ${what} rejected: ${reasonText(r.reason, r.discrepancy)}.`;
 }
 

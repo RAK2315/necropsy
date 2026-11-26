@@ -1,0 +1,20 @@
+BREAK  the ghost appears on a recovered picture  (public/js/screens.js)
+  with break : 1 failed, 4 deselected in 11.11s  -> caught
+  failure    : E   AssertionError: assert [{'cap': 'gho...'Recovered.'}] == []
+  restored   : sha256 3cec8140466a -> 3cec8140466a identical
+BREAK  a ghost line diagnoses the file  (public/js/ghost.js)
+  with break : 1 failed, 4 deselected in 0.31s  -> caught
+  failure    : E   AssertionError: ('none', 'This file is corrupted. Nothing I tried fits every byte. Every attempt is listed below, with the reason each was set aside. Try another file, or a sample.')
+  restored   : sha256 fbbc99f5b537 -> fbbc99f5b537 identical
+BREAK  row padding dropped from the tried-layout line  (public/js/words.js)
+  with break : 1 failed, 4 deselected in 11.26s  -> caught
+  failure    : E   AssertionError: ['7 × 7, 8-bit, header 128 bytes, PCX run-length: decoding finished with bytes left over', '8 × 8, 8-bit, header 128 b...nished with bytes left over', '8 × 8, 8-bit, header 128 bytes, PCX run-length: decoding finished with bytes left over']
+  restored   : sha256 0d7820871340 -> 0d7820871340 identical
+BREAK  the three exhibits made the same width  (public/app.css)
+  with break : 1 failed, 4 deselected in 11.21s  -> caught
+  failure    : E   AssertionError: [{'exhibit': 'Exhibit A', 'w': 195, 'h': 366}, {'exhibit': 'Exhibit B', 'w': 195, 'h': 412}, {'exhibit': 'Exhibit C', 'w': 195, 'h': 412}]
+  restored   : sha256 9cbeb61ac07a -> 9cbeb61ac07a identical
+BREAK  sample buttons lose their Examine label  (public/js/app.js)
+  with break : 1 failed, 4 deselected in 11.25s  -> caught
+  failure    : E   AssertionError: assert ([{'text': 'imagemagick_input.tga', 'label': 'imagemagick_input.tga'}, {'text': 'pillow_hopper_1bit.pbm', 'label': 'pil...pillow_odd_stride.pcx'}, {'text': 'mystery_a', 'label': 'mystery_a'}, {'text': 'mystery_b', 'label': 'mystery_b'}, ...] and False)
+  restored   : sha256 d786432f4c17 -> d786432f4c17 identical

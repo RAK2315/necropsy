@@ -7,7 +7,7 @@ In a real browser against the real app:
   3. the recovered image fills its frame, nearest-neighbour, true dimensions beneath it;
   4. a sample runs the upload flow: "Examining <name>…" with an activity indicator, then the result;
   5. the replay is bigger and slower;
-and Rehaan's three requests: a light/dark switch, a visible "Examine another file", self-hosted Roboto and Poppins.
+and Rehaan's three requests: a light/dark switch, a visible "Examine another file", self-hosted fonts (Roboto and Poppins until UI task 51, Bricolage Grotesque since).
 """
 import math
 import re
@@ -250,19 +250,19 @@ FONTS = r"""
   await __until(() => document.querySelector('.pick'), 'start');
   await document.fonts.ready;
   const fam = (sel) => getComputedStyle(document.querySelector(sel)).fontFamily.split(',')[0].replace(/"/g, '').trim();
-  const loaded = [...document.fonts].filter(f => f.status === 'loaded').map(f => f.family.replace(/"/g, '') + ' ' + f.weight);
+  const loaded = [...document.fonts].filter(f => f.status === 'loaded').map(f => f.family.replace(/"/g, ''));
   const fonts = performance.getEntriesByType('resource').map(e => e.name).filter(n => n.includes('.woff2'));
   return JSON.stringify({ body: fam('body'), h1: fam('.hero h1'), brand: fam('.brand'), loaded, fonts, origin: location.origin,
-    roboto: document.fonts.check('15px Roboto'), poppins: document.fonts.check('600 26px Poppins') });
+    ok: document.fonts.check('700 40px "Bricolage Grotesque"') });
 })()
 """
 
 
-def test_self_hosted_roboto_and_poppins(base_url):
+# UI task 51 replaced Roboto and Poppins (task 36) with one variable family, Bricolage Grotesque, still self-hosted.
+def test_self_hosted_bricolage_grotesque(base_url):
     got = run_in_browser(base_url, FONTS)
-    assert (got["body"], got["h1"], got["brand"]) == ("Roboto", "Poppins", "Poppins")
-    assert got["roboto"] and got["poppins"]
-    assert "Roboto 400" in got["loaded"] and "Poppins 600" in got["loaded"], got["loaded"]
+    assert (got["body"], got["h1"], got["brand"]) == ("Bricolage Grotesque",) * 3
+    assert got["ok"] and "Bricolage Grotesque" in got["loaded"], got["loaded"]
     assert got["fonts"] and all(u.startswith(got["origin"] + "/fonts/") for u in got["fonts"]), got["fonts"]
-    for f in ("Roboto-OFL.txt", "Poppins-OFL.txt"):
+    for f in ("BricolageGrotesque-OFL.txt",):
         assert "SIL OPEN FONT LICENSE" in (PUBLIC / "fonts" / f).read_text(encoding="utf-8").upper()

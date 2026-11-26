@@ -157,10 +157,21 @@ export function proofText(c) {
   return `The ${fmt(n)} data bytes are exactly ${rows}. No byte is left over.`;
 }
 
+/**
+ * One tried layout, short: size, depth, header, and whatever else sets it apart from its neighbours in the list (row
+ * padding from strategies.row_padding_variants, the encoding from the probe or strategies.rle_pcx). Without the last
+ * two, attempts that differ only in padding or encoding read as the same line twice (UI task 51).
+ */
+export function layoutShort(h) {
+  const pad = h.row_alignment > 1 ? `, rows padded to ${h.row_alignment} bytes` : '';
+  const enc = h.encoding && h.encoding !== 'none' ? `, ${encodingText(h.encoding)}` : '';
+  return `${h.width} × ${h.height}, ${h.bit_depth}-bit, header ${fmt(h.header_size)} bytes${pad}${enc}`;
+}
+
 /** The plain line for one rejected layout. */
 export function rejectionPlain(r) {
   const h = r.hypothesis;
-  const what = h ? `${h.width} × ${h.height}, ${h.bit_depth}-bit, header ${fmt(h.header_size)} bytes` : 'The format’s own declarations';
+  const what = h ? layoutShort(h) : 'The format’s own declarations';
   return `${what}: ${reasonText(r.reason, r.discrepancy)}`;
 }
 

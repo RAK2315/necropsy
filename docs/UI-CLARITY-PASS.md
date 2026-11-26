@@ -300,3 +300,40 @@ requests nothing from a third-party origin", but it flagged every off-site URL i
 to GitHub and the canonical URL failed it. Neither makes a request when the page loads. The test now exempts only an
 `<a href>` and a `<link rel="canonical">` in HTML, and a new test, `test_the_navigation_exemption_still_catches_requests`,
 proves that an off-site `img src`, stylesheet `link href` and `script src` are still caught.
+
+## Task 51: the redesign
+
+Rehaan's call, 27 Nov: the interface looked generic, and two outside checkers agreed (default fonts, a hero followed by
+three identical cards, copy that could describe any product). Kiro's judging guidance asked for "a little mischief, like
+a ghost that guides me". Rehaan chose to keep both surfaces in view, to make it "not boring", and to include the ghost,
+which relaxes settled decision 5 (no horror styling) only as far as a deadpan line drawing.
+
+- **Type.** One variable family with character, Bricolage Grotesque (SIL OFL, self-hosted, 128 KB), replaces Roboto
+  and Poppins. Its narrow widths carry the headlines; the system mono still carries the bytes.
+- **First screen.** The copy and the actions on the left; on the right, the three results examined as the page loads,
+  as Exhibits A, B and C. A, the recovered picture, is the large one and its picture fills the tile; B and C share a
+  column beside it. "How it works" moves below as the three-step sequence it is.
+- **Outcome colours.** Verdigris for a picture back, lilac for several readings, oxide for none. None of them is the
+  accent, which still marks recovered data only (Requirement 13, tested in both themes).
+- **Samples.** Each file name is a bordered button labelled "Examine <name>", with "Examine →" beside the name, and a
+  line above the groups says a click examines the file exactly as a drop would.
+- **The examiner.** A small line-drawn ghost with a loupe (`public/js/ghost.js`), in the text colour, never the accent.
+  It speaks on the start screen, the examining screen, a result with several readings, a result with none, and after
+  a refused file. It never appears on a recovered picture. Every line says what the engine did, then what to do next,
+  and none says what a result implies about the file.
+- **Tried layouts that read as duplicates.** Rehaan asked why the same step appeared twice. Two causes. Row-padding
+  corrections try 2 and 4 bytes on the same size, and the plain line left the padding out: `words.layoutShort` now
+  names row padding and the encoding, in the list and in the replay caption. And for a file with a palette trailer,
+  the engine checks each layout twice, ending at the trailer and running to the end of the file (Decision Record 24),
+  but the payload does not say which reading each rejection is. That needs a field from `web/serialise.py`, which is
+  Kiro's, so it is in the render-fidelity prompt; until then the two readings still show as one line twice.
+
+**Verification.** `tests/ui/test_redesign.py`: the ghost on the start, several-readings and no-reading screens with the
+lines from `ghost.js`, never on a recovered picture; Exhibit A wider than B and C; every sample button labelled
+"Examine <name>"; the tried layouts on mystery_b's first 300 bytes all distinct, including padding 2 and 4; no ghost
+line diagnoses and no ghost rule uses the accent. `tests/ui/test_second_pass.py` now checks the self-hosted Bricolage
+Grotesque in place of Roboto and Poppins, and `tests/ui/test_replay_caption.py` restates the caption with the padding
+and encoding. Screenshots of the start, examining, several-readings and no-reading screens, in both themes, were checked
+by eye.
+
+**Breaks.** `docs/ui-clarity-breaks/p7.json`, output beside it: the ghost on a recovered picture, a ghost line that diagnoses, row padding dropped from the tried-layout line, three exhibits of equal width, and sample buttons without their Examine label. 5 breaks, all caught, each restore byte-identical. The full UI suite, rerun on the final stylesheet, caught two things on the way: the word "wrong" in a ghost line (the plain-words test forbids it; now "the reason each was set aside"), and the closure line pushed past the 900 px fold by the larger verdict heading (heading and spacing tightened).

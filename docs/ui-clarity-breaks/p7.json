@@ -1,0 +1,37 @@
+[
+ {
+  "name": "the ghost appears on a recovered picture",
+  "file": "public/js/screens.js",
+  "old": "    bar.append(el('p', 'verdict-sub', how));",
+  "new": "    bar.append(el('p', 'verdict-sub', how), ghost('Recovered.', 'wait', 'ghost-verdict'));",
+  "test": "tests/ui/test_redesign.py -k never_on_a_picture"
+ },
+ {
+  "name": "a ghost line diagnoses the file",
+  "file": "public/js/ghost.js",
+  "old": "  none: 'Nothing I tried fits every byte.",
+  "new": "  none: 'This file is corrupted. Nothing I tried fits every byte.",
+  "test": "tests/ui/test_redesign.py -k never_diagnose"
+ },
+ {
+  "name": "row padding dropped from the tried-layout line",
+  "file": "public/js/words.js",
+  "old": "  const pad = h.row_alignment > 1 ?",
+  "new": "  const pad = false ?",
+  "test": "tests/ui/test_redesign.py -k distinct_lines"
+ },
+ {
+  "name": "the three exhibits made the same width",
+  "file": "public/app.css",
+  "old": ".strip-row { grid-template-columns: 1.25fr 1fr; grid-template-rows: auto auto; gap: 10px; }",
+  "new": ".strip-row { grid-template-columns: 1fr 1fr 1fr; grid-template-rows: auto auto; gap: 10px; }",
+  "test": "tests/ui/test_redesign.py -k different_size"
+ },
+ {
+  "name": "sample buttons lose their Examine label",
+  "file": "public/js/app.js",
+  "old": "        'aria-label': `Examine ${s.name}` });",
+  "new": "        'aria-label': s.name });",
+  "test": "tests/ui/test_redesign.py -k labelled_examine"
+ }
+]

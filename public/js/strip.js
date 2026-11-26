@@ -47,7 +47,8 @@ export function loadStrip(requestAnalysis) {
 function resolvedBody(p) {
   const c = p.candidates[0];
   const well = el('div', 'well strip-well');
-  if (c.render && c.render.data_b64) well.append(paint(c.render, 196, 120, { bitDepth: c.bit_depth }).canvas);
+  // UI task 51: Exhibit A is the large tile, so its picture fills the width, still at whole-pixel scale only when it fits
+  if (c.render && c.render.data_b64) well.append(paint(c.render, 360, 300, { fill: true, bitDepth: c.bit_depth }).canvas);
   return [well, el('p', 'strip-dims', `${c.width} × ${c.height}, ${c.bit_depth}-bit. ${sourceText(c.probe_name)}`)];
 }
 
@@ -80,14 +81,17 @@ function failedBody(p) {
 export function stripElement(requestAnalysis, open) {
   const root = el('section', 'strip');
   root.setAttribute('aria-label', 'Three real results');
+  // UI task 51: three exhibits of different weight, not a row of identical cards. Exhibit A, the recovered picture, is
+  // the large one; B and C sit beside it. The exhibit labels are this page's one deliberate naming system.
   root.append(el('h2', 'strip-title', 'The three answers it gives'),
-    el('p', 'strip-head', 'A picture; several pictures that fit equally well, from which it will not pick; or no picture, with every reason. These three files were examined as this page loaded. Open one to see the working.'));
+    el('p', 'strip-head', 'Examined live as this page loaded: a picture back, several pictures it refuses to choose between, or no picture and every reason why. Open one to see the working.'));
   const row = el('div', 'strip-row');
   root.append(row);
   loadStrip(requestAnalysis).forEach((pending, i) => {
     const tile = el('article', 'strip-tile');
     tile.dataset.slot = String(i);
     tile.dataset.cap = 'tile-' + i;
+    tile.append(el('span', 'exhibit', 'Exhibit ' + 'ABC'[i]));
     const name = el('p', 'strip-input mono', INPUTS[i].label);
     const body = el('div', 'strip-body');
     body.setAttribute('aria-live', 'polite');
@@ -99,10 +103,10 @@ export function stripElement(requestAnalysis, open) {
       const p = result.payload;
       const kids = p.status === 'RESOLVED' ? resolvedBody(p) : p.status === 'UNRESOLVED_AMBIGUITY' ? ambiguityBody(p) : failedBody(p);
       body.replaceChildren(...kids);
-      tile.append(el('p', 'strip-line', outcomeLine(p)), el('span', 'strip-open', 'Open →'));
-      const chip = el('span', 'chip ' + (p.status === 'FAILED' ? 'chip-failed' : 'chip-ok'), CHIP[p.status] + ' ');
+      tile.append(el('p', 'strip-line', outcomeLine(p)), el('span', 'strip-open', 'Open the working →'));
+      const chip = el('span', 'chip ' + (p.status === 'FAILED' ? 'chip-failed' : p.status === 'UNRESOLVED_AMBIGUITY' ? 'chip-amb' : 'chip-ok'), CHIP[p.status] + ' ');
       chip.append(el('span', 'tech', p.status));
-      tile.prepend(chip);
+      tile.querySelector('.exhibit').after(chip);
       tile.dataset.status = p.status;
       tile.tabIndex = 0;
       tile.setAttribute('role', 'button');

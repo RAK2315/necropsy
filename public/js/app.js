@@ -2,6 +2,7 @@ import { renderResult, leaveResult } from './screens.js';
 import { stripElement } from './strip.js';
 import { playSteps } from './live.js';
 import { stateText } from './words.js';
+import { ghost, ghostSay, GHOST } from './ghost.js';
 import {
   multiDropNotice, sizeMessage, emptyMessage, unreadableMessage, othersNotExamined, serviceStatusMessage, UNREACHABLE_MESSAGE,
   sampleFailMessage, SAMPLE_LIST_FAIL, LIMIT_BYTES,
@@ -74,6 +75,9 @@ async function showStart(message = '', name = '') {
       step('It reads what the file declares.', 'Most image files open with a header: a few bytes giving the width, height, colour depth, compression and where the pixels start. NECROPSY reads these for PCX, TGA, TIFF, and PBM, PGM and PPM.'),
       step('It tries the layouts those numbers allow.', 'If they do not quite fit, it tries a few standard corrections. With no header it recognises, it searches sizes directly.'),
       step('It accepts only an exact fit.', 'A layout counts only if the picture data fills it exactly, with no byte missing or left over. If none fits, or several do, it says so and shows why.')));
+  // UI task 51: the copy and the actions on the left, three real results examined as the page loads on the right (one
+  // large, two small, not a row of identical cards), then how it works as the sequence it is, then the files to try
+  const guide = ghost(message ? GHOST.refused : GHOST.idle, message ? 'flat' : 'wait', 'ghost-start');
   const hero = el('section', { class: 'hero', 'data-cap': 'hero' },
     el('div', { class: 'hero-copy' },
       el('h1', { text: 'Get the picture back from an image file nothing can open.' }),
@@ -81,13 +85,14 @@ async function showStart(message = '', name = '') {
       el('p', { class: 'hero-who', text: 'For archivists, investigators, and anyone holding an image in a format nothing reads any more.' }),
       el('div', { class: 'hero-act' }, primary,
         el('span', { class: 'primary-note', text: `${PRIMARY}, a real file from Pillow’s test suite` })),
-      drop, input, msg),
-    how);
-  const samples = el('section', { class: 'samples' }, el('h2', { text: 'More files to try' }));
-  const start = el('div', { class: 'start' }, hero, stripElement(requestAnalysis, present), samples);
+      drop, input, msg, guide),
+    stripElement(requestAnalysis, present));
+  const samples = el('section', { class: 'samples' }, el('h2', { text: 'More files to try' }),
+    el('p', { class: 'samples-lead', text: 'Click any file name to examine it, exactly as if you had dropped it in. Each can be downloaded too, to try from your own desktop.' }));
+  const start = el('div', { class: 'start' }, hero, how, samples);
   view.replaceChildren(start);
 
-  const refuse = (text, name = '') => { msg.textContent = text; msg.classList.add('bad'); setState({ phase: 'error', name, reason: text }); };
+  const refuse = (text, name = '') => { msg.textContent = text; msg.classList.add('bad'); ghostSay(guide, GHOST.refused, 'flat'); setState({ phase: 'error', name, reason: text }); };
   const take = (files) => {
     const list = [...(files || [])];
     if (!list.length) { refuse('Nothing to examine: drop a file.'); return; }
@@ -121,7 +126,8 @@ async function showStart(message = '', name = '') {
     const lists = GROUPS.map((g) => ({ ...g, ul: el('ul') }));
     for (const s of index) {
       const list = lists.find((g) => g.test(s)).ul;
-      const pick = el('button', { class: 'pick', type: 'button', 'data-cap': 'sample', 'data-name': s.name, text: s.name });
+      const pick = el('button', { class: 'pick', type: 'button', 'data-cap': 'sample', 'data-name': s.name, text: s.name,
+        'aria-label': `Examine ${s.name}` });
       // a sample takes exactly the path a dropped file takes: bytes in, analyse(bytes)
       pick.addEventListener('click', () => runSample(s.name));
       const li = el('li', {}, pick, el('span', { class: 'size', text: `${fmt(s.size)} bytes` }),
@@ -152,6 +158,7 @@ function examining(name, size) {
   const busy = document.querySelector('#view > .busy');
   if (!busy) {
     view.replaceChildren(el('div', { class: 'busy', role: 'status', 'data-cap': 'busy' },
+      ghost(GHOST.examining, 'squint', 'ghost-busy'),
       el('p', { class: 'busy-text', text: `Examining ${name}…` }), el('progress', { class: 'busy-bar', 'aria-label': `Examining ${name}` })));
   }
   setState({ phase: 'sending', name, size });
