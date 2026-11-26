@@ -146,10 +146,15 @@ def _run_packbits(data, start, end, h, max_output_bytes) -> DecodeResult:
     return packbits_decode(data, start, end, max_output_bytes)
 
 
+def _run_lzw_tiff(data, start, end, h, max_output_bytes) -> DecodeResult:
+    return lzw_tiff_decode(data, start, end, max_output_bytes)
+
+
 DECODERS = {
     "pnm_text": _run_pnm_text,
     "rle_tga": _run_rle_tga,
     "tiff_compression_32773": _run_packbits,
+    "tiff_compression_5": _run_lzw_tiff,
 }
 
 # Requirement 2.12: decoder state -> closure rejection reason.
@@ -261,3 +266,94 @@ def _packbits_decode(data, start, end, max_output_bytes) -> DecodeResult:
     if i < end:
         return _fail("unconsumed", i, "%d bytes remain after the output is full" % (end - i))
     return DecodeResult("ok", bytes(out), end, "")
+
+
+# TIFF 6.0 LZW (Compression 5), Requirement 12.2: codes are read most significant bit first.
+_LZW_CLEAR = 256
+_LZW_EOI = 257
+_LZW_FIRST_FREE = 258
+_LZW_MIN_WIDTH = 9
+_LZW_MAX_WIDTH = 12
+# Requirement 12.4: a full table holds 4094 entries; the width thresholds (early change) are 511, 1023, 2047.
+_LZW_FULL = 4094
+_LZW_WIDTH_AT = {511: 10, 1023: 11, 2047: 12}
+_LZW_BYTES = tuple(bytes((i,)) for i in range(256))
+
+
+def lzw_tiff_decode(data, start, end, max_output_bytes) -> DecodeResult:
+    """Decode TIFF 6.0 LZW (Compression 5) in data[start:end]. Never raises.
+
+    The stream ends only at an EOI code. consumed_to after EOI is start + ceil(bits_read / 8);
+    the padding bits of the last byte are not leftover bytes (Requirement 12.9).
+    """
+    try:
+        return _lzw_tiff_decode(data, start, end, max_output_bytes)
+    except Exception as exc:  # last line of defence; inner code is written not to raise
+        return _fail("underrun", start if isinstance(start, int) else 0, "internal error: " + type(exc).__name__)
+
+
+def _lzw_tiff_decode(data, start, end, max_output_bytes) -> DecodeResult:
+    for v in (start, end, max_output_bytes):
+        if not isinstance(v, int) or isinstance(v, bool):
+            return _fail("underrun", 0, "non-integer argument")
+    if start < 0 or end > len(data) or start > end or max_output_bytes < 0:
+        return _fail("underrun", start, "invalid arguments")
+
+    total_bits = (end - start) * 8
+    out = bytearray()
+    table = list(_LZW_BYTES) + [b"", b""]  # 256 literals, CLEAR and EOI placeholders
+    width = _LZW_MIN_WIDTH
+    prev = None  # previous entry; None right after CLEAR and at the start
+    pos = 0  # bits read so far
+    acc = 0  # bits not yet consumed, in an int; refilled one byte at a time
+    acc_bits = 0
+    next_byte = start
+
+    while True:
+        if total_bits - pos < width:
+            return _fail("underrun", end, "region ended before EOI after %d bytes of output" % len(out))
+        while acc_bits < width:
+            acc = (acc << 8) | data[next_byte]
+            next_byte += 1
+            acc_bits += 8
+        acc_bits -= width
+        code = acc >> acc_bits
+        acc &= (1 << acc_bits) - 1
+        pos += width
+        code_end = start + (pos + 7) // 8  # index after the byte holding this code's last bit
+
+        if code == _LZW_EOI:
+            if len(out) < max_output_bytes:
+                return _fail("underrun", code_end, "EOI after %d of %d bytes" % (len(out), max_output_bytes))
+            if code_end < end:
+                return _fail("unconsumed", code_end, "%d bytes remain after EOI" % (end - code_end))
+            return DecodeResult("ok", bytes(out), code_end, "")
+
+        if code == _LZW_CLEAR:
+            del table[_LZW_FIRST_FREE:]
+            width = _LZW_MIN_WIDTH
+            prev = None
+            continue
+
+        size = len(table)
+        if prev is None:
+            if code >= 256:
+                return _fail("malformed", code_end, "first code %d after CLEAR is not a literal" % code)
+            entry = table[code]
+        elif code < size:
+            entry = table[code]
+        elif code == size:
+            entry = prev + prev[:1]
+        else:
+            return _fail("malformed", code_end, "code %d is above the table size %d" % (code, size))
+
+        if len(entry) > max_output_bytes - len(out):
+            return _fail("overrun", code_end, "code %d would pass %d bytes" % (code, max_output_bytes))
+        out += entry
+
+        if prev is not None and size < _LZW_FULL:
+            table.append(prev + entry[:1])
+            new_width = _LZW_WIDTH_AT.get(size + 1)
+            if new_width:
+                width = new_width
+        prev = entry

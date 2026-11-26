@@ -314,3 +314,206 @@ def test_packbits_never_raises(data, cap):
 def test_packbits_never_raises_on_arbitrary_range(data, s, e):
     r = packbits_decode(data, s, e, 8)
     assert isinstance(r, DecodeResult) and r.status in STATUSES
+
+
+# ---- lzw_tiff_decode (format-coverage Requirement 12, Task 24) ----
+import random  # noqa: E402
+import time  # noqa: E402
+
+from necropsy.engine.decoders import DECODE_CAP, lzw_tiff_decode  # noqa: E402
+
+CLEAR, EOI = 256, 257
+
+
+def pack_codes(codes):
+    """Pack (code, width) pairs most significant bit first; zero padding bits fill the last byte."""
+    acc = nbits = 0
+    for code, width in codes:
+        acc = (acc << width) | code
+        nbits += width
+    pad = -nbits % 8
+    return (acc << pad).to_bytes((nbits + pad) // 8, "big")
+
+
+def lzw_encode_codes(data):
+    """Documented TIFF 6.0 LZW encoder, independent of the decoder: (code, width) pairs.
+
+    Table starts at 258 entries (0..255 literals, 256 CLEAR, 257 EOI). After each emitted code the
+    entry w + next byte is added while fewer than 4094 entries exist; when 4094 are held the code is
+    followed by CLEAR and the table resets. The width grows after entry 510, 1022 and 2046 is added
+    (the table then holds 511, 1023, 2047 entries) and applies to the next code written.
+    """
+    out = [(CLEAR, 9)]
+    width, free = 9, 258
+    table = {bytes((i,)): i for i in range(256)}
+    w = b""
+    for b in data:
+        wc = w + bytes((b,))
+        if wc in table:
+            w = wc
+            continue
+        out.append((table[w], width))
+        if free < 4094:
+            table[wc] = free
+            free += 1
+            if free in (512, 1024, 2048):
+                width += 1
+        else:
+            out.append((CLEAR, width))
+            table = {bytes((i,)): i for i in range(256)}
+            free, width = 258, 9
+        w = bytes((b,))
+    if w:
+        out.append((table[w], width))
+        if free < 4094:
+            free += 1
+            if free in (512, 1024, 2048):
+                width += 1
+    out.append((EOI, width))
+    return out
+
+
+def lzw_encode(data):
+    return pack_codes(lzw_encode_codes(data))
+
+
+def lzw(body, out, start=0, end=None):
+    return lzw_tiff_decode(body, start, len(body) if end is None else end, out)
+
+
+def test_lzw_stream_that_ends_exactly_is_ok():  # Req 12.10
+    data = b"abcabcabcabc" * 3
+    enc = lzw_encode(data)
+    r = lzw(enc, len(data))
+    assert (r.status, r.data, r.consumed_to) == ("ok", data, len(enc))
+
+
+def test_lzw_one_extra_byte_after_eoi_is_unconsumed():  # Req 12.9, 12.10
+    enc = lzw_encode(b"hello")
+    r = lzw(enc + b"\x00", 5)
+    assert (r.status, r.consumed_to) == ("unconsumed", len(enc))
+
+
+def test_lzw_padding_bits_in_the_last_byte_are_not_leftover():  # Req 12.9
+    enc = pack_codes([(CLEAR, 9), (97, 9), (EOI, 9)])  # 27 bits, 5 padding bits
+    assert len(enc) == 4
+    r = lzw(enc, 1)
+    assert (r.status, r.data, r.consumed_to) == ("ok", b"a", 4)
+
+
+def test_lzw_cut_before_eoi_is_underrun_at_end():  # Req 12.8
+    enc = pack_codes([(CLEAR, 9), (97, 9), (EOI, 9)])[:-1]
+    r = lzw(enc, 1)
+    assert (r.status, r.consumed_to) == ("underrun", len(enc))
+
+
+def test_lzw_eoi_with_short_output_is_underrun_after_the_eoi_byte():  # Req 12.10
+    enc = pack_codes([(CLEAR, 9), (97, 9), (EOI, 9)])
+    r = lzw(enc, 2)
+    assert (r.status, r.consumed_to) == ("underrun", 4)
+
+
+def test_lzw_code_above_the_table_is_malformed():  # Req 12.5, 12.6
+    # Table holds 258 entries; after 'a' it still holds 258, so 300 is above it. Bits read: 27.
+    enc = pack_codes([(CLEAR, 9), (97, 9), (300, 9), (EOI, 9)])
+    r = lzw(enc, 5)
+    assert (r.status, r.consumed_to) == ("malformed", 4)
+    assert "300" in r.detail
+
+
+def test_lzw_first_code_must_be_clear_or_literal():  # Req 12.3
+    enc = pack_codes([(CLEAR, 9), (258, 9), (EOI, 9)])
+    assert lzw(enc, 1).status == "malformed"
+    assert lzw(pack_codes([(258, 9), (EOI, 9)]), 1).status == "malformed"
+
+
+def test_lzw_code_equal_to_table_size_repeats_the_first_byte():  # Req 12.5
+    enc = pack_codes([(CLEAR, 9), (97, 9), (258, 9), (EOI, 9)])  # 'a', then 'a' + 'a'
+    r = lzw(enc, 3)
+    assert (r.status, r.data) == ("ok", b"aaa")
+
+
+def test_lzw_output_one_byte_too_long_is_overrun_without_writing():  # Req 12.7
+    enc = pack_codes([(CLEAR, 9), (97, 9), (98, 9), (99, 9), (100, 9), (EOI, 9)])  # 45 bits read at the 5th code
+    r = lzw(enc, 3)
+    assert (r.status, r.data, r.consumed_to) == ("overrun", None, 6)
+
+
+def test_lzw_crosses_every_code_width_and_a_clear_in_the_middle():  # Req 12.4, 12.12
+    data = bytes(random.Random(7).choices(range(4), k=40000))
+    codes = lzw_encode_codes(data)
+    assert {w for _, w in codes} == {9, 10, 11, 12}
+    assert [c for c, _ in codes].count(CLEAR) >= 2  # the first, and a mid-stream one when the table is full
+    enc = pack_codes(codes)
+    r = lzw(enc, len(data))
+    assert (r.status, r.data, r.consumed_to) == ("ok", data, len(enc))
+
+
+def test_lzw_no_data_stream_is_empty_output():
+    enc = lzw_encode(b"")
+    assert lzw(enc, 0).status == "ok" and lzw(enc, 0).data == b""
+
+
+def zeros_stream_codes(cycles):
+    """Codes for a run of zeros that expands as much as the table allows, from the encoder's rules:
+    per cycle emission 1 is literal 0 and emission j >= 2 is entry 258 + j - 2 (a run of j zeros);
+    emission j is 9 bits up to j = 254, 10 up to 766, 11 up to 1790, then 12; emission 3837 is
+    followed by CLEAR at 12 bits."""
+    codes = [(CLEAR, 9)]
+    for _ in range(cycles):
+        for j in range(1, 3838):
+            width = 9 if j <= 254 else 10 if j <= 766 else 11 if j <= 1790 else 12
+            codes.append((0 if j == 1 else 258 + j - 2, width))
+        codes.append((CLEAR, 12))
+    return codes
+
+
+def test_lzw_first_cycle_of_the_expanding_stream_decodes_to_zeros():
+    codes = zeros_stream_codes(1)[:-1] + [(EOI, 12)]
+    total = 3837 * 3838 // 2
+    r = lzw(pack_codes(codes), total)
+    assert r.status == "ok" and r.data == bytes(total)
+
+
+def test_lzw_worst_case_expansion_returns_within_two_seconds():  # Req 15.3
+    stream = pack_codes(zeros_stream_codes(13))
+    assert len(stream) >= 65536
+    stream = stream[:65536]
+    t0 = time.perf_counter()
+    r = lzw(stream, DECODE_CAP)
+    elapsed = time.perf_counter() - t0
+    assert r.status == "overrun" and r.data is None
+    assert elapsed < 2.0, elapsed
+
+
+def test_lzw_bomb_is_bounded_by_max_output_bytes():  # Req 12.11, 15.4
+    stream = pack_codes(zeros_stream_codes(1))
+    for cap in (0, 1, 1000):
+        r = lzw(stream, cap)
+        assert r.status == "overrun" and r.data is None
+
+
+def test_lzw_honours_start_and_end_and_invalid_arguments():
+    enc = lzw_encode(b"xyz")
+    r = lzw(b"zz" + enc + b"yy", 3, start=2, end=2 + len(enc))
+    assert (r.status, r.data, r.consumed_to) == ("ok", b"xyz", 2 + len(enc))
+    assert lzw(enc, 3, start=5, end=9).status == "underrun"
+    assert lzw_tiff_decode(enc, 0, len(enc), -1).status == "underrun"
+
+
+@given(st.binary(max_size=300), st.integers(-5, 5000))
+@settings(max_examples=200, deadline=None)
+def test_lzw_never_raises(data, cap):
+    r = lzw_tiff_decode(data, 0, len(data), cap)
+    assert isinstance(r, DecodeResult) and r.status in STATUSES
+    if r.status == "ok":
+        assert len(r.data) == cap
+    else:
+        assert r.data is None
+
+
+@given(st.binary(max_size=64), st.integers(-10, 100), st.integers(-10, 100))
+@settings(max_examples=200, deadline=None)
+def test_lzw_never_raises_on_arbitrary_range(data, s, e):
+    r = lzw_tiff_decode(data, s, e, 8)
+    assert isinstance(r, DecodeResult) and r.status in STATUSES

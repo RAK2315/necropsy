@@ -1,8 +1,57 @@
 {
  "real/goimage_blue-purple-pink.lzwcompressed.tiff": {
-  "candidates": [],
-  "status": "FAILED",
-  "termination": "exhausted"
+  "candidates": [
+   {
+    "key": [
+     150,
+     100,
+     24,
+     8,
+     1,
+     "tiff_compression_5",
+     38801,
+     [
+      1,
+      null,
+      [
+       [
+        8,
+        4463
+       ],
+       [
+        4463,
+        11811
+       ],
+       [
+        11811,
+        21276
+       ],
+       [
+        21276,
+        30484
+       ],
+       [
+        30484,
+        36702
+       ],
+       [
+        36702,
+        38801
+       ]
+      ],
+      18,
+      null,
+      null
+     ]
+    ],
+    "region": [
+     8,
+     38801
+    ]
+   }
+  ],
+  "status": "RESOLVED",
+  "termination": null
  },
  "real/goimage_bw-deflate.tiff": {
   "candidates": [],

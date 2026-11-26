@@ -5,11 +5,24 @@
   "scope": "out",
   "scope_reason": "compression LZW, 6 strips",
   "invalid_by_construction": false,
-  "our_status": "FAILED",
-  "stage": null,
-  "termination": "exhausted",
-  "checks": 3,
-  "candidates": [],
+  "our_status": "RESOLVED",
+  "stage": "probe",
+  "termination": null,
+  "checks": 1,
+  "candidates": [
+   {
+    "width": 150,
+    "height": 100,
+    "bit_depth": 24,
+    "header_size": 8,
+    "row_alignment": 1,
+    "encoding": "tiff_compression_5",
+    "probe": "tiff",
+    "path": [],
+    "data_start": 8,
+    "data_end": 38801
+   }
+  ],
   "expected_status": "FAILED",
   "note": "",
   "pillow_error": null,
@@ -19,8 +32,10 @@
    150,
    100
   ],
-  "pixel_verdicts": [],
-  "pillow_pixels_sha256": null
+  "pixel_verdicts": [
+   "not comparable: encoding tiff_compression_5 not handled by the comparer"
+  ],
+  "pillow_pixels_sha256": "db2d2e2de731d0e7ec820959fa0abf68c6a85e7bd4cb35248311f1fef6ee042b"
  },
  {
   "file": "goimage_bw-deflate.tiff",

@@ -99,10 +99,15 @@ TIFF_TILES_RESOLVED = {"pillow_tiff_tiled_raw.tif"}
 # scope is rewritten in Task 37; the full TIFF expectations belong to Task 28. Pixel comparison is pending: the comparer
 # in tools/real_corpus.py does not handle tiff_compression_32773 yet (row carries "not comparable").
 TIFF_PACKBITS_RESOLVED = {"goimage_bw-packbits.tiff"}
+# format-coverage Requirement 12.1 to 12.10 and design.md row 24: the LZW decoder resolves this 6-strip TIFF. Its manifest
+# scope is rewritten in Task 37; the full TIFF expectations belong to Task 28. Pixel comparison is pending: the comparer
+# in tools/real_corpus.py does not handle tiff_compression_5 yet (row carries "not comparable").
+# libtiff_lzw-single-strip.tiff, also listed in row 24, stays FAILED: its strip ends without EOI (Requirement 12.8).
+TIFF_LZW_RESOLVED = {"goimage_blue-purple-pink.lzwcompressed.tiff"}
 OUT_OF_SCOPE = [n for n in FILES if scope_of(n) == "out" and n != OSSFUZZ and n not in TIFF_TILES_RESOLVED
                 and n not in PNM_RESOLVED and n not in PNM_TEXT_RESOLVED and n not in RLE_TGA_RESOLVED
                 and n not in PCX_PLANAR_RESOLVED and n not in TIFF_STRIPS_RESOLVED
-                and n not in TIFF_PACKBITS_RESOLVED]
+                and n not in TIFF_PACKBITS_RESOLVED and n not in TIFF_LZW_RESOLVED]
 
 
 @pytest.mark.parametrize("name", sorted(TIFF_STRIPS_RESOLVED))
@@ -121,6 +126,18 @@ def test_tiff_tile_files_resolve(name):
 def test_tiff_packbits_files_resolve(name):
     # Requirement 11.1 to 11.7; format-coverage Task 23.
     assert run(name)[1].status == "RESOLVED"
+
+
+@pytest.mark.parametrize("name", sorted(TIFF_LZW_RESOLVED))
+def test_tiff_lzw_files_resolve(name):
+    # Requirement 12.1 to 12.10; format-coverage Task 24.
+    assert run(name)[1].status == "RESOLVED"
+
+
+def test_lzw_strip_without_eoi_stays_failed():
+    # Requirement 12.8: the strip of libtiff_lzw-single-strip.tiff decodes to its full 3,043,950 bytes and then runs
+    # out of bits (5 left, width 10) with no EOI, so the decoder returns underrun.
+    assert run("libtiff_lzw-single-strip.tiff")[1].status == "FAILED"
 
 
 @pytest.mark.parametrize("name", sorted(PCX_PLANAR_RESOLVED))
