@@ -134,9 +134,33 @@
   "termination": null
  },
  "real/imagemagick_input.pcx": {
-  "candidates": [],
-  "status": "FAILED",
-  "termination": "exhausted"
+  "candidates": [
+   {
+    "key": [
+     70,
+     46,
+     24,
+     128,
+     1,
+     "rle_pcx",
+     null,
+     [
+      3,
+      210,
+      [],
+      null,
+      null,
+      null
+     ]
+    ],
+    "region": [
+     128,
+     10844
+    ]
+   }
+  ],
+  "status": "RESOLVED",
+  "termination": null
  },
  "real/imagemagick_input.tga": {
   "candidates": [
@@ -1023,9 +1047,33 @@
   "termination": null
  },
  "real/pillow_p_4_planes.pcx": {
-  "candidates": [],
-  "status": "FAILED",
-  "termination": "exhausted"
+  "candidates": [
+   {
+    "key": [
+     1,
+     1,
+     4,
+     128,
+     1,
+     "rle_pcx",
+     null,
+     [
+      4,
+      8,
+      [],
+      null,
+      null,
+      null
+     ]
+    ],
+    "region": [
+     128,
+     136
+    ]
+   }
+  ],
+  "status": "RESOLVED",
+  "termination": null
  },
  "real/pillow_p_8.tga": {
   "candidates": [],
@@ -1137,9 +1185,33 @@
   "termination": "exhausted"
  },
  "real/sdlimage_sample.pcx": {
-  "candidates": [],
-  "status": "FAILED",
-  "termination": "exhausted"
+  "candidates": [
+   {
+    "key": [
+     23,
+     42,
+     24,
+     128,
+     1,
+     "rle_pcx",
+     null,
+     [
+      3,
+      72,
+      [],
+      null,
+      null,
+      null
+     ]
+    ],
+    "region": [
+     128,
+     3278
+    ]
+   }
+  ],
+  "status": "RESOLVED",
+  "termination": null
  },
  "real/sdlimage_sample.pnm": {
   "candidates": [

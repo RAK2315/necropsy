@@ -92,16 +92,25 @@ def _probe_pcx(data: bytes) -> ProbeOutcome | None:
         return records[name].value[0]
 
     xmin, ymin, xmax, ymax = val("xmin"), val("ymin"), val("xmax"), val("ymax")
+    planar = {}
+    if val("planes") > 1:
+        # Requirement 6.2: the scanline is `planes` planes of bytes_per_line bytes each.
+        planar = {
+            "planes": val("planes"),
+            "row_bytes": val("planes") * val("bytes_per_line"),
+        }
+    bits = val("bit_depth") * val("planes") if planar else val("bit_depth")
     seed = Hypothesis(
         width=xmax,
         height=ymax,
-        bit_depth=val("bit_depth"),
+        bit_depth=bits,
         header_size=PCX_HEADER_SIZE,
         row_alignment=1,
         encoding=PCX_ENCODINGS[val("encoding")],
         fields=tuple(records[name] for name, _, _ in specs),
         probe_name="pcx",
         bounds=(xmin, ymin, xmax, ymax),
+        **planar,
     )
 
     problems = []

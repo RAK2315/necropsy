@@ -82,8 +82,18 @@ RLE_TGA_RESOLVED = {
     "pillow_200x32_l_tl_rle.tga", "pillow_200x32_p_tl_rle.tga", "pillow_200x32_rgb_tl_rle.tga",
     "pillow_la.tga", "pillow_rgb32rle.tga", "sdlimage_sample.tga",
 }
+# format-coverage Requirement 6.2, 6.6 and design.md row 15: the multi-plane PCX seed resolves these three files. Their
+# manifest scope is rewritten from header bytes in Task 37; the pixel comparer learns planar PCX in Task 38.
+PCX_PLANAR_RESOLVED = {"imagemagick_input.pcx", "pillow_p_4_planes.pcx", "sdlimage_sample.pcx"}
 OUT_OF_SCOPE = [n for n in FILES if scope_of(n) == "out" and n != OSSFUZZ
-                and n not in PNM_RESOLVED and n not in PNM_TEXT_RESOLVED and n not in RLE_TGA_RESOLVED]
+                and n not in PNM_RESOLVED and n not in PNM_TEXT_RESOLVED and n not in RLE_TGA_RESOLVED
+                and n not in PCX_PLANAR_RESOLVED]
+
+
+@pytest.mark.parametrize("name", sorted(PCX_PLANAR_RESOLVED))
+def test_multi_plane_pcx_files_resolve(name):
+    # Requirement 6.2, 6.6; format-coverage Task 15.
+    assert run(name)[1].status == "RESOLVED"
 
 
 @pytest.mark.parametrize("name", sorted(RLE_TGA_RESOLVED))
