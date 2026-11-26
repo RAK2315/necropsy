@@ -260,3 +260,18 @@ as text, PackBits, LZW, Deflate, LZMA) and any other TIFF compression by its num
 for every reason in `reasonText`, and for every decoder reason and `sample_above_maxval` in `reasonExplain`, and that
 no decoder line assumes run-length data. Against the previous `words.js` all three tests fail; against the new one
 all three pass. `tests/ui/test_replay_caption.py` restates the changed overrun wording.
+
+## Task 49: a photograph behind the landing hero, and the format list brought up to date
+
+Rehaan's call, 26 Nov. In the dark theme the landing hero now has a dark macro photograph of concentric grooves behind
+its right half (`public/img/hero-grooves.jpg`, 85 KB, made from `docs/media/generated/platter-grooves.png`, an
+AI-generated illustration recorded as decoration). It bleeds to the window edges, sits behind the content
+(`z-index: -1`, no pointer events) and fades into `--bg` over the left 42% and at the bottom, so the hero text stays on
+the plain background its contrast was measured on. The light theme has no image. "How it works" now says NECROPSY
+reads the header for PCX, TGA, TIFF, and PBM, PGM and PPM, which has been true since the `format-coverage` spec.
+
+**Verification.** `tests/ui/test_hero_image.py` (the image is served and under 200 KB, the rule is dark-theme only,
+behind the content, fading to `--bg` across the text column, and recorded as generated decoration). The landing,
+contrast, theme and visual-rule tests (`test_a11y`, `test_amb_grid`, `test_fourth_pass`, `test_second_pass`,
+`test_visual_rules`) pass: 48 passed, and the 27 front-end tests pass. Screenshots at 1280 and 1920 wide were checked by
+eye.

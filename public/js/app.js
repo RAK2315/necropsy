@@ -71,7 +71,7 @@ async function showStart(message = '', name = '') {
   const step = (title, text) => el('li', {}, el('strong', { text: title }), el('span', { text }));
   const how = el('section', { class: 'how', 'data-cap': 'how' }, el('h2', { text: 'How it works' }),
     el('ol', {},
-      step('It reads what the file declares.', 'Most image files open with a header: a few bytes giving the width, height, colour depth, compression and where the pixels start. NECROPSY reads these for PCX, TGA, PBM and TIFF.'),
+      step('It reads what the file declares.', 'Most image files open with a header: a few bytes giving the width, height, colour depth, compression and where the pixels start. NECROPSY reads these for PCX, TGA, TIFF, and PBM, PGM and PPM.'),
       step('It tries the layouts those numbers allow.', 'If they do not quite fit, it tries a few standard corrections. With no header it recognises, it searches sizes directly.'),
       step('It accepts only an exact fit.', 'A layout counts only if the picture data fills it exactly, with no byte missing or left over. If none fits, or several do, it says so and shows why.')));
   const hero = el('section', { class: 'hero', 'data-cap': 'hero' },

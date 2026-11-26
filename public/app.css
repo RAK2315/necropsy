@@ -106,6 +106,16 @@ button.again:hover { background: var(--text); color: var(--bg); }
 .state[data-phase="done"], .state[data-phase="error"] { color: var(--text); }
 /* landing (UI task 45): what it is and what to do, beside how it works; then the three answers; then the files */
 .hero { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 56px; align-items: start; margin: 0 0 64px; }
+/* UI task 49: a dark macro photograph behind the landing hero, dark theme only. It is decoration, an AI-generated
+   illustration (docs/media/generated/README.md), not a recovered file. It bleeds to the window edges and fades into
+   --bg on the left and at the bottom, so the text sits on the plain background and its contrast is unchanged. */
+.hero { position: relative; isolation: isolate; }
+:root:not([data-theme="light"]) .hero::before { content: ''; position: absolute; z-index: -1; pointer-events: none;
+  top: -56px; bottom: -40px; left: 50%; width: 100vw; transform: translateX(-50%);
+  background: linear-gradient(90deg, var(--bg) 0%, var(--bg) 42%, rgba(18, 22, 27, 0.55) 70%, rgba(18, 22, 27, 0.2) 100%),
+              linear-gradient(0deg, var(--bg) 0%, rgba(18, 22, 27, 0) 30%),
+              url('img/hero-grooves.jpg') right center / cover no-repeat; }
+html, body { overflow-x: clip; }
 .hero h1 { font-family: var(--display); margin: 0 0 18px; font-size: 40px; line-height: 1.12; letter-spacing: -0.01em; font-weight: 600;
            color: var(--text); text-wrap: balance; }
 .hero-what { margin: 0 0 10px; max-width: 56ch; color: var(--text); font-size: 17px; line-height: 1.55; }
