@@ -177,8 +177,10 @@ def _check_ranges(h, data: bytes) -> ClosureVerdict:
         if s2 < e1:
             return _detail_reject("degenerate_hypothesis",
                                   "ranges %d [%d, %d) and %d [%d, %d) overlap" % (i1, s1, e1, i2, s2, e2))
+    if h.tile is not None:
+        return _check_tiles(h, data)
     rps = h.rows_per_strip
-    if h.tile is not None or rps is None or rps <= 0:
+    if rps is None or rps <= 0:
         return _detail_reject("degenerate_hypothesis", "ranges need rows_per_strip > 0 and no tile")
     want = -(-h.height // rps)
     if n != want:
@@ -197,6 +199,56 @@ def _check_ranges(h, data: bytes) -> ClosureVerdict:
                 "range %d [%d, %d) holds %d bytes, its %d rows need %d" % (i, start, end, end - start, rows, unit),
                 (end - start) - unit)
         out += data[start:end]
+    return _accept(bytes(out), min(s for s, _ in ranges), max(e for _, e in ranges), None)
+
+
+def _check_tiles(h, data: bytes) -> ClosureVerdict:
+    """Tiles with encoding none (Requirements 7.9, 7.10 to 7.12, 9.6).
+
+    Called after bounds, Requirement 12 and overlap checks. The assembled image is
+    stride x height bytes; that size is checked against DECODE_CAP before the
+    bytearray is allocated, and nothing is sized from the declared tile count.
+    """
+    from .decoders import DECODE_CAP
+    ranges = h.ranges
+    n = len(ranges)
+    tw, tl = h.tile
+    if tw <= 0 or tl <= 0:
+        return _detail_reject("degenerate_hypothesis", "tile %d x %d must be positive" % (tw, tl))
+    if (tw * h.bit_depth) % 8 != 0:
+        return _detail_reject("degenerate_hypothesis",
+                              "tile width %d at %d bits does not start a column on a byte" % (tw, h.bit_depth))
+    across = -(-h.width // tw)
+    down = -(-h.height // tl)
+    if n != across * down:
+        return _detail_reject("degenerate_hypothesis",
+                              "%d ranges declared, %d x %d = %d tiles expected" % (n, across, down, across * down))
+    if h.encoding != "none":
+        return _reject("unsupported_encoding")
+    stride = hypothesis_row_stride(h)
+    total = stride * h.height
+    if total > DECODE_CAP:
+        return _detail_reject("degenerate_hypothesis",
+                              "assembled image of %d bytes is above the cap of %d" % (total, DECODE_CAP))
+    tile_row = (tw * h.bit_depth) // 8
+    unit = tile_row * tl
+    for i, (start, end) in enumerate(ranges):
+        if end - start != unit:
+            return _detail_reject(
+                "arithmetic_mismatch",
+                "range %d [%d, %d) holds %d bytes, its tile needs %d" % (i, start, end, end - start, unit),
+                (end - start) - unit)
+    out = bytearray(total)
+    for i, (start, _end) in enumerate(ranges):
+        x = (i % across) * tile_row
+        y = (i // across) * tl
+        copy = min(tile_row, stride - x)
+        if copy <= 0:
+            continue
+        for r in range(min(tl, h.height - y)):
+            src = start + r * tile_row
+            dst = (y + r) * stride + x
+            out[dst:dst + copy] = data[src:src + copy]
     return _accept(bytes(out), min(s for s, _ in ranges), max(e for _, e in ranges), None)
 
 
