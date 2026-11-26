@@ -333,6 +333,7 @@ TIFF_TAG_NAMES = {
     257: "height",
     258: "bits_per_sample",
     259: "compression",
+    278: "rows_per_strip",
     262: "photometric_interpretation",   # optional; reported only, never in the seed
     273: "strip_offset",
     277: "samples_per_pixel",
@@ -345,6 +346,45 @@ TIFF_VALUE_FIELD_SIZE = 4       # bytes in an entry's value field (entry + 8)
 TIFF_TYPE_SIZES = {3: 2, 4: 4}  # bytes per SHORT (3) and LONG (4) value
 TIFF_REQUIRED_TAGS = (256, 257, 258, 273, 279)
 TIFF_TYPE_FORMATS = {3: "H", 4: "I"}
+TIFF_ROWS_PER_STRIP_TAG = 278   # SHORT or LONG, count 1; absent = 2^32 - 1
+TIFF_STRIP_OFFSET_TAG = 273
+TIFF_STRIP_BYTE_COUNT_TAG = 279
+TIFF_TILE_OFFSET_TAG = 324      # presence only here; tiles are read by a later task
+TIFF_MAX_RANGES = 16384         # largest strip array count the probe reads
+TIFF_ROWS_PER_STRIP_DEFAULT = 2**32 - 1
+TIFF_ARRAY_NAMES = {273: "strip_offset", 279: "strip_byte_count"}
+
+
+def _read_range_array(
+    data: bytes, order: str, entry: int, type_id: int, n: int, name: str
+) -> tuple[list[FieldRecord], str, str]:
+    """Read a strip array (tags 273, 279). Returns (records, problem_kind, detail).
+
+    problem_kind is "" on success, "bounds" or "precondition". Records are named
+    `name[i]` and returned only on success. Nothing is allocated from `n` before
+    it has passed the 1..TIFF_MAX_RANGES check.
+    """
+    size = TIFF_TYPE_SIZES[type_id]
+    fmt = order + TIFF_TYPE_FORMATS[type_id]
+    if n < 1 or n > TIFF_MAX_RANGES:
+        return [], "precondition", (
+            f"{name} count {n} is outside 1..{TIFF_MAX_RANGES}; values not read"
+        )
+    start = entry + TIFF_ENTRY_VALUE_OFFSET
+    if n * size > TIFF_VALUE_FIELD_SIZE:
+        pointer = read(data, f"{name}_offset", start, order + "I")
+        if pointer is None:
+            return [], "bounds", f"{name} offset field runs past the end of the data"
+        start = pointer.value[0]
+    records = []
+    for i in range(n):
+        rec = read(data, f"{name}[{i}]", start + size * i, fmt)
+        if rec is None:
+            return [], "bounds", (
+                f"{name} value {i} of {n} at offset {start + size * i} lies outside the data"
+            )
+        records.append(rec)
+    return records, "", ""
 
 
 def _read_bits_per_sample(
@@ -407,6 +447,10 @@ def _probe_tiff(data: bytes) -> ProbeOutcome | None:
     bps_seen = False
     bps_problems: list[str] = []
     bps_unestablished = False
+    arrays: dict[int, list[FieldRecord]] = {}   # tags 273 / 279 with count != 1
+    array_attempted: set[int] = set()
+    array_problems: list[str] = []
+    seen_tags: set[int] = set()
     ifd_offset = ifd.value[0]
     count_rec = read(data, "ifd_entry_count", ifd_offset, order + "H")
     if count_rec is None:
@@ -427,6 +471,23 @@ def _probe_tiff(data: bytes) -> ProbeOutcome | None:
             if tag is None or kind is None or count is None:
                 continue
             tag_id, type_id = tag.value[0], kind.value[0]
+            seen_tags.add(tag_id)
+            if (tag_id in TIFF_ARRAY_NAMES and count.value[0] != 1
+                    and type_id in TIFF_TYPE_SIZES):
+                if tag_id in array_attempted or tag_id in values:
+                    continue
+                array_attempted.add(tag_id)
+                recs, kind_, detail = _read_range_array(
+                    data, order, entry, type_id, count.value[0], TIFF_ARRAY_NAMES[tag_id]
+                )
+                if kind_ == "bounds":
+                    out_of_bounds = out_of_bounds or detail
+                elif kind_ == "precondition":
+                    array_problems.append(detail)
+                else:
+                    arrays[tag_id] = recs
+                    records.extend(recs)
+                continue
             if tag_id == TIFF_BITS_PER_SAMPLE_TAG:
                 if bps_seen or type_id not in TIFF_TYPE_SIZES:
                     continue
@@ -454,7 +515,7 @@ def _probe_tiff(data: bytes) -> ProbeOutcome | None:
             if tag_id not in TIFF_TAG_NAMES or count.value[0] != 1:
                 continue
             code = TIFF_TYPE_FORMATS.get(type_id)
-            if code is None or tag_id in values:
+            if code is None or tag_id in values or tag_id in array_attempted:
                 continue
             rec = read(data, TIFF_TAG_NAMES[tag_id], entry + TIFF_ENTRY_VALUE_OFFSET, order + code)
             if rec is None:
@@ -465,17 +526,35 @@ def _probe_tiff(data: bytes) -> ProbeOutcome | None:
     compression = values.get(259, 1)
     samples = values.get(277, 1)
     planar = values.get(284, 1)
+    height = values.get(257, 0)
+    rps_declared = values.get(TIFF_ROWS_PER_STRIP_TAG, TIFF_ROWS_PER_STRIP_DEFAULT)
+    offsets_list = [r.value[0] for r in arrays.get(273, [])]
+    counts_list = [r.value[0] for r in arrays.get(279, [])]
+    if 279 in values and 279 not in arrays:
+        counts_list = [values[279]]
+    multi = len(offsets_list) > 1
+    ranges: tuple[tuple[int, int], ...] = ()
+    rows_per_strip = None
     strip_offset = values.get(273, 0)
+    data_end = strip_offset + values.get(279, 0)
+    if multi:
+        ranges = tuple((o, o + c) for o, c in zip(offsets_list, counts_list))
+        rows_per_strip = min(rps_declared, height)
+        if ranges:
+            strip_offset = min(s for s, _ in ranges)
+            data_end = max(e for _, e in ranges)
     seed = Hypothesis(
         width=values.get(256, 0),
-        height=values.get(257, 0),
+        height=height,
         bit_depth=values.get(258, 0) * samples,
         header_size=strip_offset,
         row_alignment=1,
         encoding="none" if compression == 1 else f"tiff_compression_{compression}",
-        data_end=strip_offset + values.get(279, 0),
+        data_end=data_end,
         fields=tuple(records),
         probe_name="tiff",
+        ranges=ranges,
+        rows_per_strip=rows_per_strip,
     )
 
     rejections: list[RejectionEntry] = []
@@ -487,11 +566,31 @@ def _probe_tiff(data: bytes) -> ProbeOutcome | None:
     missing = [
         TIFF_TAG_NAMES[t]
         for t in TIFF_REQUIRED_TAGS
-        if t not in values and not (t == TIFF_BITS_PER_SAMPLE_TAG and bps_unestablished)
+        if t not in values and t not in arrays and t not in array_attempted
+        and not (t == TIFF_BITS_PER_SAMPLE_TAG and bps_unestablished)
     ]
     if missing:
         problems.append("missing tags: " + ", ".join(missing))
     problems.extend(bps_problems)
+    problems.extend(array_problems)
+    n_off = len(offsets_list) if offsets_list else (1 if 273 in values else 0)
+    n_cnt = len(counts_list)
+    if n_off and n_cnt and n_off != n_cnt:
+        problems.append(
+            f"strip_offset count {n_off} differs from strip_byte_count count {n_cnt}"
+        )
+    if n_off and 256 in values and 257 in values:
+        if rps_declared < 1:
+            problems.append("rows_per_strip is 0")
+        else:
+            want = -(-height // min(rps_declared, height)) if height > 0 else 0
+            if n_off != want:
+                problems.append(
+                    f"strip count {n_off} differs from ceil(height {height} / "
+                    f"rows_per_strip {min(rps_declared, height)}) = {want}"
+                )
+    if TIFF_TILE_OFFSET_TAG in seen_tags and TIFF_STRIP_OFFSET_TAG in seen_tags:
+        problems.append("tags 273 (strip_offset) and 324 (tile_offset) are both present")
     if planar != 1:
         problems.append(f"planar_configuration {planar} is not 1")
     if problems:

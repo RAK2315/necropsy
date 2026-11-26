@@ -40,6 +40,12 @@ EXCEPTIONS = {
     "pillow_la.tga": ("no_renderer", "RLE TGA, resolved since format-coverage Requirement 5.9; its 16-bit pixels have no "
                                     "renderer (Requirement 3.9)"),
     "pillow_rgba16.tga": ("no_renderer", "16-bit pixels have no renderer (Requirement 3.9)"),
+    # format-coverage Task 18 (Requirement 8): these two TIFFs now resolve through the strip-array probe. Their renders are
+    # pending: 12-bit grey belongs to Task 19 (Requirement 16.1 to 16.5); the TIFF palette (ColorMap, tag 320) is unread
+    # by the probe, so the render is grey where Pillow's is coloured.
+    "pillow_12bit.cropped.tif": ("no_renderer", "12-bit pixels have no renderer until format-coverage Task 19"),
+    "libtiff_palette-1c-8b.tiff": ("render_pending", "palette TIFF: ColorMap (tag 320) is not read, so the render is grey "
+                                                      "where Pillow's is coloured"),
 }
 
 
@@ -86,6 +92,10 @@ def test_render_matches_pillow(path):
     if kind == "pillow_fails":
         with pytest.raises(OSError):
             _pillow(data)
+        return
+    if kind == "render_pending":
+        # Fails once the render matches Pillow, which is the cue to remove the exception.
+        assert "data_b64" not in render or _rgb(render) != _pillow(data).tobytes(), reason
         return
     if kind == "no_renderer":
         assert render.get("failure", "").startswith("no renderer for"), reason

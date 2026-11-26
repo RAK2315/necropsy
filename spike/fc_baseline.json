@@ -93,9 +93,42 @@
   "termination": null
  },
  "real/goimage_video-001-gray.tiff": {
-  "candidates": [],
-  "status": "FAILED",
-  "termination": "exhausted"
+  "candidates": [
+   {
+    "key": [
+     150,
+     103,
+     8,
+     8,
+     1,
+     "none",
+     15458,
+     [
+      1,
+      null,
+      [
+       [
+        8,
+        8108
+       ],
+       [
+        8108,
+        15458
+       ]
+      ],
+      54,
+      null,
+      null
+     ]
+    ],
+    "region": [
+     8,
+     15458
+    ]
+   }
+  ],
+  "status": "RESOLVED",
+  "termination": null
  },
  "real/goimage_video-001-paletted.tiff": {
   "candidates": [],
@@ -436,9 +469,46 @@
   "termination": null
  },
  "real/libtiff_minisblack-1c-8b.tiff": {
-  "candidates": [],
-  "status": "FAILED",
-  "termination": "exhausted"
+  "candidates": [
+   {
+    "key": [
+     157,
+     151,
+     8,
+     8,
+     1,
+     "none",
+     23715,
+     [
+      1,
+      null,
+      [
+       [
+        8,
+        8172
+       ],
+       [
+        8172,
+        16336
+       ],
+       [
+        16336,
+        23715
+       ]
+      ],
+      52,
+      null,
+      null
+     ]
+    ],
+    "region": [
+     8,
+     23715
+    ]
+   }
+  ],
+  "status": "RESOLVED",
+  "termination": null
  },
  "real/libtiff_miniswhite-1c-1b.pbm": {
   "candidates": [
@@ -488,9 +558,46 @@
   "termination": "exhausted"
  },
  "real/libtiff_palette-1c-8b.tiff": {
-  "candidates": [],
-  "status": "FAILED",
-  "termination": "exhausted"
+  "candidates": [
+   {
+    "key": [
+     157,
+     151,
+     8,
+     8,
+     1,
+     "none",
+     23715,
+     [
+      1,
+      null,
+      [
+       [
+        8,
+        8172
+       ],
+       [
+        8172,
+        16336
+       ],
+       [
+        16336,
+        23715
+       ]
+      ],
+      52,
+      null,
+      null
+     ]
+    ],
+    "region": [
+     8,
+     23715
+    ]
+   }
+  ],
+  "status": "RESOLVED",
+  "termination": null
  },
  "real/libtiff_quad-tile.jpg.tiff": {
   "candidates": [],
@@ -556,9 +663,70 @@
   "termination": null
  },
  "real/libtiff_rgb-3c-8b.tiff": {
-  "candidates": [],
-  "status": "FAILED",
-  "termination": "exhausted"
+  "candidates": [
+   {
+    "key": [
+     157,
+     151,
+     24,
+     8,
+     1,
+     "none",
+     71129,
+     [
+      1,
+      null,
+      [
+       [
+        8,
+        8015
+       ],
+       [
+        8015,
+        16022
+       ],
+       [
+        16022,
+        24029
+       ],
+       [
+        24029,
+        32036
+       ],
+       [
+        32036,
+        40043
+       ],
+       [
+        40043,
+        48050
+       ],
+       [
+        48050,
+        56057
+       ],
+       [
+        56057,
+        64064
+       ],
+       [
+        64064,
+        71129
+       ]
+      ],
+      17,
+      null,
+      null
+     ]
+    ],
+    "region": [
+     8,
+     71129
+    ]
+   }
+  ],
+  "status": "RESOLVED",
+  "termination": null
  },
  "real/libtiff_test_ifd_loop_to_self.tif": {
   "candidates": [
@@ -592,9 +760,42 @@
   "termination": "exhausted"
  },
  "real/pillow_12bit.cropped.tif": {
-  "candidates": [],
-  "status": "FAILED",
-  "termination": "exhausted"
+  "candidates": [
+   {
+    "key": [
+     100,
+     100,
+     12,
+     8,
+     1,
+     "none",
+     15008,
+     [
+      1,
+      null,
+      [
+       [
+        8,
+        8108
+       ],
+       [
+        8108,
+        15008
+       ]
+      ],
+      54,
+      null,
+      null
+     ]
+    ],
+    "region": [
+     8,
+     15008
+    ]
+   }
+  ],
+  "status": "RESOLVED",
+  "termination": null
  },
  "real/pillow_1x1_l_tl_raw.tga": {
   "candidates": [
@@ -1175,9 +1376,46 @@
   "termination": "exhausted"
  },
  "real/pillow_tiff_strip_raw.tif": {
-  "candidates": [],
-  "status": "FAILED",
-  "termination": "exhausted"
+  "candidates": [
+   {
+    "key": [
+     278,
+     374,
+     24,
+     8,
+     1,
+     "none",
+     311924,
+     [
+      1,
+      null,
+      [
+       [
+        8,
+        106760
+       ],
+       [
+        106760,
+        213512
+       ],
+       [
+        213512,
+        311924
+       ]
+      ],
+      128,
+      null,
+      null
+     ]
+    ],
+    "region": [
+     8,
+     311924
+    ]
+   }
+  ],
+  "status": "RESOLVED",
+  "termination": null
  },
  "real/pillow_tiff_tiled_raw.tif": {
   "candidates": [],
