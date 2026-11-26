@@ -32,7 +32,7 @@ Each file is therefore recorded under its repository's licence, and the manifest
 
 ## Counts
 
-The counts below are derived from the `format`, `scope` and `licence` fields of `manifest.json`. When a scope rule changes, update those fields and recount; nothing else in this section needs editing by hand. To recount from the repository root:
+The counts below are derived from the `format`, `scope` and `licence` fields of `manifest.json`. The `scope` and `scope_reason` fields are written by `python -m tools.scope_from_headers`, which reads only each file's bytes. When a scope rule changes, change the script, run it and recount; nothing else in this section needs editing by hand. To recount from the repository root:
 
 ```bash
 python -c "import json,collections as c;m=json.load(open('spike/samples/real/manifest.json'))['files'];print(c.Counter((r['format'],r['scope']) for r in m));print(c.Counter(r['licence'] for r in m))"
@@ -40,26 +40,28 @@ python -c "import json,collections as c;m=json.load(open('spike/samples/real/man
 
 | Format | Files | In stated scope | Out of stated scope |
 |---|---:|---:|---:|
-| PCX | 7 | 3 | 4 |
-| TGA | 19 | 12 | 7 |
-| TIFF | 36 | 7 | 29 |
-| PBM/PGM/PPM | 19 | 5 | 14 |
-| **Total** | **81** | **27** | **54** |
+| PCX | 7 | 6 | 1 |
+| TGA | 19 | 19 | 0 |
+| TIFF | 36 | 22 | 14 |
+| PBM/PGM/PPM | 19 | 18 | 1 |
+| **Total** | **81** | **65** | **16** |
 
 Licences: MIT-CMU 38, libtiff 15, BSD-3-Clause 14, ImageMagick 8, Zlib 4, MIT OR Apache-2.0 2.
 
-**"Scope" is read from each file's header bytes against the probe rules in the engine requirements (`.kiro/specs/structure-inference-engine/requirements.md`).** It is not an engine result. The rules:
+**"Scope" is read from each file's header bytes** by `tools/scope_from_headers.py`, which applies the rules below, reads no other manifest field and imports nothing from `necropsy`. It is not an engine result, and no rule was changed after a result was seen (format-coverage Requirement 18). The rules:
 
-- PCX: one plane, encoding byte 0 or 1.
-- TGA: image type 1, 2 or 3, which means not RLE.
-- TIFF: compression 1 (none), exactly one strip, not tiled, planar configuration 1, and every BitsPerSample entry equal (Decision Record item 20). Samples per pixel is not a limit. A looping IFD chain is not a limit either, because the first IFD can still be read.
-- PNM: binary PBM with the exact `P4\n` signature the PBM probe reads.
+- PCX: encoding byte (offset 2) 0 or 1, and planes (offset 65) at least 1.
+- TGA: image type 1, 2, 3, 9, 10 or 11, which covers uncompressed and RLE.
+- TIFF: Compression 1, 5, 8, 32773, 32946 or 34925 (none, LZW, Adobe Deflate, PackBits, Deflate, LZMA); PlanarConfiguration 1; Predictor absent or 1; every BitsPerSample entry equal (Decision Record item 20); strips or tiles. Samples per pixel is not a limit. A looping IFD chain is not a limit either, because the first IFD can still be read.
+- PNM: magic `P1`, `P2`, `P3`, `P5` or `P6` followed by a whitespace byte, or exactly `P4\n`.
 
-A file can be in scope by its header and still be invalid: 2 of the 27 in-scope files are invalid by construction (see below).
+Each out-of-scope file's `scope_reason` names the byte that put it out, for example `compression CCITT G4 (4)`, `predictor 2` or `planar configuration 2`.
 
-`pillow_cross_scan_line.tga` is in scope for format-coverage Task 12 only (the engine decodes `rle_tga`); Task 37 rewrites the rules for every file.
+The previous rules (one PCX plane, uncompressed TGA, uncompressed single-strip TIFF, binary PBM only) placed 27 files in scope. The new rules move 39 files from out to in and none from in to out. Task 12 set `pillow_cross_scan_line.tga` in scope; Task 37 moved the other 38. The 16 files that stay out are the four CCITT TIFFs, the two OJPEG TIFFs, `libtiff_quad-tile.jpg.tiff` (JPEG), `pillow_hopper_webp.tif`, `libtiff_logluv-3c-16b.tiff` (SGILog), `pillow_tiff_strip_planar_raw.tif` (planar configuration 2), the four Predictor 2 TIFFs, `pillow_negative_size.ppm` (magic `P6` followed by `3`, not a whitespace byte) and `pillow_ossfuzz-4836216264589312.pcx` (encoding byte 32).
 
-In scope does not mean the engine recovers the file. `pillow_p_16.tga` is in scope by these rules and comes out `FAILED`, because the engine does not yet read the TGA 2.0 extension area and postage stamp. The top-level README states this as a limit.
+A file can be in scope by its header and still be invalid: 4 of the 65 in-scope files are invalid by construction (see below).
+
+In scope does not mean the engine recovers the file. `pillow_p_16.tga` is in scope by these rules and comes out `FAILED`, because the engine does not yet read the TGA 2.0 extension area and postage stamp. The top-level README states this as a limit. The measured outcome of every file is in `docs/REAL-CORPUS-RESULTS.md`.
 
 ## Pillow
 
@@ -75,15 +77,15 @@ The refusals are split into two groups, by what the upstream history says the fi
 
 ### Invalid by construction (6)
 
-These are fuzzer, overrun and regression inputs. Pillow is right to refuse them, and so should NECROPSY.
+These are fuzzer, overrun and regression inputs. Pillow is right to refuse them, and so should NECROPSY (with one documented exception, `goimage_invalid-palette-ref.tiff`, whose measured outcome is in the results file).
 
 **A `FAILED` result on one of these is a pass. Recovering an image from one of them would be accepting garbage.**
 
 | File | Stated scope | Pillow error | Why it is invalid (upstream evidence) |
 |---|---|---|---|
-| `goimage_invalid-palette-ref.tiff` | out | `UnidentifiedImageError: cannot identify image file 'goimage_invalid-palette-ref.tiff'` | Palette indices out of range of the palette. golang/image commit 3bbf4a659e 'tiff: Validate palette indices when parsing palette-color images' (GHSA-q7pp-wcgr-pffx, golang/go#67624). |
+| `goimage_invalid-palette-ref.tiff` | in | `UnidentifiedImageError: cannot identify image file 'goimage_invalid-palette-ref.tiff'` | Palette indices out of range of the palette. golang/image commit 3bbf4a659e 'tiff: Validate palette indices when parsing palette-color images' (GHSA-q7pp-wcgr-pffx, golang/go#67624). |
 | `pillow_01r_00.pcx` | in | `OSError: image file is truncated (0 bytes not processed)` | Header declares width 88 with bytes_per_line 12. Pillow commit 124f4bb591 'Tests for PCX OOB Access'; listed in Pillow's Tests/test_image.py test_overrun. |
-| `pillow_cross_scan_line_truncated.tga` | out | `OSError: image file is truncated (1 bytes not processed)` | Deliberately truncated RLE data. Pillow commit f0353c5996 'When reading past the end of a scan line, reduce bytes left'; Pillow's test_cross_scan_line expects OSError on load. |
+| `pillow_cross_scan_line_truncated.tga` | in | `OSError: image file is truncated (1 bytes not processed)` | Deliberately truncated RLE data. Pillow commit f0353c5996 'When reading past the end of a scan line, reduce bytes left'; Pillow's test_cross_scan_line expects OSError on load. |
 | `pillow_negative_size.ppm` | out | `UnidentifiedImageError: cannot identify image file 'pillow_negative_size.ppm'` | Regression input with a negative size in the header. Pillow commit 5d8a0be45a 'Memory error in Storage.c when accepting negative image size arguments'; Pillow's test expects OSError. |
 | `pillow_ossfuzz-4836216264589312.pcx` | out | `OSError: image file is truncated (0 bytes not processed)` | Fuzzer input: version 0, encoding byte 32, 2 planes, bytes_per_line 0. Pillow commit 2f409261eb 'Fix for CVE CVE-2020-35655 - Read Overflow in PCX Decoding'; listed in Pillow's test_overrun. |
 | `pillow_p_8.tga` | in | `UnidentifiedImageError: cannot identify image file 'pillow_p_8.tga'` | The file is 18 bytes: a bare header declaring a 128x128 image with a 256-entry colour map, and no colour map or pixel data. Pillow commit 818500b329 'Raise an error if map depth is unknown'; Pillow's test_palette_depth_8 expects UnidentifiedImageError. |
@@ -126,84 +128,84 @@ Every row's SHA-256 is in `manifest.json`. `.gitattributes` in this folder stops
 
 | File | Format | Size (w x h) | Scope | Licence | Pillow | Scope reason |
 |---|---|---|---|---|---|---|
-| `goimage_blue-purple-pink.lzwcompressed.tiff` | TIFF | 150x100 | out | BSD-3-Clause | decodes | compression LZW, 6 strips |
-| `goimage_bw-deflate.tiff` | TIFF | 153x55 | out | BSD-3-Clause | decodes | compression Deflate |
-| `goimage_bw-gopher_ccittGroup3.tiff` | TIFF | 153x55 | out | BSD-3-Clause | decodes | compression CCITT G3 |
-| `goimage_bw-gopher_ccittGroup4.tiff` | TIFF | 153x55 | out | BSD-3-Clause | decodes | compression CCITT G4 |
-| `goimage_bw-packbits.tiff` | TIFF | 153x55 | out | BSD-3-Clause | decodes | compression PackBits |
-| `goimage_bw-uncompressed.tiff` | TIFF | 153x55 | in | BSD-3-Clause | decodes | single-strip uncompressed TIFF |
-| `goimage_invalid-palette-ref.tiff` | TIFF | 150x103 | out | BSD-3-Clause | **refuses** | compression Adobe Deflate, 2 strips |
-| `goimage_no_compress.tiff` | TIFF | 16x15 | in | BSD-3-Clause | decodes | single-strip uncompressed TIFF |
-| `goimage_no_rps.tiff` | TIFF | 16x15 | in | BSD-3-Clause | decodes | single-strip uncompressed TIFF |
-| `goimage_video-001-gray.tiff` | TIFF | 150x103 | out | BSD-3-Clause | decodes | 2 strips |
-| `goimage_video-001-paletted.tiff` | TIFF | 150x103 | out | BSD-3-Clause | decodes | compression Adobe Deflate, 2 strips |
-| `goimage_video-001-strip-64.tiff` | TIFF | 150x103 | out | BSD-3-Clause | decodes | compression Adobe Deflate, 2 strips |
-| `goimage_video-001-tile-64x64.tiff` | TIFF | 150x103 | out | BSD-3-Clause | decodes | compression Adobe Deflate, tiled |
-| `goimage_video-001-uncompressed.tiff` | TIFF | 150x103 | in | BSD-3-Clause | decodes | single-strip uncompressed TIFF |
-| `imagemagick_input.pcx` | PCX | 70x46 | out | ImageMagick | decodes | 3 planes |
-| `imagemagick_input.tga` | TGA | 70x46 | in | ImageMagick | decodes | uncompressed TGA (image type 2) |
-| `imagemagick_input_p1.pbm` | PNM | 70x46 | out | ImageMagick | decodes | P1 (only binary PBM, P4, has a probe) |
-| `imagemagick_input_p2.pgm` | PNM | 70x46 | out | ImageMagick | decodes | P2 (only binary PBM, P4, has a probe) |
-| `imagemagick_input_p3.ppm` | PNM | 70x46 | out | ImageMagick | decodes | P3 (only binary PBM, P4, has a probe) |
-| `imagemagick_input_p4.pbm` | PNM | 70x46 | in | ImageMagick | decodes | binary PBM (P4) with the exact b'P4\n' signature the PBM probe reads |
-| `imagemagick_input_p5.pgm` | PNM | 70x46 | out | ImageMagick | decodes | P5 (only binary PBM, P4, has a probe) |
-| `imagemagick_input_p6.ppm` | PNM | 70x46 | out | ImageMagick | decodes | P6 (only binary PBM, P4, has a probe) |
-| `imagers_issue-794.pbm` | PNM | 10x10 | in | MIT OR Apache-2.0 | decodes | binary PBM (P4) with the exact b'P4\n' signature the PBM probe reads |
-| `imagers_narrow.pbm` | PNM | 1x9 | in | MIT OR Apache-2.0 | decodes | binary PBM (P4) with the exact b'P4\n' signature the PBM probe reads |
-| `libtiff_deflate-last-strip-extra-data.tiff` | TIFF | 500x500 | out | libtiff | decodes | compression Adobe Deflate, 32 strips |
-| `libtiff_logluv-3c-16b.tiff` | TIFF | 1x1 | out | libtiff | **refuses** | compression SGILog |
-| `libtiff_lzw-single-strip.tiff` | TIFF | 7795x3122 | out | libtiff | decodes | compression LZW |
-| `libtiff_minisblack-1c-8b.pgm` | PNM | 157x151 | out | libtiff | decodes | P5 (only binary PBM, P4, has a probe) |
-| `libtiff_minisblack-1c-8b.tiff` | TIFF | 157x151 | out | libtiff | decodes | 3 strips |
-| `libtiff_miniswhite-1c-1b.pbm` | PNM | 157x151 | in | libtiff | decodes | binary PBM (P4) with the exact b'P4\n' signature the PBM probe reads |
-| `libtiff_miniswhite-1c-1b.tiff` | TIFF | 157x151 | in | libtiff | decodes | single-strip uncompressed TIFF |
-| `libtiff_ojpeg_zackthecat_subsamp22_single_strip.tiff` | TIFF | 234x213 | out | libtiff | decodes | compression OJPEG, tiled |
-| `libtiff_palette-1c-8b.tiff` | TIFF | 157x151 | out | libtiff | decodes | 3 strips |
-| `libtiff_quad-tile.jpg.tiff` | TIFF | 512x384 | out | libtiff | decodes | compression JPEG, tiled |
-| `libtiff_rgb-3c-16b.ppm` | PNM | 157x151 | out | libtiff | decodes | P6 (only binary PBM, P4, has a probe) |
-| `libtiff_rgb-3c-8b.ppm` | PNM | 157x151 | out | libtiff | decodes | P6 (only binary PBM, P4, has a probe) |
-| `libtiff_rgb-3c-8b.tiff` | TIFF | 157x151 | out | libtiff | decodes | 9 strips |
-| `libtiff_test_ifd_loop_to_self.tif` | TIFF | 20x20 | in | libtiff | decodes | single-strip uncompressed TIFF; its IFD chain loops back to itself, which does not stop the first IFD being read |
-| `libtiff_testfax4.tiff` | TIFF | 2453x3369 | out | libtiff | decodes | compression CCITT G4 |
-| `pillow_01r_00.pcx` | PCX | 88x52 | in | MIT-CMU | **refuses** | single-plane PCX |
-| `pillow_12bit.cropped.tif` | TIFF | 100x100 | out | MIT-CMU | decodes | 2 strips |
-| `pillow_1x1_l_tl_raw.tga` | TGA | 1x1 | in | MIT-CMU | decodes | uncompressed TGA (image type 3) |
-| `pillow_200x32_l_bl_raw.tga` | TGA | 200x32 | in | MIT-CMU | decodes | uncompressed TGA (image type 3) |
-| `pillow_200x32_l_tl_rle.tga` | TGA | 200x32 | out | MIT-CMU | decodes | RLE TGA (image type 11) |
-| `pillow_200x32_la_bl_raw.tga` | TGA | 200x32 | in | MIT-CMU | decodes | uncompressed TGA (image type 3) |
-| `pillow_200x32_p_bl_raw.tga` | TGA | 200x32 | in | MIT-CMU | decodes | uncompressed TGA (image type 1) |
-| `pillow_200x32_p_tl_rle.tga` | TGA | 200x32 | out | MIT-CMU | decodes | RLE TGA (image type 9) |
-| `pillow_200x32_rgb_bl_raw.tga` | TGA | 200x32 | in | MIT-CMU | decodes | uncompressed TGA (image type 2) |
-| `pillow_200x32_rgb_tl_rle.tga` | TGA | 200x32 | out | MIT-CMU | decodes | RLE TGA (image type 10) |
-| `pillow_200x32_rgba_tl_raw.tga` | TGA | 200x32 | in | MIT-CMU | decodes | uncompressed TGA (image type 2) |
-| `pillow_cross_scan_line.tga` | TGA | 2x2 | in | MIT-CMU | decodes | RLE TGA (image type 11) |
-| `pillow_cross_scan_line_truncated.tga` | TGA | 64x64 | out | MIT-CMU | **refuses** | RLE TGA (image type 9) |
-| `pillow_hopper_16bit.pgm` | PNM | 128x128 | out | MIT-CMU | decodes | P5 (only binary PBM, P4, has a probe) |
-| `pillow_hopper_1bit.pbm` | PNM | 128x128 | in | MIT-CMU | decodes | binary PBM (P4) with the exact b'P4\n' signature the PBM probe reads |
-| `pillow_hopper_1bit_plain.pbm` | PNM | 128x128 | out | MIT-CMU | decodes | P1 (only binary PBM, P4, has a probe) |
-| `pillow_hopper_8bit.pgm` | PNM | 128x128 | out | MIT-CMU | decodes | P5 (only binary PBM, P4, has a probe) |
-| `pillow_hopper_8bit.ppm` | PNM | 128x128 | out | MIT-CMU | decodes | P6 (only binary PBM, P4, has a probe) |
-| `pillow_hopper_g4.tif` | TIFF | 128x128 | out | MIT-CMU | decodes | compression CCITT G4 |
-| `pillow_hopper_lzma.tif` | TIFF | 128x128 | out | MIT-CMU | decodes | compression LZMA |
-| `pillow_hopper_lzw.tif` | TIFF | 128x128 | out | MIT-CMU | decodes | compression LZW, 7 strips |
-| `pillow_hopper_webp.tif` | TIFF | 128x128 | out | MIT-CMU | decodes | compression WebP |
-| `pillow_la.tga` | TGA | 64x64 | out | MIT-CMU | decodes | RLE TGA (image type 11) |
-| `pillow_negative_size.ppm` | PNM | unknown | out | MIT-CMU | **refuses** | malformed header |
-| `pillow_odd_stride.pcx` | PCX | 371x150 | in | MIT-CMU | decodes | single-plane PCX |
-| `pillow_old-style-jpeg-compression.tif` | TIFF | 4160x870 | out | MIT-CMU | decodes | compression OJPEG |
-| `pillow_ossfuzz-4836216264589312.pcx` | PCX | 1x1 | out | MIT-CMU | **refuses** | 2 planes, encoding byte 32 |
-| `pillow_p_16.tga` | TGA | 128x128 | in | MIT-CMU | decodes | uncompressed TGA (image type 1) |
-| `pillow_p_4_planes.pcx` | PCX | 1x1 | out | MIT-CMU | decodes | 4 planes |
-| `pillow_p_8.tga` | TGA | 128x128 | in | MIT-CMU | **refuses** | uncompressed TGA (image type 1) |
-| `pillow_pil184.pcx` | PCX | 447x144 | in | MIT-CMU | decodes | single-plane PCX |
-| `pillow_rgb32rle.tga` | TGA | 199x199 | out | MIT-CMU | decodes | RLE TGA (image type 10) |
-| `pillow_rgba16.tga` | TGA | 2x1 | in | MIT-CMU | decodes | uncompressed TGA (image type 2) |
-| `pillow_tga_id_field.tga` | TGA | 100x100 | in | MIT-CMU | decodes | uncompressed TGA (image type 2) |
-| `pillow_tiff_adobe_deflate.tif` | TIFF | 278x374 | out | MIT-CMU | decodes | compression Adobe Deflate |
-| `pillow_tiff_strip_planar_raw.tif` | TIFF | 278x374 | out | MIT-CMU | decodes | 39 strips, planar configuration 2 |
-| `pillow_tiff_strip_raw.tif` | TIFF | 278x374 | out | MIT-CMU | decodes | 3 strips |
-| `pillow_tiff_tiled_raw.tif` | TIFF | 278x374 | out | MIT-CMU | decodes | tiled |
-| `sdlimage_sample.pcx` | PCX | 23x42 | out | Zlib | decodes | 3 planes |
-| `sdlimage_sample.pnm` | PNM | 23x42 | out | Zlib | decodes | P6 (only binary PBM, P4, has a probe) |
-| `sdlimage_sample.tga` | TGA | 23x42 | out | Zlib | decodes | RLE TGA (image type 10) |
-| `sdlimage_sample.tif` | TIFF | 23x42 | in | Zlib | decodes | single-strip uncompressed TIFF |
+| `goimage_blue-purple-pink.lzwcompressed.tiff` | TIFF | 150x100 | in | BSD-3-Clause | decodes | compression LZW (5), 6 strips |
+| `goimage_bw-deflate.tiff` | TIFF | 153x55 | in | BSD-3-Clause | decodes | compression Deflate (32946), 1 strip |
+| `goimage_bw-gopher_ccittGroup3.tiff` | TIFF | 153x55 | out | BSD-3-Clause | decodes | compression CCITT G3 (3) |
+| `goimage_bw-gopher_ccittGroup4.tiff` | TIFF | 153x55 | out | BSD-3-Clause | decodes | compression CCITT G4 (4) |
+| `goimage_bw-packbits.tiff` | TIFF | 153x55 | in | BSD-3-Clause | decodes | compression PackBits (32773), 1 strip |
+| `goimage_bw-uncompressed.tiff` | TIFF | 153x55 | in | BSD-3-Clause | decodes | compression none (1), 1 strip |
+| `goimage_invalid-palette-ref.tiff` | TIFF | 150x103 | in | BSD-3-Clause | **refuses** | compression Adobe Deflate (8), 2 strips |
+| `goimage_no_compress.tiff` | TIFF | 16x15 | in | BSD-3-Clause | decodes | compression none (1), 1 strip |
+| `goimage_no_rps.tiff` | TIFF | 16x15 | in | BSD-3-Clause | decodes | compression none (1), 1 strip |
+| `goimage_video-001-gray.tiff` | TIFF | 150x103 | in | BSD-3-Clause | decodes | compression none (1), 2 strips |
+| `goimage_video-001-paletted.tiff` | TIFF | 150x103 | in | BSD-3-Clause | decodes | compression Adobe Deflate (8), 2 strips |
+| `goimage_video-001-strip-64.tiff` | TIFF | 150x103 | out | BSD-3-Clause | decodes | predictor 2 |
+| `goimage_video-001-tile-64x64.tiff` | TIFF | 150x103 | out | BSD-3-Clause | decodes | predictor 2 |
+| `goimage_video-001-uncompressed.tiff` | TIFF | 150x103 | in | BSD-3-Clause | decodes | compression none (1), 1 strip |
+| `imagemagick_input.pcx` | PCX | 70x46 | in | ImageMagick | decodes | PCX encoding 1, 3 planes |
+| `imagemagick_input.tga` | TGA | 70x46 | in | ImageMagick | decodes | TGA image type 2 |
+| `imagemagick_input_p1.pbm` | PNM | 70x46 | in | ImageMagick | decodes | magic P1 followed by whitespace |
+| `imagemagick_input_p2.pgm` | PNM | 70x46 | in | ImageMagick | decodes | magic P2 followed by whitespace |
+| `imagemagick_input_p3.ppm` | PNM | 70x46 | in | ImageMagick | decodes | magic P3 followed by whitespace |
+| `imagemagick_input_p4.pbm` | PNM | 70x46 | in | ImageMagick | decodes | magic P4 followed by newline |
+| `imagemagick_input_p5.pgm` | PNM | 70x46 | in | ImageMagick | decodes | magic P5 followed by whitespace |
+| `imagemagick_input_p6.ppm` | PNM | 70x46 | in | ImageMagick | decodes | magic P6 followed by whitespace |
+| `imagers_issue-794.pbm` | PNM | 10x10 | in | MIT OR Apache-2.0 | decodes | magic P4 followed by newline |
+| `imagers_narrow.pbm` | PNM | 1x9 | in | MIT OR Apache-2.0 | decodes | magic P4 followed by newline |
+| `libtiff_deflate-last-strip-extra-data.tiff` | TIFF | 500x500 | in | libtiff | decodes | compression Adobe Deflate (8), 32 strips |
+| `libtiff_logluv-3c-16b.tiff` | TIFF | 1x1 | out | libtiff | **refuses** | compression SGILog (34676) |
+| `libtiff_lzw-single-strip.tiff` | TIFF | 7795x3122 | in | libtiff | decodes | compression LZW (5), 1 strip |
+| `libtiff_minisblack-1c-8b.pgm` | PNM | 157x151 | in | libtiff | decodes | magic P5 followed by whitespace |
+| `libtiff_minisblack-1c-8b.tiff` | TIFF | 157x151 | in | libtiff | decodes | compression none (1), 3 strips |
+| `libtiff_miniswhite-1c-1b.pbm` | PNM | 157x151 | in | libtiff | decodes | magic P4 followed by newline |
+| `libtiff_miniswhite-1c-1b.tiff` | TIFF | 157x151 | in | libtiff | decodes | compression none (1), 1 strip |
+| `libtiff_ojpeg_zackthecat_subsamp22_single_strip.tiff` | TIFF | 234x213 | out | libtiff | decodes | compression OJPEG (6) |
+| `libtiff_palette-1c-8b.tiff` | TIFF | 157x151 | in | libtiff | decodes | compression none (1), 3 strips |
+| `libtiff_quad-tile.jpg.tiff` | TIFF | 512x384 | out | libtiff | decodes | compression JPEG (7) |
+| `libtiff_rgb-3c-16b.ppm` | PNM | 157x151 | in | libtiff | decodes | magic P6 followed by whitespace |
+| `libtiff_rgb-3c-8b.ppm` | PNM | 157x151 | in | libtiff | decodes | magic P6 followed by whitespace |
+| `libtiff_rgb-3c-8b.tiff` | TIFF | 157x151 | in | libtiff | decodes | compression none (1), 9 strips |
+| `libtiff_test_ifd_loop_to_self.tif` | TIFF | 20x20 | in | libtiff | decodes | compression none (1), 1 strip |
+| `libtiff_testfax4.tiff` | TIFF | 2453x3369 | out | libtiff | decodes | compression CCITT G4 (4) |
+| `pillow_01r_00.pcx` | PCX | 88x52 | in | MIT-CMU | **refuses** | PCX encoding 1, 1 plane |
+| `pillow_12bit.cropped.tif` | TIFF | 100x100 | in | MIT-CMU | decodes | compression none (1), 2 strips |
+| `pillow_1x1_l_tl_raw.tga` | TGA | 1x1 | in | MIT-CMU | decodes | TGA image type 3 |
+| `pillow_200x32_l_bl_raw.tga` | TGA | 200x32 | in | MIT-CMU | decodes | TGA image type 3 |
+| `pillow_200x32_l_tl_rle.tga` | TGA | 200x32 | in | MIT-CMU | decodes | TGA image type 11 |
+| `pillow_200x32_la_bl_raw.tga` | TGA | 200x32 | in | MIT-CMU | decodes | TGA image type 3 |
+| `pillow_200x32_p_bl_raw.tga` | TGA | 200x32 | in | MIT-CMU | decodes | TGA image type 1 |
+| `pillow_200x32_p_tl_rle.tga` | TGA | 200x32 | in | MIT-CMU | decodes | TGA image type 9 |
+| `pillow_200x32_rgb_bl_raw.tga` | TGA | 200x32 | in | MIT-CMU | decodes | TGA image type 2 |
+| `pillow_200x32_rgb_tl_rle.tga` | TGA | 200x32 | in | MIT-CMU | decodes | TGA image type 10 |
+| `pillow_200x32_rgba_tl_raw.tga` | TGA | 200x32 | in | MIT-CMU | decodes | TGA image type 2 |
+| `pillow_cross_scan_line.tga` | TGA | 2x2 | in | MIT-CMU | decodes | TGA image type 11 |
+| `pillow_cross_scan_line_truncated.tga` | TGA | 64x64 | in | MIT-CMU | **refuses** | TGA image type 9 |
+| `pillow_hopper_16bit.pgm` | PNM | 128x128 | in | MIT-CMU | decodes | magic P5 followed by whitespace |
+| `pillow_hopper_1bit.pbm` | PNM | 128x128 | in | MIT-CMU | decodes | magic P4 followed by newline |
+| `pillow_hopper_1bit_plain.pbm` | PNM | 128x128 | in | MIT-CMU | decodes | magic P1 followed by whitespace |
+| `pillow_hopper_8bit.pgm` | PNM | 128x128 | in | MIT-CMU | decodes | magic P5 followed by whitespace |
+| `pillow_hopper_8bit.ppm` | PNM | 128x128 | in | MIT-CMU | decodes | magic P6 followed by whitespace |
+| `pillow_hopper_g4.tif` | TIFF | 128x128 | out | MIT-CMU | decodes | compression CCITT G4 (4) |
+| `pillow_hopper_lzma.tif` | TIFF | 128x128 | in | MIT-CMU | decodes | compression LZMA (34925), 1 strip |
+| `pillow_hopper_lzw.tif` | TIFF | 128x128 | out | MIT-CMU | decodes | predictor 2 |
+| `pillow_hopper_webp.tif` | TIFF | 128x128 | out | MIT-CMU | decodes | compression WebP (50001) |
+| `pillow_la.tga` | TGA | 64x64 | in | MIT-CMU | decodes | TGA image type 11 |
+| `pillow_negative_size.ppm` | PNM | unknown | out | MIT-CMU | **refuses** | magic P6 not followed by a whitespace byte |
+| `pillow_odd_stride.pcx` | PCX | 371x150 | in | MIT-CMU | decodes | PCX encoding 1, 1 plane |
+| `pillow_old-style-jpeg-compression.tif` | TIFF | 4160x870 | out | MIT-CMU | decodes | compression OJPEG (6) |
+| `pillow_ossfuzz-4836216264589312.pcx` | PCX | 1x1 | out | MIT-CMU | **refuses** | PCX encoding byte 32 |
+| `pillow_p_16.tga` | TGA | 128x128 | in | MIT-CMU | decodes | TGA image type 1 |
+| `pillow_p_4_planes.pcx` | PCX | 1x1 | in | MIT-CMU | decodes | PCX encoding 1, 4 planes |
+| `pillow_p_8.tga` | TGA | 128x128 | in | MIT-CMU | **refuses** | TGA image type 1 |
+| `pillow_pil184.pcx` | PCX | 447x144 | in | MIT-CMU | decodes | PCX encoding 1, 1 plane |
+| `pillow_rgb32rle.tga` | TGA | 199x199 | in | MIT-CMU | decodes | TGA image type 10 |
+| `pillow_rgba16.tga` | TGA | 2x1 | in | MIT-CMU | decodes | TGA image type 2 |
+| `pillow_tga_id_field.tga` | TGA | 100x100 | in | MIT-CMU | decodes | TGA image type 2 |
+| `pillow_tiff_adobe_deflate.tif` | TIFF | 278x374 | out | MIT-CMU | decodes | predictor 2 |
+| `pillow_tiff_strip_planar_raw.tif` | TIFF | 278x374 | out | MIT-CMU | decodes | planar configuration 2 |
+| `pillow_tiff_strip_raw.tif` | TIFF | 278x374 | in | MIT-CMU | decodes | compression none (1), 3 strips |
+| `pillow_tiff_tiled_raw.tif` | TIFF | 278x374 | in | MIT-CMU | decodes | compression none (1), 9 tiles |
+| `sdlimage_sample.pcx` | PCX | 23x42 | in | Zlib | decodes | PCX encoding 1, 3 planes |
+| `sdlimage_sample.pnm` | PNM | 23x42 | in | Zlib | decodes | magic P6 followed by whitespace |
+| `sdlimage_sample.tga` | TGA | 23x42 | in | Zlib | decodes | TGA image type 10 |
+| `sdlimage_sample.tif` | TIFF | 23x42 | in | Zlib | decodes | compression none (1), 1 strip |

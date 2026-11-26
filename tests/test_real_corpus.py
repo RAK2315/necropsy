@@ -1,12 +1,13 @@
-"""Differential test over spike/samples/real/ (real-corpus spec).
+"""Differential test over spike/samples/real/ (real-corpus spec, format-coverage spec).
 
-Expectations are stated here, not read from the engine:
-- every out-of-scope file is FAILED, with its termination recorded, except the files the format-coverage work now decodes
-  (carved out below until the manifest scope rewrite of Task 37; the TIFF ones carry their own expectations, Task 28);
-- of the six invalid-by-construction files, five FAIL and ossfuzz RESOLVES with a literal two-pixel reading;
-- every in-scope valid file RESOLVES and its pixels equal Pillow's.
-Five in-scope files do not meet the last expectation today. They are strict xfails under diagnosis elsewhere;
-they flip to errors when fixed, which is the cue to regenerate the table.
+Scope is read from the manifest, which tools/scope_from_headers.py writes from header bytes (format-coverage
+Requirement 18). Expectations are stated here, not read from the engine:
+- every out-of-scope file is FAILED, with its termination recorded, except pillow_ossfuzz-4836216264589312.pcx, which
+  RESOLVES with a literal two-pixel reading;
+- of the six invalid-by-construction files, five FAIL and ossfuzz RESOLVES; goimage_invalid-palette-ref.tiff is a
+  documented exception (the Deflate decoder resolves it);
+- every in-scope valid file RESOLVES and its pixels equal Pillow's, except the open failures and the files whose pixel
+  comparison belongs to format-coverage Task 38 (named below).
 
 Pillow is not needed in CI: the committed results hold Pillow's canonical pixel hash. With Pillow installed, a
 separate test checks those hashes against a live decode.
@@ -48,10 +49,34 @@ def test_corpus_is_all_81_files_and_unmodified():
         assert hashlib.sha256((rc.REAL / name).read_bytes()).hexdigest() == e["sha256"], name
 
 
+# format-coverage Requirement 18.6 and design.md: the 16 files the header rules leave out of scope.
+STAYS_OUT = {
+    "goimage_bw-gopher_ccittGroup3.tiff": "compression CCITT G3 (3)",
+    "goimage_bw-gopher_ccittGroup4.tiff": "compression CCITT G4 (4)",
+    "libtiff_testfax4.tiff": "compression CCITT G4 (4)",
+    "pillow_hopper_g4.tif": "compression CCITT G4 (4)",
+    "libtiff_ojpeg_zackthecat_subsamp22_single_strip.tiff": "compression OJPEG (6)",
+    "pillow_old-style-jpeg-compression.tif": "compression OJPEG (6)",
+    "libtiff_quad-tile.jpg.tiff": "compression JPEG (7)",
+    "pillow_hopper_webp.tif": "compression WebP (50001)",
+    "libtiff_logluv-3c-16b.tiff": "compression SGILog (34676)",
+    "pillow_tiff_strip_planar_raw.tif": "planar configuration 2",
+    "goimage_video-001-strip-64.tiff": "predictor 2",
+    "goimage_video-001-tile-64x64.tiff": "predictor 2",
+    "pillow_hopper_lzw.tif": "predictor 2",
+    "pillow_tiff_adobe_deflate.tif": "predictor 2",
+    "pillow_negative_size.ppm": "magic P6 not followed by a whitespace byte",
+    OSSFUZZ: "PCX encoding byte 32",
+}
+
+
 def test_scope_counts():
     scopes = [scope_of(n) for n in FILES]
-    assert scopes.count("in") == 27 and scopes.count("out") == 54
+    assert scopes.count("in") == 65 and scopes.count("out") == 16
     assert len(rc.INVALID_BY_CONSTRUCTION) == 6
+    assert {n for n in FILES if scope_of(n) == "out"} == set(STAYS_OUT)
+    for name, reason in STAYS_OUT.items():
+        assert MANIFEST[name]["scope_reason"] == reason, name
 
 
 @pytest.mark.parametrize("name", FILES)
@@ -64,96 +89,30 @@ def test_committed_results_match_a_live_run(name):
     assert row["candidates"] == [rc.describe(c) for c in rc.candidates_of(result)]
 
 
-# format-coverage Requirement 3.8 and design.md row 4: the binary PNM probe resolves these nine files. The manifest
-# scope is rewritten from header bytes in format-coverage Task 37, so for now they are carved out here.
-PNM_RESOLVED = {
-    "imagemagick_input_p5.pgm", "imagemagick_input_p6.ppm", "libtiff_minisblack-1c-8b.pgm",
-    "libtiff_rgb-3c-16b.ppm", "libtiff_rgb-3c-8b.ppm", "pillow_hopper_16bit.pgm",
-    "pillow_hopper_8bit.pgm", "pillow_hopper_8bit.ppm", "sdlimage_sample.pnm",
-}
-# format-coverage Requirement 4.1, 4.2, 4.4, 4.13 and design.md row 8: the text PNM probe resolves these four files.
-PNM_TEXT_RESOLVED = {
-    "imagemagick_input_p1.pbm", "imagemagick_input_p2.pgm", "imagemagick_input_p3.ppm",
-    "pillow_hopper_1bit_plain.pbm",
-}
-# format-coverage Requirement 5.8, 5.9 and design.md row 11: rle_tga is decoded; these six files resolve. The seventh
-# predicted file, pillow_cross_scan_line.tga, stays FAILED and is an open in-scope failure (Task 12; see
-# tools/real_corpus.py). The manifest scope of these six is rewritten from header bytes in Task 37.
-RLE_TGA_RESOLVED = {
-    "pillow_200x32_l_tl_rle.tga", "pillow_200x32_p_tl_rle.tga", "pillow_200x32_rgb_tl_rle.tga",
-    "pillow_la.tga", "pillow_rgb32rle.tga", "sdlimage_sample.tga",
-}
-# format-coverage Requirement 6.2, 6.6 and design.md row 15: the multi-plane PCX seed resolves these three files. Their
-# manifest scope is rewritten from header bytes in Task 37; the pixel comparer learns planar PCX in Task 38.
-PCX_PLANAR_RESOLVED = {"imagemagick_input.pcx", "pillow_p_4_planes.pcx", "sdlimage_sample.pcx"}
-# format-coverage Requirement 8.1 to 8.4, 8.9, 8.11 and design.md row 18: the strip-array probe resolves these six
-# uncompressed multi-strip TIFFs. Their manifest scope is rewritten in Task 37; the pixel comparer and the render of
-# the 12-bit file (Task 19) are not part of this task.
-TIFF_STRIPS_RESOLVED = {
-    "goimage_video-001-gray.tiff", "libtiff_minisblack-1c-8b.tiff", "libtiff_palette-1c-8b.tiff",
-    "libtiff_rgb-3c-8b.tiff", "pillow_12bit.cropped.tif", "pillow_tiff_strip_raw.tif",
-}
-# format-coverage Requirement 9.1 to 9.6 and design.md row 21: the tile-array probe resolves this uncompressed tiled
-# TIFF. Its manifest scope is rewritten in Task 37; the full TIFF expectations belong to Task 28.
-TIFF_TILES_RESOLVED = {"pillow_tiff_tiled_raw.tif"}
-# format-coverage Requirement 11.1 to 11.7 and design.md row 23: the PackBits decoder resolves this strip TIFF. Its manifest
-# scope is rewritten in Task 37; the full TIFF expectations belong to Task 28. Pixel comparison is pending: the comparer
-# in tools/real_corpus.py does not handle tiff_compression_32773 yet (row carries "not comparable").
-TIFF_PACKBITS_RESOLVED = {"goimage_bw-packbits.tiff"}
-# format-coverage Requirement 12.1 to 12.10 and design.md row 24: the LZW decoder resolves this 6-strip TIFF. Its manifest
-# scope is rewritten in Task 37; the full TIFF expectations belong to Task 28. Pixel comparison is pending: the comparer
-# in tools/real_corpus.py does not handle tiff_compression_5 yet (row carries "not comparable").
-# libtiff_lzw-single-strip.tiff, also listed in row 24, ends without EOI: 3,043,950 bytes out, 5 bits left at width 10.
-# Requirement 12.8 (b), as amended (Decision Record item 33 of the engine spec), accepts that end.
-TIFF_LZW_RESOLVED = {"goimage_blue-purple-pink.lzwcompressed.tiff", "libtiff_lzw-single-strip.tiff"}
-# format-coverage Requirement 13.1 to 13.6 and design.md row 25: the Deflate decoder (compression 8 and 32946) resolves these
-# three files. Their manifest scope is rewritten in Task 37; the full TIFF expectations belong to Task 28.
 # goimage_bw-deflate.tiff: the engine returns stored bytes; they equal Pillow's after WhiteIsZero inversion (tag 262 = 0).
 # goimage_video-001-paletted.tiff: pixels equal Pillow's (mode P indices).
 # goimage_invalid-palette-ref.tiff: decodes the same region as the paletted file; Pillow refuses it (UnidentifiedImageError).
 BW_DEFLATE = "goimage_bw-deflate.tiff"
 INVALID_PALETTE_REF = "goimage_invalid-palette-ref.tiff"
-TIFF_DEFLATE_RESOLVED = {BW_DEFLATE, "goimage_video-001-paletted.tiff", INVALID_PALETTE_REF}
-# format-coverage Requirement 14.1 to 14.3 and design.md row 26: the LZMA decoder (compression 34925) resolves this one-strip
-# xz TIFF. Its manifest scope is rewritten in Task 37; the full TIFF expectations belong to Task 28. Pixel comparison in
-# tools/real_corpus.py is pending (row carries "not comparable"); checked offline: the decoded 49,152 bytes (128 x 128 x 3)
-# equal both an independent lzma decompression of the strip and Pillow's pixels.
-TIFF_LZMA_RESOLVED = {"pillow_hopper_lzma.tif"}
-OUT_OF_SCOPE = [n for n in FILES if scope_of(n) == "out" and n != OSSFUZZ and n not in TIFF_TILES_RESOLVED
-                and n not in PNM_RESOLVED and n not in PNM_TEXT_RESOLVED and n not in RLE_TGA_RESOLVED
-                and n not in PCX_PLANAR_RESOLVED and n not in TIFF_STRIPS_RESOLVED
-                and n not in TIFF_PACKBITS_RESOLVED and n not in TIFF_LZW_RESOLVED
-                and n not in TIFF_DEFLATE_RESOLVED and n not in TIFF_LZMA_RESOLVED]
+OUT_OF_SCOPE = [n for n in FILES if scope_of(n) == "out" and n != OSSFUZZ]
 
 
-@pytest.mark.parametrize("name", sorted(TIFF_STRIPS_RESOLVED))
-def test_tiff_strip_files_resolve(name):
-    # Requirement 8.1 to 8.4, 8.9, 8.11; format-coverage Task 18.
+# In scope, valid, and FAILED today. Format-coverage Task 39 measures the first and lists it in OPEN_IN_SCOPE_FAILURES;
+# the second is the RLE TGA whose footer overlaps its data (Requirement 5.9).
+DEFLATE_EXTRA_DATA = "libtiff_deflate-last-strip-extra-data.tiff"
+
+
+@pytest.mark.parametrize("name", [n for n in FILES if scope_of(n) == "in" and n not in rc.INVALID_BY_CONSTRUCTION
+                                  and n not in (CROSS_SCAN, DEFLATE_EXTRA_DATA)])
+def test_in_scope_valid_files_resolve(name):
+    # Requirements 3.8, 4.1, 5.8, 6.2, 8.1, 9.1, 11.1, 12.1, 13.1, 14.1: every in-scope valid file resolves.
     assert run(name)[1].status == "RESOLVED"
 
 
-@pytest.mark.parametrize("name", sorted(TIFF_TILES_RESOLVED))
-def test_tiff_tile_files_resolve(name):
-    # Requirement 9.1 to 9.6; format-coverage Task 21.
-    assert run(name)[1].status == "RESOLVED"
-
-
-@pytest.mark.parametrize("name", sorted(TIFF_PACKBITS_RESOLVED))
-def test_tiff_packbits_files_resolve(name):
-    # Requirement 11.1 to 11.7; format-coverage Task 23.
-    assert run(name)[1].status == "RESOLVED"
-
-
-@pytest.mark.parametrize("name", sorted(TIFF_LZW_RESOLVED))
-def test_tiff_lzw_files_resolve(name):
-    # Requirement 12.1 to 12.10; format-coverage Task 24.
-    assert run(name)[1].status == "RESOLVED"
-
-
-@pytest.mark.parametrize("name", sorted(TIFF_DEFLATE_RESOLVED))
-def test_tiff_deflate_files_resolve(name):
-    # Requirement 13.1 to 13.6; format-coverage Task 25, design.md row 25.
-    assert run(name)[1].status == "RESOLVED"
+def test_deflate_last_strip_extra_data_is_in_scope_and_failed():
+    # Design.md row 25 (Principle call 2): in scope by its header, FAILED, pending the strict expected failure of Task 39.
+    assert scope_of(DEFLATE_EXTRA_DATA) == "in"
+    assert run(DEFLATE_EXTRA_DATA)[1].status == "FAILED"
 
 
 def test_tiff_lzma_file_resolves_with_pillows_pixels():
@@ -169,7 +128,10 @@ def test_tiff_lzma_file_resolves_with_pillows_pixels():
 # format-coverage Task 28: the TIFF expectations the decoders made wrong. Before Tasks 18 to 26 every file below was
 # FAILED (Requirement 20.4 replaces that expectation). Each file resolves under the stated encoding.
 TIFF_ENCODING = {
-    **{n: "none" for n in TIFF_STRIPS_RESOLVED | TIFF_TILES_RESOLVED},       # Requirements 8.1, 8.11, 9.1, 9.6
+    **{n: "none" for n in (                                                  # Requirements 8.1, 8.11, 9.1, 9.6
+        "goimage_video-001-gray.tiff", "libtiff_minisblack-1c-8b.tiff", "libtiff_palette-1c-8b.tiff",
+        "libtiff_rgb-3c-8b.tiff", "pillow_12bit.cropped.tif", "pillow_tiff_strip_raw.tif",
+        "pillow_tiff_tiled_raw.tif")},
     "goimage_bw-packbits.tiff": "tiff_compression_32773",                    # Requirement 11.1
     "goimage_blue-purple-pink.lzwcompressed.tiff": "tiff_compression_5",     # Requirement 12.1
     "libtiff_lzw-single-strip.tiff": "tiff_compression_5",                   # Requirement 12.1, 12.8 (b)
@@ -184,10 +146,10 @@ TIFF_PREDICTOR_FAILED = [
 ]
 
 
-def test_every_carved_out_tiff_has_an_encoding_expectation():
-    carved = (TIFF_STRIPS_RESOLVED | TIFF_TILES_RESOLVED | TIFF_PACKBITS_RESOLVED | TIFF_LZW_RESOLVED
-              | TIFF_DEFLATE_RESOLVED | TIFF_LZMA_RESOLVED)
-    assert set(TIFF_ENCODING) == carved and len(carved) == 14
+def test_every_decoded_tiff_has_an_encoding_expectation():
+    # The 14 TIFFs the format-coverage decoders newly resolve; each is in scope by the manifest.
+    assert len(TIFF_ENCODING) == 14
+    assert all(scope_of(n) == "in" for n in TIFF_ENCODING)
 
 
 @pytest.mark.parametrize("name", sorted(TIFF_ENCODING))
@@ -201,6 +163,7 @@ def test_decoded_tiff_resolves_under_its_encoding(name):
 def test_predictor_tiffs_stay_failed_req_10_5(name):
     # Requirement 10.5: a declared Predictor other than 1 is refused for every compression; the file stays FAILED.
     _, result = run(name)
+    assert scope_of(name) == "out" and MANIFEST[name]["scope_reason"] == "predictor 2"
     assert result.status == "FAILED" and result.termination == "exhausted"
     assert any("predictor (tag 317)" in r.detail for r in result.rejections)
 
@@ -229,30 +192,6 @@ def test_decoded_packbits_bits_equal_pillows_pixels():
             for x in range(153):
                 stored = (c.decoded[y * c.row_stride + x // 8] >> (7 - x % 8)) & 1
                 assert (1 - stored if invert else stored) == (1 if im.getpixel((x, y)) else 0), (x, y)
-
-
-@pytest.mark.parametrize("name", sorted(PCX_PLANAR_RESOLVED))
-def test_multi_plane_pcx_files_resolve(name):
-    # Requirement 6.2, 6.6; format-coverage Task 15.
-    assert run(name)[1].status == "RESOLVED"
-
-
-@pytest.mark.parametrize("name", sorted(RLE_TGA_RESOLVED))
-def test_rle_tga_files_resolve(name):
-    # Requirement 5.8, 5.9; format-coverage Task 11.
-    assert run(name)[1].status == "RESOLVED"
-
-
-@pytest.mark.parametrize("name", sorted(PNM_RESOLVED))
-def test_binary_pnm_files_resolve(name):
-    # Requirement 3.8: the probe's candidate closes; format-coverage Task 4.
-    assert run(name)[1].status == "RESOLVED"
-
-
-@pytest.mark.parametrize("name", sorted(PNM_TEXT_RESOLVED))
-def test_text_pnm_files_resolve(name):
-    # Requirement 4.1, 4.2, 4.4: the exact-count rule holds for these files; format-coverage Task 8.
-    assert run(name)[1].status == "RESOLVED"
 
 
 @pytest.mark.parametrize("name", OUT_OF_SCOPE)
@@ -299,7 +238,19 @@ def test_ossfuzz_resolves_with_a_literal_reading_and_a_file_layout_spec():
 
 IN_SCOPE_VALID = [n for n in FILES if scope_of(n) == "in" and n not in rc.INVALID_BY_CONSTRUCTION]
 OPEN = set(rc.OPEN_IN_SCOPE_FAILURES)
-RECOVERABLE = [n for n in IN_SCOPE_VALID if n not in OPEN and n != RGBA16]
+# Pixel equality covers the in-scope files the committed results were generated for. The 38 files Task 37 moved in
+# scope are compared once Task 38 extends the comparer and Task 39 regenerates the results (Requirement 19.1, 19.2);
+# until then each is asserted RESOLVED above, and this list grows by itself when the committed rows are regenerated.
+RECOVERABLE = [n for n in IN_SCOPE_VALID if n not in OPEN and n != RGBA16 and COMMITTED[n]["scope"] == "in"]
+PIXELS_PENDING_TASK_38 = [n for n in IN_SCOPE_VALID if COMMITTED[n]["scope"] == "out"]
+
+
+def test_pixel_comparison_pending_set_is_the_38_newly_in_scope_valid_files():
+    # 38 moved in (design.md), less the two invalid by construction among them (goimage_invalid-palette-ref.tiff,
+    # pillow_cross_scan_line_truncated.tga): 36 valid files await the comparer.
+    moved = [n for n in FILES if scope_of(n) == "in" and COMMITTED[n]["scope"] == "out"]
+    assert len(moved) == 38
+    assert len(PIXELS_PENDING_TASK_38) == 36
 
 
 def canon(name):

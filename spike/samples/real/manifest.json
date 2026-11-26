@@ -16,8 +16,8 @@
    "licence": "BSD-3-Clause",
    "licence_url": "https://github.com/golang/image/blob/master/LICENSE",
    "licence_note": "golang.org/x/image repository licence (BSD-3-Clause). No per-file licence or origin is stated.",
-   "scope": "out",
-   "scope_reason": "compression LZW, 6 strips",
+   "scope": "in",
+   "scope_reason": "compression LZW (5), 6 strips",
    "header": {
     "byte_order": "little",
     "ifds": 1,
@@ -67,8 +67,8 @@
    "licence": "BSD-3-Clause",
    "licence_url": "https://github.com/golang/image/blob/master/LICENSE",
    "licence_note": "golang.org/x/image repository licence (BSD-3-Clause). No per-file licence or origin is stated.",
-   "scope": "out",
-   "scope_reason": "compression Deflate",
+   "scope": "in",
+   "scope_reason": "compression Deflate (32946), 1 strip",
    "header": {
     "byte_order": "little",
     "ifds": 1,
@@ -117,7 +117,7 @@
    "licence_url": "https://github.com/golang/image/blob/master/LICENSE",
    "licence_note": "golang.org/x/image repository licence (BSD-3-Clause). No per-file licence or origin is stated.",
    "scope": "out",
-   "scope_reason": "compression CCITT G3",
+   "scope_reason": "compression CCITT G3 (3)",
    "header": {
     "byte_order": "little",
     "ifds": 1,
@@ -166,7 +166,7 @@
    "licence_url": "https://github.com/golang/image/blob/master/LICENSE",
    "licence_note": "golang.org/x/image repository licence (BSD-3-Clause). No per-file licence or origin is stated.",
    "scope": "out",
-   "scope_reason": "compression CCITT G4",
+   "scope_reason": "compression CCITT G4 (4)",
    "header": {
     "byte_order": "little",
     "ifds": 1,
@@ -214,8 +214,8 @@
    "licence": "BSD-3-Clause",
    "licence_url": "https://github.com/golang/image/blob/master/LICENSE",
    "licence_note": "golang.org/x/image repository licence (BSD-3-Clause). No per-file licence or origin is stated.",
-   "scope": "out",
-   "scope_reason": "compression PackBits",
+   "scope": "in",
+   "scope_reason": "compression PackBits (32773), 1 strip",
    "header": {
     "byte_order": "little",
     "ifds": 1,
@@ -264,7 +264,7 @@
    "licence_url": "https://github.com/golang/image/blob/master/LICENSE",
    "licence_note": "golang.org/x/image repository licence (BSD-3-Clause). No per-file licence or origin is stated.",
    "scope": "in",
-   "scope_reason": "single-strip uncompressed TIFF",
+   "scope_reason": "compression none (1), 1 strip",
    "header": {
     "byte_order": "little",
     "ifds": 1,
@@ -312,8 +312,8 @@
    "licence": "BSD-3-Clause",
    "licence_url": "https://github.com/golang/image/blob/master/LICENSE",
    "licence_note": "golang.org/x/image repository licence (BSD-3-Clause). No per-file licence or origin is stated.",
-   "scope": "out",
-   "scope_reason": "compression Adobe Deflate, 2 strips",
+   "scope": "in",
+   "scope_reason": "compression Adobe Deflate (8), 2 strips",
    "header": {
     "byte_order": "little",
     "ifds": 1,
@@ -359,7 +359,7 @@
    "licence_url": "https://github.com/golang/image/blob/master/LICENSE",
    "licence_note": "golang.org/x/image repository licence (BSD-3-Clause). No per-file licence or origin is stated.",
    "scope": "in",
-   "scope_reason": "single-strip uncompressed TIFF",
+   "scope_reason": "compression none (1), 1 strip",
    "header": {
     "byte_order": "little",
     "ifds": 1,
@@ -411,7 +411,7 @@
    "licence_url": "https://github.com/golang/image/blob/master/LICENSE",
    "licence_note": "golang.org/x/image repository licence (BSD-3-Clause). No per-file licence or origin is stated.",
    "scope": "in",
-   "scope_reason": "single-strip uncompressed TIFF",
+   "scope_reason": "compression none (1), 1 strip",
    "header": {
     "byte_order": "little",
     "ifds": 1,
@@ -462,8 +462,8 @@
    "licence": "BSD-3-Clause",
    "licence_url": "https://github.com/golang/image/blob/master/LICENSE",
    "licence_note": "golang.org/x/image repository licence (BSD-3-Clause). No per-file licence or origin is stated.",
-   "scope": "out",
-   "scope_reason": "2 strips",
+   "scope": "in",
+   "scope_reason": "compression none (1), 2 strips",
    "header": {
     "byte_order": "little",
     "ifds": 1,
@@ -511,8 +511,8 @@
    "licence": "BSD-3-Clause",
    "licence_url": "https://github.com/golang/image/blob/master/LICENSE",
    "licence_note": "golang.org/x/image repository licence (BSD-3-Clause). No per-file licence or origin is stated.",
-   "scope": "out",
-   "scope_reason": "compression Adobe Deflate, 2 strips",
+   "scope": "in",
+   "scope_reason": "compression Adobe Deflate (8), 2 strips",
    "header": {
     "byte_order": "little",
     "ifds": 1,
@@ -561,7 +561,7 @@
    "licence_url": "https://github.com/golang/image/blob/master/LICENSE",
    "licence_note": "golang.org/x/image repository licence (BSD-3-Clause). No per-file licence or origin is stated.",
    "scope": "out",
-   "scope_reason": "compression Adobe Deflate, 2 strips",
+   "scope_reason": "predictor 2",
    "header": {
     "byte_order": "little",
     "ifds": 1,
@@ -612,7 +612,7 @@
    "licence_url": "https://github.com/golang/image/blob/master/LICENSE",
    "licence_note": "golang.org/x/image repository licence (BSD-3-Clause). No per-file licence or origin is stated.",
    "scope": "out",
-   "scope_reason": "compression Adobe Deflate, tiled",
+   "scope_reason": "predictor 2",
    "header": {
     "byte_order": "little",
     "ifds": 1,
@@ -663,7 +663,7 @@
    "licence_url": "https://github.com/golang/image/blob/master/LICENSE",
    "licence_note": "golang.org/x/image repository licence (BSD-3-Clause). No per-file licence or origin is stated.",
    "scope": "in",
-   "scope_reason": "single-strip uncompressed TIFF",
+   "scope_reason": "compression none (1), 1 strip",
    "header": {
     "byte_order": "big",
     "ifds": 1,
@@ -713,8 +713,8 @@
    "licence": "ImageMagick",
    "licence_url": "https://imagemagick.org/license/",
    "licence_note": "ImageMagick repository licence (ImageMagick License, Apache-2.0-style). No per-file licence or origin is stated.",
-   "scope": "out",
-   "scope_reason": "3 planes",
+   "scope": "in",
+   "scope_reason": "PCX encoding 1, 3 planes",
    "header": {
     "version": 5,
     "encoding": 1,
@@ -757,7 +757,7 @@
    "licence_url": "https://imagemagick.org/license/",
    "licence_note": "ImageMagick repository licence (ImageMagick License, Apache-2.0-style). No per-file licence or origin is stated.",
    "scope": "in",
-   "scope_reason": "uncompressed TGA (image type 2)",
+   "scope_reason": "TGA image type 2",
    "header": {
     "image_type": 2,
     "rle": false,
@@ -801,8 +801,8 @@
    "licence": "ImageMagick",
    "licence_url": "https://imagemagick.org/license/",
    "licence_note": "ImageMagick repository licence (ImageMagick License, Apache-2.0-style). No per-file licence or origin is stated.",
-   "scope": "out",
-   "scope_reason": "P1 (only binary PBM, P4, has a probe)",
+   "scope": "in",
+   "scope_reason": "magic P1 followed by whitespace",
    "header": {
     "magic": "P1",
     "plain_text": true,
@@ -840,8 +840,8 @@
    "licence": "ImageMagick",
    "licence_url": "https://imagemagick.org/license/",
    "licence_note": "ImageMagick repository licence (ImageMagick License, Apache-2.0-style). No per-file licence or origin is stated.",
-   "scope": "out",
-   "scope_reason": "P2 (only binary PBM, P4, has a probe)",
+   "scope": "in",
+   "scope_reason": "magic P2 followed by whitespace",
    "header": {
     "magic": "P2",
     "plain_text": true,
@@ -880,8 +880,8 @@
    "licence": "ImageMagick",
    "licence_url": "https://imagemagick.org/license/",
    "licence_note": "ImageMagick repository licence (ImageMagick License, Apache-2.0-style). No per-file licence or origin is stated.",
-   "scope": "out",
-   "scope_reason": "P3 (only binary PBM, P4, has a probe)",
+   "scope": "in",
+   "scope_reason": "magic P3 followed by whitespace",
    "header": {
     "magic": "P3",
     "plain_text": true,
@@ -921,7 +921,7 @@
    "licence_url": "https://imagemagick.org/license/",
    "licence_note": "ImageMagick repository licence (ImageMagick License, Apache-2.0-style). No per-file licence or origin is stated.",
    "scope": "in",
-   "scope_reason": "binary PBM (P4) with the exact b'P4\\n' signature the PBM probe reads",
+   "scope_reason": "magic P4 followed by newline",
    "header": {
     "magic": "P4",
     "plain_text": false,
@@ -959,8 +959,8 @@
    "licence": "ImageMagick",
    "licence_url": "https://imagemagick.org/license/",
    "licence_note": "ImageMagick repository licence (ImageMagick License, Apache-2.0-style). No per-file licence or origin is stated.",
-   "scope": "out",
-   "scope_reason": "P5 (only binary PBM, P4, has a probe)",
+   "scope": "in",
+   "scope_reason": "magic P5 followed by whitespace",
    "header": {
     "magic": "P5",
     "plain_text": false,
@@ -999,8 +999,8 @@
    "licence": "ImageMagick",
    "licence_url": "https://imagemagick.org/license/",
    "licence_note": "ImageMagick repository licence (ImageMagick License, Apache-2.0-style). No per-file licence or origin is stated.",
-   "scope": "out",
-   "scope_reason": "P6 (only binary PBM, P4, has a probe)",
+   "scope": "in",
+   "scope_reason": "magic P6 followed by whitespace",
    "header": {
     "magic": "P6",
     "plain_text": false,
@@ -1040,7 +1040,7 @@
    "licence_url": "https://github.com/image-rs/image/blob/main/LICENSE-MIT",
    "licence_note": "image-rs repository licence (MIT or Apache-2.0). No per-file licence or origin is stated.",
    "scope": "in",
-   "scope_reason": "binary PBM (P4) with the exact b'P4\\n' signature the PBM probe reads",
+   "scope_reason": "magic P4 followed by newline",
    "header": {
     "magic": "P4",
     "plain_text": false,
@@ -1079,7 +1079,7 @@
    "licence_url": "https://github.com/image-rs/image/blob/main/LICENSE-MIT",
    "licence_note": "image-rs repository licence (MIT or Apache-2.0). No per-file licence or origin is stated.",
    "scope": "in",
-   "scope_reason": "binary PBM (P4) with the exact b'P4\\n' signature the PBM probe reads",
+   "scope_reason": "magic P4 followed by newline",
    "header": {
     "magic": "P4",
     "plain_text": false,
@@ -1117,8 +1117,8 @@
    "licence": "libtiff",
    "licence_url": "https://gitlab.com/libtiff/libtiff/-/blob/master/LICENSE.md",
    "licence_note": "libtiff repository licence. test/images/README.txt states this file is https://github.com/OSGeo/gdal/blob/master/autotest/alg/data/utmsmall_near.tiff (GDAL, MIT licence).",
-   "scope": "out",
-   "scope_reason": "compression Adobe Deflate, 32 strips",
+   "scope": "in",
+   "scope_reason": "compression Adobe Deflate (8), 32 strips",
    "header": {
     "byte_order": "little",
     "ifds": 1,
@@ -1167,7 +1167,7 @@
    "licence_url": "https://gitlab.com/libtiff/libtiff/-/blob/master/LICENSE.md",
    "licence_note": "libtiff repository licence (libtiff, permissive). test/images/README.txt describes the naming; no per-file licence.",
    "scope": "out",
-   "scope_reason": "compression SGILog",
+   "scope_reason": "compression SGILog (34676)",
    "header": {
     "byte_order": "little",
     "ifds": 1,
@@ -1214,8 +1214,8 @@
    "licence": "libtiff",
    "licence_url": "https://gitlab.com/libtiff/libtiff/-/blob/master/LICENSE.md",
    "licence_note": "libtiff repository licence (libtiff, permissive). test/images/README.txt describes the naming; no per-file licence.",
-   "scope": "out",
-   "scope_reason": "compression LZW",
+   "scope": "in",
+   "scope_reason": "compression LZW (5), 1 strip",
    "header": {
     "byte_order": "little",
     "ifds": 1,
@@ -1263,8 +1263,8 @@
    "licence": "libtiff",
    "licence_url": "https://gitlab.com/libtiff/libtiff/-/blob/master/LICENSE.md",
    "licence_note": "libtiff repository licence (libtiff, permissive). test/images/README.txt describes the naming; no per-file licence.",
-   "scope": "out",
-   "scope_reason": "P5 (only binary PBM, P4, has a probe)",
+   "scope": "in",
+   "scope_reason": "magic P5 followed by whitespace",
    "header": {
     "magic": "P5",
     "plain_text": false,
@@ -1303,8 +1303,8 @@
    "licence": "libtiff",
    "licence_url": "https://gitlab.com/libtiff/libtiff/-/blob/master/LICENSE.md",
    "licence_note": "libtiff repository licence (libtiff, permissive). test/images/README.txt describes the naming; no per-file licence.",
-   "scope": "out",
-   "scope_reason": "3 strips",
+   "scope": "in",
+   "scope_reason": "compression none (1), 3 strips",
    "header": {
     "byte_order": "big",
     "ifds": 1,
@@ -1353,7 +1353,7 @@
    "licence_url": "https://gitlab.com/libtiff/libtiff/-/blob/master/LICENSE.md",
    "licence_note": "libtiff repository licence (libtiff, permissive). test/images/README.txt describes the naming; no per-file licence.",
    "scope": "in",
-   "scope_reason": "binary PBM (P4) with the exact b'P4\\n' signature the PBM probe reads",
+   "scope_reason": "magic P4 followed by newline",
    "header": {
     "magic": "P4",
     "plain_text": false,
@@ -1392,7 +1392,7 @@
    "licence_url": "https://gitlab.com/libtiff/libtiff/-/blob/master/LICENSE.md",
    "licence_note": "libtiff repository licence (libtiff, permissive). test/images/README.txt describes the naming; no per-file licence.",
    "scope": "in",
-   "scope_reason": "single-strip uncompressed TIFF",
+   "scope_reason": "compression none (1), 1 strip",
    "header": {
     "byte_order": "big",
     "ifds": 1,
@@ -1441,7 +1441,7 @@
    "licence_url": "https://gitlab.com/libtiff/libtiff/-/blob/master/LICENSE.md",
    "licence_note": "libtiff repository licence (libtiff, permissive). test/images/README.txt describes the naming; no per-file licence.",
    "scope": "out",
-   "scope_reason": "compression OJPEG, tiled",
+   "scope_reason": "compression OJPEG (6)",
    "header": {
     "byte_order": "big",
     "ifds": 1,
@@ -1491,8 +1491,8 @@
    "licence": "libtiff",
    "licence_url": "https://gitlab.com/libtiff/libtiff/-/blob/master/LICENSE.md",
    "licence_note": "libtiff repository licence (libtiff, permissive). test/images/README.txt describes the naming; no per-file licence.",
-   "scope": "out",
-   "scope_reason": "3 strips",
+   "scope": "in",
+   "scope_reason": "compression none (1), 3 strips",
    "header": {
     "byte_order": "big",
     "ifds": 1,
@@ -1541,7 +1541,7 @@
    "licence_url": "https://gitlab.com/libtiff/libtiff/-/blob/master/LICENSE.md",
    "licence_note": "libtiff repository licence (libtiff, permissive). test/images/README.txt describes the naming; no per-file licence.",
    "scope": "out",
-   "scope_reason": "compression JPEG, tiled",
+   "scope_reason": "compression JPEG (7)",
    "header": {
     "byte_order": "little",
     "ifds": 1,
@@ -1591,8 +1591,8 @@
    "licence": "libtiff",
    "licence_url": "https://gitlab.com/libtiff/libtiff/-/blob/master/LICENSE.md",
    "licence_note": "libtiff repository licence (libtiff, permissive). test/images/README.txt describes the naming; no per-file licence.",
-   "scope": "out",
-   "scope_reason": "P6 (only binary PBM, P4, has a probe)",
+   "scope": "in",
+   "scope_reason": "magic P6 followed by whitespace",
    "header": {
     "magic": "P6",
     "plain_text": false,
@@ -1631,8 +1631,8 @@
    "licence": "libtiff",
    "licence_url": "https://gitlab.com/libtiff/libtiff/-/blob/master/LICENSE.md",
    "licence_note": "libtiff repository licence (libtiff, permissive). test/images/README.txt describes the naming; no per-file licence.",
-   "scope": "out",
-   "scope_reason": "P6 (only binary PBM, P4, has a probe)",
+   "scope": "in",
+   "scope_reason": "magic P6 followed by whitespace",
    "header": {
     "magic": "P6",
     "plain_text": false,
@@ -1671,8 +1671,8 @@
    "licence": "libtiff",
    "licence_url": "https://gitlab.com/libtiff/libtiff/-/blob/master/LICENSE.md",
    "licence_note": "libtiff repository licence (libtiff, permissive). test/images/README.txt describes the naming; no per-file licence.",
-   "scope": "out",
-   "scope_reason": "9 strips",
+   "scope": "in",
+   "scope_reason": "compression none (1), 9 strips",
    "header": {
     "byte_order": "big",
     "ifds": 1,
@@ -1723,7 +1723,7 @@
    "licence_url": "https://gitlab.com/libtiff/libtiff/-/blob/master/LICENSE.md",
    "licence_note": "libtiff repository licence (libtiff, permissive). test/images/README.txt describes the naming; no per-file licence.",
    "scope": "in",
-   "scope_reason": "single-strip uncompressed TIFF; its IFD chain loops back to itself, which does not stop the first IFD being read",
+   "scope_reason": "compression none (1), 1 strip",
    "header": {
     "byte_order": "little",
     "ifds": 1,
@@ -1772,7 +1772,7 @@
    "licence_url": "https://gitlab.com/libtiff/libtiff/-/blob/master/LICENSE.md",
    "licence_note": "libtiff repository licence (libtiff, permissive). test/images/README.txt describes the naming; no per-file licence.",
    "scope": "out",
-   "scope_reason": "compression CCITT G4",
+   "scope_reason": "compression CCITT G4 (4)",
    "header": {
     "byte_order": "little",
     "ifds": 1,
@@ -1821,7 +1821,7 @@
    "licence_url": "https://github.com/python-pillow/Pillow/blob/main/LICENSE",
    "licence_note": "Pillow repository licence (MIT-CMU). No per-file licence or origin is stated in the repository for this file.",
    "scope": "in",
-   "scope_reason": "single-plane PCX",
+   "scope_reason": "PCX encoding 1, 1 plane",
    "header": {
     "version": 5,
     "encoding": 1,
@@ -1863,8 +1863,8 @@
    "licence": "MIT-CMU",
    "licence_url": "https://github.com/python-pillow/Pillow/blob/main/LICENSE",
    "licence_note": "Pillow repository licence (MIT-CMU). No per-file licence or origin is stated in the repository for this file.",
-   "scope": "out",
-   "scope_reason": "2 strips",
+   "scope": "in",
+   "scope_reason": "compression none (1), 2 strips",
    "header": {
     "byte_order": "little",
     "ifds": 1,
@@ -1913,7 +1913,7 @@
    "licence_url": "https://github.com/python-pillow/Pillow/blob/main/LICENSE",
    "licence_note": "Pillow repository licence (MIT-CMU). Tests/images/tga/common/readme.txt states: 'Images in this directory were created with GIMP.'",
    "scope": "in",
-   "scope_reason": "uncompressed TGA (image type 3)",
+   "scope_reason": "TGA image type 3",
    "header": {
     "image_type": 3,
     "rle": false,
@@ -1958,7 +1958,7 @@
    "licence_url": "https://github.com/python-pillow/Pillow/blob/main/LICENSE",
    "licence_note": "Pillow repository licence (MIT-CMU). Tests/images/tga/common/readme.txt states: 'Images in this directory were created with GIMP.'",
    "scope": "in",
-   "scope_reason": "uncompressed TGA (image type 3)",
+   "scope_reason": "TGA image type 3",
    "header": {
     "image_type": 3,
     "rle": false,
@@ -2002,8 +2002,8 @@
    "licence": "MIT-CMU",
    "licence_url": "https://github.com/python-pillow/Pillow/blob/main/LICENSE",
    "licence_note": "Pillow repository licence (MIT-CMU). Tests/images/tga/common/readme.txt states: 'Images in this directory were created with GIMP.'",
-   "scope": "out",
-   "scope_reason": "RLE TGA (image type 11)",
+   "scope": "in",
+   "scope_reason": "TGA image type 11",
    "header": {
     "image_type": 11,
     "rle": true,
@@ -2048,7 +2048,7 @@
    "licence_url": "https://github.com/python-pillow/Pillow/blob/main/LICENSE",
    "licence_note": "Pillow repository licence (MIT-CMU). Tests/images/tga/common/readme.txt states: 'Images in this directory were created with GIMP.'",
    "scope": "in",
-   "scope_reason": "uncompressed TGA (image type 3)",
+   "scope_reason": "TGA image type 3",
    "header": {
     "image_type": 3,
     "rle": false,
@@ -2093,7 +2093,7 @@
    "licence_url": "https://github.com/python-pillow/Pillow/blob/main/LICENSE",
    "licence_note": "Pillow repository licence (MIT-CMU). Tests/images/tga/common/readme.txt states: 'Images in this directory were created with GIMP.'",
    "scope": "in",
-   "scope_reason": "uncompressed TGA (image type 1)",
+   "scope_reason": "TGA image type 1",
    "header": {
     "image_type": 1,
     "rle": false,
@@ -2137,8 +2137,8 @@
    "licence": "MIT-CMU",
    "licence_url": "https://github.com/python-pillow/Pillow/blob/main/LICENSE",
    "licence_note": "Pillow repository licence (MIT-CMU). Tests/images/tga/common/readme.txt states: 'Images in this directory were created with GIMP.'",
-   "scope": "out",
-   "scope_reason": "RLE TGA (image type 9)",
+   "scope": "in",
+   "scope_reason": "TGA image type 9",
    "header": {
     "image_type": 9,
     "rle": true,
@@ -2183,7 +2183,7 @@
    "licence_url": "https://github.com/python-pillow/Pillow/blob/main/LICENSE",
    "licence_note": "Pillow repository licence (MIT-CMU). Tests/images/tga/common/readme.txt states: 'Images in this directory were created with GIMP.'",
    "scope": "in",
-   "scope_reason": "uncompressed TGA (image type 2)",
+   "scope_reason": "TGA image type 2",
    "header": {
     "image_type": 2,
     "rle": false,
@@ -2227,8 +2227,8 @@
    "licence": "MIT-CMU",
    "licence_url": "https://github.com/python-pillow/Pillow/blob/main/LICENSE",
    "licence_note": "Pillow repository licence (MIT-CMU). Tests/images/tga/common/readme.txt states: 'Images in this directory were created with GIMP.'",
-   "scope": "out",
-   "scope_reason": "RLE TGA (image type 10)",
+   "scope": "in",
+   "scope_reason": "TGA image type 10",
    "header": {
     "image_type": 10,
     "rle": true,
@@ -2273,7 +2273,7 @@
    "licence_url": "https://github.com/python-pillow/Pillow/blob/main/LICENSE",
    "licence_note": "Pillow repository licence (MIT-CMU). Tests/images/tga/common/readme.txt states: 'Images in this directory were created with GIMP.'",
    "scope": "in",
-   "scope_reason": "uncompressed TGA (image type 2)",
+   "scope_reason": "TGA image type 2",
    "header": {
     "image_type": 2,
     "rle": false,
@@ -2318,7 +2318,7 @@
    "licence_url": "https://github.com/python-pillow/Pillow/blob/main/LICENSE",
    "licence_note": "Pillow repository licence (MIT-CMU). No per-file licence or origin is stated in the repository for this file.",
    "scope": "in",
-   "scope_reason": "RLE TGA (image type 11); in scope since format-coverage Task 12 because the engine decodes rle_tga (Requirement 5.9)",
+   "scope_reason": "TGA image type 11",
    "header": {
     "image_type": 11,
     "rle": true,
@@ -2362,8 +2362,8 @@
    "licence": "MIT-CMU",
    "licence_url": "https://github.com/python-pillow/Pillow/blob/main/LICENSE",
    "licence_note": "Pillow repository licence (MIT-CMU). No per-file licence or origin is stated in the repository for this file.",
-   "scope": "out",
-   "scope_reason": "RLE TGA (image type 9)",
+   "scope": "in",
+   "scope_reason": "TGA image type 9",
    "header": {
     "image_type": 9,
     "rle": true,
@@ -2407,8 +2407,8 @@
    "licence": "MIT-CMU",
    "licence_url": "https://github.com/python-pillow/Pillow/blob/main/LICENSE",
    "licence_note": "Pillow repository licence (MIT-CMU). No per-file licence or origin is stated in the repository for this file.",
-   "scope": "out",
-   "scope_reason": "P5 (only binary PBM, P4, has a probe)",
+   "scope": "in",
+   "scope_reason": "magic P5 followed by whitespace",
    "header": {
     "magic": "P5",
     "plain_text": false,
@@ -2448,7 +2448,7 @@
    "licence_url": "https://github.com/python-pillow/Pillow/blob/main/LICENSE",
    "licence_note": "Pillow repository licence (MIT-CMU). No per-file licence or origin is stated in the repository for this file.",
    "scope": "in",
-   "scope_reason": "binary PBM (P4) with the exact b'P4\\n' signature the PBM probe reads",
+   "scope_reason": "magic P4 followed by newline",
    "header": {
     "magic": "P4",
     "plain_text": false,
@@ -2486,8 +2486,8 @@
    "licence": "MIT-CMU",
    "licence_url": "https://github.com/python-pillow/Pillow/blob/main/LICENSE",
    "licence_note": "Pillow repository licence (MIT-CMU). No per-file licence or origin is stated in the repository for this file.",
-   "scope": "out",
-   "scope_reason": "P1 (only binary PBM, P4, has a probe)",
+   "scope": "in",
+   "scope_reason": "magic P1 followed by whitespace",
    "header": {
     "magic": "P1",
     "plain_text": true,
@@ -2525,8 +2525,8 @@
    "licence": "MIT-CMU",
    "licence_url": "https://github.com/python-pillow/Pillow/blob/main/LICENSE",
    "licence_note": "Pillow repository licence (MIT-CMU). No per-file licence or origin is stated in the repository for this file.",
-   "scope": "out",
-   "scope_reason": "P5 (only binary PBM, P4, has a probe)",
+   "scope": "in",
+   "scope_reason": "magic P5 followed by whitespace",
    "header": {
     "magic": "P5",
     "plain_text": false,
@@ -2565,8 +2565,8 @@
    "licence": "MIT-CMU",
    "licence_url": "https://github.com/python-pillow/Pillow/blob/main/LICENSE",
    "licence_note": "Pillow repository licence (MIT-CMU). No per-file licence or origin is stated in the repository for this file.",
-   "scope": "out",
-   "scope_reason": "P6 (only binary PBM, P4, has a probe)",
+   "scope": "in",
+   "scope_reason": "magic P6 followed by whitespace",
    "header": {
     "magic": "P6",
     "plain_text": false,
@@ -2606,7 +2606,7 @@
    "licence_url": "https://github.com/python-pillow/Pillow/blob/main/LICENSE",
    "licence_note": "Pillow repository licence (MIT-CMU). No per-file licence or origin is stated in the repository for this file.",
    "scope": "out",
-   "scope_reason": "compression CCITT G4",
+   "scope_reason": "compression CCITT G4 (4)",
    "header": {
     "byte_order": "little",
     "ifds": 1,
@@ -2654,8 +2654,8 @@
    "licence": "MIT-CMU",
    "licence_url": "https://github.com/python-pillow/Pillow/blob/main/LICENSE",
    "licence_note": "Pillow repository licence (MIT-CMU). No per-file licence or origin is stated in the repository for this file.",
-   "scope": "out",
-   "scope_reason": "compression LZMA",
+   "scope": "in",
+   "scope_reason": "compression LZMA (34925), 1 strip",
    "header": {
     "byte_order": "little",
     "ifds": 1,
@@ -2706,7 +2706,7 @@
    "licence_url": "https://github.com/python-pillow/Pillow/blob/main/LICENSE",
    "licence_note": "Pillow repository licence (MIT-CMU). No per-file licence or origin is stated in the repository for this file.",
    "scope": "out",
-   "scope_reason": "compression LZW, 7 strips",
+   "scope_reason": "predictor 2",
    "header": {
     "byte_order": "little",
     "ifds": 1,
@@ -2757,7 +2757,7 @@
    "licence_url": "https://github.com/python-pillow/Pillow/blob/main/LICENSE",
    "licence_note": "Pillow repository licence (MIT-CMU). No per-file licence or origin is stated in the repository for this file.",
    "scope": "out",
-   "scope_reason": "compression WebP",
+   "scope_reason": "compression WebP (50001)",
    "header": {
     "byte_order": "little",
     "ifds": 1,
@@ -2807,8 +2807,8 @@
    "licence": "MIT-CMU",
    "licence_url": "https://github.com/python-pillow/Pillow/blob/main/LICENSE",
    "licence_note": "Pillow repository licence (MIT-CMU). No per-file licence or origin is stated in the repository for this file.",
-   "scope": "out",
-   "scope_reason": "RLE TGA (image type 11)",
+   "scope": "in",
+   "scope_reason": "TGA image type 11",
    "header": {
     "image_type": 11,
     "rle": true,
@@ -2853,7 +2853,7 @@
    "licence_url": "https://github.com/python-pillow/Pillow/blob/main/LICENSE",
    "licence_note": "Pillow repository licence (MIT-CMU). No per-file licence or origin is stated in the repository for this file.",
    "scope": "out",
-   "scope_reason": "malformed header",
+   "scope_reason": "magic P6 not followed by a whitespace byte",
    "header": {
     "magic": "P6",
     "plain_text": false,
@@ -2888,7 +2888,7 @@
    "licence_url": "https://github.com/python-pillow/Pillow/blob/main/LICENSE",
    "licence_note": "Pillow repository licence (MIT-CMU). No per-file licence or origin is stated in the repository for this file.",
    "scope": "in",
-   "scope_reason": "single-plane PCX",
+   "scope_reason": "PCX encoding 1, 1 plane",
    "header": {
     "version": 5,
     "encoding": 1,
@@ -2931,7 +2931,7 @@
    "licence_url": "https://github.com/python-pillow/Pillow/blob/main/LICENSE",
    "licence_note": "Pillow repository licence (MIT-CMU). No per-file licence or origin is stated in the repository for this file.",
    "scope": "out",
-   "scope_reason": "compression OJPEG",
+   "scope_reason": "compression OJPEG (6)",
    "header": {
     "byte_order": "little",
     "ifds": 1,
@@ -2982,7 +2982,7 @@
    "licence_url": "https://github.com/python-pillow/Pillow/blob/main/LICENSE",
    "licence_note": "Pillow repository licence (MIT-CMU). No per-file licence or origin is stated in the repository for this file.",
    "scope": "out",
-   "scope_reason": "2 planes, encoding byte 32",
+   "scope_reason": "PCX encoding byte 32",
    "header": {
     "version": 0,
     "encoding": 32,
@@ -3025,7 +3025,7 @@
    "licence_url": "https://github.com/python-pillow/Pillow/blob/main/LICENSE",
    "licence_note": "Pillow repository licence (MIT-CMU). No per-file licence or origin is stated in the repository for this file.",
    "scope": "in",
-   "scope_reason": "uncompressed TGA (image type 1)",
+   "scope_reason": "TGA image type 1",
    "header": {
     "image_type": 1,
     "rle": false,
@@ -3069,8 +3069,8 @@
    "licence": "MIT-CMU",
    "licence_url": "https://github.com/python-pillow/Pillow/blob/main/LICENSE",
    "licence_note": "Pillow repository licence (MIT-CMU). No per-file licence or origin is stated in the repository for this file.",
-   "scope": "out",
-   "scope_reason": "4 planes",
+   "scope": "in",
+   "scope_reason": "PCX encoding 1, 4 planes",
    "header": {
     "version": 5,
     "encoding": 1,
@@ -3113,7 +3113,7 @@
    "licence_url": "https://github.com/python-pillow/Pillow/blob/main/LICENSE",
    "licence_note": "Pillow repository licence (MIT-CMU). No per-file licence or origin is stated in the repository for this file.",
    "scope": "in",
-   "scope_reason": "uncompressed TGA (image type 1)",
+   "scope_reason": "TGA image type 1",
    "header": {
     "image_type": 1,
     "rle": false,
@@ -3155,7 +3155,7 @@
    "licence_url": "https://github.com/python-pillow/Pillow/blob/main/LICENSE",
    "licence_note": "Pillow repository licence (MIT-CMU). No per-file licence or origin is stated in the repository for this file.",
    "scope": "in",
-   "scope_reason": "single-plane PCX",
+   "scope_reason": "PCX encoding 1, 1 plane",
    "header": {
     "version": 5,
     "encoding": 1,
@@ -3197,8 +3197,8 @@
    "licence": "MIT-CMU",
    "licence_url": "https://github.com/python-pillow/Pillow/blob/main/LICENSE",
    "licence_note": "Pillow repository licence (MIT-CMU). No per-file licence or origin is stated in the repository for this file.",
-   "scope": "out",
-   "scope_reason": "RLE TGA (image type 10)",
+   "scope": "in",
+   "scope_reason": "TGA image type 10",
    "header": {
     "image_type": 10,
     "rle": true,
@@ -3243,7 +3243,7 @@
    "licence_url": "https://github.com/python-pillow/Pillow/blob/main/LICENSE",
    "licence_note": "Pillow repository licence (MIT-CMU). No per-file licence or origin is stated in the repository for this file.",
    "scope": "in",
-   "scope_reason": "uncompressed TGA (image type 2)",
+   "scope_reason": "TGA image type 2",
    "header": {
     "image_type": 2,
     "rle": false,
@@ -3288,7 +3288,7 @@
    "licence_url": "https://github.com/python-pillow/Pillow/blob/main/LICENSE",
    "licence_note": "Pillow repository licence (MIT-CMU). No per-file licence or origin is stated in the repository for this file.",
    "scope": "in",
-   "scope_reason": "uncompressed TGA (image type 2)",
+   "scope_reason": "TGA image type 2",
    "header": {
     "image_type": 2,
     "rle": false,
@@ -3333,7 +3333,7 @@
    "licence_url": "https://github.com/python-pillow/Pillow/blob/main/LICENSE",
    "licence_note": "Pillow repository licence (MIT-CMU). No per-file licence or origin is stated in the repository for this file.",
    "scope": "out",
-   "scope_reason": "compression Adobe Deflate",
+   "scope_reason": "predictor 2",
    "header": {
     "byte_order": "little",
     "ifds": 1,
@@ -3384,7 +3384,7 @@
    "licence_url": "https://github.com/python-pillow/Pillow/blob/main/LICENSE",
    "licence_note": "Pillow repository licence (MIT-CMU). No per-file licence or origin is stated in the repository for this file.",
    "scope": "out",
-   "scope_reason": "39 strips, planar configuration 2",
+   "scope_reason": "planar configuration 2",
    "header": {
     "byte_order": "little",
     "ifds": 1,
@@ -3434,8 +3434,8 @@
    "licence": "MIT-CMU",
    "licence_url": "https://github.com/python-pillow/Pillow/blob/main/LICENSE",
    "licence_note": "Pillow repository licence (MIT-CMU). No per-file licence or origin is stated in the repository for this file.",
-   "scope": "out",
-   "scope_reason": "3 strips",
+   "scope": "in",
+   "scope_reason": "compression none (1), 3 strips",
    "header": {
     "byte_order": "little",
     "ifds": 1,
@@ -3485,8 +3485,8 @@
    "licence": "MIT-CMU",
    "licence_url": "https://github.com/python-pillow/Pillow/blob/main/LICENSE",
    "licence_note": "Pillow repository licence (MIT-CMU). No per-file licence or origin is stated in the repository for this file.",
-   "scope": "out",
-   "scope_reason": "tiled",
+   "scope": "in",
+   "scope_reason": "compression none (1), 9 tiles",
    "header": {
     "byte_order": "little",
     "ifds": 1,
@@ -3536,8 +3536,8 @@
    "licence": "Zlib",
    "licence_url": "https://github.com/libsdl-org/SDL_image/blob/main/LICENSE.txt",
    "licence_note": "SDL_image repository licence (zlib). No per-file licence or origin is stated.",
-   "scope": "out",
-   "scope_reason": "3 planes",
+   "scope": "in",
+   "scope_reason": "PCX encoding 1, 3 planes",
    "header": {
     "version": 5,
     "encoding": 1,
@@ -3579,8 +3579,8 @@
    "licence": "Zlib",
    "licence_url": "https://github.com/libsdl-org/SDL_image/blob/main/LICENSE.txt",
    "licence_note": "SDL_image repository licence (zlib). No per-file licence or origin is stated.",
-   "scope": "out",
-   "scope_reason": "P6 (only binary PBM, P4, has a probe)",
+   "scope": "in",
+   "scope_reason": "magic P6 followed by whitespace",
    "header": {
     "magic": "P6",
     "plain_text": false,
@@ -3619,8 +3619,8 @@
    "licence": "Zlib",
    "licence_url": "https://github.com/libsdl-org/SDL_image/blob/main/LICENSE.txt",
    "licence_note": "SDL_image repository licence (zlib). No per-file licence or origin is stated.",
-   "scope": "out",
-   "scope_reason": "RLE TGA (image type 10)",
+   "scope": "in",
+   "scope_reason": "TGA image type 10",
    "header": {
     "image_type": 10,
     "rle": true,
@@ -3665,7 +3665,7 @@
    "licence_url": "https://github.com/libsdl-org/SDL_image/blob/main/LICENSE.txt",
    "licence_note": "SDL_image repository licence (zlib). No per-file licence or origin is stated.",
    "scope": "in",
-   "scope_reason": "single-strip uncompressed TIFF",
+   "scope_reason": "compression none (1), 1 strip",
    "header": {
     "byte_order": "little",
     "ifds": 1,
