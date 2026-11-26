@@ -43,7 +43,10 @@ EXCEPTIONS = {
     # format-coverage Task 18 (Requirement 8): these two TIFFs now resolve through the strip-array probe. Their renders are
     # pending: 12-bit grey belongs to Task 19 (Requirement 16.1 to 16.5); the TIFF palette (ColorMap, tag 320) is unread
     # by the probe, so the render is grey where Pillow's is coloured.
-    "pillow_12bit.cropped.tif": ("no_renderer", "12-bit pixels have no renderer until format-coverage Task 19"),
+    # Task 19: rendered. Requirement 16.1 shows a 12-bit TIFF sample v as v * 255 // 4095; Pillow loads it as mode I;16 and
+    # convert("RGB") clips to 255. The file's samples are all 30 or less, so ours is near black and Pillow's is v itself.
+    "pillow_12bit.cropped.tif": ("tiff12_pillow_clips", "Pillow's I;16 clips to 255 on convert('RGB'); Requirement 16.1 "
+                                                        "requires v * 255 // 4095"),
     "libtiff_palette-1c-8b.tiff": ("render_pending", "palette TIFF: ColorMap (tag 320) is not read, so the render is grey "
                                                       "where Pillow's is coloured"),
 }
@@ -99,6 +102,21 @@ def test_render_matches_pillow(path):
         return
     if kind == "no_renderer":
         assert render.get("failure", "").startswith("no renderer for"), reason
+        return
+    if kind == "tiff12_pillow_clips":
+        c = Engine().run(data).candidate
+        h, stride = c.hypothesis, c.row_stride
+        assert h.bit_depth == 12 and h.probe_name == "tiff" and h.width * 12 % 8 == 0
+        # Each row is `stride` bytes; a pair of samples is 3 bytes, MSB first (Requirement 16.1).
+        words = []
+        for y in range(h.height):
+            row = c.decoded[y * stride: y * stride + h.width * 3 // 2]
+            for i in range(0, len(row), 3):
+                words += [(row[i] << 4) | (row[i + 1] >> 4), ((row[i + 1] & 15) << 8) | row[i + 2]]
+        assert len(words) == h.width * h.height and max(words) <= 30
+        assert _rgb(render) == bytes(v for w in words for v in [w * 255 // 4095] * 3), reason
+        assert _pillow(data).tobytes() == bytes(v for w in words for v in [min(255, w)] * 3), reason
+        assert _rgb(render) != _pillow(data).tobytes()
         return
     if kind in ("pnm16_pillow_rounds", "pnm16_pillow_clips"):
         # Both files have maxval 65535 and no trailer, so the samples are the last w*h*channels big-endian words.

@@ -52,6 +52,17 @@ def _int_field(cand, name):
     return None
 
 
+def byte_order_for(cand):
+    """b"II" or b"MM" from the TIFF `byte_order` field (bytes 0x00 to 0x01), else None."""
+    for f in cand.hypothesis.fields:
+        if f.name == "byte_order":
+            v = f.value
+            if isinstance(v, tuple) and len(v) == 1 and v[0] in (b"II", b"MM"):
+                return bytes(v[0])
+            return None
+    return None
+
+
 def channel_order_for(cand) -> str:
     """24/32-bit channel order from the format (Requirement 3.5): TGA B,G,R; TIFF R,G,B; generic B,G,R by convention."""
     probe = cand.hypothesis.probe_name
@@ -67,7 +78,7 @@ def photometric_for(cand):
     pi = _int_field(cand, "photometric_interpretation")
     if pi in (0, 1):
         return pi
-    if pi is None and cand.hypothesis.probe_name == "tiff" and cand.hypothesis.bit_depth in (1, 4, 8):
+    if pi is None and cand.hypothesis.probe_name == "tiff" and cand.hypothesis.bit_depth in (1, 4, 8, 12, 16):
         return "undeclared"
     return None
 
@@ -177,7 +188,7 @@ def _candidate(c, data, budget: dict) -> dict:
         out = decode(c.decoded, h.width, h.height, h.bit_depth, c.row_stride, h.probe_name,
                      pal, bottom_left_for(c), channel_order=channel_order_for(c), photometric=photometric_for(c),
                      palette_name=name, no_palette_why=tga_why, maxval=h.maxval,
-                     planes=h.planes, header_palette=header_palette_for(c, data))
+                     planes=h.planes, header_palette=header_palette_for(c, data), byte_order=byte_order_for(c))
         if isinstance(out, PixelBuffer):
             budget["spent"] += pixels
             render = {"width": out.width, "height": out.height, "channels": out.channels,

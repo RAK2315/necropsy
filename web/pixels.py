@@ -53,8 +53,11 @@ def _interleave(r: bytes, g: bytes, b: bytes) -> bytes:
 
 def decode(decoded, width, height, bit_depth, row_stride, probe_name,
            palette=None, bottom_left=False, channel_order="bgr", photometric=None,
-           palette_name=PALETTE_NAME, no_palette_why=None, maxval=None, planes=1, header_palette=None):
+           palette_name=PALETTE_NAME, no_palette_why=None, maxval=None, planes=1, header_palette=None,
+           byte_order=None):
     """Return a PixelBuffer, or a RenderFailure with a reason. Never raises.
+
+    byte_order: b"II" or b"MM", the TIFF header's two bytes; it orders the words of 16-bit TIFF grey.
 
     maxval: the PNM header's declared maximum. With probe_name "pnm" and bit_depth 8, 16, 24 or 48 the samples are
     scaled v * 255 // maxval (16-bit samples are big-endian words).
@@ -68,7 +71,7 @@ def decode(decoded, width, height, bit_depth, row_stride, probe_name,
     """
     try:
         return _decode(decoded, width, height, bit_depth, row_stride, probe_name, palette, bottom_left,
-                       channel_order, photometric, palette_name, no_palette_why, maxval, planes, header_palette)
+                       channel_order, photometric, palette_name, no_palette_why, maxval, planes, header_palette, byte_order)
     except Exception as exc:  # last line of defence; the checks below bound every read
         return RenderFailure(f"internal error: {type(exc).__name__}")
 
@@ -141,6 +144,43 @@ def _decode_pnm(decoded, width, height, bit_depth, row_stride, maxval):
                        f"PNM RGB as stored · {word} · v×255//{maxval} · {STORED_NOTE}")
 
 
+TIFF_RGB_NO_RENDERER = {36: "12-bit RGB TIFF", 48: "16-bit RGB TIFF"}
+
+
+def _decode_tiff_grey(decoded, width, height, bit_depth, row_stride, byte_order, photometric):
+    """TIFF grey at 12 or 16 bits, each sample shown as v * 255 // (2^bits - 1) (Requirement 16.1).
+
+    16 bits: a word in the declared byte order (b"II" little, b"MM" big). 12 bits: packed most significant bit first,
+    so a pair of samples is three bytes, (b0 << 4) | (b1 >> 4) and ((b1 & 15) << 8) | b2; the byte order does not apply.
+    """
+    top = (1 << bit_depth) - 1
+    used = -(-(width * bit_depth) // 8)
+    if row_stride < used or len(decoded) < row_stride * height:
+        return RenderFailure("inconsistent geometry")
+    d = bytes(decoded)
+    out = bytearray()
+    if bit_depth == 16:
+        if byte_order not in (b"II", b"MM"):
+            return RenderFailure("no renderer for 16-bit grey TIFF: byte order not declared")
+        hi, lo = (1, 0) if byte_order == b"II" else (0, 1)
+        for y in range(height):
+            o = y * row_stride
+            for x in range(width):
+                out.append(((d[o + 2 * x + hi] << 8 | d[o + 2 * x + lo]) * 255) // top)
+        order = "little-endian (II)" if byte_order == b"II" else "big-endian (MM)"
+        word = f"16-bit {order} samples"
+    else:
+        for y in range(height):
+            o = y * row_stride
+            for x in range(width):
+                i = o + (x * 3) // 2
+                v = (d[i] << 4 | d[i + 1] >> 4) if x % 2 == 0 else ((d[i] & 15) << 8 | d[i + 1])
+                out.append((v * 255) // top)
+        word = "12-bit samples packed most significant bit first"
+    data, pi = _grey(bytes(out), photometric)
+    return PixelBuffer(width, height, "grey8", data, f"TIFF grey · {word} · v×255//{top} · {pi or 'grey'} · {STORED_NOTE}")
+
+
 def _grey(data, photometric):
     """Apply the declared photometric interpretation to grey levels; returns (data, note fragment)."""
     if photometric == 0:
@@ -153,7 +193,8 @@ def _grey(data, photometric):
 
 
 def _decode(decoded, width, height, bit_depth, row_stride, probe_name, palette, bottom_left,
-            channel_order, photometric, palette_name, no_palette_why, maxval=None, planes=1, header_palette=None):
+            channel_order, photometric, palette_name, no_palette_why, maxval=None, planes=1, header_palette=None,
+            byte_order=None):
     if not isinstance(decoded, (bytes, bytearray)):
         return RenderFailure("inconsistent geometry")
     if not all(_is_int(v) and v > 0 for v in (width, height, bit_depth, row_stride)):
@@ -162,6 +203,10 @@ def _decode(decoded, width, height, bit_depth, row_stride, probe_name, palette, 
         return _decode_pcx_planar(decoded, width, height, bit_depth, row_stride, planes, header_palette)
     if probe_name == "pnm" and bit_depth in PNM_DEPTHS and _is_int(maxval):
         return _decode_pnm(decoded, width, height, bit_depth, row_stride, maxval)
+    if probe_name == "tiff" and bit_depth in (12, 16):
+        return _decode_tiff_grey(decoded, width, height, bit_depth, row_stride, byte_order, photometric)
+    if probe_name == "tiff" and bit_depth in TIFF_RGB_NO_RENDERER:
+        return RenderFailure(f"no renderer for {TIFF_RGB_NO_RENDERER[bit_depth]} ({bit_depth}-bit pixels)")
     if bit_depth not in SUPPORTED_DEPTHS:
         return RenderFailure(f"no renderer for {bit_depth}-bit pixels")
     used = -(-(width * bit_depth) // 8)               # bytes of pixel data in one row
