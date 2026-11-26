@@ -97,11 +97,24 @@
   "scope": "out",
   "scope_reason": "compression PackBits",
   "invalid_by_construction": false,
-  "our_status": "FAILED",
-  "stage": null,
-  "termination": "exhausted",
-  "checks": 3,
-  "candidates": [],
+  "our_status": "RESOLVED",
+  "stage": "probe",
+  "termination": null,
+  "checks": 1,
+  "candidates": [
+   {
+    "width": 153,
+    "height": 55,
+    "bit_depth": 1,
+    "header_size": 8,
+    "row_alignment": 1,
+    "encoding": "tiff_compression_32773",
+    "probe": "tiff",
+    "path": [],
+    "data_start": 8,
+    "data_end": 602
+   }
+  ],
   "expected_status": "FAILED",
   "note": "",
   "pillow_error": null,
@@ -111,8 +124,10 @@
    153,
    55
   ],
-  "pixel_verdicts": [],
-  "pillow_pixels_sha256": null
+  "pixel_verdicts": [
+   "not comparable: encoding tiff_compression_32773 not handled by the comparer"
+  ],
+  "pillow_pixels_sha256": "f1686fc100a21243edaedc78b25638f37a4ad2d09dbf7d3e8f6b535828bdd67f"
  },
  {
   "file": "goimage_bw-uncompressed.tiff",

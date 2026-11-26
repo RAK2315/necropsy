@@ -142,9 +142,14 @@ def _run_rle_tga(data, start, end, h, max_output_bytes) -> DecodeResult:
     return rle_tga_decode(data, start, end, (h.bit_depth + 7) // 8, max_output_bytes)
 
 
+def _run_packbits(data, start, end, h, max_output_bytes) -> DecodeResult:
+    return packbits_decode(data, start, end, max_output_bytes)
+
+
 DECODERS = {
     "pnm_text": _run_pnm_text,
     "rle_tga": _run_rle_tga,
+    "tiff_compression_32773": _run_packbits,
 }
 
 # Requirement 2.12: decoder state -> closure rejection reason.
@@ -197,6 +202,58 @@ def _rle_tga_decode(data, start, end, pixel_bytes, max_output_bytes) -> DecodeRe
             if n > max_output_bytes - len(out):
                 return _fail("overrun", packet_end, "raw packet at offset %d would pass %d bytes" % (i, max_output_bytes))
             out += data[i + 1:packet_end]
+        i = packet_end
+
+    if len(out) < max_output_bytes:
+        return _fail("underrun", end, "output is %d bytes, expected %d" % (len(out), max_output_bytes))
+    if i < end:
+        return _fail("unconsumed", i, "%d bytes remain after the output is full" % (end - i))
+    return DecodeResult("ok", bytes(out), end, "")
+
+
+def packbits_decode(data, start, end, max_output_bytes) -> DecodeResult:
+    """Decode TIFF PackBits (Compression 32773) in data[start:end]. Never raises.
+
+    Header n as a signed byte: 0..127 copies the next n + 1 bytes; -127..-1 repeats the
+    next byte 1 - n times; -128 (0x80) writes nothing. A 0x80 left after the output is
+    full is a leftover byte (Requirement 11.6).
+    """
+    try:
+        return _packbits_decode(data, start, end, max_output_bytes)
+    except Exception as exc:  # last line of defence; inner code is written not to raise
+        return _fail("underrun", start if isinstance(start, int) else 0, "internal error: " + type(exc).__name__)
+
+
+def _packbits_decode(data, start, end, max_output_bytes) -> DecodeResult:
+    for v in (start, end, max_output_bytes):
+        if not isinstance(v, int) or isinstance(v, bool):
+            return _fail("underrun", 0, "non-integer argument")
+    if start < 0 or end > len(data) or start > end or max_output_bytes < 0:
+        return _fail("underrun", start, "invalid arguments")
+
+    out = bytearray()
+    i = start
+    while len(out) < max_output_bytes and i < end:
+        h = data[i]
+        if h == 0x80:
+            i += 1
+            continue
+        if h < 0x80:
+            n = h + 1
+            packet_end = i + 1 + n
+            if packet_end > end:
+                return _fail("underrun", end, "region ended inside the literal packet at offset %d" % i)
+            if n > max_output_bytes - len(out):
+                return _fail("overrun", packet_end, "literal packet at offset %d would pass %d bytes" % (i, max_output_bytes))
+            out += data[i + 1:packet_end]
+        else:
+            n = 257 - h  # 1 - (h - 256)
+            packet_end = i + 2
+            if packet_end > end:
+                return _fail("underrun", end, "region ended inside the run packet at offset %d" % i)
+            if n > max_output_bytes - len(out):
+                return _fail("overrun", packet_end, "run at offset %d would pass %d bytes" % (i, max_output_bytes))
+            out += data[i + 1:packet_end] * n
         i = packet_end
 
     if len(out) < max_output_bytes:

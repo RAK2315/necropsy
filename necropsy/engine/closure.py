@@ -146,6 +146,25 @@ def _detail_reject(reason: str, detail: str, discrepancy: Optional[int] = None) 
     return ClosureVerdict(False, reason, discrepancy, None, None, None, None, detail)
 
 
+def _decode_range(h, data: bytes, i: int, start: int, end: int, unit: int):
+    """Decode one range of a compressed hypothesis to exactly `unit` bytes.
+
+    Returns (bytes, None) or (None, ClosureVerdict). Requirement 2.13: unit is capped.
+    """
+    from .decoders import DECODE_CAP, DECODERS, STATUS_REASONS
+    run = DECODERS.get(h.encoding)
+    if run is None:
+        return None, _reject("unsupported_encoding")
+    if unit > DECODE_CAP:
+        return None, _detail_reject("degenerate_hypothesis",
+                                    "range %d expects %d decoded bytes, above the cap %d" % (i, unit, DECODE_CAP))
+    r = run(data, start, end, h, unit)
+    if r.status == "ok":
+        return r.data, None
+    return None, _detail_reject(STATUS_REASONS.get(r.status, "internal_error"),
+                                "range %d [%d, %d): %s" % (i, start, end, r.detail))
+
+
 def _check_ranges(h, data: bytes) -> ClosureVerdict:
     """Strips with encoding none (Requirements 7.5 to 7.8, 7.10 to 7.12).
 
@@ -186,10 +205,22 @@ def _check_ranges(h, data: bytes) -> ClosureVerdict:
     if n != want:
         return _detail_reject("degenerate_hypothesis",
                               "%d ranges declared, ceil(%d / %d) = %d strips expected" % (n, h.height, rps, want))
-    if h.encoding != "none":
-        return _reject("unsupported_encoding")
     stride = hypothesis_row_stride(h)
     out = bytearray()
+    if h.encoding != "none":
+        from .decoders import DECODE_CAP, DECODERS
+        if h.encoding not in DECODERS:
+            return _reject("unsupported_encoding")
+        if stride * h.height > DECODE_CAP:
+            return _detail_reject("degenerate_hypothesis",
+                                  "assembled image of %d bytes is above the cap of %d" % (stride * h.height, DECODE_CAP))
+        for i, (start, end) in enumerate(ranges):
+            rows = min(rps, h.height - i * rps)
+            piece, bad = _decode_range(h, data, i, start, end, rows * stride)
+            if bad is not None:
+                return bad
+            out += piece
+        return _accept(bytes(out), min(s for s, _ in ranges), max(e for _, e in ranges), None)
     for i, (start, end) in enumerate(ranges):
         rows = min(rps, h.height - i * rps)
         unit = rows * stride
@@ -224,7 +255,9 @@ def _check_tiles(h, data: bytes) -> ClosureVerdict:
         return _detail_reject("degenerate_hypothesis",
                               "%d ranges declared, %d x %d = %d tiles expected" % (n, across, down, across * down))
     if h.encoding != "none":
-        return _reject("unsupported_encoding")
+        from .decoders import DECODERS
+        if h.encoding not in DECODERS:
+            return _reject("unsupported_encoding")
     stride = hypothesis_row_stride(h)
     total = stride * h.height
     if total > DECODE_CAP:
@@ -232,14 +265,21 @@ def _check_tiles(h, data: bytes) -> ClosureVerdict:
                               "assembled image of %d bytes is above the cap of %d" % (total, DECODE_CAP))
     tile_row = (tw * h.bit_depth) // 8
     unit = tile_row * tl
+    tiles = []
     for i, (start, end) in enumerate(ranges):
-        if end - start != unit:
+        if h.encoding != "none":
+            piece, bad = _decode_range(h, data, i, start, end, unit)
+            if bad is not None:
+                return bad
+            tiles.append(piece)
+        elif end - start != unit:
             return _detail_reject(
                 "arithmetic_mismatch",
                 "range %d [%d, %d) holds %d bytes, its tile needs %d" % (i, start, end, end - start, unit),
                 (end - start) - unit)
     out = bytearray(total)
     for i, (start, _end) in enumerate(ranges):
+        src_buf, start = (tiles[i], 0) if tiles else (data, start)
         x = (i % across) * tile_row
         y = (i // across) * tl
         copy = min(tile_row, stride - x)
@@ -248,7 +288,7 @@ def _check_tiles(h, data: bytes) -> ClosureVerdict:
         for r in range(min(tl, h.height - y)):
             src = start + r * tile_row
             dst = (y + r) * stride + x
-            out[dst:dst + copy] = data[src:src + copy]
+            out[dst:dst + copy] = src_buf[src:src + copy]
     return _accept(bytes(out), min(s for s, _ in ranges), max(e for _, e in ranges), None)
 
 

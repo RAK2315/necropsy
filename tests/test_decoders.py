@@ -227,3 +227,90 @@ def test_rle_tga_never_raises(data, pb, cap):
 def test_rle_tga_never_raises_on_arbitrary_range(data, s, e):
     r = rle_tga_decode(data, s, e, 3, 6)
     assert isinstance(r, DecodeResult) and r.status in STATUSES
+
+
+# ---- packbits_decode (format-coverage Requirement 11, Task 23) ----
+from necropsy.engine.decoders import packbits_decode  # noqa: E402
+
+
+def pb(body, out, start=0, end=None):
+    return packbits_decode(body, start, len(body) if end is None else end, out)
+
+
+def test_packbits_literal_packet():  # Req 11.2: 0..127 copies n + 1 bytes
+    r = pb(b"\x02abc", 3)
+    assert (r.status, r.data, r.consumed_to) == ("ok", b"abc", 4)
+
+
+def test_packbits_run_packet():  # Req 11.2: -127..-1 repeats the next byte 1 - n times
+    r = pb(b"\xfdx", 4)
+    assert (r.status, r.data) == ("ok", b"xxxx")
+    assert pb(b"\x81x", 128).data == b"x" * 128  # n = -127
+    assert pb(b"\xffx", 2).data == b"xx"  # n = -1
+
+
+def test_packbits_0x80_is_a_noop_inside_the_stream():  # Req 11.2
+    r = pb(b"\x00a\x80\x00b", 2)
+    assert (r.status, r.data, r.consumed_to) == ("ok", b"ab", 5)
+
+
+def test_packbits_trailing_0x80_is_a_leftover_byte():  # Req 11.6
+    r = pb(b"\x00a\x80", 1)
+    assert (r.status, r.consumed_to) == ("unconsumed", 2)
+
+
+def test_packbits_padded_strip_fails():  # Req 11.6, 11.7
+    r = pb(b"\x00a\x00\x00", 1)
+    assert (r.status, r.consumed_to) == ("unconsumed", 2)
+
+
+def test_packbits_overrun_does_not_write_and_consumes_the_packet():  # Req 11.4
+    r = pb(b"\x00a\xfdb", 3)
+    assert (r.status, r.data, r.consumed_to) == ("overrun", None, 4)
+    r = pb(b"\x03abcd", 3)
+    assert (r.status, r.consumed_to) == ("overrun", 5)
+
+
+def test_packbits_underrun_inside_packet_and_short_output():  # Req 11.5
+    assert (pb(b"\x03ab", 4).status, pb(b"\x03ab", 4).consumed_to) == ("underrun", 3)
+    assert pb(b"\xfd", 4).status == "underrun"
+    r = pb(b"\x00a", 3)
+    assert (r.status, r.consumed_to) == ("underrun", 2)
+    assert pb(b"", 1).status == "underrun"
+    assert pb(b"\x80\x80", 1).status == "underrun"
+
+
+def test_packbits_empty_output_with_empty_region_is_ok():
+    assert pb(b"", 0).status == "ok"
+
+
+def test_packbits_honours_start_and_end():
+    r = pb(b"zz\x00ayy", 1, start=2, end=4)
+    assert (r.status, r.data, r.consumed_to) == ("ok", b"a", 4)
+
+
+def test_packbits_invalid_arguments_underrun_at_start():
+    assert pb(b"ab", 1, start=5, end=9).status == "underrun"
+    assert packbits_decode(b"ab", 0, 2, -1).status == "underrun"
+
+
+def test_packbits_bomb_is_bounded_by_max_output_bytes():  # Req 11.3, 2.13
+    body = b"\x81x" * 100000  # would expand to 12.8 MB
+    r = pb(body, 1000)
+    assert r.status == "overrun" and r.data is None
+
+
+@given(st.binary(max_size=300), st.integers(-5, 400))
+@settings(max_examples=200, deadline=None)
+def test_packbits_never_raises(data, cap):
+    r = packbits_decode(data, 0, len(data), cap)
+    assert isinstance(r, DecodeResult) and r.status in STATUSES
+    if r.status == "ok":
+        assert len(r.data) == cap
+
+
+@given(st.binary(max_size=64), st.integers(-10, 100), st.integers(-10, 100))
+@settings(max_examples=200, deadline=None)
+def test_packbits_never_raises_on_arbitrary_range(data, s, e):
+    r = packbits_decode(data, s, e, 8)
+    assert isinstance(r, DecodeResult) and r.status in STATUSES

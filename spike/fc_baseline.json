@@ -20,9 +20,25 @@
   "termination": "exhausted"
  },
  "real/goimage_bw-packbits.tiff": {
-  "candidates": [],
-  "status": "FAILED",
-  "termination": "exhausted"
+  "candidates": [
+   {
+    "key": [
+     153,
+     55,
+     1,
+     8,
+     1,
+     "tiff_compression_32773",
+     602
+    ],
+    "region": [
+     8,
+     602
+    ]
+   }
+  ],
+  "status": "RESOLVED",
+  "termination": null
  },
  "real/goimage_bw-uncompressed.tiff": {
   "candidates": [
