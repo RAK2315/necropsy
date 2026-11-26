@@ -194,3 +194,37 @@ def test_probe_tiff_never_raises_on_mutated_strip_tiff(edits, order):
             buf[pos] = val
     out = probe_tiff(bytes(buf))
     assert out is None or isinstance(out, ProbeOutcome)
+
+
+# Requirement 8.3 / 8.10: a single-strip TIFF keeps the exact field list it had before task 18.
+def _single_strip_snapshot():
+    import json
+    from pathlib import Path
+    return json.loads(
+        (Path(__file__).parent / "data" / "tiff_single_strip_fields.json").read_text()
+    )
+
+
+def test_single_strip_fields_equal_pre_task_18_snapshot_for_real_files():
+    # Snapshot recorded from the probe at commit a42a573 (tools/snapshot_tiff_fields.py).
+    from tools import real_corpus as rc
+    checked = 0
+    for name, expected in _single_strip_snapshot().items():
+        out = probe_tiff((rc.REAL / name).read_bytes())
+        fields = [[f.name, f.offset, f.fmt, repr(f.value)] for f in out.seed.fields]
+        if any(n == "strip_offset[0]" for n, *_ in fields):
+            continue  # multi-strip now: its field list legitimately grew
+        assert fields == expected, name
+        assert out.seed.ranges == () and out.seed.rows_per_strip is None, name
+        checked += 1
+    assert checked == 23
+
+
+def test_single_strip_synthetic_has_no_rows_per_strip_field_but_still_checks_it():
+    ok = probe_tiff(build_tiff(b"II", [bytes(range(6))], 3, 2, 2))
+    assert "rows_per_strip" not in names(ok.seed) and ok.rejections == ()
+    bad = probe_tiff(build_tiff(b"II", [bytes(range(6))], 3, 2, 1))
+    assert "rows_per_strip" not in names(bad.seed)
+    assert [r.reason for r in bad.rejections] == ["probe_precondition_failed"]
+    multi = probe_tiff(build_tiff(b"II", STRIPS, 2, 5, 2))
+    assert "rows_per_strip" in names(multi.seed)

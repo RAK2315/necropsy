@@ -537,6 +537,10 @@ def _probe_tiff(data: bytes) -> ProbeOutcome | None:
     rows_per_strip = None
     strip_offset = values.get(273, 0)
     data_end = strip_offset + values.get(279, 0)
+    if not multi:
+        # Req 8.3 / 8.10: a single-strip file keeps its pre-task-18 field list. Tag 278 is
+        # still read above so the strip-count check below can use it.
+        records = [r for r in records if r.name != TIFF_TAG_NAMES[TIFF_ROWS_PER_STRIP_TAG]]
     if multi:
         ranges = tuple((o, o + c) for o, c in zip(offsets_list, counts_list))
         rows_per_strip = min(rps_declared, height)
