@@ -81,6 +81,8 @@ These are fuzzer, overrun and regression inputs. Pillow is right to refuse them,
 
 **A `FAILED` result on one of these is a pass. Recovering an image from one of them would be accepting garbage.**
 
+Four of the six fail. Two resolve. `pillow_ossfuzz-4836216264589312.pcx` resolves only as a literal one-file layout with no format claim, by design (engine Decision Record items 16 and 21). Since the `format-coverage` spec, `goimage_invalid-palette-ref.tiff` also resolves: its layout closes exactly, and the fault is in its palette indices, which the engine does not check because it does not yet read the TIFF ColorMap. That is recorded as a limit in the top-level README, not counted as a recovery.
+
 | File | Stated scope | Pillow error | Why it is invalid (upstream evidence) |
 |---|---|---|---|
 | `goimage_invalid-palette-ref.tiff` | in | `UnidentifiedImageError: cannot identify image file 'goimage_invalid-palette-ref.tiff'` | Palette indices out of range of the palette. golang/image commit 3bbf4a659e 'tiff: Validate palette indices when parsing palette-color images' (GHSA-q7pp-wcgr-pffx, golang/go#67624). |

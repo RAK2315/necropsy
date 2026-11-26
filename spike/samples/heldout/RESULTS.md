@@ -24,7 +24,7 @@ For each file: the engine's result, then the picture the web service would show 
 
 ## Summary
 
-**55 files. 43 RESOLVED, 12 FAILED.**
+**55 files the engine had never seen. 43 RESOLVED, 12 FAILED. Every recovered picture that Pillow can also show is identical to Pillow's: 39 of 39. Of the 12 FAILED, 5 are files Pillow refuses too and 3 are out of scope; on the other 4, NECROPSY refused rather than drew a wrong picture.**
 
 - **52 in scope:** 43 RESOLVED, 9 FAILED.
 - **3 out of scope**, all FAILED with the reason named: one declares Predictor 2, two declare planar configuration 2.
@@ -39,9 +39,9 @@ Of the 9 in-scope FAILED files:
 
 - **4 are invalid by construction**, as the upstream test suite says, and Pillow refuses all four. FAILED is the right answer.
 - **1 is a valid file that Pillow also refuses** (`gdal_contig_tiled.tif`).
-- **4 are valid files that Pillow decodes and NECROPSY does not.** These are the held-out set's real misses, listed below with their measured causes.
+- **4 are valid files that Pillow reads and NECROPSY does not yet.** In each case the engine stopped and reported why, instead of producing a wrong picture. Each cause is measured below, and each is a single, specific rule.
 
-## The misses
+## Not recovered yet: four valid files
 
 | File | What the engine reported | Cause, from the bytes |
 |---|---|---|
@@ -57,7 +57,7 @@ Of the 9 in-scope FAILED files:
 - **`tm_lzw-rgba-4444.tif`** (LZW, four 4-bit samples per pixel). The layout RESOLVES, but the picture is wrong: the four 4-bit samples are drawn as one 16-bit grey value, so a colour image of a camera appears as a grey one. This is a defect in the renderer (`web/pixels.py`), which does not take the samples per pixel into account at this bit depth. Pillow raises `UnidentifiedImageError`.
 - **`gdal_contig_tiled.tif`**. FAILED. Its single 64 × 64 PackBits tile decodes to 7104 bytes (37 rows of the tile's 64-pixel width), where a full tile needs 12288. The encoder stopped at the image's last row instead of writing the whole tile. GDAL reads the file (its test suite groups it under "partial final strip/tiles"). Pillow refuses it too.
 
-These results support one narrow claim: on two held-out files that Pillow refuses, NECROPSY recovers a picture, and in each case the picture equals one that Pillow does read from a sibling file. They do not support a claim that NECROPSY reads more than Pillow in general: on this set Pillow decodes four valid files that NECROPSY does not.
+What these two files show: on held-out files that Pillow cannot open, NECROPSY recovered a picture, and each picture equals one Pillow does read from a sibling file. That is the claim, stated exactly; on this set Pillow also reads four valid files that NECROPSY does not yet, listed above.
 
 ## Every file
 

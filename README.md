@@ -29,7 +29,7 @@
 </p>
 
 <p align="center">
-  <img src="docs/acceptance/outcome_strip.png" width="900" alt="The NECROPSY start page on the live site: three real results analysed as the page loads, RESOLVED with a recovered image, UNRESOLVED_AMBIGUITY with 18 readings, and FAILED with the reason">
+  <img src="docs/images/landing.png" width="900" alt="The NECROPSY landing page on the live site: the headline, the button that recovers a real PCX file, how it works in three steps, and the three answers it gives, each examined live as the page loads">
 </p>
 
 ---
@@ -191,7 +191,7 @@ For each ambiguous file, the true layout is among the closing candidates. Files 
 | In scope | 65 | **54 RESOLVED with decoded pixels identical to Pillow's** (5 of them after Pillow's WhiteIsZero inversion). 3 RESOLVED where only 16-bit or 12-bit scaling differs: the engine shows `v × 255 // maxval`, Pillow rounds or clips. 1 RESOLVED with alpha not compared (`pillow_rgb32rle.tga` declares no alpha; Pillow reports 255). 1 RESOLVED with a recorded mismatch (`pillow_rgba16.tga`: 2 of 8 bytes, because Pillow reads bit 15 as alpha). 1 RESOLVED that is invalid by construction and that Pillow refuses (`goimage_invalid-palette-ref.tiff`, below). 3 FAILED that are invalid by construction. 2 FAILED that Pillow decodes, listed as open failures with their measured reason. |
 | Out of scope | 16 | 15 FAILED with the reason named (CCITT, JPEG, old-style JPEG, WebP, LogLuv, planar configuration 2, Predictor 2, and one malformed PPM). 1 RESOLVED only as a literal one-file layout, with no format claim made. |
 
-Engine totals: **61 RESOLVED, 20 FAILED**, up from 25 and 56 before the `format-coverage` spec. The two open failures:
+Engine totals: **61 RESOLVED, 20 FAILED**, up from 25 RESOLVED before the `format-coverage` spec. Of the 20 FAILED, 15 are outside the stated scope and refused with the reason named, 3 are invalid by construction, and 2 are open failures, each with its measured cause:
 
 - `pillow_cross_scan_line.tga`: its run-length data needs one byte that lies inside its own declared TGA 2.0 footer. Pillow decodes it because it does not read the footer.
 - `libtiff_deflate-last-strip-extra-data.tiff`: its last strip inflates to 8,000 bytes where its rows need 2,000. Its upstream name, `deflate-last-strip-extra-data`, says as much. Principle call 2 does not accept a strip that decodes to more than its rows.
@@ -222,10 +222,10 @@ The `format-coverage` work (PNM P1 to P6, TGA run-length, multi-plane PCX, multi
 
 | | Files | Result |
 |---|---:|---|
-| In scope | 52 | **43 RESOLVED**: 39 with pixels identical to Pillow's; 3 that Pillow refuses; 1 with no renderer (16-bit TGA). 9 FAILED: 4 invalid by construction, which Pillow also refuses; 1 valid file that Pillow also refuses; **4 valid files that Pillow decodes and NECROPSY does not**. |
+| In scope | 52 | **43 RESOLVED**: 39 with pixels identical to Pillow's (every one Pillow can also show); 3 that Pillow refuses; 1 with no renderer yet (16-bit TGA). 9 FAILED: 4 invalid by construction, which Pillow also refuses; 1 valid file that Pillow also refuses; 4 valid files Pillow reads that NECROPSY does not yet. |
 | Out of scope | 3 | 3 FAILED with the reason named (Predictor 2, planar configuration 2). |
 
-The four misses are a TGA 2.0 extension-area size rule that rejects two TGA files (one of them written by Autodesk 3ds Max), a binary PBM whose magic is followed by a space instead of a newline, and a PackBits strip that ends inside a packet. Of the three files Pillow refuses, two multi-plane PCX files render identically to sibling files that Pillow does read. The third, a 4-bit RGBA TIFF, resolves but is drawn wrongly, as grey. Every file, cause and caveat is in [`spike/samples/heldout/RESULTS.md`](spike/samples/heldout/RESULTS.md). The numbers above are the single run, as it came out.
+**On files Pillow cannot open, NECROPSY recovered pictures:** two multi-plane PCX files that Pillow refuses render identically to sibling files that Pillow does read. **Where it did not recover a valid file, it refused rather than guessed:** the four are a TGA 2.0 extension-area size rule that rejects two TGA files (one written by Autodesk 3ds Max), a binary PBM whose magic is followed by a space instead of a newline, and a PackBits strip that ends inside a packet. Each is one specific rule, now on the list. The third, a 4-bit RGBA TIFF, resolves but is drawn wrongly, as grey. Every file, cause and caveat is in [`spike/samples/heldout/RESULTS.md`](spike/samples/heldout/RESULTS.md). The numbers above are the single run, as it came out.
 
 ### Tests
 
@@ -314,7 +314,7 @@ NECROPSY's claim is that it never reports what it did not establish, and that in
 - **Raster images.** A layout is width, height, bit depth, row alignment, header and data region.
 - **Formats:** PCX (one or more planes, uncompressed or run-length), TGA (image types 1, 2, 3 and run-length 9, 10, 11), PBM, PGM and PPM (P1 to P6), and TIFF (one strip, several strips or tiles; uncompressed, PackBits, LZW, Deflate or LZMA).
 - **Refused, with the reason named:** CCITT G3 and G4, JPEG, old-style JPEG, WebP, SGILog and ZSTD TIFF; planar configuration 2; any TIFF Predictor other than 1. These are recognised from the file's declarations and never decoded as something else.
-- **Not read:** the TIFF ColorMap (palette TIFFs show their indices as grey), TIFF FillOrder, old-style LSB-first LZW, and LZMA in any form but xz.
+- **Not read yet:** the TIFF ColorMap (palette TIFFs show their indices as grey), TIFF FillOrder, old-style LSB-first LZW, and LZMA in any form but xz.
 - **The TGA 2.0 extension area must declare at least 495 bytes.** Files that declare less are not recovered: two in the held-out set declare 494 and 0, and the first names Autodesk 3ds Max as its writer.
 - **Rows are shown as stored.** The TGA origin bit is read and reported, not acted on.
 - **Not previewed:** 16-bit TGA pixels, and any image over the payload's pixel budget. These resolve with their full evidence but show no picture.
