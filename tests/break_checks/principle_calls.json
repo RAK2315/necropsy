@@ -1,0 +1,44 @@
+[
+ {
+  "name": "call 2, Deflate: bytes left after the zlib stream are ignored",
+  "file": "necropsy/engine/decoders.py",
+  "old": "        return _fail(\"unconsumed\", stream_end, \"%d bytes remain after the zlib stream\" % len(d.unused_data))",
+  "new": "        return DecodeResult(\"ok\", out, end, \"\")",
+  "test": "tests/test_tiff_deflate.py tests/test_decoders.py"
+ },
+ {
+  "name": "call 2, LZW without EOI: a whole unread byte is accepted",
+  "file": "necropsy/engine/decoders.py",
+  "old": "                if left < 8:",
+  "new": "                if True:",
+  "test": "tests/test_decoders.py tests/test_tiff_lzw.py"
+ },
+ {
+  "name": "call 2, LZW with EOI: bytes after EOI are accepted",
+  "file": "necropsy/engine/decoders.py",
+  "old": "            if code_end < end:",
+  "new": "            if False:",
+  "test": "tests/test_decoders.py tests/test_tiff_lzw.py"
+ },
+ {
+  "name": "call 3, TGA RLE: bytes left after the picture is full are accepted",
+  "file": "necropsy/engine/decoders.py",
+  "old": "    return rle_tga_decode(data, start, end, (h.bit_depth + 7) // 8, max_output_bytes)",
+  "new": "    r = rle_tga_decode(data, start, end, (h.bit_depth + 7) // 8, max_output_bytes); return r if r.status != \"unconsumed\" else DecodeResult(\"ok\", rle_tga_decode(data, start, r.consumed_to, (h.bit_depth + 7) // 8, max_output_bytes).data, end, \"\")",
+  "test": "tests/test_closure_rle_tga.py tests/test_real_corpus.py"
+ },
+ {
+  "name": "call 4: Predictor 2 decoded as if it were 1",
+  "file": "necropsy/engine/probes.py",
+  "old": "    elif predictor != 1:",
+  "new": "    elif False:",
+  "test": "tests/test_tiff_predictor.py tests/test_real_corpus.py"
+ },
+ {
+  "name": "call 5: binary PNM samples above maxval accepted",
+  "file": "necropsy/engine/closure.py",
+  "old": "                    if bad is not None:",
+  "new": "                    if False:",
+  "test": "tests/test_closure_maxval.py"
+ }
+]

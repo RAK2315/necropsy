@@ -1,0 +1,583 @@
+[
+ {
+  "file": "cimg_1plane8bppCompressed.pcx",
+  "status": "RESOLVED",
+  "ms": 0,
+  "termination": null,
+  "n_cands": 1,
+  "pillow": "P (10, 10)",
+  "verdicts": [
+   "match"
+  ]
+ },
+ {
+  "file": "cimg_2plane1bppCompressed.pcx",
+  "status": "RESOLVED",
+  "ms": 0,
+  "termination": null,
+  "n_cands": 1,
+  "pillow": "P (10, 10)",
+  "verdicts": [
+   "match"
+  ]
+ },
+ {
+  "file": "cimg_3plane1bppCompressed.pcx",
+  "status": "RESOLVED",
+  "ms": 0,
+  "termination": null,
+  "n_cands": 1,
+  "pillow": "refuses: OSError",
+  "verdicts": [
+   "rendered; pillow refuses"
+  ]
+ },
+ {
+  "file": "cimg_3plane8bppCompressed.pcx",
+  "status": "RESOLVED",
+  "ms": 0,
+  "termination": null,
+  "n_cands": 1,
+  "pillow": "RGB (10, 10)",
+  "verdicts": [
+   "match"
+  ]
+ },
+ {
+  "file": "cimg_3plane8bppUncompressed.pcx",
+  "status": "RESOLVED",
+  "ms": 0,
+  "termination": null,
+  "n_cands": 1,
+  "pillow": "refuses: OSError",
+  "verdicts": [
+   "rendered; pillow refuses"
+  ]
+ },
+ {
+  "file": "cimg_4plane1bppCompressed.pcx",
+  "status": "RESOLVED",
+  "ms": 0,
+  "termination": null,
+  "n_cands": 1,
+  "pillow": "P (10, 10)",
+  "verdicts": [
+   "match"
+  ]
+ },
+ {
+  "file": "cimg_Oregon_Scientific_DS6639_-_DSC_0307_-_small.pbm",
+  "status": "RESOLVED",
+  "ms": 4,
+  "termination": null,
+  "n_cands": 1,
+  "pillow": "1 (300, 225)",
+  "verdicts": [
+   "match"
+  ]
+ },
+ {
+  "file": "cimg_Oregon_Scientific_DS6639_-_DSC_0307_-_small.pcx",
+  "status": "RESOLVED",
+  "ms": 101,
+  "termination": null,
+  "n_cands": 1,
+  "pillow": "RGB (300, 225)",
+  "verdicts": [
+   "match"
+  ]
+ },
+ {
+  "file": "cimg_Oregon_Scientific_DS6639_-_DSC_0307_-_small.pgm",
+  "status": "RESOLVED",
+  "ms": 19,
+  "termination": null,
+  "n_cands": 1,
+  "pillow": "L (300, 225)",
+  "verdicts": [
+   "match"
+  ]
+ },
+ {
+  "file": "cimg_Oregon_Scientific_DS6639_-_DSC_0307_-_small.ppm",
+  "status": "RESOLVED",
+  "ms": 55,
+  "termination": null,
+  "n_cands": 1,
+  "pillow": "RGB (300, 225)",
+  "verdicts": [
+   "match"
+  ]
+ },
+ {
+  "file": "cimg_Oregon_Scientific_DS6639_-_DSC_0307_-_small.tga",
+  "status": "RESOLVED",
+  "ms": 55,
+  "termination": null,
+  "n_cands": 1,
+  "pillow": "RGB (300, 225)",
+  "verdicts": [
+   "match"
+  ]
+ },
+ {
+  "file": "gdal_byte.pnm",
+  "status": "RESOLVED",
+  "ms": 0,
+  "termination": null,
+  "n_cands": 1,
+  "pillow": "L (20, 20)",
+  "verdicts": [
+   "match"
+  ]
+ },
+ {
+  "file": "gdal_byte.tif",
+  "status": "RESOLVED",
+  "ms": 1,
+  "termination": null,
+  "n_cands": 1,
+  "pillow": "L (20, 20)",
+  "verdicts": [
+   "match"
+  ]
+ },
+ {
+  "file": "gdal_byte_DEFLATE.tif",
+  "status": "RESOLVED",
+  "ms": 8,
+  "termination": null,
+  "n_cands": 1,
+  "pillow": "L (20, 20)",
+  "verdicts": [
+   "match"
+  ]
+ },
+ {
+  "file": "gdal_byte_DEFLATE_tiled.tif",
+  "status": "RESOLVED",
+  "ms": 0,
+  "termination": null,
+  "n_cands": 1,
+  "pillow": "L (20, 20)",
+  "verdicts": [
+   "match"
+  ]
+ },
+ {
+  "file": "gdal_byte_LZMA.tif",
+  "status": "RESOLVED",
+  "ms": 0,
+  "termination": null,
+  "n_cands": 1,
+  "pillow": "L (20, 20)",
+  "verdicts": [
+   "match"
+  ]
+ },
+ {
+  "file": "gdal_byte_LZMA_tiled.tif",
+  "status": "RESOLVED",
+  "ms": 7,
+  "termination": null,
+  "n_cands": 1,
+  "pillow": "L (20, 20)",
+  "verdicts": [
+   "match"
+  ]
+ },
+ {
+  "file": "gdal_byte_LZW.tif",
+  "status": "RESOLVED",
+  "ms": 0,
+  "termination": null,
+  "n_cands": 1,
+  "pillow": "L (20, 20)",
+  "verdicts": [
+   "match"
+  ]
+ },
+ {
+  "file": "gdal_byte_LZW_predictor_2.tif",
+  "status": "FAILED",
+  "ms": 0,
+  "termination": "exhausted",
+  "n_cands": 0,
+  "pillow": "L (20, 20)",
+  "verdicts": []
+ },
+ {
+  "file": "gdal_byte_LZW_tiled.tif",
+  "status": "RESOLVED",
+  "ms": 1,
+  "termination": null,
+  "n_cands": 1,
+  "pillow": "L (20, 20)",
+  "verdicts": [
+   "match"
+  ]
+ },
+ {
+  "file": "gdal_byte_NONE_tiled.tif",
+  "status": "RESOLVED",
+  "ms": 1,
+  "termination": null,
+  "n_cands": 1,
+  "pillow": "L (20, 20)",
+  "verdicts": [
+   "match"
+  ]
+ },
+ {
+  "file": "gdal_byte_buggy_packbits.tif",
+  "status": "FAILED",
+  "ms": 0,
+  "termination": "exhausted",
+  "n_cands": 0,
+  "pillow": "refuses: OSError",
+  "verdicts": []
+ },
+ {
+  "file": "gdal_classictiff_four_strip_short.tif",
+  "status": "RESOLVED",
+  "ms": 0,
+  "termination": null,
+  "n_cands": 1,
+  "pillow": "L (1, 4)",
+  "verdicts": [
+   "match"
+  ]
+ },
+ {
+  "file": "gdal_classictiff_two_strip_be_short.tif",
+  "status": "RESOLVED",
+  "ms": 0,
+  "termination": null,
+  "n_cands": 1,
+  "pillow": "L (1, 2)",
+  "verdicts": [
+   "match"
+  ]
+ },
+ {
+  "file": "gdal_contig_strip.tif",
+  "status": "RESOLVED",
+  "ms": 3,
+  "termination": null,
+  "n_cands": 1,
+  "pillow": "RGB (35, 37)",
+  "verdicts": [
+   "match"
+  ]
+ },
+ {
+  "file": "gdal_contig_tiled.tif",
+  "status": "FAILED",
+  "ms": 0,
+  "termination": "exhausted",
+  "n_cands": 0,
+  "pillow": "refuses: OSError",
+  "verdicts": []
+ },
+ {
+  "file": "gdal_int_max.pgm",
+  "status": "FAILED",
+  "ms": 0,
+  "termination": "exhausted",
+  "n_cands": 0,
+  "pillow": "refuses: ValueError",
+  "verdicts": []
+ },
+ {
+  "file": "gdal_lzw_corrupted.tif",
+  "status": "FAILED",
+  "ms": 0,
+  "termination": "exhausted",
+  "n_cands": 0,
+  "pillow": "refuses: OSError",
+  "verdicts": []
+ },
+ {
+  "file": "gdal_packbits-not-enough-data.tif",
+  "status": "FAILED",
+  "ms": 0,
+  "termination": "exhausted",
+  "n_cands": 0,
+  "pillow": "refuses: OSError",
+  "verdicts": []
+ },
+ {
+  "file": "gdal_rgbsmall.ppm",
+  "status": "RESOLVED",
+  "ms": 9,
+  "termination": null,
+  "n_cands": 1,
+  "pillow": "RGB (50, 50)",
+  "verdicts": [
+   "match"
+  ]
+ },
+ {
+  "file": "gdal_rgbsmall.tif",
+  "status": "FAILED",
+  "ms": 0,
+  "termination": "exhausted",
+  "n_cands": 0,
+  "pillow": "RGB (50, 50)",
+  "verdicts": []
+ },
+ {
+  "file": "gdal_rgbsmall_DEFLATE.tif",
+  "status": "RESOLVED",
+  "ms": 10,
+  "termination": null,
+  "n_cands": 1,
+  "pillow": "RGB (50, 50)",
+  "verdicts": [
+   "match"
+  ]
+ },
+ {
+  "file": "gdal_rgbsmall_LZMA.tif",
+  "status": "RESOLVED",
+  "ms": 9,
+  "termination": null,
+  "n_cands": 1,
+  "pillow": "RGB (50, 50)",
+  "verdicts": [
+   "match"
+  ]
+ },
+ {
+  "file": "gdal_rgbsmall_LZW.tif",
+  "status": "RESOLVED",
+  "ms": 12,
+  "termination": null,
+  "n_cands": 1,
+  "pillow": "RGB (50, 50)",
+  "verdicts": [
+   "match"
+  ]
+ },
+ {
+  "file": "gdal_rgbsmall_NONE_separate.tif",
+  "status": "FAILED",
+  "ms": 0,
+  "termination": "exhausted",
+  "n_cands": 0,
+  "pillow": "RGB (50, 50)",
+  "verdicts": []
+ },
+ {
+  "file": "gdal_rgbsmall_NONE_tiled.tif",
+  "status": "RESOLVED",
+  "ms": 8,
+  "termination": null,
+  "n_cands": 1,
+  "pillow": "RGB (50, 50)",
+  "verdicts": [
+   "match"
+  ]
+ },
+ {
+  "file": "gdal_stefan_full_rgba.tga",
+  "status": "RESOLVED",
+  "ms": 38,
+  "termination": null,
+  "n_cands": 1,
+  "pillow": "RGBA (162, 150)",
+  "verdicts": [
+   "match"
+  ]
+ },
+ {
+  "file": "gdal_uint16.pnm",
+  "status": "RESOLVED",
+  "ms": 1,
+  "termination": null,
+  "n_cands": 1,
+  "pillow": "I (20, 20)",
+  "verdicts": [
+   "400/400 bytes differ (L, max |d|=255)"
+  ]
+ },
+ {
+  "file": "tm_0112eccd-2c29-4368-bcef-59c823b6e5d1.tga",
+  "status": "FAILED",
+  "ms": 6,
+  "termination": "exhausted",
+  "n_cands": 0,
+  "pillow": "RGB (256, 256)",
+  "verdicts": []
+ },
+ {
+  "file": "tm_692c33d1-d0c3-4fe2-a059-f199d063bc7a.tga",
+  "status": "RESOLVED",
+  "ms": 47,
+  "termination": null,
+  "n_cands": 1,
+  "pillow": "RGB (256, 256)",
+  "verdicts": [
+   "match"
+  ]
+ },
+ {
+  "file": "tm_alpha-no-extension.tga",
+  "status": "RESOLVED",
+  "ms": 34,
+  "termination": null,
+  "n_cands": 1,
+  "pillow": "RGBA (167, 64)",
+  "verdicts": [
+   "match"
+  ]
+ },
+ {
+  "file": "tm_autodesk-3dsmax-extsize494.tga",
+  "status": "FAILED",
+  "ms": 4,
+  "termination": "exhausted",
+  "n_cands": 0,
+  "pillow": "RGBA (440, 200)",
+  "verdicts": []
+ },
+ {
+  "file": "tm_circle2.pnm",
+  "status": "FAILED",
+  "ms": 5,
+  "termination": "no_hypothesis_checked",
+  "n_cands": 0,
+  "pillow": "1 (200, 200)",
+  "verdicts": []
+ },
+ {
+  "file": "tm_colors.ppm",
+  "status": "RESOLVED",
+  "ms": 0,
+  "termination": null,
+  "n_cands": 1,
+  "pillow": "RGB (3, 2)",
+  "verdicts": [
+   "match"
+  ]
+ },
+ {
+  "file": "tm_feep.pgm",
+  "status": "RESOLVED",
+  "ms": 0,
+  "termination": null,
+  "n_cands": 1,
+  "pillow": "L (24, 7)",
+  "verdicts": [
+   "match"
+  ]
+ },
+ {
+  "file": "tm_gogol.ppm",
+  "status": "RESOLVED",
+  "ms": 39,
+  "termination": null,
+  "n_cands": 1,
+  "pillow": "RGB (203, 256)",
+  "verdicts": [
+   "match"
+  ]
+ },
+ {
+  "file": "tm_house.l.pgm",
+  "status": "RESOLVED",
+  "ms": 24,
+  "termination": null,
+  "n_cands": 1,
+  "pillow": "L (367, 241)",
+  "verdicts": [
+   "match"
+  ]
+ },
+ {
+  "file": "tm_j.pbm",
+  "status": "RESOLVED",
+  "ms": 0,
+  "termination": null,
+  "n_cands": 1,
+  "pillow": "1 (6, 10)",
+  "verdicts": [
+   "match"
+  ]
+ },
+ {
+  "file": "tm_lzw-rgba-4444.tif",
+  "status": "RESOLVED",
+  "ms": 0,
+  "termination": null,
+  "n_cands": 1,
+  "pillow": "refuses: UnidentifiedImageError",
+  "verdicts": [
+   "rendered; pillow refuses"
+  ]
+ },
+ {
+  "file": "tm_monochrome16_top_left_rle.tga",
+  "status": "RESOLVED",
+  "ms": 8,
+  "termination": null,
+  "n_cands": 1,
+  "pillow": "LA (64, 64)",
+  "verdicts": [
+   "no render: no renderer for 16-bit pixels"
+  ]
+ },
+ {
+  "file": "tm_packbits-fillorder-2.tif",
+  "status": "FAILED",
+  "ms": 2,
+  "termination": "exhausted",
+  "n_cands": 0,
+  "pillow": "1 (3508, 2481)",
+  "verdicts": []
+ },
+ {
+  "file": "tm_rays2.pnm",
+  "status": "RESOLVED",
+  "ms": 13,
+  "termination": null,
+  "n_cands": 1,
+  "pillow": "L (200, 200)",
+  "verdicts": [
+   "match"
+  ]
+ },
+ {
+  "file": "tm_sm_colors_pb.tif",
+  "status": "RESOLVED",
+  "ms": 11,
+  "termination": null,
+  "n_cands": 1,
+  "pillow": "RGB (64, 64)",
+  "verdicts": [
+   "match"
+  ]
+ },
+ {
+  "file": "tm_sm_colors_pb_tile.tif",
+  "status": "RESOLVED",
+  "ms": 11,
+  "termination": null,
+  "n_cands": 1,
+  "pillow": "RGB (64, 64)",
+  "verdicts": [
+   "match"
+  ]
+ },
+ {
+  "file": "tm_sm_colors_tile.tif",
+  "status": "RESOLVED",
+  "ms": 12,
+  "termination": null,
+  "n_cands": 1,
+  "pillow": "RGB (64, 64)",
+  "verdicts": [
+   "match"
+  ]
+ }
+]

@@ -1,11 +1,12 @@
 """Held-out set: keep it unseen during development, then prove it was fixed in advance.
 
-The held-out files and their manifest live OUTSIDE this repository, in
-``%LOCALAPPDATA%/necropsy-heldout/`` (or ``$NECROPSY_HELDOUT_DIR``), until they
-are evaluated once. The repository holds only the commitment
+Until they were evaluated (once, 26 Nov 2026), the held-out files and their
+manifest lived OUTSIDE this repository, in ``%LOCALAPPDATA%/necropsy-heldout/``,
+and the repository held only the commitment
 (``spike/samples/heldout/COMMITMENT.md``): the SHA-256 of the sealed manifest
-and of every file. When the set is revealed, anyone can check that the
-committed manifest hashes to the value committed before development began.
+and of every file. They are now published in ``spike/samples/heldout/`` with
+``RESULTS.md``; ``verify`` checks the published copy against the commitment.
+The guard stays on, so the agent never tunes the engine against them.
 
 Subcommands:
 
@@ -36,10 +37,16 @@ COMMITMENT = ROOT / "spike" / "samples" / "heldout" / "COMMITMENT.md"
 FOLDER_TOKEN = "necropsy-heldout"
 
 
+REPO_COPY = ROOT / "spike" / "samples" / "heldout"
+REPO_TOKEN = "samples/heldout"
+
+
 def heldout_dir() -> Path:
     env = os.environ.get("NECROPSY_HELDOUT_DIR")
     if env:
         return Path(env)
+    if (REPO_COPY / "manifest.json").is_file():
+        return REPO_COPY
     base = os.environ.get("LOCALAPPDATA") or str(Path.home() / ".local" / "share")
     return Path(base) / FOLDER_TOKEN
 
@@ -62,14 +69,14 @@ def guard() -> int:
             text = raw  # unparseable payload: scan it as text rather than let it through
         # JSON escapes backslashes; fold them so Windows paths match too.
         hay = text.replace("\\\\", "/").replace("\\", "/").lower()
-        hits = [FOLDER_TOKEN] if FOLDER_TOKEN in hay else []
+        hits = [t for t in (FOLDER_TOKEN, REPO_TOKEN) if t in hay]
         hits += [n for n in heldout_names() if n.lower() in hay]
         if hits:
             sys.stderr.write(
                 "Blocked by the held-out guard: this tool call names the held-out set "
-                f"({', '.join(sorted(set(hits))[:5])}). Those files are evaluated once by "
-                "Claude Code after the work is finished. Do not read, copy, list, mention "
-                "or test against them.\n"
+                f"({', '.join(sorted(set(hits))[:5])}). That set was evaluated once by "
+                "Claude Code and its results are published; using it to develop or tune the "
+                "engine would void them. Do not read, copy, list, mention or test against it.\n"
             )
             return 2
     except Exception:

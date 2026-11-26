@@ -1,0 +1,2502 @@
+{
+ "generated": "2026-11-25",
+ "pillow_version": "12.2.0",
+ "python": "3.10.11",
+ "purpose": "Held-out set for the format-coverage work. Sourced and fixed before any format-coverage engine work began. Not used during development; evaluated once afterwards.",
+ "files": [
+  {
+   "file": "cimg_1plane8bppCompressed.pcx",
+   "format": "PCX",
+   "dimensions": "10x10",
+   "what": "Apache Commons Imaging test data file `1plane8bppCompressed.pcx`.",
+   "bytes": 955,
+   "sha256": "5d0753464812d419d46cbe93a9a4910244c6e28d752349021a4ba9decef61dd7",
+   "source_url": "https://raw.githubusercontent.com/apache/commons-imaging/ccd63531b193a5f6cf67e49b0c0ef4f4910acfdc/src/test/resources/data/images/pcx/1/1plane8bppCompressed.pcx",
+   "source_page": "https://github.com/apache/commons-imaging/blob/ccd63531b193a5f6cf67e49b0c0ef4f4910acfdc/src/test/resources/data/images/pcx/1/1plane8bppCompressed.pcx",
+   "source_commit": "ccd63531b193a5f6cf67e49b0c0ef4f4910acfdc",
+   "licence": "Apache-2.0",
+   "licence_url": "https://github.com/apache/commons-imaging/blob/ccd63531b193a5f6cf67e49b0c0ef4f4910acfdc/LICENSE.txt",
+   "licence_note": "Apache Commons Imaging repository licence (Apache-2.0). No per-file licence or origin is stated.",
+   "header": {
+    "manufacturer": 10,
+    "version": 5,
+    "encoding": 1,
+    "bits_per_pixel": 8,
+    "width": 10,
+    "height": 10,
+    "planes": 1,
+    "bytes_per_line": 10
+   },
+   "pillow": {
+    "version": "12.2.0",
+    "opens": true,
+    "decodes": true,
+    "error": null,
+    "format": "PCX",
+    "mode": "P",
+    "size": [
+     10,
+     10
+    ]
+   },
+   "pillow_refusal_group": null,
+   "refusal_evidence": null,
+   "necropsy_result": null
+  },
+  {
+   "file": "cimg_2plane1bppCompressed.pcx",
+   "format": "PCX",
+   "dimensions": "10x10",
+   "what": "Apache Commons Imaging test data file `2plane1bppCompressed.pcx`.",
+   "bytes": 156,
+   "sha256": "4c438fc13d33930b110e8bf91664c5fb63170b0a40b4ac440c489252f8422777",
+   "source_url": "https://raw.githubusercontent.com/apache/commons-imaging/ccd63531b193a5f6cf67e49b0c0ef4f4910acfdc/src/test/resources/data/images/pcx/1/2plane1bppCompressed.pcx",
+   "source_page": "https://github.com/apache/commons-imaging/blob/ccd63531b193a5f6cf67e49b0c0ef4f4910acfdc/src/test/resources/data/images/pcx/1/2plane1bppCompressed.pcx",
+   "source_commit": "ccd63531b193a5f6cf67e49b0c0ef4f4910acfdc",
+   "licence": "Apache-2.0",
+   "licence_url": "https://github.com/apache/commons-imaging/blob/ccd63531b193a5f6cf67e49b0c0ef4f4910acfdc/LICENSE.txt",
+   "licence_note": "Apache Commons Imaging repository licence (Apache-2.0). No per-file licence or origin is stated.",
+   "header": {
+    "manufacturer": 10,
+    "version": 5,
+    "encoding": 1,
+    "bits_per_pixel": 1,
+    "width": 10,
+    "height": 10,
+    "planes": 2,
+    "bytes_per_line": 2
+   },
+   "pillow": {
+    "version": "12.2.0",
+    "opens": true,
+    "decodes": true,
+    "error": null,
+    "format": "PCX",
+    "mode": "P",
+    "size": [
+     10,
+     10
+    ]
+   },
+   "pillow_refusal_group": null,
+   "refusal_evidence": null,
+   "necropsy_result": null
+  },
+  {
+   "file": "cimg_3plane1bppCompressed.pcx",
+   "format": "PCX",
+   "dimensions": "10x10",
+   "what": "Apache Commons Imaging test data file `3plane1bppCompressed.pcx`.",
+   "bytes": 156,
+   "sha256": "dea862b28302755f7621c2a5f72a0e6f509ecd197bfec1dbb499a44bfb2dd853",
+   "source_url": "https://raw.githubusercontent.com/apache/commons-imaging/ccd63531b193a5f6cf67e49b0c0ef4f4910acfdc/src/test/resources/data/images/pcx/1/3plane1bppCompressed.pcx",
+   "source_page": "https://github.com/apache/commons-imaging/blob/ccd63531b193a5f6cf67e49b0c0ef4f4910acfdc/src/test/resources/data/images/pcx/1/3plane1bppCompressed.pcx",
+   "source_commit": "ccd63531b193a5f6cf67e49b0c0ef4f4910acfdc",
+   "licence": "Apache-2.0",
+   "licence_url": "https://github.com/apache/commons-imaging/blob/ccd63531b193a5f6cf67e49b0c0ef4f4910acfdc/LICENSE.txt",
+   "licence_note": "Apache Commons Imaging repository licence (Apache-2.0). No per-file licence or origin is stated.",
+   "header": {
+    "manufacturer": 10,
+    "version": 5,
+    "encoding": 1,
+    "bits_per_pixel": 1,
+    "width": 10,
+    "height": 10,
+    "planes": 3,
+    "bytes_per_line": 2
+   },
+   "pillow": {
+    "version": "12.2.0",
+    "opens": null,
+    "decodes": false,
+    "error": "OSError: unknown PCX mode"
+   },
+   "pillow_refusal_group": "not established",
+   "refusal_evidence": null,
+   "necropsy_result": null
+  },
+  {
+   "file": "cimg_3plane8bppCompressed.pcx",
+   "format": "PCX",
+   "dimensions": "10x10",
+   "what": "Apache Commons Imaging test data file `3plane8bppCompressed.pcx`.",
+   "bytes": 234,
+   "sha256": "4571183876961e3f74f6ac981ade0d63f11f72a6da87d967c6899bb8a2e1ef15",
+   "source_url": "https://raw.githubusercontent.com/apache/commons-imaging/ccd63531b193a5f6cf67e49b0c0ef4f4910acfdc/src/test/resources/data/images/pcx/1/3plane8bppCompressed.pcx",
+   "source_page": "https://github.com/apache/commons-imaging/blob/ccd63531b193a5f6cf67e49b0c0ef4f4910acfdc/src/test/resources/data/images/pcx/1/3plane8bppCompressed.pcx",
+   "source_commit": "ccd63531b193a5f6cf67e49b0c0ef4f4910acfdc",
+   "licence": "Apache-2.0",
+   "licence_url": "https://github.com/apache/commons-imaging/blob/ccd63531b193a5f6cf67e49b0c0ef4f4910acfdc/LICENSE.txt",
+   "licence_note": "Apache Commons Imaging repository licence (Apache-2.0). No per-file licence or origin is stated.",
+   "header": {
+    "manufacturer": 10,
+    "version": 5,
+    "encoding": 1,
+    "bits_per_pixel": 8,
+    "width": 10,
+    "height": 10,
+    "planes": 3,
+    "bytes_per_line": 10
+   },
+   "pillow": {
+    "version": "12.2.0",
+    "opens": true,
+    "decodes": true,
+    "error": null,
+    "format": "PCX",
+    "mode": "RGB",
+    "size": [
+     10,
+     10
+    ]
+   },
+   "pillow_refusal_group": null,
+   "refusal_evidence": null,
+   "necropsy_result": null
+  },
+  {
+   "file": "cimg_3plane8bppUncompressed.pcx",
+   "format": "PCX",
+   "dimensions": "10x10",
+   "what": "Apache Commons Imaging test data file `3plane8bppUncompressed.pcx`.",
+   "bytes": 428,
+   "sha256": "0efbcff0d2bc9a84e948e8d376a9965b0a13627c7f50016b0354635d0fbfa4db",
+   "source_url": "https://raw.githubusercontent.com/apache/commons-imaging/ccd63531b193a5f6cf67e49b0c0ef4f4910acfdc/src/test/resources/data/images/pcx/1/3plane8bppUncompressed.pcx",
+   "source_page": "https://github.com/apache/commons-imaging/blob/ccd63531b193a5f6cf67e49b0c0ef4f4910acfdc/src/test/resources/data/images/pcx/1/3plane8bppUncompressed.pcx",
+   "source_commit": "ccd63531b193a5f6cf67e49b0c0ef4f4910acfdc",
+   "licence": "Apache-2.0",
+   "licence_url": "https://github.com/apache/commons-imaging/blob/ccd63531b193a5f6cf67e49b0c0ef4f4910acfdc/LICENSE.txt",
+   "licence_note": "Apache Commons Imaging repository licence (Apache-2.0). No per-file licence or origin is stated.",
+   "header": {
+    "manufacturer": 10,
+    "version": 5,
+    "encoding": 0,
+    "bits_per_pixel": 8,
+    "width": 10,
+    "height": 10,
+    "planes": 3,
+    "bytes_per_line": 10
+   },
+   "pillow": {
+    "version": "12.2.0",
+    "opens": null,
+    "decodes": false,
+    "error": "OSError: buffer overrun when reading image file"
+   },
+   "pillow_refusal_group": "not established",
+   "refusal_evidence": null,
+   "necropsy_result": null
+  },
+  {
+   "file": "cimg_4plane1bppCompressed.pcx",
+   "format": "PCX",
+   "dimensions": "10x10",
+   "what": "Apache Commons Imaging test data file `4plane1bppCompressed.pcx`.",
+   "bytes": 156,
+   "sha256": "90d475d18b1b3af2dc0486bf7bce8fc20406e2559fe643ad182211da60d321b9",
+   "source_url": "https://raw.githubusercontent.com/apache/commons-imaging/ccd63531b193a5f6cf67e49b0c0ef4f4910acfdc/src/test/resources/data/images/pcx/1/4plane1bppCompressed.pcx",
+   "source_page": "https://github.com/apache/commons-imaging/blob/ccd63531b193a5f6cf67e49b0c0ef4f4910acfdc/src/test/resources/data/images/pcx/1/4plane1bppCompressed.pcx",
+   "source_commit": "ccd63531b193a5f6cf67e49b0c0ef4f4910acfdc",
+   "licence": "Apache-2.0",
+   "licence_url": "https://github.com/apache/commons-imaging/blob/ccd63531b193a5f6cf67e49b0c0ef4f4910acfdc/LICENSE.txt",
+   "licence_note": "Apache Commons Imaging repository licence (Apache-2.0). No per-file licence or origin is stated.",
+   "header": {
+    "manufacturer": 10,
+    "version": 5,
+    "encoding": 1,
+    "bits_per_pixel": 1,
+    "width": 10,
+    "height": 10,
+    "planes": 4,
+    "bytes_per_line": 2
+   },
+   "pillow": {
+    "version": "12.2.0",
+    "opens": true,
+    "decodes": true,
+    "error": null,
+    "format": "PCX",
+    "mode": "P",
+    "size": [
+     10,
+     10
+    ]
+   },
+   "pillow_refusal_group": null,
+   "refusal_evidence": null,
+   "necropsy_result": null
+  },
+  {
+   "file": "cimg_Oregon_Scientific_DS6639_-_DSC_0307_-_small.pbm",
+   "format": "PNM",
+   "dimensions": "300x225",
+   "what": "Apache Commons Imaging test data file `Oregon Scientific DS6639 - DSC_0307 - small.pbm`.",
+   "bytes": 8584,
+   "sha256": "db6973472a25161f768a5d0bb7e1de2648ff4235d885dc05e207167d96b5e56d",
+   "source_url": "https://raw.githubusercontent.com/apache/commons-imaging/ccd63531b193a5f6cf67e49b0c0ef4f4910acfdc/src/test/resources/data/images/pbm/1/Oregon%20Scientific%20DS6639%20-%20DSC_0307%20-%20small.pbm",
+   "source_page": "https://github.com/apache/commons-imaging/blob/ccd63531b193a5f6cf67e49b0c0ef4f4910acfdc/src/test/resources/data/images/pbm/1/Oregon%20Scientific%20DS6639%20-%20DSC_0307%20-%20small.pbm",
+   "source_commit": "ccd63531b193a5f6cf67e49b0c0ef4f4910acfdc",
+   "licence": "Apache-2.0",
+   "licence_url": "https://github.com/apache/commons-imaging/blob/ccd63531b193a5f6cf67e49b0c0ef4f4910acfdc/LICENSE.txt",
+   "licence_note": "Apache Commons Imaging repository licence (Apache-2.0). No per-file licence or origin is stated.",
+   "header": {
+    "magic": "P4",
+    "tokens": [
+     "300",
+     "225"
+    ],
+    "header_end_index": 33,
+    "separator_after_magic": "b'\\n'"
+   },
+   "pillow": {
+    "version": "12.2.0",
+    "opens": true,
+    "decodes": true,
+    "error": null,
+    "format": "PPM",
+    "mode": "1",
+    "size": [
+     300,
+     225
+    ]
+   },
+   "pillow_refusal_group": null,
+   "refusal_evidence": null,
+   "necropsy_result": null
+  },
+  {
+   "file": "cimg_Oregon_Scientific_DS6639_-_DSC_0307_-_small.pcx",
+   "format": "PCX",
+   "dimensions": "300x225",
+   "what": "Apache Commons Imaging test data file `Oregon Scientific DS6639 - DSC_0307 - small.pcx`.",
+   "bytes": 228952,
+   "sha256": "2a57a03d5f6fc282841fdd88027dd07c50a5c18ae4ae503372963f52e0bac1da",
+   "source_url": "https://raw.githubusercontent.com/apache/commons-imaging/ccd63531b193a5f6cf67e49b0c0ef4f4910acfdc/src/test/resources/data/images/pcx/1/Oregon%20Scientific%20DS6639%20-%20DSC_0307%20-%20small.pcx",
+   "source_page": "https://github.com/apache/commons-imaging/blob/ccd63531b193a5f6cf67e49b0c0ef4f4910acfdc/src/test/resources/data/images/pcx/1/Oregon%20Scientific%20DS6639%20-%20DSC_0307%20-%20small.pcx",
+   "source_commit": "ccd63531b193a5f6cf67e49b0c0ef4f4910acfdc",
+   "licence": "Apache-2.0",
+   "licence_url": "https://github.com/apache/commons-imaging/blob/ccd63531b193a5f6cf67e49b0c0ef4f4910acfdc/LICENSE.txt",
+   "licence_note": "Apache Commons Imaging repository licence (Apache-2.0). No per-file licence or origin is stated.",
+   "header": {
+    "manufacturer": 10,
+    "version": 5,
+    "encoding": 1,
+    "bits_per_pixel": 8,
+    "width": 300,
+    "height": 225,
+    "planes": 3,
+    "bytes_per_line": 300
+   },
+   "pillow": {
+    "version": "12.2.0",
+    "opens": true,
+    "decodes": true,
+    "error": null,
+    "format": "PCX",
+    "mode": "RGB",
+    "size": [
+     300,
+     225
+    ]
+   },
+   "pillow_refusal_group": null,
+   "refusal_evidence": null,
+   "necropsy_result": null
+  },
+  {
+   "file": "cimg_Oregon_Scientific_DS6639_-_DSC_0307_-_small.pgm",
+   "format": "PNM",
+   "dimensions": "300x225",
+   "what": "Apache Commons Imaging test data file `Oregon Scientific DS6639 - DSC_0307 - small.pgm`.",
+   "bytes": 67538,
+   "sha256": "6237b3ccf8b728bb15aa7dc5d222d5751ed08293dda83b2f2af96678c064dec8",
+   "source_url": "https://raw.githubusercontent.com/apache/commons-imaging/ccd63531b193a5f6cf67e49b0c0ef4f4910acfdc/src/test/resources/data/images/pbm/1/Oregon%20Scientific%20DS6639%20-%20DSC_0307%20-%20small.pgm",
+   "source_page": "https://github.com/apache/commons-imaging/blob/ccd63531b193a5f6cf67e49b0c0ef4f4910acfdc/src/test/resources/data/images/pbm/1/Oregon%20Scientific%20DS6639%20-%20DSC_0307%20-%20small.pgm",
+   "source_commit": "ccd63531b193a5f6cf67e49b0c0ef4f4910acfdc",
+   "licence": "Apache-2.0",
+   "licence_url": "https://github.com/apache/commons-imaging/blob/ccd63531b193a5f6cf67e49b0c0ef4f4910acfdc/LICENSE.txt",
+   "licence_note": "Apache Commons Imaging repository licence (Apache-2.0). No per-file licence or origin is stated.",
+   "header": {
+    "magic": "P5",
+    "tokens": [
+     "300",
+     "225",
+     "255"
+    ],
+    "header_end_index": 37,
+    "separator_after_magic": "b'\\n'"
+   },
+   "pillow": {
+    "version": "12.2.0",
+    "opens": true,
+    "decodes": true,
+    "error": null,
+    "format": "PPM",
+    "mode": "L",
+    "size": [
+     300,
+     225
+    ]
+   },
+   "pillow_refusal_group": null,
+   "refusal_evidence": null,
+   "necropsy_result": null
+  },
+  {
+   "file": "cimg_Oregon_Scientific_DS6639_-_DSC_0307_-_small.ppm",
+   "format": "PNM",
+   "dimensions": "300x225",
+   "what": "Apache Commons Imaging test data file `Oregon Scientific DS6639 - DSC_0307 - small.ppm`.",
+   "bytes": 202538,
+   "sha256": "3b8a818cfc8a47534385d7cc74da22c86753a37a3115d87e82dd421f29f03ceb",
+   "source_url": "https://raw.githubusercontent.com/apache/commons-imaging/ccd63531b193a5f6cf67e49b0c0ef4f4910acfdc/src/test/resources/data/images/pbm/1/Oregon%20Scientific%20DS6639%20-%20DSC_0307%20-%20small.ppm",
+   "source_page": "https://github.com/apache/commons-imaging/blob/ccd63531b193a5f6cf67e49b0c0ef4f4910acfdc/src/test/resources/data/images/pbm/1/Oregon%20Scientific%20DS6639%20-%20DSC_0307%20-%20small.ppm",
+   "source_commit": "ccd63531b193a5f6cf67e49b0c0ef4f4910acfdc",
+   "licence": "Apache-2.0",
+   "licence_url": "https://github.com/apache/commons-imaging/blob/ccd63531b193a5f6cf67e49b0c0ef4f4910acfdc/LICENSE.txt",
+   "licence_note": "Apache Commons Imaging repository licence (Apache-2.0). No per-file licence or origin is stated.",
+   "header": {
+    "magic": "P6",
+    "tokens": [
+     "300",
+     "225",
+     "255"
+    ],
+    "header_end_index": 37,
+    "separator_after_magic": "b'\\n'"
+   },
+   "pillow": {
+    "version": "12.2.0",
+    "opens": true,
+    "decodes": true,
+    "error": null,
+    "format": "PPM",
+    "mode": "RGB",
+    "size": [
+     300,
+     225
+    ]
+   },
+   "pillow_refusal_group": null,
+   "refusal_evidence": null,
+   "necropsy_result": null
+  },
+  {
+   "file": "cimg_Oregon_Scientific_DS6639_-_DSC_0307_-_small.tga",
+   "format": "TGA",
+   "dimensions": "300x225",
+   "what": "Apache Commons Imaging test data file `Oregon Scientific DS6639 - DSC_0307 - small.tga`.",
+   "bytes": 202518,
+   "sha256": "eb861709533038ecaf53a27ec4a16f909480d2f1d4a9c1690b48f426f770bd50",
+   "source_url": "https://raw.githubusercontent.com/apache/commons-imaging/ccd63531b193a5f6cf67e49b0c0ef4f4910acfdc/src/test/resources/data/images/tga/1/Oregon%20Scientific%20DS6639%20-%20DSC_0307%20-%20small.tga",
+   "source_page": "https://github.com/apache/commons-imaging/blob/ccd63531b193a5f6cf67e49b0c0ef4f4910acfdc/src/test/resources/data/images/tga/1/Oregon%20Scientific%20DS6639%20-%20DSC_0307%20-%20small.tga",
+   "source_commit": "ccd63531b193a5f6cf67e49b0c0ef4f4910acfdc",
+   "licence": "Apache-2.0",
+   "licence_url": "https://github.com/apache/commons-imaging/blob/ccd63531b193a5f6cf67e49b0c0ef4f4910acfdc/LICENSE.txt",
+   "licence_note": "Apache Commons Imaging repository licence (Apache-2.0). No per-file licence or origin is stated.",
+   "header": {
+    "image_type": 2,
+    "id_length": 0,
+    "colour_map_type": 0,
+    "colour_map_length": 0,
+    "colour_map_depth": 0,
+    "width": 300,
+    "height": 225,
+    "pixel_depth": 24,
+    "descriptor": 0,
+    "tga2_footer": false
+   },
+   "pillow": {
+    "version": "12.2.0",
+    "opens": true,
+    "decodes": true,
+    "error": null,
+    "format": "TGA",
+    "mode": "RGB",
+    "size": [
+     300,
+     225
+    ]
+   },
+   "pillow_refusal_group": null,
+   "refusal_evidence": null,
+   "necropsy_result": null
+  },
+  {
+   "file": "gdal_byte.pnm",
+   "format": "PNM",
+   "dimensions": "20x20",
+   "what": "GDAL autotest data file `byte.pnm`.",
+   "bytes": 413,
+   "sha256": "295ec3bb98991313b10eb80d1991407b752ea8e58e5f8bebd16ec3a6ee0dcddf",
+   "source_url": "https://raw.githubusercontent.com/OSGeo/gdal/948f102a9e927a2b456048dcfe7aca92a6f12ba5/autotest/gcore/data/byte.pnm",
+   "source_page": "https://github.com/OSGeo/gdal/blob/948f102a9e927a2b456048dcfe7aca92a6f12ba5/autotest/gcore/data/byte.pnm",
+   "source_commit": "948f102a9e927a2b456048dcfe7aca92a6f12ba5",
+   "licence": "MIT",
+   "licence_url": "https://github.com/OSGeo/gdal/blob/948f102a9e927a2b456048dcfe7aca92a6f12ba5/LICENSE.TXT",
+   "licence_note": "GDAL repository licence (MIT style, LICENSE.TXT 'GDAL/OGR General'). No per-file licence or origin is stated.",
+   "header": {
+    "magic": "P5",
+    "tokens": [
+     "20",
+     "20",
+     "255"
+    ],
+    "header_end_index": 12,
+    "separator_after_magic": "b'\\n'"
+   },
+   "pillow": {
+    "version": "12.2.0",
+    "opens": true,
+    "decodes": true,
+    "error": null,
+    "format": "PPM",
+    "mode": "L",
+    "size": [
+     20,
+     20
+    ]
+   },
+   "pillow_refusal_group": null,
+   "refusal_evidence": null,
+   "necropsy_result": null
+  },
+  {
+   "file": "gdal_byte.tif",
+   "format": "TIFF",
+   "dimensions": "20x20",
+   "what": "GDAL autotest data file `byte.tif`.",
+   "bytes": 736,
+   "sha256": "59ed6e9dd19291bbdc230092ab7f6bc46fb0537ee4c9eec15dd58021cd9c12be",
+   "source_url": "https://raw.githubusercontent.com/OSGeo/gdal/948f102a9e927a2b456048dcfe7aca92a6f12ba5/autotest/gcore/data/byte.tif",
+   "source_page": "https://github.com/OSGeo/gdal/blob/948f102a9e927a2b456048dcfe7aca92a6f12ba5/autotest/gcore/data/byte.tif",
+   "source_commit": "948f102a9e927a2b456048dcfe7aca92a6f12ba5",
+   "licence": "MIT",
+   "licence_url": "https://github.com/OSGeo/gdal/blob/948f102a9e927a2b456048dcfe7aca92a6f12ba5/LICENSE.TXT",
+   "licence_note": "GDAL repository licence (MIT style, LICENSE.TXT 'GDAL/OGR General'). No per-file licence or origin is stated.",
+   "header": {
+    "byte_order": "little",
+    "width": 20,
+    "height": 20,
+    "bits_per_sample": [
+     8
+    ],
+    "samples_per_pixel": 1,
+    "compression": "none",
+    "photometric": 1,
+    "planar": 1,
+    "predictor": 1,
+    "fill_order": 1,
+    "strip_count": 1,
+    "tile_count": 0,
+    "rows_per_strip": 20,
+    "tile_width": null,
+    "tile_length": null,
+    "extra_samples": null,
+    "sample_format": [
+     1
+    ]
+   },
+   "pillow": {
+    "version": "12.2.0",
+    "opens": true,
+    "decodes": true,
+    "error": null,
+    "format": "TIFF",
+    "mode": "L",
+    "size": [
+     20,
+     20
+    ]
+   },
+   "pillow_refusal_group": null,
+   "refusal_evidence": null,
+   "necropsy_result": null
+  },
+  {
+   "file": "gdal_byte_DEFLATE.tif",
+   "format": "TIFF",
+   "dimensions": "20x20",
+   "what": "GDAL autotest data file `byte_DEFLATE.tif`.",
+   "bytes": 598,
+   "sha256": "5f9af9d1d9b16549f808572264ca51a052868d1bd21aad5e8af0311699180838",
+   "source_url": "https://raw.githubusercontent.com/OSGeo/gdal/948f102a9e927a2b456048dcfe7aca92a6f12ba5/autotest/gcore/data/gtiff/byte_DEFLATE.tif",
+   "source_page": "https://github.com/OSGeo/gdal/blob/948f102a9e927a2b456048dcfe7aca92a6f12ba5/autotest/gcore/data/gtiff/byte_DEFLATE.tif",
+   "source_commit": "948f102a9e927a2b456048dcfe7aca92a6f12ba5",
+   "licence": "MIT",
+   "licence_url": "https://github.com/OSGeo/gdal/blob/948f102a9e927a2b456048dcfe7aca92a6f12ba5/LICENSE.TXT",
+   "licence_note": "GDAL repository licence (MIT style, LICENSE.TXT 'GDAL/OGR General'). No per-file licence or origin is stated.",
+   "header": {
+    "byte_order": "little",
+    "width": 20,
+    "height": 20,
+    "bits_per_sample": [
+     8
+    ],
+    "samples_per_pixel": 1,
+    "compression": "Adobe Deflate",
+    "photometric": 1,
+    "planar": 1,
+    "predictor": 1,
+    "fill_order": 1,
+    "strip_count": 1,
+    "tile_count": 0,
+    "rows_per_strip": 20,
+    "tile_width": null,
+    "tile_length": null,
+    "extra_samples": null,
+    "sample_format": [
+     1
+    ]
+   },
+   "pillow": {
+    "version": "12.2.0",
+    "opens": true,
+    "decodes": true,
+    "error": null,
+    "format": "TIFF",
+    "mode": "L",
+    "size": [
+     20,
+     20
+    ]
+   },
+   "pillow_refusal_group": null,
+   "refusal_evidence": null,
+   "necropsy_result": null
+  },
+  {
+   "file": "gdal_byte_DEFLATE_tiled.tif",
+   "format": "TIFF",
+   "dimensions": "20x20",
+   "what": "GDAL autotest data file `byte_DEFLATE_tiled.tif`.",
+   "bytes": 736,
+   "sha256": "9f84168caad2d837efb7267e8fda44d5fc8bccac1d94536ba15e6169554d55e6",
+   "source_url": "https://raw.githubusercontent.com/OSGeo/gdal/948f102a9e927a2b456048dcfe7aca92a6f12ba5/autotest/gcore/data/gtiff/byte_DEFLATE_tiled.tif",
+   "source_page": "https://github.com/OSGeo/gdal/blob/948f102a9e927a2b456048dcfe7aca92a6f12ba5/autotest/gcore/data/gtiff/byte_DEFLATE_tiled.tif",
+   "source_commit": "948f102a9e927a2b456048dcfe7aca92a6f12ba5",
+   "licence": "MIT",
+   "licence_url": "https://github.com/OSGeo/gdal/blob/948f102a9e927a2b456048dcfe7aca92a6f12ba5/LICENSE.TXT",
+   "licence_note": "GDAL repository licence (MIT style, LICENSE.TXT 'GDAL/OGR General'). No per-file licence or origin is stated.",
+   "header": {
+    "byte_order": "little",
+    "width": 20,
+    "height": 20,
+    "bits_per_sample": [
+     8
+    ],
+    "samples_per_pixel": 1,
+    "compression": "Adobe Deflate",
+    "photometric": 1,
+    "planar": 1,
+    "predictor": 1,
+    "fill_order": 1,
+    "strip_count": 0,
+    "tile_count": 4,
+    "rows_per_strip": null,
+    "tile_width": 16,
+    "tile_length": 16,
+    "extra_samples": null,
+    "sample_format": [
+     1
+    ]
+   },
+   "pillow": {
+    "version": "12.2.0",
+    "opens": true,
+    "decodes": true,
+    "error": null,
+    "format": "TIFF",
+    "mode": "L",
+    "size": [
+     20,
+     20
+    ]
+   },
+   "pillow_refusal_group": null,
+   "refusal_evidence": null,
+   "necropsy_result": null
+  },
+  {
+   "file": "gdal_byte_LZMA.tif",
+   "format": "TIFF",
+   "dimensions": "20x20",
+   "what": "GDAL autotest data file `byte_LZMA.tif`.",
+   "bytes": 758,
+   "sha256": "edd011ed7bd74e5ccd3cd0b3656aefb2994b6319559ae7b124d949326a1a64fd",
+   "source_url": "https://raw.githubusercontent.com/OSGeo/gdal/948f102a9e927a2b456048dcfe7aca92a6f12ba5/autotest/gcore/data/gtiff/byte_LZMA.tif",
+   "source_page": "https://github.com/OSGeo/gdal/blob/948f102a9e927a2b456048dcfe7aca92a6f12ba5/autotest/gcore/data/gtiff/byte_LZMA.tif",
+   "source_commit": "948f102a9e927a2b456048dcfe7aca92a6f12ba5",
+   "licence": "MIT",
+   "licence_url": "https://github.com/OSGeo/gdal/blob/948f102a9e927a2b456048dcfe7aca92a6f12ba5/LICENSE.TXT",
+   "licence_note": "GDAL repository licence (MIT style, LICENSE.TXT 'GDAL/OGR General'). No per-file licence or origin is stated.",
+   "header": {
+    "byte_order": "little",
+    "width": 20,
+    "height": 20,
+    "bits_per_sample": [
+     8
+    ],
+    "samples_per_pixel": 1,
+    "compression": "LZMA",
+    "photometric": 1,
+    "planar": 1,
+    "predictor": 1,
+    "fill_order": 1,
+    "strip_count": 1,
+    "tile_count": 0,
+    "rows_per_strip": 20,
+    "tile_width": null,
+    "tile_length": null,
+    "extra_samples": null,
+    "sample_format": [
+     1
+    ]
+   },
+   "pillow": {
+    "version": "12.2.0",
+    "opens": true,
+    "decodes": true,
+    "error": null,
+    "format": "TIFF",
+    "mode": "L",
+    "size": [
+     20,
+     20
+    ]
+   },
+   "pillow_refusal_group": null,
+   "refusal_evidence": null,
+   "necropsy_result": null
+  },
+  {
+   "file": "gdal_byte_LZMA_tiled.tif",
+   "format": "TIFF",
+   "dimensions": "20x20",
+   "what": "GDAL autotest data file `byte_LZMA_tiled.tif`.",
+   "bytes": 1054,
+   "sha256": "0b9b04a903b0f0d65c25900c001e16c2906acc53d90993bb7efaf1b7a1842059",
+   "source_url": "https://raw.githubusercontent.com/OSGeo/gdal/948f102a9e927a2b456048dcfe7aca92a6f12ba5/autotest/gcore/data/gtiff/byte_LZMA_tiled.tif",
+   "source_page": "https://github.com/OSGeo/gdal/blob/948f102a9e927a2b456048dcfe7aca92a6f12ba5/autotest/gcore/data/gtiff/byte_LZMA_tiled.tif",
+   "source_commit": "948f102a9e927a2b456048dcfe7aca92a6f12ba5",
+   "licence": "MIT",
+   "licence_url": "https://github.com/OSGeo/gdal/blob/948f102a9e927a2b456048dcfe7aca92a6f12ba5/LICENSE.TXT",
+   "licence_note": "GDAL repository licence (MIT style, LICENSE.TXT 'GDAL/OGR General'). No per-file licence or origin is stated.",
+   "header": {
+    "byte_order": "little",
+    "width": 20,
+    "height": 20,
+    "bits_per_sample": [
+     8
+    ],
+    "samples_per_pixel": 1,
+    "compression": "LZMA",
+    "photometric": 1,
+    "planar": 1,
+    "predictor": 1,
+    "fill_order": 1,
+    "strip_count": 0,
+    "tile_count": 4,
+    "rows_per_strip": null,
+    "tile_width": 16,
+    "tile_length": 16,
+    "extra_samples": null,
+    "sample_format": [
+     1
+    ]
+   },
+   "pillow": {
+    "version": "12.2.0",
+    "opens": true,
+    "decodes": true,
+    "error": null,
+    "format": "TIFF",
+    "mode": "L",
+    "size": [
+     20,
+     20
+    ]
+   },
+   "pillow_refusal_group": null,
+   "refusal_evidence": null,
+   "necropsy_result": null
+  },
+  {
+   "file": "gdal_byte_LZW.tif",
+   "format": "TIFF",
+   "dimensions": "20x20",
+   "what": "GDAL autotest data file `byte_LZW.tif`.",
+   "bytes": 637,
+   "sha256": "c99164f110c19423dac8d5f062c65423a905e780b05c19ed05fdbd86cd46663a",
+   "source_url": "https://raw.githubusercontent.com/OSGeo/gdal/948f102a9e927a2b456048dcfe7aca92a6f12ba5/autotest/gcore/data/gtiff/byte_LZW.tif",
+   "source_page": "https://github.com/OSGeo/gdal/blob/948f102a9e927a2b456048dcfe7aca92a6f12ba5/autotest/gcore/data/gtiff/byte_LZW.tif",
+   "source_commit": "948f102a9e927a2b456048dcfe7aca92a6f12ba5",
+   "licence": "MIT",
+   "licence_url": "https://github.com/OSGeo/gdal/blob/948f102a9e927a2b456048dcfe7aca92a6f12ba5/LICENSE.TXT",
+   "licence_note": "GDAL repository licence (MIT style, LICENSE.TXT 'GDAL/OGR General'). No per-file licence or origin is stated.",
+   "header": {
+    "byte_order": "little",
+    "width": 20,
+    "height": 20,
+    "bits_per_sample": [
+     8
+    ],
+    "samples_per_pixel": 1,
+    "compression": "LZW",
+    "photometric": 1,
+    "planar": 1,
+    "predictor": 1,
+    "fill_order": 1,
+    "strip_count": 1,
+    "tile_count": 0,
+    "rows_per_strip": 20,
+    "tile_width": null,
+    "tile_length": null,
+    "extra_samples": null,
+    "sample_format": [
+     1
+    ]
+   },
+   "pillow": {
+    "version": "12.2.0",
+    "opens": true,
+    "decodes": true,
+    "error": null,
+    "format": "TIFF",
+    "mode": "L",
+    "size": [
+     20,
+     20
+    ]
+   },
+   "pillow_refusal_group": null,
+   "refusal_evidence": null,
+   "necropsy_result": null
+  },
+  {
+   "file": "gdal_byte_LZW_predictor_2.tif",
+   "format": "TIFF",
+   "dimensions": "20x20",
+   "what": "GDAL autotest data file `byte_LZW_predictor_2.tif`.",
+   "bytes": 695,
+   "sha256": "30886fe1d685514cc5246f27a01c863a5fb99179658cfffcb99f74c8a369c661",
+   "source_url": "https://raw.githubusercontent.com/OSGeo/gdal/948f102a9e927a2b456048dcfe7aca92a6f12ba5/autotest/gcore/data/gtiff/byte_LZW_predictor_2.tif",
+   "source_page": "https://github.com/OSGeo/gdal/blob/948f102a9e927a2b456048dcfe7aca92a6f12ba5/autotest/gcore/data/gtiff/byte_LZW_predictor_2.tif",
+   "source_commit": "948f102a9e927a2b456048dcfe7aca92a6f12ba5",
+   "licence": "MIT",
+   "licence_url": "https://github.com/OSGeo/gdal/blob/948f102a9e927a2b456048dcfe7aca92a6f12ba5/LICENSE.TXT",
+   "licence_note": "GDAL repository licence (MIT style, LICENSE.TXT 'GDAL/OGR General'). No per-file licence or origin is stated.",
+   "header": {
+    "byte_order": "little",
+    "width": 20,
+    "height": 20,
+    "bits_per_sample": [
+     8
+    ],
+    "samples_per_pixel": 1,
+    "compression": "LZW",
+    "photometric": 1,
+    "planar": 1,
+    "predictor": 2,
+    "fill_order": 1,
+    "strip_count": 1,
+    "tile_count": 0,
+    "rows_per_strip": 20,
+    "tile_width": null,
+    "tile_length": null,
+    "extra_samples": null,
+    "sample_format": [
+     1
+    ]
+   },
+   "pillow": {
+    "version": "12.2.0",
+    "opens": true,
+    "decodes": true,
+    "error": null,
+    "format": "TIFF",
+    "mode": "L",
+    "size": [
+     20,
+     20
+    ]
+   },
+   "pillow_refusal_group": null,
+   "refusal_evidence": null,
+   "necropsy_result": null
+  },
+  {
+   "file": "gdal_byte_LZW_tiled.tif",
+   "format": "TIFF",
+   "dimensions": "20x20",
+   "what": "GDAL autotest data file `byte_LZW_tiled.tif`.",
+   "bytes": 816,
+   "sha256": "c6834c79f4dc5ad7c9ae9b57550ab8acf66cabe0ee4eefa1990a66658e61fd83",
+   "source_url": "https://raw.githubusercontent.com/OSGeo/gdal/948f102a9e927a2b456048dcfe7aca92a6f12ba5/autotest/gcore/data/gtiff/byte_LZW_tiled.tif",
+   "source_page": "https://github.com/OSGeo/gdal/blob/948f102a9e927a2b456048dcfe7aca92a6f12ba5/autotest/gcore/data/gtiff/byte_LZW_tiled.tif",
+   "source_commit": "948f102a9e927a2b456048dcfe7aca92a6f12ba5",
+   "licence": "MIT",
+   "licence_url": "https://github.com/OSGeo/gdal/blob/948f102a9e927a2b456048dcfe7aca92a6f12ba5/LICENSE.TXT",
+   "licence_note": "GDAL repository licence (MIT style, LICENSE.TXT 'GDAL/OGR General'). No per-file licence or origin is stated.",
+   "header": {
+    "byte_order": "little",
+    "width": 20,
+    "height": 20,
+    "bits_per_sample": [
+     8
+    ],
+    "samples_per_pixel": 1,
+    "compression": "LZW",
+    "photometric": 1,
+    "planar": 1,
+    "predictor": 1,
+    "fill_order": 1,
+    "strip_count": 0,
+    "tile_count": 4,
+    "rows_per_strip": null,
+    "tile_width": 16,
+    "tile_length": 16,
+    "extra_samples": null,
+    "sample_format": [
+     1
+    ]
+   },
+   "pillow": {
+    "version": "12.2.0",
+    "opens": true,
+    "decodes": true,
+    "error": null,
+    "format": "TIFF",
+    "mode": "L",
+    "size": [
+     20,
+     20
+    ]
+   },
+   "pillow_refusal_group": null,
+   "refusal_evidence": null,
+   "necropsy_result": null
+  },
+  {
+   "file": "gdal_byte_NONE_tiled.tif",
+   "format": "TIFF",
+   "dimensions": "20x20",
+   "what": "GDAL autotest data file `byte_NONE_tiled.tif`.",
+   "bytes": 1418,
+   "sha256": "82c5b10d17f85e3a723aaf28b8b966263fadaa78177025ec4cbc98c50f708469",
+   "source_url": "https://raw.githubusercontent.com/OSGeo/gdal/948f102a9e927a2b456048dcfe7aca92a6f12ba5/autotest/gcore/data/gtiff/byte_NONE_tiled.tif",
+   "source_page": "https://github.com/OSGeo/gdal/blob/948f102a9e927a2b456048dcfe7aca92a6f12ba5/autotest/gcore/data/gtiff/byte_NONE_tiled.tif",
+   "source_commit": "948f102a9e927a2b456048dcfe7aca92a6f12ba5",
+   "licence": "MIT",
+   "licence_url": "https://github.com/OSGeo/gdal/blob/948f102a9e927a2b456048dcfe7aca92a6f12ba5/LICENSE.TXT",
+   "licence_note": "GDAL repository licence (MIT style, LICENSE.TXT 'GDAL/OGR General'). No per-file licence or origin is stated.",
+   "header": {
+    "byte_order": "little",
+    "width": 20,
+    "height": 20,
+    "bits_per_sample": [
+     8
+    ],
+    "samples_per_pixel": 1,
+    "compression": "none",
+    "photometric": 1,
+    "planar": 1,
+    "predictor": 1,
+    "fill_order": 1,
+    "strip_count": 0,
+    "tile_count": 4,
+    "rows_per_strip": null,
+    "tile_width": 16,
+    "tile_length": 16,
+    "extra_samples": null,
+    "sample_format": [
+     1
+    ]
+   },
+   "pillow": {
+    "version": "12.2.0",
+    "opens": true,
+    "decodes": true,
+    "error": null,
+    "format": "TIFF",
+    "mode": "L",
+    "size": [
+     20,
+     20
+    ]
+   },
+   "pillow_refusal_group": null,
+   "refusal_evidence": null,
+   "necropsy_result": null
+  },
+  {
+   "file": "gdal_byte_buggy_packbits.tif",
+   "format": "TIFF",
+   "dimensions": "20x20",
+   "what": "GDAL autotest data file `byte_buggy_packbits.tif`.",
+   "bytes": 937,
+   "sha256": "25e6c060487bd2f9d0d67ff96ac69137428fff4bd2642f27997c06740597ba56",
+   "source_url": "https://raw.githubusercontent.com/OSGeo/gdal/948f102a9e927a2b456048dcfe7aca92a6f12ba5/autotest/gcore/data/byte_buggy_packbits.tif",
+   "source_page": "https://github.com/OSGeo/gdal/blob/948f102a9e927a2b456048dcfe7aca92a6f12ba5/autotest/gcore/data/byte_buggy_packbits.tif",
+   "source_commit": "948f102a9e927a2b456048dcfe7aca92a6f12ba5",
+   "licence": "MIT",
+   "licence_url": "https://github.com/OSGeo/gdal/blob/948f102a9e927a2b456048dcfe7aca92a6f12ba5/LICENSE.TXT",
+   "licence_note": "GDAL repository licence (MIT style, LICENSE.TXT 'GDAL/OGR General'). No per-file licence or origin is stated.",
+   "header": {
+    "byte_order": "little",
+    "width": 20,
+    "height": 20,
+    "bits_per_sample": [
+     8
+    ],
+    "samples_per_pixel": 1,
+    "compression": "PackBits",
+    "photometric": 1,
+    "planar": 1,
+    "predictor": 1,
+    "fill_order": 1,
+    "strip_count": 20,
+    "tile_count": 0,
+    "rows_per_strip": 1,
+    "tile_width": null,
+    "tile_length": null,
+    "extra_samples": null,
+    "sample_format": [
+     1
+    ]
+   },
+   "pillow": {
+    "version": "12.2.0",
+    "opens": null,
+    "decodes": false,
+    "error": "OSError: decoder error -2"
+   },
+   "pillow_refusal_group": "invalid by construction",
+   "refusal_evidence": "GDAL test_tiff_read_buggy_packbits expects ReadRaster to raise unless GTIFF_IGNORE_READ_ERRORS is set (https://github.com/OSGeo/gdal/blob/948f102a9e927a2b456048dcfe7aca92a6f12ba5/autotest/gcore/tiff_read.py).",
+   "necropsy_result": null
+  },
+  {
+   "file": "gdal_classictiff_four_strip_short.tif",
+   "format": "TIFF",
+   "dimensions": "1x4",
+   "what": "GDAL autotest data file `classictiff_four_strip_short.tif`.",
+   "bytes": 182,
+   "sha256": "c2c044f73df7f342f4f29ad107e46ad1a836605a4e6702df7da9bf21267490ec",
+   "source_url": "https://raw.githubusercontent.com/OSGeo/gdal/948f102a9e927a2b456048dcfe7aca92a6f12ba5/autotest/gcore/data/classictiff_four_strip_short.tif",
+   "source_page": "https://github.com/OSGeo/gdal/blob/948f102a9e927a2b456048dcfe7aca92a6f12ba5/autotest/gcore/data/classictiff_four_strip_short.tif",
+   "source_commit": "948f102a9e927a2b456048dcfe7aca92a6f12ba5",
+   "licence": "MIT",
+   "licence_url": "https://github.com/OSGeo/gdal/blob/948f102a9e927a2b456048dcfe7aca92a6f12ba5/LICENSE.TXT",
+   "licence_note": "GDAL repository licence (MIT style, LICENSE.TXT 'GDAL/OGR General'). No per-file licence or origin is stated.",
+   "header": {
+    "byte_order": "little",
+    "width": 1,
+    "height": 4,
+    "bits_per_sample": [
+     8
+    ],
+    "samples_per_pixel": 1,
+    "compression": "none",
+    "photometric": 1,
+    "planar": 1,
+    "predictor": 1,
+    "fill_order": 1,
+    "strip_count": 4,
+    "tile_count": 0,
+    "rows_per_strip": 1,
+    "tile_width": null,
+    "tile_length": null,
+    "extra_samples": null,
+    "sample_format": [
+     1
+    ]
+   },
+   "pillow": {
+    "version": "12.2.0",
+    "opens": true,
+    "decodes": true,
+    "error": null,
+    "format": "TIFF",
+    "mode": "L",
+    "size": [
+     1,
+     4
+    ]
+   },
+   "pillow_refusal_group": null,
+   "refusal_evidence": null,
+   "necropsy_result": null
+  },
+  {
+   "file": "gdal_classictiff_two_strip_be_short.tif",
+   "format": "TIFF",
+   "dimensions": "1x2",
+   "what": "GDAL autotest data file `classictiff_two_strip_be_short.tif`.",
+   "bytes": 164,
+   "sha256": "40de3f91cad867ccda0366c984a27146bba7cccba974cc41003694cefb30bc3b",
+   "source_url": "https://raw.githubusercontent.com/OSGeo/gdal/948f102a9e927a2b456048dcfe7aca92a6f12ba5/autotest/gcore/data/classictiff_two_strip_be_short.tif",
+   "source_page": "https://github.com/OSGeo/gdal/blob/948f102a9e927a2b456048dcfe7aca92a6f12ba5/autotest/gcore/data/classictiff_two_strip_be_short.tif",
+   "source_commit": "948f102a9e927a2b456048dcfe7aca92a6f12ba5",
+   "licence": "MIT",
+   "licence_url": "https://github.com/OSGeo/gdal/blob/948f102a9e927a2b456048dcfe7aca92a6f12ba5/LICENSE.TXT",
+   "licence_note": "GDAL repository licence (MIT style, LICENSE.TXT 'GDAL/OGR General'). No per-file licence or origin is stated.",
+   "header": {
+    "byte_order": "big",
+    "width": 1,
+    "height": 2,
+    "bits_per_sample": [
+     8
+    ],
+    "samples_per_pixel": 1,
+    "compression": "none",
+    "photometric": 1,
+    "planar": 1,
+    "predictor": 1,
+    "fill_order": 1,
+    "strip_count": 2,
+    "tile_count": 0,
+    "rows_per_strip": 1,
+    "tile_width": null,
+    "tile_length": null,
+    "extra_samples": null,
+    "sample_format": [
+     1
+    ]
+   },
+   "pillow": {
+    "version": "12.2.0",
+    "opens": true,
+    "decodes": true,
+    "error": null,
+    "format": "TIFF",
+    "mode": "L",
+    "size": [
+     1,
+     2
+    ]
+   },
+   "pillow_refusal_group": null,
+   "refusal_evidence": null,
+   "necropsy_result": null
+  },
+  {
+   "file": "gdal_contig_strip.tif",
+   "format": "TIFF",
+   "dimensions": "35x37",
+   "what": "GDAL autotest data file `contig_strip.tif`.",
+   "bytes": 2730,
+   "sha256": "6017c2152db91c626c332404c7a59ae86db8db50b91d0ed09df42ba28ffe55ba",
+   "source_url": "https://raw.githubusercontent.com/OSGeo/gdal/948f102a9e927a2b456048dcfe7aca92a6f12ba5/autotest/gcore/data/contig_strip.tif",
+   "source_page": "https://github.com/OSGeo/gdal/blob/948f102a9e927a2b456048dcfe7aca92a6f12ba5/autotest/gcore/data/contig_strip.tif",
+   "source_commit": "948f102a9e927a2b456048dcfe7aca92a6f12ba5",
+   "licence": "MIT",
+   "licence_url": "https://github.com/OSGeo/gdal/blob/948f102a9e927a2b456048dcfe7aca92a6f12ba5/LICENSE.TXT",
+   "licence_note": "GDAL repository licence (MIT style, LICENSE.TXT 'GDAL/OGR General'). No per-file licence or origin is stated.",
+   "header": {
+    "byte_order": "big",
+    "width": 35,
+    "height": 37,
+    "bits_per_sample": [
+     8,
+     8,
+     8
+    ],
+    "samples_per_pixel": 3,
+    "compression": "PackBits",
+    "photometric": 2,
+    "planar": 1,
+    "predictor": 1,
+    "fill_order": 1,
+    "strip_count": 1,
+    "tile_count": 0,
+    "rows_per_strip": 40,
+    "tile_width": null,
+    "tile_length": null,
+    "extra_samples": null,
+    "sample_format": null
+   },
+   "pillow": {
+    "version": "12.2.0",
+    "opens": true,
+    "decodes": true,
+    "error": null,
+    "format": "TIFF",
+    "mode": "RGB",
+    "size": [
+     35,
+     37
+    ]
+   },
+   "pillow_refusal_group": null,
+   "refusal_evidence": null,
+   "necropsy_result": null
+  },
+  {
+   "file": "gdal_contig_tiled.tif",
+   "format": "TIFF",
+   "dimensions": "35x37",
+   "what": "GDAL autotest data file `contig_tiled.tif`.",
+   "bytes": 2816,
+   "sha256": "3a016cd7f1ca6ec2cc72571ce8670a2546b15acdc7e035c329a45a8cb1717c67",
+   "source_url": "https://raw.githubusercontent.com/OSGeo/gdal/948f102a9e927a2b456048dcfe7aca92a6f12ba5/autotest/gcore/data/contig_tiled.tif",
+   "source_page": "https://github.com/OSGeo/gdal/blob/948f102a9e927a2b456048dcfe7aca92a6f12ba5/autotest/gcore/data/contig_tiled.tif",
+   "source_commit": "948f102a9e927a2b456048dcfe7aca92a6f12ba5",
+   "licence": "MIT",
+   "licence_url": "https://github.com/OSGeo/gdal/blob/948f102a9e927a2b456048dcfe7aca92a6f12ba5/LICENSE.TXT",
+   "licence_note": "GDAL repository licence (MIT style, LICENSE.TXT 'GDAL/OGR General'). No per-file licence or origin is stated.",
+   "header": {
+    "byte_order": "big",
+    "width": 35,
+    "height": 37,
+    "bits_per_sample": [
+     8,
+     8,
+     8
+    ],
+    "samples_per_pixel": 3,
+    "compression": "PackBits",
+    "photometric": 2,
+    "planar": 1,
+    "predictor": 1,
+    "fill_order": 1,
+    "strip_count": 0,
+    "tile_count": 1,
+    "rows_per_strip": null,
+    "tile_width": 64,
+    "tile_length": 64,
+    "extra_samples": null,
+    "sample_format": null
+   },
+   "pillow": {
+    "version": "12.2.0",
+    "opens": null,
+    "decodes": false,
+    "error": "OSError: decoder error -2"
+   },
+   "pillow_refusal_group": "valid but unsupported",
+   "refusal_evidence": "GDAL reads it in its parametrised read test with checksum 15234 for band 2, grouped under 'partial final strip/tiles (#1179)' (https://github.com/OSGeo/gdal/blob/948f102a9e927a2b456048dcfe7aca92a6f12ba5/autotest/gcore/tiff_read.py).",
+   "necropsy_result": null
+  },
+  {
+   "file": "gdal_int_max.pgm",
+   "format": "PNM",
+   "dimensions": "2147483647x2147483647",
+   "what": "GDAL autotest data file `int_max.pgm`.",
+   "bytes": 31,
+   "sha256": "26d3c60b3f660611e3b5498a8755cb051f5cf8f3ca03b18643c4d8a055288035",
+   "source_url": "https://raw.githubusercontent.com/OSGeo/gdal/948f102a9e927a2b456048dcfe7aca92a6f12ba5/autotest/gdrivers/data/pnm/int_max.pgm",
+   "source_page": "https://github.com/OSGeo/gdal/blob/948f102a9e927a2b456048dcfe7aca92a6f12ba5/autotest/gdrivers/data/pnm/int_max.pgm",
+   "source_commit": "948f102a9e927a2b456048dcfe7aca92a6f12ba5",
+   "licence": "MIT",
+   "licence_url": "https://github.com/OSGeo/gdal/blob/948f102a9e927a2b456048dcfe7aca92a6f12ba5/LICENSE.TXT",
+   "licence_note": "GDAL repository licence (MIT style, LICENSE.TXT 'GDAL/OGR General'). No per-file licence or origin is stated.",
+   "header": {
+    "magic": "P5",
+    "tokens": [
+     "2147483647",
+     "2147483647",
+     "255"
+    ],
+    "header_end_index": 28,
+    "separator_after_magic": "b'\\n'"
+   },
+   "pillow": {
+    "version": "12.2.0",
+    "opens": null,
+    "decodes": false,
+    "error": "ValueError: buffer is not large enough"
+   },
+   "pillow_refusal_group": "invalid by construction",
+   "refusal_evidence": "The file is 31 bytes; its header declares 2147483647 x 2147483647 with maxval 255, so the declared pixel data is not present.",
+   "necropsy_result": null
+  },
+  {
+   "file": "gdal_lzw_corrupted.tif",
+   "format": "TIFF",
+   "dimensions": "2x1",
+   "what": "GDAL autotest data file `lzw_corrupted.tif`.",
+   "bytes": 163,
+   "sha256": "7ea1f1c2dc7177091f07682c76726a61a22def13d733d77a8c6a0af6062d8cdf",
+   "source_url": "https://raw.githubusercontent.com/OSGeo/gdal/948f102a9e927a2b456048dcfe7aca92a6f12ba5/autotest/gcore/data/gtiff/lzw_corrupted.tif",
+   "source_page": "https://github.com/OSGeo/gdal/blob/948f102a9e927a2b456048dcfe7aca92a6f12ba5/autotest/gcore/data/gtiff/lzw_corrupted.tif",
+   "source_commit": "948f102a9e927a2b456048dcfe7aca92a6f12ba5",
+   "licence": "MIT",
+   "licence_url": "https://github.com/OSGeo/gdal/blob/948f102a9e927a2b456048dcfe7aca92a6f12ba5/LICENSE.TXT",
+   "licence_note": "GDAL repository licence (MIT style, LICENSE.TXT 'GDAL/OGR General'). No per-file licence or origin is stated.",
+   "header": {
+    "byte_order": "little",
+    "width": 2,
+    "height": 1,
+    "bits_per_sample": [
+     8
+    ],
+    "samples_per_pixel": 1,
+    "compression": "LZW",
+    "photometric": 1,
+    "planar": 1,
+    "predictor": 1,
+    "fill_order": 1,
+    "strip_count": 1,
+    "tile_count": 0,
+    "rows_per_strip": 1,
+    "tile_width": null,
+    "tile_length": null,
+    "extra_samples": null,
+    "sample_format": [
+     1
+    ]
+   },
+   "pillow": {
+    "version": "12.2.0",
+    "opens": null,
+    "decodes": false,
+    "error": "OSError: decoder error -2"
+   },
+   "pillow_refusal_group": "invalid by construction",
+   "refusal_evidence": "GDAL test_tiff_read_corrupted_lzw expects ReadRaster to raise (https://github.com/OSGeo/gdal/blob/948f102a9e927a2b456048dcfe7aca92a6f12ba5/autotest/gcore/tiff_read.py).",
+   "necropsy_result": null
+  },
+  {
+   "file": "gdal_packbits-not-enough-data.tif",
+   "format": "TIFF",
+   "dimensions": "33x2049",
+   "what": "GDAL autotest data file `packbits-not-enough-data.tif`.",
+   "bytes": 1086,
+   "sha256": "cdb0d83f62bc1c871d03f38d846c569ef710f6880b81765923e85b829c803416",
+   "source_url": "https://raw.githubusercontent.com/OSGeo/gdal/948f102a9e927a2b456048dcfe7aca92a6f12ba5/autotest/gcore/data/packbits-not-enough-data.tif",
+   "source_page": "https://github.com/OSGeo/gdal/blob/948f102a9e927a2b456048dcfe7aca92a6f12ba5/autotest/gcore/data/packbits-not-enough-data.tif",
+   "source_commit": "948f102a9e927a2b456048dcfe7aca92a6f12ba5",
+   "licence": "MIT",
+   "licence_url": "https://github.com/OSGeo/gdal/blob/948f102a9e927a2b456048dcfe7aca92a6f12ba5/LICENSE.TXT",
+   "licence_note": "GDAL repository licence (MIT style, LICENSE.TXT 'GDAL/OGR General'). No per-file licence or origin is stated.",
+   "header": {
+    "byte_order": "little",
+    "width": 33,
+    "height": 2049,
+    "bits_per_sample": [
+     1
+    ],
+    "samples_per_pixel": 1,
+    "compression": "PackBits",
+    "photometric": null,
+    "planar": 1,
+    "predictor": 1,
+    "fill_order": 1,
+    "strip_count": 1,
+    "tile_count": 0,
+    "rows_per_strip": null,
+    "tile_width": null,
+    "tile_length": null,
+    "extra_samples": null,
+    "sample_format": null
+   },
+   "pillow": {
+    "version": "12.2.0",
+    "opens": null,
+    "decodes": false,
+    "error": "OSError: decoder error -2"
+   },
+   "pillow_refusal_group": "invalid by construction",
+   "refusal_evidence": "GDAL test expects Checksum() on band 1 to raise (https://github.com/OSGeo/gdal/blob/948f102a9e927a2b456048dcfe7aca92a6f12ba5/autotest/gcore/tiff_read.py).",
+   "necropsy_result": null
+  },
+  {
+   "file": "gdal_rgbsmall.ppm",
+   "format": "PNM",
+   "dimensions": "50x50",
+   "what": "GDAL autotest data file `rgbsmall.ppm`.",
+   "bytes": 7513,
+   "sha256": "56e7f84642770034fe1f61404f096847c61cf7773478250e03e6e6e94d8a5129",
+   "source_url": "https://raw.githubusercontent.com/OSGeo/gdal/948f102a9e927a2b456048dcfe7aca92a6f12ba5/autotest/gdrivers/data/pnm/rgbsmall.ppm",
+   "source_page": "https://github.com/OSGeo/gdal/blob/948f102a9e927a2b456048dcfe7aca92a6f12ba5/autotest/gdrivers/data/pnm/rgbsmall.ppm",
+   "source_commit": "948f102a9e927a2b456048dcfe7aca92a6f12ba5",
+   "licence": "MIT",
+   "licence_url": "https://github.com/OSGeo/gdal/blob/948f102a9e927a2b456048dcfe7aca92a6f12ba5/LICENSE.TXT",
+   "licence_note": "GDAL repository licence (MIT style, LICENSE.TXT 'GDAL/OGR General'). No per-file licence or origin is stated.",
+   "header": {
+    "magic": "P6",
+    "tokens": [
+     "50",
+     "50",
+     "255"
+    ],
+    "header_end_index": 12,
+    "separator_after_magic": "b'\\n'"
+   },
+   "pillow": {
+    "version": "12.2.0",
+    "opens": true,
+    "decodes": true,
+    "error": null,
+    "format": "PPM",
+    "mode": "RGB",
+    "size": [
+     50,
+     50
+    ]
+   },
+   "pillow_refusal_group": null,
+   "refusal_evidence": null,
+   "necropsy_result": null
+  },
+  {
+   "file": "gdal_rgbsmall.tif",
+   "format": "TIFF",
+   "dimensions": "50x50",
+   "what": "GDAL autotest data file `rgbsmall.tif`.",
+   "bytes": 5544,
+   "sha256": "526158dc544dbee2378c8e096ff32d3f8a3b4e6dc8b0d841688535d71611cbe2",
+   "source_url": "https://raw.githubusercontent.com/OSGeo/gdal/948f102a9e927a2b456048dcfe7aca92a6f12ba5/autotest/gcore/data/rgbsmall.tif",
+   "source_page": "https://github.com/OSGeo/gdal/blob/948f102a9e927a2b456048dcfe7aca92a6f12ba5/autotest/gcore/data/rgbsmall.tif",
+   "source_commit": "948f102a9e927a2b456048dcfe7aca92a6f12ba5",
+   "licence": "MIT",
+   "licence_url": "https://github.com/OSGeo/gdal/blob/948f102a9e927a2b456048dcfe7aca92a6f12ba5/LICENSE.TXT",
+   "licence_note": "GDAL repository licence (MIT style, LICENSE.TXT 'GDAL/OGR General'). No per-file licence or origin is stated.",
+   "header": {
+    "byte_order": "little",
+    "width": 50,
+    "height": 50,
+    "bits_per_sample": [
+     8,
+     8,
+     8
+    ],
+    "samples_per_pixel": 3,
+    "compression": "Deflate",
+    "photometric": 2,
+    "planar": 2,
+    "predictor": 1,
+    "fill_order": 1,
+    "strip_count": 3,
+    "tile_count": 0,
+    "rows_per_strip": 50,
+    "tile_width": null,
+    "tile_length": null,
+    "extra_samples": null,
+    "sample_format": [
+     1,
+     1,
+     1
+    ]
+   },
+   "pillow": {
+    "version": "12.2.0",
+    "opens": true,
+    "decodes": true,
+    "error": null,
+    "format": "TIFF",
+    "mode": "RGB",
+    "size": [
+     50,
+     50
+    ]
+   },
+   "pillow_refusal_group": null,
+   "refusal_evidence": null,
+   "necropsy_result": null
+  },
+  {
+   "file": "gdal_rgbsmall_DEFLATE.tif",
+   "format": "TIFF",
+   "dimensions": "50x50",
+   "what": "GDAL autotest data file `rgbsmall_DEFLATE.tif`.",
+   "bytes": 5722,
+   "sha256": "52913b4034dd60357cd40a54bb9d4ee356ab28a915c6343672179e43c5551403",
+   "source_url": "https://raw.githubusercontent.com/OSGeo/gdal/948f102a9e927a2b456048dcfe7aca92a6f12ba5/autotest/gcore/data/gtiff/rgbsmall_DEFLATE.tif",
+   "source_page": "https://github.com/OSGeo/gdal/blob/948f102a9e927a2b456048dcfe7aca92a6f12ba5/autotest/gcore/data/gtiff/rgbsmall_DEFLATE.tif",
+   "source_commit": "948f102a9e927a2b456048dcfe7aca92a6f12ba5",
+   "licence": "MIT",
+   "licence_url": "https://github.com/OSGeo/gdal/blob/948f102a9e927a2b456048dcfe7aca92a6f12ba5/LICENSE.TXT",
+   "licence_note": "GDAL repository licence (MIT style, LICENSE.TXT 'GDAL/OGR General'). No per-file licence or origin is stated.",
+   "header": {
+    "byte_order": "little",
+    "width": 50,
+    "height": 50,
+    "bits_per_sample": [
+     8,
+     8,
+     8
+    ],
+    "samples_per_pixel": 3,
+    "compression": "Adobe Deflate",
+    "photometric": 2,
+    "planar": 1,
+    "predictor": 1,
+    "fill_order": 1,
+    "strip_count": 1,
+    "tile_count": 0,
+    "rows_per_strip": 50,
+    "tile_width": null,
+    "tile_length": null,
+    "extra_samples": null,
+    "sample_format": [
+     1,
+     1,
+     1
+    ]
+   },
+   "pillow": {
+    "version": "12.2.0",
+    "opens": true,
+    "decodes": true,
+    "error": null,
+    "format": "TIFF",
+    "mode": "RGB",
+    "size": [
+     50,
+     50
+    ]
+   },
+   "pillow_refusal_group": null,
+   "refusal_evidence": null,
+   "necropsy_result": null
+  },
+  {
+   "file": "gdal_rgbsmall_LZMA.tif",
+   "format": "TIFF",
+   "dimensions": "50x50",
+   "what": "GDAL autotest data file `rgbsmall_LZMA.tif`.",
+   "bytes": 5138,
+   "sha256": "065603f27a7d1bb34169b0d28fbbcc56363e49d6aefb3570995108b0d64bbe1e",
+   "source_url": "https://raw.githubusercontent.com/OSGeo/gdal/948f102a9e927a2b456048dcfe7aca92a6f12ba5/autotest/gcore/data/gtiff/rgbsmall_LZMA.tif",
+   "source_page": "https://github.com/OSGeo/gdal/blob/948f102a9e927a2b456048dcfe7aca92a6f12ba5/autotest/gcore/data/gtiff/rgbsmall_LZMA.tif",
+   "source_commit": "948f102a9e927a2b456048dcfe7aca92a6f12ba5",
+   "licence": "MIT",
+   "licence_url": "https://github.com/OSGeo/gdal/blob/948f102a9e927a2b456048dcfe7aca92a6f12ba5/LICENSE.TXT",
+   "licence_note": "GDAL repository licence (MIT style, LICENSE.TXT 'GDAL/OGR General'). No per-file licence or origin is stated.",
+   "header": {
+    "byte_order": "little",
+    "width": 50,
+    "height": 50,
+    "bits_per_sample": [
+     8,
+     8,
+     8
+    ],
+    "samples_per_pixel": 3,
+    "compression": "LZMA",
+    "photometric": 2,
+    "planar": 1,
+    "predictor": 1,
+    "fill_order": 1,
+    "strip_count": 1,
+    "tile_count": 0,
+    "rows_per_strip": 50,
+    "tile_width": null,
+    "tile_length": null,
+    "extra_samples": null,
+    "sample_format": [
+     1,
+     1,
+     1
+    ]
+   },
+   "pillow": {
+    "version": "12.2.0",
+    "opens": true,
+    "decodes": true,
+    "error": null,
+    "format": "TIFF",
+    "mode": "RGB",
+    "size": [
+     50,
+     50
+    ]
+   },
+   "pillow_refusal_group": null,
+   "refusal_evidence": null,
+   "necropsy_result": null
+  },
+  {
+   "file": "gdal_rgbsmall_LZW.tif",
+   "format": "TIFF",
+   "dimensions": "50x50",
+   "what": "GDAL autotest data file `rgbsmall_LZW.tif`.",
+   "bytes": 7107,
+   "sha256": "8380d5420357daecede9bc933104313909548cded5c44feeb7d564884e9ce07e",
+   "source_url": "https://raw.githubusercontent.com/OSGeo/gdal/948f102a9e927a2b456048dcfe7aca92a6f12ba5/autotest/gcore/data/gtiff/rgbsmall_LZW.tif",
+   "source_page": "https://github.com/OSGeo/gdal/blob/948f102a9e927a2b456048dcfe7aca92a6f12ba5/autotest/gcore/data/gtiff/rgbsmall_LZW.tif",
+   "source_commit": "948f102a9e927a2b456048dcfe7aca92a6f12ba5",
+   "licence": "MIT",
+   "licence_url": "https://github.com/OSGeo/gdal/blob/948f102a9e927a2b456048dcfe7aca92a6f12ba5/LICENSE.TXT",
+   "licence_note": "GDAL repository licence (MIT style, LICENSE.TXT 'GDAL/OGR General'). No per-file licence or origin is stated.",
+   "header": {
+    "byte_order": "little",
+    "width": 50,
+    "height": 50,
+    "bits_per_sample": [
+     8,
+     8,
+     8
+    ],
+    "samples_per_pixel": 3,
+    "compression": "LZW",
+    "photometric": 2,
+    "planar": 1,
+    "predictor": 1,
+    "fill_order": 1,
+    "strip_count": 1,
+    "tile_count": 0,
+    "rows_per_strip": 50,
+    "tile_width": null,
+    "tile_length": null,
+    "extra_samples": null,
+    "sample_format": [
+     1,
+     1,
+     1
+    ]
+   },
+   "pillow": {
+    "version": "12.2.0",
+    "opens": true,
+    "decodes": true,
+    "error": null,
+    "format": "TIFF",
+    "mode": "RGB",
+    "size": [
+     50,
+     50
+    ]
+   },
+   "pillow_refusal_group": null,
+   "refusal_evidence": null,
+   "necropsy_result": null
+  },
+  {
+   "file": "gdal_rgbsmall_NONE_separate.tif",
+   "format": "TIFF",
+   "dimensions": "50x50",
+   "what": "GDAL autotest data file `rgbsmall_NONE_separate.tif`.",
+   "bytes": 7896,
+   "sha256": "cd0e95441fb8ae55be07fef946ed72a97c93b0d3ee43b9dae369c66c8a84e23c",
+   "source_url": "https://raw.githubusercontent.com/OSGeo/gdal/948f102a9e927a2b456048dcfe7aca92a6f12ba5/autotest/gcore/data/gtiff/rgbsmall_NONE_separate.tif",
+   "source_page": "https://github.com/OSGeo/gdal/blob/948f102a9e927a2b456048dcfe7aca92a6f12ba5/autotest/gcore/data/gtiff/rgbsmall_NONE_separate.tif",
+   "source_commit": "948f102a9e927a2b456048dcfe7aca92a6f12ba5",
+   "licence": "MIT",
+   "licence_url": "https://github.com/OSGeo/gdal/blob/948f102a9e927a2b456048dcfe7aca92a6f12ba5/LICENSE.TXT",
+   "licence_note": "GDAL repository licence (MIT style, LICENSE.TXT 'GDAL/OGR General'). No per-file licence or origin is stated.",
+   "header": {
+    "byte_order": "little",
+    "width": 50,
+    "height": 50,
+    "bits_per_sample": [
+     8,
+     8,
+     8
+    ],
+    "samples_per_pixel": 3,
+    "compression": "none",
+    "photometric": 2,
+    "planar": 2,
+    "predictor": 1,
+    "fill_order": 1,
+    "strip_count": 3,
+    "tile_count": 0,
+    "rows_per_strip": 50,
+    "tile_width": null,
+    "tile_length": null,
+    "extra_samples": null,
+    "sample_format": [
+     1,
+     1,
+     1
+    ]
+   },
+   "pillow": {
+    "version": "12.2.0",
+    "opens": true,
+    "decodes": true,
+    "error": null,
+    "format": "TIFF",
+    "mode": "RGB",
+    "size": [
+     50,
+     50
+    ]
+   },
+   "pillow_refusal_group": null,
+   "refusal_evidence": null,
+   "necropsy_result": null
+  },
+  {
+   "file": "gdal_rgbsmall_NONE_tiled.tif",
+   "format": "TIFF",
+   "dimensions": "50x50",
+   "what": "GDAL autotest data file `rgbsmall_NONE_tiled.tif`.",
+   "bytes": 12726,
+   "sha256": "78480af87b1a4f262899c84a115f6036029f5c593a7168e9868f2ef32b33f4da",
+   "source_url": "https://raw.githubusercontent.com/OSGeo/gdal/948f102a9e927a2b456048dcfe7aca92a6f12ba5/autotest/gcore/data/gtiff/rgbsmall_NONE_tiled.tif",
+   "source_page": "https://github.com/OSGeo/gdal/blob/948f102a9e927a2b456048dcfe7aca92a6f12ba5/autotest/gcore/data/gtiff/rgbsmall_NONE_tiled.tif",
+   "source_commit": "948f102a9e927a2b456048dcfe7aca92a6f12ba5",
+   "licence": "MIT",
+   "licence_url": "https://github.com/OSGeo/gdal/blob/948f102a9e927a2b456048dcfe7aca92a6f12ba5/LICENSE.TXT",
+   "licence_note": "GDAL repository licence (MIT style, LICENSE.TXT 'GDAL/OGR General'). No per-file licence or origin is stated.",
+   "header": {
+    "byte_order": "little",
+    "width": 50,
+    "height": 50,
+    "bits_per_sample": [
+     8,
+     8,
+     8
+    ],
+    "samples_per_pixel": 3,
+    "compression": "none",
+    "photometric": 2,
+    "planar": 1,
+    "predictor": 1,
+    "fill_order": 1,
+    "strip_count": 0,
+    "tile_count": 8,
+    "rows_per_strip": null,
+    "tile_width": 16,
+    "tile_length": 32,
+    "extra_samples": null,
+    "sample_format": [
+     1,
+     1,
+     1
+    ]
+   },
+   "pillow": {
+    "version": "12.2.0",
+    "opens": true,
+    "decodes": true,
+    "error": null,
+    "format": "TIFF",
+    "mode": "RGB",
+    "size": [
+     50,
+     50
+    ]
+   },
+   "pillow_refusal_group": null,
+   "refusal_evidence": null,
+   "necropsy_result": null
+  },
+  {
+   "file": "gdal_stefan_full_rgba.tga",
+   "format": "TGA",
+   "dimensions": "162x150",
+   "what": "GDAL autotest data file `stefan_full_rgba.tga`.",
+   "bytes": 97218,
+   "sha256": "8d70f27c2d774c8cfc92cd2182f336e450d7498e2894fb7064fa48e014ca484f",
+   "source_url": "https://raw.githubusercontent.com/OSGeo/gdal/948f102a9e927a2b456048dcfe7aca92a6f12ba5/autotest/gdrivers/data/tga/stefan_full_rgba.tga",
+   "source_page": "https://github.com/OSGeo/gdal/blob/948f102a9e927a2b456048dcfe7aca92a6f12ba5/autotest/gdrivers/data/tga/stefan_full_rgba.tga",
+   "source_commit": "948f102a9e927a2b456048dcfe7aca92a6f12ba5",
+   "licence": "MIT",
+   "licence_url": "https://github.com/OSGeo/gdal/blob/948f102a9e927a2b456048dcfe7aca92a6f12ba5/LICENSE.TXT",
+   "licence_note": "GDAL repository licence (MIT style, LICENSE.TXT 'GDAL/OGR General'). No per-file licence or origin is stated.",
+   "header": {
+    "image_type": 2,
+    "id_length": 0,
+    "colour_map_type": 0,
+    "colour_map_length": 0,
+    "colour_map_depth": 0,
+    "width": 162,
+    "height": 150,
+    "pixel_depth": 32,
+    "descriptor": 8,
+    "tga2_footer": false
+   },
+   "pillow": {
+    "version": "12.2.0",
+    "opens": true,
+    "decodes": true,
+    "error": null,
+    "format": "TGA",
+    "mode": "RGBA",
+    "size": [
+     162,
+     150
+    ]
+   },
+   "pillow_refusal_group": null,
+   "refusal_evidence": null,
+   "necropsy_result": null
+  },
+  {
+   "file": "gdal_uint16.pnm",
+   "format": "PNM",
+   "dimensions": "20x20",
+   "what": "GDAL autotest data file `uint16.pnm`.",
+   "bytes": 815,
+   "sha256": "ef568da93ff90774f33d201efa43f8645cf3f5315c7ec40af1584b20660487ba",
+   "source_url": "https://raw.githubusercontent.com/OSGeo/gdal/948f102a9e927a2b456048dcfe7aca92a6f12ba5/autotest/gcore/data/uint16.pnm",
+   "source_page": "https://github.com/OSGeo/gdal/blob/948f102a9e927a2b456048dcfe7aca92a6f12ba5/autotest/gcore/data/uint16.pnm",
+   "source_commit": "948f102a9e927a2b456048dcfe7aca92a6f12ba5",
+   "licence": "MIT",
+   "licence_url": "https://github.com/OSGeo/gdal/blob/948f102a9e927a2b456048dcfe7aca92a6f12ba5/LICENSE.TXT",
+   "licence_note": "GDAL repository licence (MIT style, LICENSE.TXT 'GDAL/OGR General'). No per-file licence or origin is stated.",
+   "header": {
+    "magic": "P5",
+    "tokens": [
+     "20",
+     "20",
+     "65535"
+    ],
+    "header_end_index": 14,
+    "separator_after_magic": "b'\\n'"
+   },
+   "pillow": {
+    "version": "12.2.0",
+    "opens": true,
+    "decodes": true,
+    "error": null,
+    "format": "PPM",
+    "mode": "I",
+    "size": [
+     20,
+     20
+    ]
+   },
+   "pillow_refusal_group": null,
+   "refusal_evidence": null,
+   "necropsy_result": null
+  },
+  {
+   "file": "tm_0112eccd-2c29-4368-bcef-59c823b6e5d1.tga",
+   "format": "TGA",
+   "dimensions": "256x256",
+   "what": "TwelveMonkeys ImageIO test data file `0112eccd-2c29-4368-bcef-59c823b6e5d1.tga`.",
+   "bytes": 78836,
+   "sha256": "9f75418969780debe3097f0ebb92dfa0fd6efc7a41ab89ac791ba605cb43ee45",
+   "source_url": "https://raw.githubusercontent.com/haraldk/TwelveMonkeys/7d637180331b2d17f1f07daff2b3d3780433aaa0/imageio/imageio-tga/src/test/resources/tga/0112eccd-2c29-4368-bcef-59c823b6e5d1.tga",
+   "source_page": "https://github.com/haraldk/TwelveMonkeys/blob/7d637180331b2d17f1f07daff2b3d3780433aaa0/imageio/imageio-tga/src/test/resources/tga/0112eccd-2c29-4368-bcef-59c823b6e5d1.tga",
+   "source_commit": "7d637180331b2d17f1f07daff2b3d3780433aaa0",
+   "licence": "BSD-3-Clause",
+   "licence_url": "https://github.com/haraldk/TwelveMonkeys/blob/7d637180331b2d17f1f07daff2b3d3780433aaa0/LICENSE.txt",
+   "licence_note": "TwelveMonkeys repository licence (BSD-3-Clause, Copyright (c) 2008-2020, Harald Kuhr). No per-file licence or origin is stated.",
+   "header": {
+    "image_type": 10,
+    "id_length": 1,
+    "colour_map_type": 0,
+    "colour_map_length": 0,
+    "colour_map_depth": 0,
+    "width": 256,
+    "height": 256,
+    "pixel_depth": 24,
+    "descriptor": 32,
+    "tga2_footer": true
+   },
+   "pillow": {
+    "version": "12.2.0",
+    "opens": true,
+    "decodes": true,
+    "error": null,
+    "format": "TGA",
+    "mode": "RGB",
+    "size": [
+     256,
+     256
+    ]
+   },
+   "pillow_refusal_group": null,
+   "refusal_evidence": null,
+   "necropsy_result": null
+  },
+  {
+   "file": "tm_692c33d1-d0c3-4fe2-a059-f199d063bc7a.tga",
+   "format": "TGA",
+   "dimensions": "256x256",
+   "what": "TwelveMonkeys ImageIO test data file `692c33d1-d0c3-4fe2-a059-f199d063bc7a.tga`.",
+   "bytes": 196626,
+   "sha256": "f7cfe4c7d0f0c22dab18dda6c661525448a00dd30e8be2259a577939d5b2385d",
+   "source_url": "https://raw.githubusercontent.com/haraldk/TwelveMonkeys/7d637180331b2d17f1f07daff2b3d3780433aaa0/imageio/imageio-tga/src/test/resources/tga/692c33d1-d0c3-4fe2-a059-f199d063bc7a.tga",
+   "source_page": "https://github.com/haraldk/TwelveMonkeys/blob/7d637180331b2d17f1f07daff2b3d3780433aaa0/imageio/imageio-tga/src/test/resources/tga/692c33d1-d0c3-4fe2-a059-f199d063bc7a.tga",
+   "source_commit": "7d637180331b2d17f1f07daff2b3d3780433aaa0",
+   "licence": "BSD-3-Clause",
+   "licence_url": "https://github.com/haraldk/TwelveMonkeys/blob/7d637180331b2d17f1f07daff2b3d3780433aaa0/LICENSE.txt",
+   "licence_note": "TwelveMonkeys repository licence (BSD-3-Clause, Copyright (c) 2008-2020, Harald Kuhr). No per-file licence or origin is stated.",
+   "header": {
+    "image_type": 2,
+    "id_length": 0,
+    "colour_map_type": 0,
+    "colour_map_length": 0,
+    "colour_map_depth": 24,
+    "width": 256,
+    "height": 256,
+    "pixel_depth": 24,
+    "descriptor": 32,
+    "tga2_footer": false
+   },
+   "pillow": {
+    "version": "12.2.0",
+    "opens": true,
+    "decodes": true,
+    "error": null,
+    "format": "TGA",
+    "mode": "RGB",
+    "size": [
+     256,
+     256
+    ]
+   },
+   "pillow_refusal_group": null,
+   "refusal_evidence": null,
+   "necropsy_result": null
+  },
+  {
+   "file": "tm_alpha-no-extension.tga",
+   "format": "TGA",
+   "dimensions": "167x64",
+   "what": "TwelveMonkeys ImageIO test data file `alpha-no-extension.tga`.",
+   "bytes": 42796,
+   "sha256": "6ce5fad9629cc45645ac1b9ec85b0a2441d2079db52cae86f61c6e69c9777c6f",
+   "source_url": "https://raw.githubusercontent.com/haraldk/TwelveMonkeys/7d637180331b2d17f1f07daff2b3d3780433aaa0/imageio/imageio-tga/src/test/resources/tga/alpha-no-extension.tga",
+   "source_page": "https://github.com/haraldk/TwelveMonkeys/blob/7d637180331b2d17f1f07daff2b3d3780433aaa0/imageio/imageio-tga/src/test/resources/tga/alpha-no-extension.tga",
+   "source_commit": "7d637180331b2d17f1f07daff2b3d3780433aaa0",
+   "licence": "BSD-3-Clause",
+   "licence_url": "https://github.com/haraldk/TwelveMonkeys/blob/7d637180331b2d17f1f07daff2b3d3780433aaa0/LICENSE.txt",
+   "licence_note": "TwelveMonkeys repository licence (BSD-3-Clause, Copyright (c) 2008-2020, Harald Kuhr). No per-file licence or origin is stated.",
+   "header": {
+    "image_type": 2,
+    "id_length": 0,
+    "colour_map_type": 0,
+    "colour_map_length": 0,
+    "colour_map_depth": 0,
+    "width": 167,
+    "height": 64,
+    "pixel_depth": 32,
+    "descriptor": 8,
+    "tga2_footer": true
+   },
+   "pillow": {
+    "version": "12.2.0",
+    "opens": true,
+    "decodes": true,
+    "error": null,
+    "format": "TGA",
+    "mode": "RGBA",
+    "size": [
+     167,
+     64
+    ]
+   },
+   "pillow_refusal_group": null,
+   "refusal_evidence": null,
+   "necropsy_result": null
+  },
+  {
+   "file": "tm_autodesk-3dsmax-extsize494.tga",
+   "format": "TGA",
+   "dimensions": "440x200",
+   "what": "TwelveMonkeys ImageIO test data file `autodesk-3dsmax-extsize494.tga`.",
+   "bytes": 52570,
+   "sha256": "40554a4d128bab11bb5c5e9272c24b430374ae65f98f06b3abcf316a2366f91b",
+   "source_url": "https://raw.githubusercontent.com/haraldk/TwelveMonkeys/7d637180331b2d17f1f07daff2b3d3780433aaa0/imageio/imageio-tga/src/test/resources/tga/autodesk-3dsmax-extsize494.tga",
+   "source_page": "https://github.com/haraldk/TwelveMonkeys/blob/7d637180331b2d17f1f07daff2b3d3780433aaa0/imageio/imageio-tga/src/test/resources/tga/autodesk-3dsmax-extsize494.tga",
+   "source_commit": "7d637180331b2d17f1f07daff2b3d3780433aaa0",
+   "licence": "BSD-3-Clause",
+   "licence_url": "https://github.com/haraldk/TwelveMonkeys/blob/7d637180331b2d17f1f07daff2b3d3780433aaa0/LICENSE.txt",
+   "licence_note": "TwelveMonkeys repository licence (BSD-3-Clause, Copyright (c) 2008-2020, Harald Kuhr). No per-file licence or origin is stated.",
+   "header": {
+    "image_type": 10,
+    "id_length": 0,
+    "colour_map_type": 0,
+    "colour_map_length": 0,
+    "colour_map_depth": 0,
+    "width": 440,
+    "height": 200,
+    "pixel_depth": 32,
+    "descriptor": 8,
+    "tga2_footer": true
+   },
+   "pillow": {
+    "version": "12.2.0",
+    "opens": true,
+    "decodes": true,
+    "error": null,
+    "format": "TGA",
+    "mode": "RGBA",
+    "size": [
+     440,
+     200
+    ]
+   },
+   "pillow_refusal_group": null,
+   "refusal_evidence": null,
+   "necropsy_result": null
+  },
+  {
+   "file": "tm_circle2.pnm",
+   "format": "PNM",
+   "dimensions": "200x200",
+   "what": "TwelveMonkeys ImageIO test data file `circle2.pnm`.",
+   "bytes": 5016,
+   "sha256": "fdeac23fa991eb63ecc4b1ad245451d3cf06d6bd71ff08c8e7b5a726c7c4b9f5",
+   "source_url": "https://raw.githubusercontent.com/haraldk/TwelveMonkeys/7d637180331b2d17f1f07daff2b3d3780433aaa0/imageio/imageio-pnm/src/test/resources/pbm/circle2.pnm",
+   "source_page": "https://github.com/haraldk/TwelveMonkeys/blob/7d637180331b2d17f1f07daff2b3d3780433aaa0/imageio/imageio-pnm/src/test/resources/pbm/circle2.pnm",
+   "source_commit": "7d637180331b2d17f1f07daff2b3d3780433aaa0",
+   "licence": "BSD-3-Clause",
+   "licence_url": "https://github.com/haraldk/TwelveMonkeys/blob/7d637180331b2d17f1f07daff2b3d3780433aaa0/LICENSE.txt",
+   "licence_note": "TwelveMonkeys repository licence (BSD-3-Clause, Copyright (c) 2008-2020, Harald Kuhr). No per-file licence or origin is stated.",
+   "header": {
+    "magic": "P4",
+    "tokens": [
+     "200",
+     "200"
+    ],
+    "header_end_index": 15,
+    "separator_after_magic": "b' '"
+   },
+   "pillow": {
+    "version": "12.2.0",
+    "opens": true,
+    "decodes": true,
+    "error": null,
+    "format": "PPM",
+    "mode": "1",
+    "size": [
+     200,
+     200
+    ]
+   },
+   "pillow_refusal_group": null,
+   "refusal_evidence": null,
+   "necropsy_result": null
+  },
+  {
+   "file": "tm_colors.ppm",
+   "format": "PNM",
+   "dimensions": "3x2",
+   "what": "TwelveMonkeys ImageIO test data file `colors.ppm`.",
+   "bytes": 198,
+   "sha256": "d9846b3065306026e127997a73275c4b9678683675fa69d73c360bf0402dd37c",
+   "source_url": "https://raw.githubusercontent.com/haraldk/TwelveMonkeys/7d637180331b2d17f1f07daff2b3d3780433aaa0/imageio/imageio-pnm/src/test/resources/ppm/colors.ppm",
+   "source_page": "https://github.com/haraldk/TwelveMonkeys/blob/7d637180331b2d17f1f07daff2b3d3780433aaa0/imageio/imageio-pnm/src/test/resources/ppm/colors.ppm",
+   "source_commit": "7d637180331b2d17f1f07daff2b3d3780433aaa0",
+   "licence": "BSD-3-Clause",
+   "licence_url": "https://github.com/haraldk/TwelveMonkeys/blob/7d637180331b2d17f1f07daff2b3d3780433aaa0/LICENSE.txt",
+   "licence_note": "TwelveMonkeys repository licence (BSD-3-Clause, Copyright (c) 2008-2020, Harald Kuhr). No per-file licence or origin is stated.",
+   "header": {
+    "magic": "P3",
+    "tokens": [
+     "3",
+     "2",
+     "255"
+    ],
+    "header_end_index": 117,
+    "separator_after_magic": "b'\\n'"
+   },
+   "pillow": {
+    "version": "12.2.0",
+    "opens": true,
+    "decodes": true,
+    "error": null,
+    "format": "PPM",
+    "mode": "RGB",
+    "size": [
+     3,
+     2
+    ]
+   },
+   "pillow_refusal_group": null,
+   "refusal_evidence": null,
+   "necropsy_result": null
+  },
+  {
+   "file": "tm_feep.pgm",
+   "format": "PNM",
+   "dimensions": "24x7",
+   "what": "TwelveMonkeys ImageIO test data file `feep.pgm`.",
+   "bytes": 570,
+   "sha256": "312564c51945ca1926b10f626389f79fad8fa54f584a4f0fe8bd6eba8fe660df",
+   "source_url": "https://raw.githubusercontent.com/haraldk/TwelveMonkeys/7d637180331b2d17f1f07daff2b3d3780433aaa0/imageio/imageio-pnm/src/test/resources/pgm/feep.pgm",
+   "source_page": "https://github.com/haraldk/TwelveMonkeys/blob/7d637180331b2d17f1f07daff2b3d3780433aaa0/imageio/imageio-pnm/src/test/resources/pgm/feep.pgm",
+   "source_commit": "7d637180331b2d17f1f07daff2b3d3780433aaa0",
+   "licence": "BSD-3-Clause",
+   "licence_url": "https://github.com/haraldk/TwelveMonkeys/blob/7d637180331b2d17f1f07daff2b3d3780433aaa0/LICENSE.txt",
+   "licence_note": "TwelveMonkeys repository licence (BSD-3-Clause, Copyright (c) 2008-2020, Harald Kuhr). No per-file licence or origin is stated.",
+   "header": {
+    "magic": "P2",
+    "tokens": [
+     "24",
+     "7",
+     "15"
+    ],
+    "header_end_index": 72,
+    "separator_after_magic": "b'\\n'"
+   },
+   "pillow": {
+    "version": "12.2.0",
+    "opens": true,
+    "decodes": true,
+    "error": null,
+    "format": "PPM",
+    "mode": "L",
+    "size": [
+     24,
+     7
+    ]
+   },
+   "pillow_refusal_group": null,
+   "refusal_evidence": null,
+   "necropsy_result": null
+  },
+  {
+   "file": "tm_gogol.ppm",
+   "format": "PNM",
+   "dimensions": "203x256",
+   "what": "TwelveMonkeys ImageIO test data file `gogol.ppm`.",
+   "bytes": 155962,
+   "sha256": "e4fc59708c80c758c951a92191a388b98e6e0e50c0db8d5d741cc15e845b4359",
+   "source_url": "https://raw.githubusercontent.com/haraldk/TwelveMonkeys/7d637180331b2d17f1f07daff2b3d3780433aaa0/imageio/imageio-pnm/src/test/resources/ppm/gogol.ppm",
+   "source_page": "https://github.com/haraldk/TwelveMonkeys/blob/7d637180331b2d17f1f07daff2b3d3780433aaa0/imageio/imageio-pnm/src/test/resources/ppm/gogol.ppm",
+   "source_commit": "7d637180331b2d17f1f07daff2b3d3780433aaa0",
+   "licence": "BSD-3-Clause",
+   "licence_url": "https://github.com/haraldk/TwelveMonkeys/blob/7d637180331b2d17f1f07daff2b3d3780433aaa0/LICENSE.txt",
+   "licence_note": "TwelveMonkeys repository licence (BSD-3-Clause, Copyright (c) 2008-2020, Harald Kuhr). No per-file licence or origin is stated.",
+   "header": {
+    "magic": "P6",
+    "tokens": [
+     "203",
+     "256",
+     "255"
+    ],
+    "header_end_index": 57,
+    "separator_after_magic": "b'\\n'"
+   },
+   "pillow": {
+    "version": "12.2.0",
+    "opens": true,
+    "decodes": true,
+    "error": null,
+    "format": "PPM",
+    "mode": "RGB",
+    "size": [
+     203,
+     256
+    ]
+   },
+   "pillow_refusal_group": null,
+   "refusal_evidence": null,
+   "necropsy_result": null
+  },
+  {
+   "file": "tm_house.l.pgm",
+   "format": "PNM",
+   "dimensions": "367x241",
+   "what": "TwelveMonkeys ImageIO test data file `house.l.pgm`.",
+   "bytes": 88462,
+   "sha256": "f1cfb13d87123e4646a155fe2fe7578dc2ec9e2db809f04d180acae1504db938",
+   "source_url": "https://raw.githubusercontent.com/haraldk/TwelveMonkeys/7d637180331b2d17f1f07daff2b3d3780433aaa0/imageio/imageio-pnm/src/test/resources/pgm/house.l.pgm",
+   "source_page": "https://github.com/haraldk/TwelveMonkeys/blob/7d637180331b2d17f1f07daff2b3d3780433aaa0/imageio/imageio-pnm/src/test/resources/pgm/house.l.pgm",
+   "source_commit": "7d637180331b2d17f1f07daff2b3d3780433aaa0",
+   "licence": "BSD-3-Clause",
+   "licence_url": "https://github.com/haraldk/TwelveMonkeys/blob/7d637180331b2d17f1f07daff2b3d3780433aaa0/LICENSE.txt",
+   "licence_note": "TwelveMonkeys repository licence (BSD-3-Clause, Copyright (c) 2008-2020, Harald Kuhr). No per-file licence or origin is stated.",
+   "header": {
+    "magic": "P5",
+    "tokens": [
+     "367",
+     "241",
+     "255"
+    ],
+    "header_end_index": 14,
+    "separator_after_magic": "b'\\n'"
+   },
+   "pillow": {
+    "version": "12.2.0",
+    "opens": true,
+    "decodes": true,
+    "error": null,
+    "format": "PPM",
+    "mode": "L",
+    "size": [
+     367,
+     241
+    ]
+   },
+   "pillow_refusal_group": null,
+   "refusal_evidence": null,
+   "necropsy_result": null
+  },
+  {
+   "file": "tm_j.pbm",
+   "format": "PNM",
+   "dimensions": "6x10",
+   "what": "TwelveMonkeys ImageIO test data file `j.pbm`.",
+   "bytes": 174,
+   "sha256": "287f1ad29c90207c0d7171b7dba84849fb04c3f60e70a75e3e046a4f58f4fb73",
+   "source_url": "https://raw.githubusercontent.com/haraldk/TwelveMonkeys/7d637180331b2d17f1f07daff2b3d3780433aaa0/imageio/imageio-pnm/src/test/resources/pbm/j.pbm",
+   "source_page": "https://github.com/haraldk/TwelveMonkeys/blob/7d637180331b2d17f1f07daff2b3d3780433aaa0/imageio/imageio-pnm/src/test/resources/pbm/j.pbm",
+   "source_commit": "7d637180331b2d17f1f07daff2b3d3780433aaa0",
+   "licence": "BSD-3-Clause",
+   "licence_url": "https://github.com/haraldk/TwelveMonkeys/blob/7d637180331b2d17f1f07daff2b3d3780433aaa0/LICENSE.txt",
+   "licence_note": "TwelveMonkeys repository licence (BSD-3-Clause, Copyright (c) 2008-2020, Harald Kuhr). No per-file licence or origin is stated.",
+   "header": {
+    "magic": "P1",
+    "tokens": [
+     "6",
+     "10"
+    ],
+    "header_end_index": 53,
+    "separator_after_magic": "b'\\n'"
+   },
+   "pillow": {
+    "version": "12.2.0",
+    "opens": true,
+    "decodes": true,
+    "error": null,
+    "format": "PPM",
+    "mode": "1",
+    "size": [
+     6,
+     10
+    ]
+   },
+   "pillow_refusal_group": null,
+   "refusal_evidence": null,
+   "necropsy_result": null
+  },
+  {
+   "file": "tm_lzw-rgba-4444.tif",
+   "format": "TIFF",
+   "dimensions": "64x64",
+   "what": "TwelveMonkeys ImageIO test data file `lzw-rgba-4444.tif`.",
+   "bytes": 4008,
+   "sha256": "dd60b8737fd09774287887c2e732e0c7fabd951f1b7ccbb635d68fc77bc38075",
+   "source_url": "https://raw.githubusercontent.com/haraldk/TwelveMonkeys/7d637180331b2d17f1f07daff2b3d3780433aaa0/imageio/imageio-tiff/src/test/resources/tiff/lzw-rgba-4444.tif",
+   "source_page": "https://github.com/haraldk/TwelveMonkeys/blob/7d637180331b2d17f1f07daff2b3d3780433aaa0/imageio/imageio-tiff/src/test/resources/tiff/lzw-rgba-4444.tif",
+   "source_commit": "7d637180331b2d17f1f07daff2b3d3780433aaa0",
+   "licence": "BSD-3-Clause",
+   "licence_url": "https://github.com/haraldk/TwelveMonkeys/blob/7d637180331b2d17f1f07daff2b3d3780433aaa0/LICENSE.txt",
+   "licence_note": "TwelveMonkeys repository licence (BSD-3-Clause, Copyright (c) 2008-2020, Harald Kuhr). No per-file licence or origin is stated.",
+   "header": {
+    "byte_order": "big",
+    "width": 64,
+    "height": 64,
+    "bits_per_sample": [
+     4,
+     4,
+     4,
+     4
+    ],
+    "samples_per_pixel": 4,
+    "compression": "LZW",
+    "photometric": 2,
+    "planar": 1,
+    "predictor": 1,
+    "fill_order": 1,
+    "strip_count": 1,
+    "tile_count": 0,
+    "rows_per_strip": 256,
+    "tile_width": null,
+    "tile_length": null,
+    "extra_samples": [
+     1
+    ],
+    "sample_format": null
+   },
+   "pillow": {
+    "version": "12.2.0",
+    "opens": null,
+    "decodes": false,
+    "error": "UnidentifiedImageError: cannot identify image file 'tm_lzw-rgba-4444.tif'"
+   },
+   "pillow_refusal_group": "not established",
+   "refusal_evidence": null,
+   "necropsy_result": null
+  },
+  {
+   "file": "tm_monochrome16_top_left_rle.tga",
+   "format": "TGA",
+   "dimensions": "64x64",
+   "what": "TwelveMonkeys ImageIO test data file `monochrome16_top_left_rle.tga`.",
+   "bytes": 5294,
+   "sha256": "69b39f9fa4cae4013e7cfd9b34fd92ff5f6e2de587d3fb84c158cb8c65e3aa13",
+   "source_url": "https://raw.githubusercontent.com/haraldk/TwelveMonkeys/7d637180331b2d17f1f07daff2b3d3780433aaa0/imageio/imageio-tga/src/test/resources/tga/monochrome16_top_left_rle.tga",
+   "source_page": "https://github.com/haraldk/TwelveMonkeys/blob/7d637180331b2d17f1f07daff2b3d3780433aaa0/imageio/imageio-tga/src/test/resources/tga/monochrome16_top_left_rle.tga",
+   "source_commit": "7d637180331b2d17f1f07daff2b3d3780433aaa0",
+   "licence": "BSD-3-Clause",
+   "licence_url": "https://github.com/haraldk/TwelveMonkeys/blob/7d637180331b2d17f1f07daff2b3d3780433aaa0/LICENSE.txt",
+   "licence_note": "TwelveMonkeys repository licence (BSD-3-Clause, Copyright (c) 2008-2020, Harald Kuhr). No per-file licence or origin is stated.",
+   "header": {
+    "image_type": 11,
+    "id_length": 0,
+    "colour_map_type": 0,
+    "colour_map_length": 0,
+    "colour_map_depth": 0,
+    "width": 64,
+    "height": 64,
+    "pixel_depth": 16,
+    "descriptor": 40,
+    "tga2_footer": true
+   },
+   "pillow": {
+    "version": "12.2.0",
+    "opens": true,
+    "decodes": true,
+    "error": null,
+    "format": "TGA",
+    "mode": "LA",
+    "size": [
+     64,
+     64
+    ]
+   },
+   "pillow_refusal_group": null,
+   "refusal_evidence": null,
+   "necropsy_result": null
+  },
+  {
+   "file": "tm_packbits-fillorder-2.tif",
+   "format": "TIFF",
+   "dimensions": "3508x2481",
+   "what": "TwelveMonkeys ImageIO test data file `packbits-fillorder-2.tif`.",
+   "bytes": 71008,
+   "sha256": "3b910c9f1be4928b6febe1dc2840c1d5f7e7fb21f409b78bcf545f77349084b0",
+   "source_url": "https://raw.githubusercontent.com/haraldk/TwelveMonkeys/7d637180331b2d17f1f07daff2b3d3780433aaa0/imageio/imageio-tiff/src/test/resources/tiff/packbits-fillorder-2.tif",
+   "source_page": "https://github.com/haraldk/TwelveMonkeys/blob/7d637180331b2d17f1f07daff2b3d3780433aaa0/imageio/imageio-tiff/src/test/resources/tiff/packbits-fillorder-2.tif",
+   "source_commit": "7d637180331b2d17f1f07daff2b3d3780433aaa0",
+   "licence": "BSD-3-Clause",
+   "licence_url": "https://github.com/haraldk/TwelveMonkeys/blob/7d637180331b2d17f1f07daff2b3d3780433aaa0/LICENSE.txt",
+   "licence_note": "TwelveMonkeys repository licence (BSD-3-Clause, Copyright (c) 2008-2020, Harald Kuhr). No per-file licence or origin is stated.",
+   "header": {
+    "byte_order": "little",
+    "width": 3508,
+    "height": 2481,
+    "bits_per_sample": [
+     1
+    ],
+    "samples_per_pixel": 1,
+    "compression": "PackBits",
+    "photometric": 0,
+    "planar": 1,
+    "predictor": 1,
+    "fill_order": 2,
+    "strip_count": 1,
+    "tile_count": 0,
+    "rows_per_strip": 2481,
+    "tile_width": null,
+    "tile_length": null,
+    "extra_samples": null,
+    "sample_format": null
+   },
+   "pillow": {
+    "version": "12.2.0",
+    "opens": true,
+    "decodes": true,
+    "error": null,
+    "format": "TIFF",
+    "mode": "1",
+    "size": [
+     3508,
+     2481
+    ]
+   },
+   "pillow_refusal_group": null,
+   "refusal_evidence": null,
+   "necropsy_result": null
+  },
+  {
+   "file": "tm_rays2.pnm",
+   "format": "PNM",
+   "dimensions": "200x200",
+   "what": "TwelveMonkeys ImageIO test data file `rays2.pnm`.",
+   "bytes": 40024,
+   "sha256": "8c5a926059d2b15556cb7c846968fb5c9fe228e009011bdb642f74dd222a024b",
+   "source_url": "https://raw.githubusercontent.com/haraldk/TwelveMonkeys/7d637180331b2d17f1f07daff2b3d3780433aaa0/imageio/imageio-pnm/src/test/resources/pgm/rays2.pnm",
+   "source_page": "https://github.com/haraldk/TwelveMonkeys/blob/7d637180331b2d17f1f07daff2b3d3780433aaa0/imageio/imageio-pnm/src/test/resources/pgm/rays2.pnm",
+   "source_commit": "7d637180331b2d17f1f07daff2b3d3780433aaa0",
+   "licence": "BSD-3-Clause",
+   "licence_url": "https://github.com/haraldk/TwelveMonkeys/blob/7d637180331b2d17f1f07daff2b3d3780433aaa0/LICENSE.txt",
+   "licence_note": "TwelveMonkeys repository licence (BSD-3-Clause, Copyright (c) 2008-2020, Harald Kuhr). No per-file licence or origin is stated.",
+   "header": {
+    "magic": "P5",
+    "tokens": [
+     "200",
+     "200",
+     "255"
+    ],
+    "header_end_index": 23,
+    "separator_after_magic": "b' '"
+   },
+   "pillow": {
+    "version": "12.2.0",
+    "opens": true,
+    "decodes": true,
+    "error": null,
+    "format": "PPM",
+    "mode": "L",
+    "size": [
+     200,
+     200
+    ]
+   },
+   "pillow_refusal_group": null,
+   "refusal_evidence": null,
+   "necropsy_result": null
+  },
+  {
+   "file": "tm_sm_colors_pb.tif",
+   "format": "TIFF",
+   "dimensions": "64x64",
+   "what": "TwelveMonkeys ImageIO test data file `sm_colors_pb.tif`.",
+   "bytes": 14102,
+   "sha256": "9efe344dfc180b19b50d815d6f94aec33b936f8362f9751278d2ec2ce6d0fab5",
+   "source_url": "https://raw.githubusercontent.com/haraldk/TwelveMonkeys/7d637180331b2d17f1f07daff2b3d3780433aaa0/imageio/imageio-tiff/src/test/resources/tiff/sm_colors_pb.tif",
+   "source_page": "https://github.com/haraldk/TwelveMonkeys/blob/7d637180331b2d17f1f07daff2b3d3780433aaa0/imageio/imageio-tiff/src/test/resources/tiff/sm_colors_pb.tif",
+   "source_commit": "7d637180331b2d17f1f07daff2b3d3780433aaa0",
+   "licence": "BSD-3-Clause",
+   "licence_url": "https://github.com/haraldk/TwelveMonkeys/blob/7d637180331b2d17f1f07daff2b3d3780433aaa0/LICENSE.txt",
+   "licence_note": "TwelveMonkeys repository licence (BSD-3-Clause, Copyright (c) 2008-2020, Harald Kuhr). No per-file licence or origin is stated.",
+   "header": {
+    "byte_order": "big",
+    "width": 64,
+    "height": 64,
+    "bits_per_sample": [
+     8,
+     8,
+     8
+    ],
+    "samples_per_pixel": 3,
+    "compression": "PackBits",
+    "photometric": 2,
+    "planar": 1,
+    "predictor": 1,
+    "fill_order": 1,
+    "strip_count": 2,
+    "tile_count": 0,
+    "rows_per_strip": 42,
+    "tile_width": null,
+    "tile_length": null,
+    "extra_samples": null,
+    "sample_format": [
+     1,
+     1,
+     1
+    ]
+   },
+   "pillow": {
+    "version": "12.2.0",
+    "opens": true,
+    "decodes": true,
+    "error": null,
+    "format": "TIFF",
+    "mode": "RGB",
+    "size": [
+     64,
+     64
+    ]
+   },
+   "pillow_refusal_group": null,
+   "refusal_evidence": null,
+   "necropsy_result": null
+  },
+  {
+   "file": "tm_sm_colors_pb_tile.tif",
+   "format": "TIFF",
+   "dimensions": "64x64",
+   "what": "TwelveMonkeys ImageIO test data file `sm_colors_pb_tile.tif`.",
+   "bytes": 20322,
+   "sha256": "f7b35cf16cc4ad59fb144679c6341a2622e79717ec5b0af4ae38932cf0ccad73",
+   "source_url": "https://raw.githubusercontent.com/haraldk/TwelveMonkeys/7d637180331b2d17f1f07daff2b3d3780433aaa0/imageio/imageio-tiff/src/test/resources/tiff/sm_colors_pb_tile.tif",
+   "source_page": "https://github.com/haraldk/TwelveMonkeys/blob/7d637180331b2d17f1f07daff2b3d3780433aaa0/imageio/imageio-tiff/src/test/resources/tiff/sm_colors_pb_tile.tif",
+   "source_commit": "7d637180331b2d17f1f07daff2b3d3780433aaa0",
+   "licence": "BSD-3-Clause",
+   "licence_url": "https://github.com/haraldk/TwelveMonkeys/blob/7d637180331b2d17f1f07daff2b3d3780433aaa0/LICENSE.txt",
+   "licence_note": "TwelveMonkeys repository licence (BSD-3-Clause, Copyright (c) 2008-2020, Harald Kuhr). No per-file licence or origin is stated.",
+   "header": {
+    "byte_order": "big",
+    "width": 64,
+    "height": 64,
+    "bits_per_sample": [
+     8,
+     8,
+     8
+    ],
+    "samples_per_pixel": 3,
+    "compression": "PackBits",
+    "photometric": 2,
+    "planar": 1,
+    "predictor": 1,
+    "fill_order": 1,
+    "strip_count": 0,
+    "tile_count": 2,
+    "rows_per_strip": null,
+    "tile_width": 64,
+    "tile_length": 48,
+    "extra_samples": null,
+    "sample_format": [
+     1,
+     1,
+     1
+    ]
+   },
+   "pillow": {
+    "version": "12.2.0",
+    "opens": true,
+    "decodes": true,
+    "error": null,
+    "format": "TIFF",
+    "mode": "RGB",
+    "size": [
+     64,
+     64
+    ]
+   },
+   "pillow_refusal_group": null,
+   "refusal_evidence": null,
+   "necropsy_result": null
+  },
+  {
+   "file": "tm_sm_colors_tile.tif",
+   "format": "TIFF",
+   "dimensions": "64x64",
+   "what": "TwelveMonkeys ImageIO test data file `sm_colors_tile.tif`.",
+   "bytes": 20132,
+   "sha256": "22286f56deccb2623895b5dc488ae9e640dfa084d03fd05ce8bd54d4074edaac",
+   "source_url": "https://raw.githubusercontent.com/haraldk/TwelveMonkeys/7d637180331b2d17f1f07daff2b3d3780433aaa0/imageio/imageio-tiff/src/test/resources/tiff/sm_colors_tile.tif",
+   "source_page": "https://github.com/haraldk/TwelveMonkeys/blob/7d637180331b2d17f1f07daff2b3d3780433aaa0/imageio/imageio-tiff/src/test/resources/tiff/sm_colors_tile.tif",
+   "source_commit": "7d637180331b2d17f1f07daff2b3d3780433aaa0",
+   "licence": "BSD-3-Clause",
+   "licence_url": "https://github.com/haraldk/TwelveMonkeys/blob/7d637180331b2d17f1f07daff2b3d3780433aaa0/LICENSE.txt",
+   "licence_note": "TwelveMonkeys repository licence (BSD-3-Clause, Copyright (c) 2008-2020, Harald Kuhr). No per-file licence or origin is stated.",
+   "header": {
+    "byte_order": "big",
+    "width": 64,
+    "height": 64,
+    "bits_per_sample": [
+     8,
+     8,
+     8
+    ],
+    "samples_per_pixel": 3,
+    "compression": "none",
+    "photometric": 2,
+    "planar": 1,
+    "predictor": 1,
+    "fill_order": 1,
+    "strip_count": 0,
+    "tile_count": 2,
+    "rows_per_strip": null,
+    "tile_width": 64,
+    "tile_length": 48,
+    "extra_samples": null,
+    "sample_format": [
+     1,
+     1,
+     1
+    ]
+   },
+   "pillow": {
+    "version": "12.2.0",
+    "opens": true,
+    "decodes": true,
+    "error": null,
+    "format": "TIFF",
+    "mode": "RGB",
+    "size": [
+     64,
+     64
+    ]
+   },
+   "pillow_refusal_group": null,
+   "refusal_evidence": null,
+   "necropsy_result": null
+  }
+ ]
+}
