@@ -13,14 +13,16 @@ Engine over all 81 files, default 5 s deadline. No run hit the deadline. No resu
 
 | Group | Files | Our status |
 |---|---:|---|
-| In scope, valid, pixels equal Pillow's | 23 | RESOLVED, match |
+| In scope, valid, pixels equal Pillow's | 54 | RESOLVED, match (49) or equal after WhiteIsZero inversion (5) |
+| In scope, valid, documented verdict | 4 | RESOLVED, 16-bit and 12-bit scaling, rgb32rle alpha |
 | In scope, valid, known interpretation difference | 1 | RESOLVED, alpha bit differs (`pillow_rgba16.tga`) |
-| In scope, invalid by construction | 2 | FAILED (`exhausted`) |
-| Out of scope | 54 | FAILED: 40 `exhausted`, 14 `no_hypothesis_checked` |
+| In scope, valid, open failure | 2 | FAILED (`exhausted`): `pillow_cross_scan_line.tga`, `libtiff_deflate-last-strip-extra-data.tiff` |
+| In scope, invalid by construction | 4 | 3 FAILED (`exhausted`), 1 RESOLVED (`goimage_invalid-palette-ref.tiff`, Pillow refuses it) |
+| Out of scope | 15 | FAILED: 14 `exhausted`, 1 `no_hypothesis_checked` |
 | Out of scope, invalid by construction | 1 | RESOLVED, literal reading (`pillow_ossfuzz-4836216264589312.pcx`) |
-| **Total** | **81** | 25 RESOLVED, 56 FAILED |
+| **Total** | **81** | 61 RESOLVED, 20 FAILED |
 
-In scope is 26 files and out of scope is 55, as the manifest records them (Decision 3). All counts above were checked against `docs/REAL-CORPUS-RESULTS.md` row by row. The table with every file is `docs/REAL-CORPUS-RESULTS.md`.
+This table is the state after format-coverage Task 39. Before that spec the table read 23 / 1 / 2 / 54 / 1, 25 RESOLVED and 56 FAILED, with 26 files in scope and 55 out (Decision 3). In scope is now 65 files and out of scope 16, as `tools/scope_from_headers.py` writes them from header bytes. All counts above were checked against `docs/REAL-CORPUS-RESULTS.md` row by row. The table with every file is `docs/REAL-CORPUS-RESULTS.md`.
 
 The 14 `no_hypothesis_checked` refusals are all PNM files: every PNM file except the five binary PBM (`P4`) files. The 40 `exhausted` refusals are the TIFF, TGA and PCX files outside the stated scope (compression, RLE TGA, several strips, tiles, planar, several PCX planes) and the invalid ones. The reason for each is in the table's note column, taken from the manifest's scope reason.
 

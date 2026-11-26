@@ -5,84 +5,84 @@ Design, decisions and limits: `.kiro/specs/real-corpus/design.md`.
 
 | File | Format | Scope | Our status | Pillow 12.2.0 | Pixels vs Pillow | Note |
 |---|---|---|---|---|---|---|
-| `goimage_blue-purple-pink.lzwcompressed.tiff` | TIFF | out | FAILED (exhausted) | decodes (mode RGB) 150x100 | n/a | compression LZW, 6 strips |
-| `goimage_bw-deflate.tiff` | TIFF | out | FAILED (exhausted) | decodes (mode 1) 153x55 | n/a | compression Deflate |
-| `goimage_bw-gopher_ccittGroup3.tiff` | TIFF | out | FAILED (exhausted) | decodes (mode 1) 153x55 | n/a | compression CCITT G3 |
-| `goimage_bw-gopher_ccittGroup4.tiff` | TIFF | out | FAILED (exhausted) | decodes (mode 1) 153x55 | n/a | compression CCITT G4 |
-| `goimage_bw-packbits.tiff` | TIFF | out | FAILED (exhausted) | decodes (mode 1) 153x55 | n/a | compression PackBits |
-| `goimage_bw-uncompressed.tiff` | TIFF | in | RESOLVED | decodes (mode 1) 153x55 | match |  |
-| `goimage_invalid-palette-ref.tiff` | TIFF | out, invalid by construction | FAILED (exhausted) | refuses (UnidentifiedImageError) | n/a | compression Adobe Deflate, 2 strips |
+| `goimage_blue-purple-pink.lzwcompressed.tiff` | TIFF | in | RESOLVED | decodes (mode RGB) 150x100 | match |  |
+| `goimage_bw-deflate.tiff` | TIFF | in | RESOLVED | decodes (mode 1) 153x55 | stored bytes; equals Pillow after WhiteIsZero inversion (tag 262 = 0) |  |
+| `goimage_bw-gopher_ccittGroup3.tiff` | TIFF | out | FAILED (exhausted) | decodes (mode 1) 153x55 | n/a | compression CCITT G3 (3) |
+| `goimage_bw-gopher_ccittGroup4.tiff` | TIFF | out | FAILED (exhausted) | decodes (mode 1) 153x55 | n/a | compression CCITT G4 (4) |
+| `goimage_bw-packbits.tiff` | TIFF | in | RESOLVED | decodes (mode 1) 153x55 | stored bytes; equals Pillow after WhiteIsZero inversion (tag 262 = 0) |  |
+| `goimage_bw-uncompressed.tiff` | TIFF | in | RESOLVED | decodes (mode 1) 153x55 | stored bytes; equals Pillow after WhiteIsZero inversion (tag 262 = 0) |  |
+| `goimage_invalid-palette-ref.tiff` | TIFF | in, invalid by construction | RESOLVED | refuses (UnidentifiedImageError) | not comparable: Pillow refuses the file (UnidentifiedImageError) | Invalid by construction, and RESOLVED. The Deflate decoder decodes the same region as goimage_video-001-paletted.tiff (format-coverage design.md row 25). Pillow refuses the file (UnidentifiedImageError) for palette indices the engine does not read, so there is no pixel comparison. The expected status stays FAILED: this is an unexpected RESOLVED, reported under Requirement 19.5. |
 | `goimage_no_compress.tiff` | TIFF | in | RESOLVED | decodes (mode RGBA) 16x15 | match |  |
 | `goimage_no_rps.tiff` | TIFF | in | RESOLVED | decodes (mode RGBA) 16x15 | match |  |
-| `goimage_video-001-gray.tiff` | TIFF | out | FAILED (exhausted) | decodes (mode L) 150x103 | n/a | 2 strips |
-| `goimage_video-001-paletted.tiff` | TIFF | out | FAILED (exhausted) | decodes (mode P) 150x103 | n/a | compression Adobe Deflate, 2 strips |
-| `goimage_video-001-strip-64.tiff` | TIFF | out | FAILED (exhausted) | decodes (mode RGB) 150x103 | n/a | compression Adobe Deflate, 2 strips |
-| `goimage_video-001-tile-64x64.tiff` | TIFF | out | FAILED (exhausted) | decodes (mode RGB) 150x103 | n/a | compression Adobe Deflate, tiled |
+| `goimage_video-001-gray.tiff` | TIFF | in | RESOLVED | decodes (mode L) 150x103 | match |  |
+| `goimage_video-001-paletted.tiff` | TIFF | in | RESOLVED | decodes (mode P) 150x103 | match |  |
+| `goimage_video-001-strip-64.tiff` | TIFF | out | FAILED (exhausted) | decodes (mode RGB) 150x103 | n/a | predictor 2 |
+| `goimage_video-001-tile-64x64.tiff` | TIFF | out | FAILED (exhausted) | decodes (mode RGB) 150x103 | n/a | predictor 2 |
 | `goimage_video-001-uncompressed.tiff` | TIFF | in | RESOLVED | decodes (mode RGB) 150x103 | match |  |
-| `imagemagick_input.pcx` | PCX | out | FAILED (exhausted) | decodes (mode RGB) 70x46 | n/a | 3 planes |
+| `imagemagick_input.pcx` | PCX | in | RESOLVED | decodes (mode RGB) 70x46 | match |  |
 | `imagemagick_input.tga` | TGA | in | RESOLVED | decodes (mode RGB) 70x46 | match |  |
-| `imagemagick_input_p1.pbm` | PNM | out | RESOLVED | decodes (mode 1) 70x46 | not comparable: encoding pnm_text not handled by the comparer | P1 (only binary PBM, P4, has a probe) |
-| `imagemagick_input_p2.pgm` | PNM | out | RESOLVED | decodes (mode L) 70x46 | not comparable: encoding pnm_text not handled by the comparer | P2 (only binary PBM, P4, has a probe) |
-| `imagemagick_input_p3.ppm` | PNM | out | RESOLVED | decodes (mode RGB) 70x46 | not comparable: encoding pnm_text not handled by the comparer | P3 (only binary PBM, P4, has a probe) |
+| `imagemagick_input_p1.pbm` | PNM | in | RESOLVED | decodes (mode 1) 70x46 | match |  |
+| `imagemagick_input_p2.pgm` | PNM | in | RESOLVED | decodes (mode L) 70x46 | match |  |
+| `imagemagick_input_p3.ppm` | PNM | in | RESOLVED | decodes (mode RGB) 70x46 | match |  |
 | `imagemagick_input_p4.pbm` | PNM | in | RESOLVED | decodes (mode 1) 70x46 | match |  |
-| `imagemagick_input_p5.pgm` | PNM | out | RESOLVED | decodes (mode L) 70x46 | match | P5 (only binary PBM, P4, has a probe) |
-| `imagemagick_input_p6.ppm` | PNM | out | RESOLVED | decodes (mode RGB) 70x46 | match | P6 (only binary PBM, P4, has a probe) |
+| `imagemagick_input_p5.pgm` | PNM | in | RESOLVED | decodes (mode L) 70x46 | match |  |
+| `imagemagick_input_p6.ppm` | PNM | in | RESOLVED | decodes (mode RGB) 70x46 | match |  |
 | `imagers_issue-794.pbm` | PNM | in | RESOLVED | decodes (mode 1) 10x10 | match |  |
 | `imagers_narrow.pbm` | PNM | in | RESOLVED | decodes (mode 1) 1x9 | match |  |
-| `libtiff_deflate-last-strip-extra-data.tiff` | TIFF | out | FAILED (exhausted) | decodes (mode L) 500x500 | n/a | compression Adobe Deflate, 32 strips |
-| `libtiff_logluv-3c-16b.tiff` | TIFF | out | FAILED (exhausted) | refuses (UnidentifiedImageError) | n/a | compression SGILog |
-| `libtiff_lzw-single-strip.tiff` | TIFF | out | FAILED (exhausted) | decodes (mode 1) 7795x3122 | n/a | compression LZW |
-| `libtiff_minisblack-1c-8b.pgm` | PNM | out | RESOLVED | decodes (mode L) 157x151 | match | P5 (only binary PBM, P4, has a probe) |
-| `libtiff_minisblack-1c-8b.tiff` | TIFF | out | FAILED (exhausted) | decodes (mode L) 157x151 | n/a | 3 strips |
+| `libtiff_deflate-last-strip-extra-data.tiff` | TIFF | in | FAILED (exhausted) | decodes (mode L) 500x500 | n/a | its last strip carries more data than the strip holds; the engine refuses it and Pillow's libtiff does not. The image is 500 x 500 with RowsPerStrip 16, so the last of 32 strips is 4 rows = 2000 bytes, and the file's last strip inflates past 2000 bytes (decoder_overrun, range 31 [12508, 12789)). The first 31 strips inflate to exactly 8000 bytes. Closure fails on that strip, so FAILED is correct under the spec (Principle call 2). |
+| `libtiff_logluv-3c-16b.tiff` | TIFF | out | FAILED (exhausted) | refuses (UnidentifiedImageError) | n/a | compression SGILog (34676) |
+| `libtiff_lzw-single-strip.tiff` | TIFF | in | RESOLVED | decodes (mode 1) 7795x3122 | stored bytes; equals Pillow after WhiteIsZero inversion (tag 262 = 0) |  |
+| `libtiff_minisblack-1c-8b.pgm` | PNM | in | RESOLVED | decodes (mode L) 157x151 | match |  |
+| `libtiff_minisblack-1c-8b.tiff` | TIFF | in | RESOLVED | decodes (mode L) 157x151 | match |  |
 | `libtiff_miniswhite-1c-1b.pbm` | PNM | in | RESOLVED | decodes (mode 1) 157x151 | match |  |
-| `libtiff_miniswhite-1c-1b.tiff` | TIFF | in | RESOLVED | decodes (mode 1) 157x151 | match |  |
-| `libtiff_ojpeg_zackthecat_subsamp22_single_strip.tiff` | TIFF | out | FAILED (exhausted) | decodes (mode RGB) 234x213 | n/a | compression OJPEG, tiled |
-| `libtiff_palette-1c-8b.tiff` | TIFF | out | FAILED (exhausted) | decodes (mode P) 157x151 | n/a | 3 strips |
-| `libtiff_quad-tile.jpg.tiff` | TIFF | out | FAILED (exhausted) | decodes (mode RGB) 512x384 | n/a | compression JPEG, tiled |
-| `libtiff_rgb-3c-16b.ppm` | PNM | out | RESOLVED | decodes (mode RGB) 157x151 | not comparable: PNM bit depth 48 not handled by the comparer | P6 (only binary PBM, P4, has a probe) |
-| `libtiff_rgb-3c-8b.ppm` | PNM | out | RESOLVED | decodes (mode RGB) 157x151 | match | P6 (only binary PBM, P4, has a probe) |
-| `libtiff_rgb-3c-8b.tiff` | TIFF | out | FAILED (exhausted) | decodes (mode RGB) 157x151 | n/a | 9 strips |
+| `libtiff_miniswhite-1c-1b.tiff` | TIFF | in | RESOLVED | decodes (mode 1) 157x151 | stored bytes; equals Pillow after WhiteIsZero inversion (tag 262 = 0) |  |
+| `libtiff_ojpeg_zackthecat_subsamp22_single_strip.tiff` | TIFF | out | FAILED (exhausted) | decodes (mode RGB) 234x213 | n/a | compression OJPEG (6) |
+| `libtiff_palette-1c-8b.tiff` | TIFF | in | RESOLVED | decodes (mode P) 157x151 | match |  |
+| `libtiff_quad-tile.jpg.tiff` | TIFF | out | FAILED (exhausted) | decodes (mode RGB) 512x384 | n/a | compression JPEG (7) |
+| `libtiff_rgb-3c-16b.ppm` | PNM | in | RESOLVED | decodes (mode RGB) 157x151 | 16-bit samples: engine v * 255 // maxval (Requirement 16.1); Pillow rounds to nearest, (v * 255 + 32767) // 65535; every byte checked |  |
+| `libtiff_rgb-3c-8b.ppm` | PNM | in | RESOLVED | decodes (mode RGB) 157x151 | match |  |
+| `libtiff_rgb-3c-8b.tiff` | TIFF | in | RESOLVED | decodes (mode RGB) 157x151 | match |  |
 | `libtiff_test_ifd_loop_to_self.tif` | TIFF | in | RESOLVED | decodes (mode L) 20x20 | match |  |
-| `libtiff_testfax4.tiff` | TIFF | out | FAILED (exhausted) | decodes (mode 1) 2453x3369 | n/a | compression CCITT G4 |
+| `libtiff_testfax4.tiff` | TIFF | out | FAILED (exhausted) | decodes (mode 1) 2453x3369 | n/a | compression CCITT G4 (4) |
 | `pillow_01r_00.pcx` | PCX | in, invalid by construction | FAILED (exhausted) | refuses (OSError) | n/a |  |
-| `pillow_12bit.cropped.tif` | TIFF | out | FAILED (exhausted) | decodes (mode I;16) 100x100 | n/a | 2 strips |
+| `pillow_12bit.cropped.tif` | TIFF | in | RESOLVED | decodes (mode I;16) 100x100 | 12-bit samples: engine v * 255 // 4095 (Requirement 16.1); Pillow's mode I;16 holds the same raw samples and its 8-bit conversion clips to 255; every byte checked |  |
 | `pillow_1x1_l_tl_raw.tga` | TGA | in | RESOLVED | decodes (mode L) 1x1 | match |  |
 | `pillow_200x32_l_bl_raw.tga` | TGA | in | RESOLVED | decodes (mode L) 200x32 | match |  |
-| `pillow_200x32_l_tl_rle.tga` | TGA | out | RESOLVED | decodes (mode L) 200x32 | not comparable: encoding rle_tga not handled by the comparer | RLE TGA (image type 11) |
+| `pillow_200x32_l_tl_rle.tga` | TGA | in | RESOLVED | decodes (mode L) 200x32 | match |  |
 | `pillow_200x32_la_bl_raw.tga` | TGA | in | RESOLVED | decodes (mode LA) 200x32 | match |  |
 | `pillow_200x32_p_bl_raw.tga` | TGA | in | RESOLVED | decodes (mode P) 200x32 | match |  |
-| `pillow_200x32_p_tl_rle.tga` | TGA | out | RESOLVED | decodes (mode P) 200x32 | not comparable: encoding rle_tga not handled by the comparer | RLE TGA (image type 9) |
+| `pillow_200x32_p_tl_rle.tga` | TGA | in | RESOLVED | decodes (mode P) 200x32 | match |  |
 | `pillow_200x32_rgb_bl_raw.tga` | TGA | in | RESOLVED | decodes (mode RGB) 200x32 | match |  |
-| `pillow_200x32_rgb_tl_rle.tga` | TGA | out | RESOLVED | decodes (mode RGB) 200x32 | not comparable: encoding rle_tga not handled by the comparer | RLE TGA (image type 10) |
+| `pillow_200x32_rgb_tl_rle.tga` | TGA | in | RESOLVED | decodes (mode RGB) 200x32 | match |  |
 | `pillow_200x32_rgba_tl_raw.tga` | TGA | in | RESOLVED | decodes (mode RGBA) 200x32 | match |  |
 | `pillow_cross_scan_line.tga` | TGA | in | FAILED (exhausted) | decodes (mode L) 2x2 | n/a | its RLE data needs one byte that lies inside its declared TGA 2.0 footer; Pillow decodes it because it ignores the footer. The file is 49 bytes. With the 26-byte footer excluded, the data region is [18, 23) = 02 00 FF FF 00: a raw packet of 3 pixels, then a raw packet header that needs 1 more pixel byte, and that byte would be byte 23, the first byte of the footer (decoder_underrun). Read to the end of the file, 25 bytes are left over (decoder_unconsumed). Both readings fail, so FAILED is correct under the spec. |
-| `pillow_cross_scan_line_truncated.tga` | TGA | out, invalid by construction | FAILED (exhausted) | refuses (OSError) | n/a | RLE TGA (image type 9) |
-| `pillow_hopper_16bit.pgm` | PNM | out | RESOLVED | decodes (mode I) 128x128 | not comparable: PNM bit depth 16 not handled by the comparer | P5 (only binary PBM, P4, has a probe) |
+| `pillow_cross_scan_line_truncated.tga` | TGA | in, invalid by construction | FAILED (exhausted) | refuses (OSError) | n/a |  |
+| `pillow_hopper_16bit.pgm` | PNM | in | RESOLVED | decodes (mode I) 128x128 | 16-bit samples: engine v * 255 // maxval (Requirement 16.1); Pillow's mode I holds the same raw samples and its 8-bit conversion clips to 255; every byte checked |  |
 | `pillow_hopper_1bit.pbm` | PNM | in | RESOLVED | decodes (mode 1) 128x128 | match |  |
-| `pillow_hopper_1bit_plain.pbm` | PNM | out | RESOLVED | decodes (mode 1) 128x128 | not comparable: encoding pnm_text not handled by the comparer | P1 (only binary PBM, P4, has a probe) |
-| `pillow_hopper_8bit.pgm` | PNM | out | RESOLVED | decodes (mode L) 128x128 | match | P5 (only binary PBM, P4, has a probe) |
-| `pillow_hopper_8bit.ppm` | PNM | out | RESOLVED | decodes (mode RGB) 128x128 | match | P6 (only binary PBM, P4, has a probe) |
-| `pillow_hopper_g4.tif` | TIFF | out | FAILED (exhausted) | decodes (mode 1) 128x128 | n/a | compression CCITT G4 |
-| `pillow_hopper_lzma.tif` | TIFF | out | FAILED (exhausted) | decodes (mode RGB) 128x128 | n/a | compression LZMA |
-| `pillow_hopper_lzw.tif` | TIFF | out | FAILED (exhausted) | decodes (mode RGB) 128x128 | n/a | compression LZW, 7 strips |
-| `pillow_hopper_webp.tif` | TIFF | out | FAILED (exhausted) | decodes (mode RGB) 128x128 | n/a | compression WebP |
-| `pillow_la.tga` | TGA | out | RESOLVED | decodes (mode LA) 64x64 | not comparable: encoding rle_tga not handled by the comparer | RLE TGA (image type 11) |
-| `pillow_negative_size.ppm` | PNM | out, invalid by construction | FAILED (no_hypothesis_checked) | refuses (UnidentifiedImageError) | n/a | malformed header |
+| `pillow_hopper_1bit_plain.pbm` | PNM | in | RESOLVED | decodes (mode 1) 128x128 | match |  |
+| `pillow_hopper_8bit.pgm` | PNM | in | RESOLVED | decodes (mode L) 128x128 | match |  |
+| `pillow_hopper_8bit.ppm` | PNM | in | RESOLVED | decodes (mode RGB) 128x128 | match |  |
+| `pillow_hopper_g4.tif` | TIFF | out | FAILED (exhausted) | decodes (mode 1) 128x128 | n/a | compression CCITT G4 (4) |
+| `pillow_hopper_lzma.tif` | TIFF | in | RESOLVED | decodes (mode RGB) 128x128 | match |  |
+| `pillow_hopper_lzw.tif` | TIFF | out | FAILED (exhausted) | decodes (mode RGB) 128x128 | n/a | predictor 2 |
+| `pillow_hopper_webp.tif` | TIFF | out | FAILED (exhausted) | decodes (mode RGB) 128x128 | n/a | compression WebP (50001) |
+| `pillow_la.tga` | TGA | in | RESOLVED | decodes (mode LA) 64x64 | match |  |
+| `pillow_negative_size.ppm` | PNM | out, invalid by construction | FAILED (no_hypothesis_checked) | refuses (UnidentifiedImageError) | n/a | magic P6 not followed by a whitespace byte |
 | `pillow_odd_stride.pcx` | PCX | in | RESOLVED | decodes (mode P) 371x150 | match |  |
-| `pillow_old-style-jpeg-compression.tif` | TIFF | out | FAILED (exhausted) | decodes (mode RGB) 4160x870 | n/a | compression OJPEG |
-| `pillow_ossfuzz-4836216264589312.pcx` | PCX | out, invalid by construction | RESOLVED | refuses (OSError) | n/a | Invalid by construction, and RESOLVED by design. The PCX probe recognised the signature and declined because the encoding byte 0x20 has no reading (engine Requirement 2.10), recording one probe_precondition_failed. Generic Search then found that 129 bytes admit a 128-byte header plus one data byte: a 2x1 1-bit image. That is a literal statement about the byte arithmetic, not a recovery claim. No PCX claim is made: the emitted spec has layout kind `file` and says it describes this one file only. |
+| `pillow_old-style-jpeg-compression.tif` | TIFF | out | FAILED (exhausted) | decodes (mode RGB) 4160x870 | n/a | compression OJPEG (6) |
+| `pillow_ossfuzz-4836216264589312.pcx` | PCX | out, invalid by construction | RESOLVED | refuses (OSError) | not comparable: Pillow refuses the file (OSError) | Invalid by construction, and RESOLVED by design. The PCX probe recognised the signature and declined because the encoding byte 0x20 has no reading (engine Requirement 2.10), recording one probe_precondition_failed. Generic Search then found that 129 bytes admit a 128-byte header plus one data byte: a 2x1 1-bit image. That is a literal statement about the byte arithmetic, not a recovery claim. No PCX claim is made: the emitted spec has layout kind `file` and says it describes this one file only. |
 | `pillow_p_16.tga` | TGA | in | RESOLVED | decodes (mode P) 128x128 | match |  |
-| `pillow_p_4_planes.pcx` | PCX | out | FAILED (exhausted) | decodes (mode P) 1x1 | n/a | 4 planes |
+| `pillow_p_4_planes.pcx` | PCX | in | RESOLVED | decodes (mode P) 1x1 | match |  |
 | `pillow_p_8.tga` | TGA | in, invalid by construction | FAILED (exhausted) | refuses (UnidentifiedImageError) | n/a |  |
 | `pillow_pil184.pcx` | PCX | in | RESOLVED | decodes (mode 1) 447x144 | match |  |
-| `pillow_rgb32rle.tga` | TGA | out | RESOLVED | decodes (mode RGBA) 199x199 | not comparable: encoding rle_tga not handled by the comparer | RLE TGA (image type 10) |
+| `pillow_rgb32rle.tga` | TGA | in | RESOLVED | decodes (mode RGBA) 199x199 | alpha not compared: the file declares no alpha (descriptor alpha bits 0, extension attributes type 0) and Pillow reports 255; R, G, B equal Pillow's |  |
 | `pillow_rgba16.tga` | TGA | in | RESOLVED | decodes (mode RGBA) 2x1 | mismatch: 2 of 8 canonical bytes differ (known interpretation difference) | Known interpretation difference, not a recovery error. The 5-bit colour values match. Pillow expands bit 15 as alpha (set = transparent here); the engine returns raw words and interprets no channel semantics. |
 | `pillow_tga_id_field.tga` | TGA | in | RESOLVED | decodes (mode RGB) 100x100 | match |  |
-| `pillow_tiff_adobe_deflate.tif` | TIFF | out | FAILED (exhausted) | decodes (mode RGB) 278x374 | n/a | compression Adobe Deflate |
-| `pillow_tiff_strip_planar_raw.tif` | TIFF | out | FAILED (exhausted) | decodes (mode RGB) 278x374 | n/a | 39 strips, planar configuration 2 |
-| `pillow_tiff_strip_raw.tif` | TIFF | out | FAILED (exhausted) | decodes (mode RGB) 278x374 | n/a | 3 strips |
-| `pillow_tiff_tiled_raw.tif` | TIFF | out | FAILED (exhausted) | decodes (mode RGB) 278x374 | n/a | tiled |
-| `sdlimage_sample.pcx` | PCX | out | FAILED (exhausted) | decodes (mode RGB) 23x42 | n/a | 3 planes |
-| `sdlimage_sample.pnm` | PNM | out | RESOLVED | decodes (mode RGB) 23x42 | match | P6 (only binary PBM, P4, has a probe) |
-| `sdlimage_sample.tga` | TGA | out | RESOLVED | decodes (mode RGB) 23x42 | not comparable: encoding rle_tga not handled by the comparer | RLE TGA (image type 10) |
+| `pillow_tiff_adobe_deflate.tif` | TIFF | out | FAILED (exhausted) | decodes (mode RGB) 278x374 | n/a | predictor 2 |
+| `pillow_tiff_strip_planar_raw.tif` | TIFF | out | FAILED (exhausted) | decodes (mode RGB) 278x374 | n/a | planar configuration 2 |
+| `pillow_tiff_strip_raw.tif` | TIFF | in | RESOLVED | decodes (mode RGB) 278x374 | match |  |
+| `pillow_tiff_tiled_raw.tif` | TIFF | in | RESOLVED | decodes (mode RGB) 278x374 | match |  |
+| `sdlimage_sample.pcx` | PCX | in | RESOLVED | decodes (mode RGB) 23x42 | match |  |
+| `sdlimage_sample.pnm` | PNM | in | RESOLVED | decodes (mode RGB) 23x42 | match |  |
+| `sdlimage_sample.tga` | TGA | in | RESOLVED | decodes (mode RGB) 23x42 | match |  |
 | `sdlimage_sample.tif` | TIFF | in | RESOLVED | decodes (mode RGB) 23x42 | match |  |

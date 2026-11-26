@@ -2,8 +2,8 @@
  {
   "file": "goimage_blue-purple-pink.lzwcompressed.tiff",
   "format": "TIFF",
-  "scope": "out",
-  "scope_reason": "compression LZW, 6 strips",
+  "scope": "in",
+  "scope_reason": "compression LZW (5), 6 strips",
   "invalid_by_construction": false,
   "our_status": "RESOLVED",
   "stage": "probe",
@@ -23,7 +23,7 @@
     "data_end": 38801
    }
   ],
-  "expected_status": "FAILED",
+  "expected_status": "RESOLVED",
   "note": "",
   "pillow_error": null,
   "pillow_decodes": true,
@@ -33,15 +33,15 @@
    100
   ],
   "pixel_verdicts": [
-   "not comparable: encoding tiff_compression_5 not handled by the comparer"
+   "match"
   ],
   "pillow_pixels_sha256": "db2d2e2de731d0e7ec820959fa0abf68c6a85e7bd4cb35248311f1fef6ee042b"
  },
  {
   "file": "goimage_bw-deflate.tiff",
   "format": "TIFF",
-  "scope": "out",
-  "scope_reason": "compression Deflate",
+  "scope": "in",
+  "scope_reason": "compression Deflate (32946), 1 strip",
   "invalid_by_construction": false,
   "our_status": "RESOLVED",
   "stage": "probe",
@@ -61,7 +61,7 @@
     "data_end": 305
    }
   ],
-  "expected_status": "FAILED",
+  "expected_status": "RESOLVED",
   "note": "",
   "pillow_error": null,
   "pillow_decodes": true,
@@ -79,7 +79,7 @@
   "file": "goimage_bw-gopher_ccittGroup3.tiff",
   "format": "TIFF",
   "scope": "out",
-  "scope_reason": "compression CCITT G3",
+  "scope_reason": "compression CCITT G3 (3)",
   "invalid_by_construction": false,
   "our_status": "FAILED",
   "stage": null,
@@ -102,7 +102,7 @@
   "file": "goimage_bw-gopher_ccittGroup4.tiff",
   "format": "TIFF",
   "scope": "out",
-  "scope_reason": "compression CCITT G4",
+  "scope_reason": "compression CCITT G4 (4)",
   "invalid_by_construction": false,
   "our_status": "FAILED",
   "stage": null,
@@ -124,8 +124,8 @@
  {
   "file": "goimage_bw-packbits.tiff",
   "format": "TIFF",
-  "scope": "out",
-  "scope_reason": "compression PackBits",
+  "scope": "in",
+  "scope_reason": "compression PackBits (32773), 1 strip",
   "invalid_by_construction": false,
   "our_status": "RESOLVED",
   "stage": "probe",
@@ -145,7 +145,7 @@
     "data_end": 602
    }
   ],
-  "expected_status": "FAILED",
+  "expected_status": "RESOLVED",
   "note": "",
   "pillow_error": null,
   "pillow_decodes": true,
@@ -155,7 +155,7 @@
    55
   ],
   "pixel_verdicts": [
-   "not comparable: encoding tiff_compression_32773 not handled by the comparer"
+   "stored bytes; equals Pillow after WhiteIsZero inversion (tag 262 = 0)"
   ],
   "pillow_pixels_sha256": "f1686fc100a21243edaedc78b25638f37a4ad2d09dbf7d3e8f6b535828bdd67f"
  },
@@ -163,7 +163,7 @@
   "file": "goimage_bw-uncompressed.tiff",
   "format": "TIFF",
   "scope": "in",
-  "scope_reason": "single-strip uncompressed TIFF",
+  "scope_reason": "compression none (1), 1 strip",
   "invalid_by_construction": false,
   "our_status": "RESOLVED",
   "stage": "probe",
@@ -193,15 +193,15 @@
    55
   ],
   "pixel_verdicts": [
-   "match"
+   "stored bytes; equals Pillow after WhiteIsZero inversion (tag 262 = 0)"
   ],
   "pillow_pixels_sha256": "f1686fc100a21243edaedc78b25638f37a4ad2d09dbf7d3e8f6b535828bdd67f"
  },
  {
   "file": "goimage_invalid-palette-ref.tiff",
   "format": "TIFF",
-  "scope": "out",
-  "scope_reason": "compression Adobe Deflate, 2 strips",
+  "scope": "in",
+  "scope_reason": "compression Adobe Deflate (8), 2 strips",
   "invalid_by_construction": true,
   "our_status": "RESOLVED",
   "stage": "probe",
@@ -222,19 +222,21 @@
    }
   ],
   "expected_status": "FAILED",
-  "note": "Row 25 of format-coverage design.md: RESOLVED. It decodes the same region as goimage_video-001-paletted.tiff; Pillow refuses it (UnidentifiedImageError), so there is no pixel comparison.",
+  "note": "Invalid by construction, and RESOLVED. The Deflate decoder decodes the same region as goimage_video-001-paletted.tiff (format-coverage design.md row 25). Pillow refuses the file (UnidentifiedImageError) for palette indices the engine does not read, so there is no pixel comparison. The expected status stays FAILED: this is an unexpected RESOLVED, reported under Requirement 19.5.",
   "pillow_error": "UnidentifiedImageError: cannot identify image file 'goimage_invalid-palette-ref.tiff'",
   "pillow_decodes": false,
   "pillow_mode": null,
   "pillow_size": null,
-  "pixel_verdicts": [],
+  "pixel_verdicts": [
+   "not comparable: Pillow refuses the file (UnidentifiedImageError)"
+  ],
   "pillow_pixels_sha256": null
  },
  {
   "file": "goimage_no_compress.tiff",
   "format": "TIFF",
   "scope": "in",
-  "scope_reason": "single-strip uncompressed TIFF",
+  "scope_reason": "compression none (1), 1 strip",
   "invalid_by_construction": false,
   "our_status": "RESOLVED",
   "stage": "probe",
@@ -272,7 +274,7 @@
   "file": "goimage_no_rps.tiff",
   "format": "TIFF",
   "scope": "in",
-  "scope_reason": "single-strip uncompressed TIFF",
+  "scope_reason": "compression none (1), 1 strip",
   "invalid_by_construction": false,
   "our_status": "RESOLVED",
   "stage": "probe",
@@ -309,11 +311,11 @@
  {
   "file": "goimage_video-001-gray.tiff",
   "format": "TIFF",
-  "scope": "out",
-  "scope_reason": "2 strips",
+  "scope": "in",
+  "scope_reason": "compression none (1), 2 strips",
   "invalid_by_construction": false,
   "our_status": "RESOLVED",
-  "stage": null,
+  "stage": "probe",
   "termination": null,
   "checks": 1,
   "candidates": [
@@ -330,7 +332,7 @@
     "data_end": 15458
    }
   ],
-  "expected_status": "FAILED",
+  "expected_status": "RESOLVED",
   "note": "",
   "pillow_error": null,
   "pillow_decodes": true,
@@ -339,14 +341,16 @@
    150,
    103
   ],
-  "pixel_verdicts": [],
-  "pillow_pixels_sha256": null
+  "pixel_verdicts": [
+   "match"
+  ],
+  "pillow_pixels_sha256": "79944b15c4f0d578db7d8e352af98796d351064b6049610b5a5ffb1b4da5ac90"
  },
  {
   "file": "goimage_video-001-paletted.tiff",
   "format": "TIFF",
-  "scope": "out",
-  "scope_reason": "compression Adobe Deflate, 2 strips",
+  "scope": "in",
+  "scope_reason": "compression Adobe Deflate (8), 2 strips",
   "invalid_by_construction": false,
   "our_status": "RESOLVED",
   "stage": "probe",
@@ -366,7 +370,7 @@
     "data_end": 9460
    }
   ],
-  "expected_status": "FAILED",
+  "expected_status": "RESOLVED",
   "note": "",
   "pillow_error": null,
   "pillow_decodes": true,
@@ -384,7 +388,7 @@
   "file": "goimage_video-001-strip-64.tiff",
   "format": "TIFF",
   "scope": "out",
-  "scope_reason": "compression Adobe Deflate, 2 strips",
+  "scope_reason": "predictor 2",
   "invalid_by_construction": false,
   "our_status": "FAILED",
   "stage": null,
@@ -407,7 +411,7 @@
   "file": "goimage_video-001-tile-64x64.tiff",
   "format": "TIFF",
   "scope": "out",
-  "scope_reason": "compression Adobe Deflate, tiled",
+  "scope_reason": "predictor 2",
   "invalid_by_construction": false,
   "our_status": "FAILED",
   "stage": null,
@@ -430,7 +434,7 @@
   "file": "goimage_video-001-uncompressed.tiff",
   "format": "TIFF",
   "scope": "in",
-  "scope_reason": "single-strip uncompressed TIFF",
+  "scope_reason": "compression none (1), 1 strip",
   "invalid_by_construction": false,
   "our_status": "RESOLVED",
   "stage": "probe",
@@ -467,8 +471,8 @@
  {
   "file": "imagemagick_input.pcx",
   "format": "PCX",
-  "scope": "out",
-  "scope_reason": "3 planes",
+  "scope": "in",
+  "scope_reason": "PCX encoding 1, 3 planes",
   "invalid_by_construction": false,
   "our_status": "RESOLVED",
   "stage": "revision",
@@ -490,7 +494,7 @@
     "data_end": 10844
    }
   ],
-  "expected_status": "FAILED",
+  "expected_status": "RESOLVED",
   "note": "",
   "pillow_error": null,
   "pillow_decodes": true,
@@ -500,7 +504,7 @@
    46
   ],
   "pixel_verdicts": [
-   "not comparable: PCX bit depth 24 not handled by the comparer"
+   "match"
   ],
   "pillow_pixels_sha256": "a698f2fe0c6c31f83d19554a6ec02bac79c961dd9a87e7ed217752e75eb615d7"
  },
@@ -508,7 +512,7 @@
   "file": "imagemagick_input.tga",
   "format": "TGA",
   "scope": "in",
-  "scope_reason": "uncompressed TGA (image type 2)",
+  "scope_reason": "TGA image type 2",
   "invalid_by_construction": false,
   "our_status": "RESOLVED",
   "stage": "probe",
@@ -545,8 +549,8 @@
  {
   "file": "imagemagick_input_p1.pbm",
   "format": "PNM",
-  "scope": "out",
-  "scope_reason": "P1 (only binary PBM, P4, has a probe)",
+  "scope": "in",
+  "scope_reason": "magic P1 followed by whitespace",
   "invalid_by_construction": false,
   "our_status": "RESOLVED",
   "stage": "probe",
@@ -566,7 +570,7 @@
     "data_end": 6538
    }
   ],
-  "expected_status": "FAILED",
+  "expected_status": "RESOLVED",
   "note": "",
   "pillow_error": null,
   "pillow_decodes": true,
@@ -576,15 +580,15 @@
    46
   ],
   "pixel_verdicts": [
-   "not comparable: encoding pnm_text not handled by the comparer"
+   "match"
   ],
   "pillow_pixels_sha256": "4a3c981806a3cfc59a8f148011e690631b4ebd5132217666f57566d779b6ee41"
  },
  {
   "file": "imagemagick_input_p2.pgm",
   "format": "PNM",
-  "scope": "out",
-  "scope_reason": "P2 (only binary PBM, P4, has a probe)",
+  "scope": "in",
+  "scope_reason": "magic P2 followed by whitespace",
   "invalid_by_construction": false,
   "our_status": "RESOLVED",
   "stage": "probe",
@@ -604,7 +608,7 @@
     "data_end": 9770
    }
   ],
-  "expected_status": "FAILED",
+  "expected_status": "RESOLVED",
   "note": "",
   "pillow_error": null,
   "pillow_decodes": true,
@@ -614,15 +618,15 @@
    46
   ],
   "pixel_verdicts": [
-   "not comparable: encoding pnm_text not handled by the comparer"
+   "match"
   ],
   "pillow_pixels_sha256": "fb44ca702deb10609521e2a499273bfb2f2a8825f34e014df441798e51fa6875"
  },
  {
   "file": "imagemagick_input_p3.ppm",
   "format": "PNM",
-  "scope": "out",
-  "scope_reason": "P3 (only binary PBM, P4, has a probe)",
+  "scope": "in",
+  "scope_reason": "magic P3 followed by whitespace",
   "invalid_by_construction": false,
   "our_status": "RESOLVED",
   "stage": "probe",
@@ -642,7 +646,7 @@
     "data_end": 33500
    }
   ],
-  "expected_status": "FAILED",
+  "expected_status": "RESOLVED",
   "note": "",
   "pillow_error": null,
   "pillow_decodes": true,
@@ -652,7 +656,7 @@
    46
   ],
   "pixel_verdicts": [
-   "not comparable: encoding pnm_text not handled by the comparer"
+   "match"
   ],
   "pillow_pixels_sha256": "a698f2fe0c6c31f83d19554a6ec02bac79c961dd9a87e7ed217752e75eb615d7"
  },
@@ -660,7 +664,7 @@
   "file": "imagemagick_input_p4.pbm",
   "format": "PNM",
   "scope": "in",
-  "scope_reason": "binary PBM (P4) with the exact b'P4\\n' signature the PBM probe reads",
+  "scope_reason": "magic P4 followed by newline",
   "invalid_by_construction": false,
   "our_status": "RESOLVED",
   "stage": "probe",
@@ -697,8 +701,8 @@
  {
   "file": "imagemagick_input_p5.pgm",
   "format": "PNM",
-  "scope": "out",
-  "scope_reason": "P5 (only binary PBM, P4, has a probe)",
+  "scope": "in",
+  "scope_reason": "magic P5 followed by whitespace",
   "invalid_by_construction": false,
   "our_status": "RESOLVED",
   "stage": "probe",
@@ -718,7 +722,7 @@
     "data_end": 3233
    }
   ],
-  "expected_status": "FAILED",
+  "expected_status": "RESOLVED",
   "note": "",
   "pillow_error": null,
   "pillow_decodes": true,
@@ -735,8 +739,8 @@
  {
   "file": "imagemagick_input_p6.ppm",
   "format": "PNM",
-  "scope": "out",
-  "scope_reason": "P6 (only binary PBM, P4, has a probe)",
+  "scope": "in",
+  "scope_reason": "magic P6 followed by whitespace",
   "invalid_by_construction": false,
   "our_status": "RESOLVED",
   "stage": "probe",
@@ -756,7 +760,7 @@
     "data_end": 9673
    }
   ],
-  "expected_status": "FAILED",
+  "expected_status": "RESOLVED",
   "note": "",
   "pillow_error": null,
   "pillow_decodes": true,
@@ -774,7 +778,7 @@
   "file": "imagers_issue-794.pbm",
   "format": "PNM",
   "scope": "in",
-  "scope_reason": "binary PBM (P4) with the exact b'P4\\n' signature the PBM probe reads",
+  "scope_reason": "magic P4 followed by newline",
   "invalid_by_construction": false,
   "our_status": "RESOLVED",
   "stage": "probe",
@@ -812,7 +816,7 @@
   "file": "imagers_narrow.pbm",
   "format": "PNM",
   "scope": "in",
-  "scope_reason": "binary PBM (P4) with the exact b'P4\\n' signature the PBM probe reads",
+  "scope_reason": "magic P4 followed by newline",
   "invalid_by_construction": false,
   "our_status": "RESOLVED",
   "stage": "probe",
@@ -849,16 +853,16 @@
  {
   "file": "libtiff_deflate-last-strip-extra-data.tiff",
   "format": "TIFF",
-  "scope": "out",
-  "scope_reason": "compression Adobe Deflate, 32 strips",
+  "scope": "in",
+  "scope_reason": "compression Adobe Deflate (8), 32 strips",
   "invalid_by_construction": false,
   "our_status": "FAILED",
   "stage": null,
   "termination": "exhausted",
   "checks": 3,
   "candidates": [],
-  "expected_status": "FAILED",
-  "note": "",
+  "expected_status": "RESOLVED",
+  "note": "its last strip carries more data than the strip holds; the engine refuses it and Pillow's libtiff does not. The image is 500 x 500 with RowsPerStrip 16, so the last of 32 strips is 4 rows = 2000 bytes, and the file's last strip inflates past 2000 bytes (decoder_overrun, range 31 [12508, 12789)). The first 31 strips inflate to exactly 8000 bytes. Closure fails on that strip, so FAILED is correct under the spec (Principle call 2).",
   "pillow_error": null,
   "pillow_decodes": true,
   "pillow_mode": "L",
@@ -873,7 +877,7 @@
   "file": "libtiff_logluv-3c-16b.tiff",
   "format": "TIFF",
   "scope": "out",
-  "scope_reason": "compression SGILog",
+  "scope_reason": "compression SGILog (34676)",
   "invalid_by_construction": false,
   "our_status": "FAILED",
   "stage": null,
@@ -892,8 +896,8 @@
  {
   "file": "libtiff_lzw-single-strip.tiff",
   "format": "TIFF",
-  "scope": "out",
-  "scope_reason": "compression LZW",
+  "scope": "in",
+  "scope_reason": "compression LZW (5), 1 strip",
   "invalid_by_construction": false,
   "our_status": "RESOLVED",
   "stage": "probe",
@@ -913,7 +917,7 @@
     "data_end": 76264
    }
   ],
-  "expected_status": "FAILED",
+  "expected_status": "RESOLVED",
   "note": "",
   "pillow_error": null,
   "pillow_decodes": true,
@@ -923,15 +927,15 @@
    3122
   ],
   "pixel_verdicts": [
-   "not comparable: encoding tiff_compression_5 not handled by the comparer"
+   "stored bytes; equals Pillow after WhiteIsZero inversion (tag 262 = 0)"
   ],
   "pillow_pixels_sha256": "0653bfcac51c01c8e48dc1695402e9700e1366bf51418f2b91dcf57a95db30ed"
  },
  {
   "file": "libtiff_minisblack-1c-8b.pgm",
   "format": "PNM",
-  "scope": "out",
-  "scope_reason": "P5 (only binary PBM, P4, has a probe)",
+  "scope": "in",
+  "scope_reason": "magic P5 followed by whitespace",
   "invalid_by_construction": false,
   "our_status": "RESOLVED",
   "stage": "probe",
@@ -951,7 +955,7 @@
     "data_end": 23722
    }
   ],
-  "expected_status": "FAILED",
+  "expected_status": "RESOLVED",
   "note": "",
   "pillow_error": null,
   "pillow_decodes": true,
@@ -968,11 +972,11 @@
  {
   "file": "libtiff_minisblack-1c-8b.tiff",
   "format": "TIFF",
-  "scope": "out",
-  "scope_reason": "3 strips",
+  "scope": "in",
+  "scope_reason": "compression none (1), 3 strips",
   "invalid_by_construction": false,
   "our_status": "RESOLVED",
-  "stage": null,
+  "stage": "probe",
   "termination": null,
   "checks": 1,
   "candidates": [
@@ -989,7 +993,7 @@
     "data_end": 23715
    }
   ],
-  "expected_status": "FAILED",
+  "expected_status": "RESOLVED",
   "note": "",
   "pillow_error": null,
   "pillow_decodes": true,
@@ -998,14 +1002,16 @@
    157,
    151
   ],
-  "pixel_verdicts": [],
-  "pillow_pixels_sha256": null
+  "pixel_verdicts": [
+   "match"
+  ],
+  "pillow_pixels_sha256": "6f2d6e8e78698950bfced4d1049ff79e13b54d751db08364c43de4a721b72d16"
  },
  {
   "file": "libtiff_miniswhite-1c-1b.pbm",
   "format": "PNM",
   "scope": "in",
-  "scope_reason": "binary PBM (P4) with the exact b'P4\\n' signature the PBM probe reads",
+  "scope_reason": "magic P4 followed by newline",
   "invalid_by_construction": false,
   "our_status": "RESOLVED",
   "stage": "probe",
@@ -1043,7 +1049,7 @@
   "file": "libtiff_miniswhite-1c-1b.tiff",
   "format": "TIFF",
   "scope": "in",
-  "scope_reason": "single-strip uncompressed TIFF",
+  "scope_reason": "compression none (1), 1 strip",
   "invalid_by_construction": false,
   "our_status": "RESOLVED",
   "stage": "probe",
@@ -1073,7 +1079,7 @@
    151
   ],
   "pixel_verdicts": [
-   "match"
+   "stored bytes; equals Pillow after WhiteIsZero inversion (tag 262 = 0)"
   ],
   "pillow_pixels_sha256": "6ae6bcc7128dc90a923cc5ac5812088859c7a1cf4bc6b83661f0ed29f316b400"
  },
@@ -1081,7 +1087,7 @@
   "file": "libtiff_ojpeg_zackthecat_subsamp22_single_strip.tiff",
   "format": "TIFF",
   "scope": "out",
-  "scope_reason": "compression OJPEG, tiled",
+  "scope_reason": "compression OJPEG (6)",
   "invalid_by_construction": false,
   "our_status": "FAILED",
   "stage": null,
@@ -1103,11 +1109,11 @@
  {
   "file": "libtiff_palette-1c-8b.tiff",
   "format": "TIFF",
-  "scope": "out",
-  "scope_reason": "3 strips",
+  "scope": "in",
+  "scope_reason": "compression none (1), 3 strips",
   "invalid_by_construction": false,
   "our_status": "RESOLVED",
-  "stage": null,
+  "stage": "probe",
   "termination": null,
   "checks": 1,
   "candidates": [
@@ -1124,7 +1130,7 @@
     "data_end": 23715
    }
   ],
-  "expected_status": "FAILED",
+  "expected_status": "RESOLVED",
   "note": "",
   "pillow_error": null,
   "pillow_decodes": true,
@@ -1133,14 +1139,16 @@
    157,
    151
   ],
-  "pixel_verdicts": [],
-  "pillow_pixels_sha256": null
+  "pixel_verdicts": [
+   "match"
+  ],
+  "pillow_pixels_sha256": "f9975457c122ed6a4b9257980391a1052631ab766d1547e67369df3cbf24f76a"
  },
  {
   "file": "libtiff_quad-tile.jpg.tiff",
   "format": "TIFF",
   "scope": "out",
-  "scope_reason": "compression JPEG, tiled",
+  "scope_reason": "compression JPEG (7)",
   "invalid_by_construction": false,
   "our_status": "FAILED",
   "stage": null,
@@ -1162,8 +1170,8 @@
  {
   "file": "libtiff_rgb-3c-16b.ppm",
   "format": "PNM",
-  "scope": "out",
-  "scope_reason": "P6 (only binary PBM, P4, has a probe)",
+  "scope": "in",
+  "scope_reason": "magic P6 followed by whitespace",
   "invalid_by_construction": false,
   "our_status": "RESOLVED",
   "stage": "probe",
@@ -1183,7 +1191,7 @@
     "data_end": 142305
    }
   ],
-  "expected_status": "FAILED",
+  "expected_status": "RESOLVED",
   "note": "",
   "pillow_error": null,
   "pillow_decodes": true,
@@ -1193,15 +1201,15 @@
    151
   ],
   "pixel_verdicts": [
-   "not comparable: PNM bit depth 48 not handled by the comparer"
+   "16-bit samples: engine v * 255 // maxval (Requirement 16.1); Pillow rounds to nearest, (v * 255 + 32767) // 65535; every byte checked"
   ],
   "pillow_pixels_sha256": "d01a45bf10baeaf41ad982b3cc2a38e2e9a993c944c34658abfa78878d5ed4bd"
  },
  {
   "file": "libtiff_rgb-3c-8b.ppm",
   "format": "PNM",
-  "scope": "out",
-  "scope_reason": "P6 (only binary PBM, P4, has a probe)",
+  "scope": "in",
+  "scope_reason": "magic P6 followed by whitespace",
   "invalid_by_construction": false,
   "our_status": "RESOLVED",
   "stage": "probe",
@@ -1221,7 +1229,7 @@
     "data_end": 71136
    }
   ],
-  "expected_status": "FAILED",
+  "expected_status": "RESOLVED",
   "note": "",
   "pillow_error": null,
   "pillow_decodes": true,
@@ -1238,11 +1246,11 @@
  {
   "file": "libtiff_rgb-3c-8b.tiff",
   "format": "TIFF",
-  "scope": "out",
-  "scope_reason": "9 strips",
+  "scope": "in",
+  "scope_reason": "compression none (1), 9 strips",
   "invalid_by_construction": false,
   "our_status": "RESOLVED",
-  "stage": null,
+  "stage": "probe",
   "termination": null,
   "checks": 1,
   "candidates": [
@@ -1259,7 +1267,7 @@
     "data_end": 71129
    }
   ],
-  "expected_status": "FAILED",
+  "expected_status": "RESOLVED",
   "note": "",
   "pillow_error": null,
   "pillow_decodes": true,
@@ -1268,14 +1276,16 @@
    157,
    151
   ],
-  "pixel_verdicts": [],
-  "pillow_pixels_sha256": null
+  "pixel_verdicts": [
+   "match"
+  ],
+  "pillow_pixels_sha256": "ff53739e3609939a902677367b759b4dd0c32e0605dae9173657e32f56de0ff4"
  },
  {
   "file": "libtiff_test_ifd_loop_to_self.tif",
   "format": "TIFF",
   "scope": "in",
-  "scope_reason": "single-strip uncompressed TIFF; its IFD chain loops back to itself, which does not stop the first IFD being read",
+  "scope_reason": "compression none (1), 1 strip",
   "invalid_by_construction": false,
   "our_status": "RESOLVED",
   "stage": "probe",
@@ -1313,7 +1323,7 @@
   "file": "libtiff_testfax4.tiff",
   "format": "TIFF",
   "scope": "out",
-  "scope_reason": "compression CCITT G4",
+  "scope_reason": "compression CCITT G4 (4)",
   "invalid_by_construction": false,
   "our_status": "FAILED",
   "stage": null,
@@ -1336,7 +1346,7 @@
   "file": "pillow_01r_00.pcx",
   "format": "PCX",
   "scope": "in",
-  "scope_reason": "single-plane PCX",
+  "scope_reason": "PCX encoding 1, 1 plane",
   "invalid_by_construction": true,
   "our_status": "FAILED",
   "stage": null,
@@ -1358,11 +1368,11 @@
  {
   "file": "pillow_12bit.cropped.tif",
   "format": "TIFF",
-  "scope": "out",
-  "scope_reason": "2 strips",
+  "scope": "in",
+  "scope_reason": "compression none (1), 2 strips",
   "invalid_by_construction": false,
   "our_status": "RESOLVED",
-  "stage": null,
+  "stage": "probe",
   "termination": null,
   "checks": 1,
   "candidates": [
@@ -1379,7 +1389,7 @@
     "data_end": 15008
    }
   ],
-  "expected_status": "FAILED",
+  "expected_status": "RESOLVED",
   "note": "",
   "pillow_error": null,
   "pillow_decodes": true,
@@ -1388,14 +1398,16 @@
    100,
    100
   ],
-  "pixel_verdicts": [],
-  "pillow_pixels_sha256": null
+  "pixel_verdicts": [
+   "12-bit samples: engine v * 255 // 4095 (Requirement 16.1); Pillow's mode I;16 holds the same raw samples and its 8-bit conversion clips to 255; every byte checked"
+  ],
+  "pillow_pixels_sha256": "866c794d024fb3bc371d9473af551ae1e6c74321e74545c5eaead3aed6f99623"
  },
  {
   "file": "pillow_1x1_l_tl_raw.tga",
   "format": "TGA",
   "scope": "in",
-  "scope_reason": "uncompressed TGA (image type 3)",
+  "scope_reason": "TGA image type 3",
   "invalid_by_construction": false,
   "our_status": "RESOLVED",
   "stage": "probe",
@@ -1433,7 +1445,7 @@
   "file": "pillow_200x32_l_bl_raw.tga",
   "format": "TGA",
   "scope": "in",
-  "scope_reason": "uncompressed TGA (image type 3)",
+  "scope_reason": "TGA image type 3",
   "invalid_by_construction": false,
   "our_status": "RESOLVED",
   "stage": "probe",
@@ -1470,8 +1482,8 @@
  {
   "file": "pillow_200x32_l_tl_rle.tga",
   "format": "TGA",
-  "scope": "out",
-  "scope_reason": "RLE TGA (image type 11)",
+  "scope": "in",
+  "scope_reason": "TGA image type 11",
   "invalid_by_construction": false,
   "our_status": "RESOLVED",
   "stage": "probe",
@@ -1491,7 +1503,7 @@
     "data_end": 2688
    }
   ],
-  "expected_status": "FAILED",
+  "expected_status": "RESOLVED",
   "note": "",
   "pillow_error": null,
   "pillow_decodes": true,
@@ -1501,7 +1513,7 @@
    32
   ],
   "pixel_verdicts": [
-   "not comparable: encoding rle_tga not handled by the comparer"
+   "match"
   ],
   "pillow_pixels_sha256": "1d3a4a375990410a04b15e5f34195e24c1bba251d711f72ed363f9db746080ed"
  },
@@ -1509,7 +1521,7 @@
   "file": "pillow_200x32_la_bl_raw.tga",
   "format": "TGA",
   "scope": "in",
-  "scope_reason": "uncompressed TGA (image type 3)",
+  "scope_reason": "TGA image type 3",
   "invalid_by_construction": false,
   "our_status": "RESOLVED",
   "stage": "probe",
@@ -1547,7 +1559,7 @@
   "file": "pillow_200x32_p_bl_raw.tga",
   "format": "TGA",
   "scope": "in",
-  "scope_reason": "uncompressed TGA (image type 1)",
+  "scope_reason": "TGA image type 1",
   "invalid_by_construction": false,
   "our_status": "RESOLVED",
   "stage": "probe",
@@ -1584,8 +1596,8 @@
  {
   "file": "pillow_200x32_p_tl_rle.tga",
   "format": "TGA",
-  "scope": "out",
-  "scope_reason": "RLE TGA (image type 9)",
+  "scope": "in",
+  "scope_reason": "TGA image type 9",
   "invalid_by_construction": false,
   "our_status": "RESOLVED",
   "stage": "probe",
@@ -1605,7 +1617,7 @@
     "data_end": 7752
    }
   ],
-  "expected_status": "FAILED",
+  "expected_status": "RESOLVED",
   "note": "",
   "pillow_error": null,
   "pillow_decodes": true,
@@ -1615,7 +1627,7 @@
    32
   ],
   "pixel_verdicts": [
-   "not comparable: encoding rle_tga not handled by the comparer"
+   "match"
   ],
   "pillow_pixels_sha256": "a2340c38626f6a561b5b6406774a9f1bc99250ce3d8d7bb327cd26a2fa3aa3a7"
  },
@@ -1623,7 +1635,7 @@
   "file": "pillow_200x32_rgb_bl_raw.tga",
   "format": "TGA",
   "scope": "in",
-  "scope_reason": "uncompressed TGA (image type 2)",
+  "scope_reason": "TGA image type 2",
   "invalid_by_construction": false,
   "our_status": "RESOLVED",
   "stage": "probe",
@@ -1660,8 +1672,8 @@
  {
   "file": "pillow_200x32_rgb_tl_rle.tga",
   "format": "TGA",
-  "scope": "out",
-  "scope_reason": "RLE TGA (image type 10)",
+  "scope": "in",
+  "scope_reason": "TGA image type 10",
   "invalid_by_construction": false,
   "our_status": "RESOLVED",
   "stage": "probe",
@@ -1681,7 +1693,7 @@
     "data_end": 19282
    }
   ],
-  "expected_status": "FAILED",
+  "expected_status": "RESOLVED",
   "note": "",
   "pillow_error": null,
   "pillow_decodes": true,
@@ -1691,7 +1703,7 @@
    32
   ],
   "pixel_verdicts": [
-   "not comparable: encoding rle_tga not handled by the comparer"
+   "match"
   ],
   "pillow_pixels_sha256": "0d88e78be340cacf8768184f4b8fcb5f709a5c1edf910d086d2d241c7a9ca825"
  },
@@ -1699,7 +1711,7 @@
   "file": "pillow_200x32_rgba_tl_raw.tga",
   "format": "TGA",
   "scope": "in",
-  "scope_reason": "uncompressed TGA (image type 2)",
+  "scope_reason": "TGA image type 2",
   "invalid_by_construction": false,
   "our_status": "RESOLVED",
   "stage": "probe",
@@ -1737,7 +1749,7 @@
   "file": "pillow_cross_scan_line.tga",
   "format": "TGA",
   "scope": "in",
-  "scope_reason": "RLE TGA (image type 11); in scope since format-coverage Task 12 because the engine decodes rle_tga (Requirement 5.9)",
+  "scope_reason": "TGA image type 11",
   "invalid_by_construction": false,
   "our_status": "FAILED",
   "stage": null,
@@ -1759,8 +1771,8 @@
  {
   "file": "pillow_cross_scan_line_truncated.tga",
   "format": "TGA",
-  "scope": "out",
-  "scope_reason": "RLE TGA (image type 9)",
+  "scope": "in",
+  "scope_reason": "TGA image type 9",
   "invalid_by_construction": true,
   "our_status": "FAILED",
   "stage": null,
@@ -1782,8 +1794,8 @@
  {
   "file": "pillow_hopper_16bit.pgm",
   "format": "PNM",
-  "scope": "out",
-  "scope_reason": "P5 (only binary PBM, P4, has a probe)",
+  "scope": "in",
+  "scope_reason": "magic P5 followed by whitespace",
   "invalid_by_construction": false,
   "our_status": "RESOLVED",
   "stage": "probe",
@@ -1803,7 +1815,7 @@
     "data_end": 32785
    }
   ],
-  "expected_status": "FAILED",
+  "expected_status": "RESOLVED",
   "note": "",
   "pillow_error": null,
   "pillow_decodes": true,
@@ -1813,15 +1825,15 @@
    128
   ],
   "pixel_verdicts": [
-   "not comparable: PNM bit depth 16 not handled by the comparer"
+   "16-bit samples: engine v * 255 // maxval (Requirement 16.1); Pillow's mode I holds the same raw samples and its 8-bit conversion clips to 255; every byte checked"
   ],
-  "pillow_pixels_sha256": null
+  "pillow_pixels_sha256": "42b4b069ad5f5bf6410aea2d159ac97288235b48fa564c09e3c935d3f6ac5f2d"
  },
  {
   "file": "pillow_hopper_1bit.pbm",
   "format": "PNM",
   "scope": "in",
-  "scope_reason": "binary PBM (P4) with the exact b'P4\\n' signature the PBM probe reads",
+  "scope_reason": "magic P4 followed by newline",
   "invalid_by_construction": false,
   "our_status": "RESOLVED",
   "stage": "probe",
@@ -1858,8 +1870,8 @@
  {
   "file": "pillow_hopper_1bit_plain.pbm",
   "format": "PNM",
-  "scope": "out",
-  "scope_reason": "P1 (only binary PBM, P4, has a probe)",
+  "scope": "in",
+  "scope_reason": "magic P1 followed by whitespace",
   "invalid_by_construction": false,
   "our_status": "RESOLVED",
   "stage": "probe",
@@ -1879,7 +1891,7 @@
     "data_end": 32394
    }
   ],
-  "expected_status": "FAILED",
+  "expected_status": "RESOLVED",
   "note": "",
   "pillow_error": null,
   "pillow_decodes": true,
@@ -1889,15 +1901,15 @@
    128
   ],
   "pixel_verdicts": [
-   "not comparable: encoding pnm_text not handled by the comparer"
+   "match"
   ],
   "pillow_pixels_sha256": "78144e85d3b245e58631e5aac5b5b850a13691bdb155b7248b53648fffccc94b"
  },
  {
   "file": "pillow_hopper_8bit.pgm",
   "format": "PNM",
-  "scope": "out",
-  "scope_reason": "P5 (only binary PBM, P4, has a probe)",
+  "scope": "in",
+  "scope_reason": "magic P5 followed by whitespace",
   "invalid_by_construction": false,
   "our_status": "RESOLVED",
   "stage": "probe",
@@ -1917,7 +1929,7 @@
     "data_end": 16399
    }
   ],
-  "expected_status": "FAILED",
+  "expected_status": "RESOLVED",
   "note": "",
   "pillow_error": null,
   "pillow_decodes": true,
@@ -1934,8 +1946,8 @@
  {
   "file": "pillow_hopper_8bit.ppm",
   "format": "PNM",
-  "scope": "out",
-  "scope_reason": "P6 (only binary PBM, P4, has a probe)",
+  "scope": "in",
+  "scope_reason": "magic P6 followed by whitespace",
   "invalid_by_construction": false,
   "our_status": "RESOLVED",
   "stage": "probe",
@@ -1955,7 +1967,7 @@
     "data_end": 49167
    }
   ],
-  "expected_status": "FAILED",
+  "expected_status": "RESOLVED",
   "note": "",
   "pillow_error": null,
   "pillow_decodes": true,
@@ -1973,7 +1985,7 @@
   "file": "pillow_hopper_g4.tif",
   "format": "TIFF",
   "scope": "out",
-  "scope_reason": "compression CCITT G4",
+  "scope_reason": "compression CCITT G4 (4)",
   "invalid_by_construction": false,
   "our_status": "FAILED",
   "stage": null,
@@ -1995,8 +2007,8 @@
  {
   "file": "pillow_hopper_lzma.tif",
   "format": "TIFF",
-  "scope": "out",
-  "scope_reason": "compression LZMA",
+  "scope": "in",
+  "scope_reason": "compression LZMA (34925), 1 strip",
   "invalid_by_construction": false,
   "our_status": "RESOLVED",
   "stage": "probe",
@@ -2016,7 +2028,7 @@
     "data_end": 30432
    }
   ],
-  "expected_status": "FAILED",
+  "expected_status": "RESOLVED",
   "note": "",
   "pillow_error": null,
   "pillow_decodes": true,
@@ -2026,7 +2038,7 @@
    128
   ],
   "pixel_verdicts": [
-   "not comparable: encoding tiff_compression_34925 not handled by the comparer"
+   "match"
   ],
   "pillow_pixels_sha256": "87ce2dc3eea0549d83beb8013872498a3ce5267acaa22fbd26335ccb680700d5"
  },
@@ -2034,7 +2046,7 @@
   "file": "pillow_hopper_lzw.tif",
   "format": "TIFF",
   "scope": "out",
-  "scope_reason": "compression LZW, 7 strips",
+  "scope_reason": "predictor 2",
   "invalid_by_construction": false,
   "our_status": "FAILED",
   "stage": null,
@@ -2057,7 +2069,7 @@
   "file": "pillow_hopper_webp.tif",
   "format": "TIFF",
   "scope": "out",
-  "scope_reason": "compression WebP",
+  "scope_reason": "compression WebP (50001)",
   "invalid_by_construction": false,
   "our_status": "FAILED",
   "stage": null,
@@ -2079,8 +2091,8 @@
  {
   "file": "pillow_la.tga",
   "format": "TGA",
-  "scope": "out",
-  "scope_reason": "RLE TGA (image type 11)",
+  "scope": "in",
+  "scope_reason": "TGA image type 11",
   "invalid_by_construction": false,
   "our_status": "RESOLVED",
   "stage": "probe",
@@ -2100,7 +2112,7 @@
     "data_end": 7179
    }
   ],
-  "expected_status": "FAILED",
+  "expected_status": "RESOLVED",
   "note": "",
   "pillow_error": null,
   "pillow_decodes": true,
@@ -2110,7 +2122,7 @@
    64
   ],
   "pixel_verdicts": [
-   "not comparable: encoding rle_tga not handled by the comparer"
+   "match"
   ],
   "pillow_pixels_sha256": "2e4f7d2f92c455e44831bfa784eaf6c5b13c2f580460a7de85afa9167b22e255"
  },
@@ -2118,7 +2130,7 @@
   "file": "pillow_negative_size.ppm",
   "format": "PNM",
   "scope": "out",
-  "scope_reason": "malformed header",
+  "scope_reason": "magic P6 not followed by a whitespace byte",
   "invalid_by_construction": true,
   "our_status": "FAILED",
   "stage": null,
@@ -2138,7 +2150,7 @@
   "file": "pillow_odd_stride.pcx",
   "format": "PCX",
   "scope": "in",
-  "scope_reason": "single-plane PCX",
+  "scope_reason": "PCX encoding 1, 1 plane",
   "invalid_by_construction": false,
   "our_status": "RESOLVED",
   "stage": "revision",
@@ -2178,7 +2190,7 @@
   "file": "pillow_old-style-jpeg-compression.tif",
   "format": "TIFF",
   "scope": "out",
-  "scope_reason": "compression OJPEG",
+  "scope_reason": "compression OJPEG (6)",
   "invalid_by_construction": false,
   "our_status": "FAILED",
   "stage": null,
@@ -2201,7 +2213,7 @@
   "file": "pillow_ossfuzz-4836216264589312.pcx",
   "format": "PCX",
   "scope": "out",
-  "scope_reason": "2 planes, encoding byte 32",
+  "scope_reason": "PCX encoding byte 32",
   "invalid_by_construction": true,
   "our_status": "RESOLVED",
   "stage": "generic",
@@ -2230,14 +2242,16 @@
    1,
    1
   ],
-  "pixel_verdicts": [],
+  "pixel_verdicts": [
+   "not comparable: Pillow refuses the file (OSError)"
+  ],
   "pillow_pixels_sha256": null
  },
  {
   "file": "pillow_p_16.tga",
   "format": "TGA",
   "scope": "in",
-  "scope_reason": "uncompressed TGA (image type 1)",
+  "scope_reason": "TGA image type 1",
   "invalid_by_construction": false,
   "our_status": "RESOLVED",
   "stage": "probe",
@@ -2274,8 +2288,8 @@
  {
   "file": "pillow_p_4_planes.pcx",
   "format": "PCX",
-  "scope": "out",
-  "scope_reason": "4 planes",
+  "scope": "in",
+  "scope_reason": "PCX encoding 1, 4 planes",
   "invalid_by_construction": false,
   "our_status": "RESOLVED",
   "stage": "revision",
@@ -2297,7 +2311,7 @@
     "data_end": 136
    }
   ],
-  "expected_status": "FAILED",
+  "expected_status": "RESOLVED",
   "note": "",
   "pillow_error": null,
   "pillow_decodes": true,
@@ -2307,7 +2321,7 @@
    1
   ],
   "pixel_verdicts": [
-   "not comparable: PCX bit depth 4 not handled by the comparer"
+   "match"
   ],
   "pillow_pixels_sha256": "084fed08b978af4d7d196a7446a86b58009e636b611db16211b65a9aadff29c5"
  },
@@ -2315,7 +2329,7 @@
   "file": "pillow_p_8.tga",
   "format": "TGA",
   "scope": "in",
-  "scope_reason": "uncompressed TGA (image type 1)",
+  "scope_reason": "TGA image type 1",
   "invalid_by_construction": true,
   "our_status": "FAILED",
   "stage": null,
@@ -2335,7 +2349,7 @@
   "file": "pillow_pil184.pcx",
   "format": "PCX",
   "scope": "in",
-  "scope_reason": "single-plane PCX",
+  "scope_reason": "PCX encoding 1, 1 plane",
   "invalid_by_construction": false,
   "our_status": "RESOLVED",
   "stage": "probe",
@@ -2372,8 +2386,8 @@
  {
   "file": "pillow_rgb32rle.tga",
   "format": "TGA",
-  "scope": "out",
-  "scope_reason": "RLE TGA (image type 10)",
+  "scope": "in",
+  "scope_reason": "TGA image type 10",
   "invalid_by_construction": false,
   "our_status": "RESOLVED",
   "stage": "probe",
@@ -2393,7 +2407,7 @@
     "data_end": 128486
    }
   ],
-  "expected_status": "FAILED",
+  "expected_status": "RESOLVED",
   "note": "",
   "pillow_error": null,
   "pillow_decodes": true,
@@ -2403,7 +2417,7 @@
    199
   ],
   "pixel_verdicts": [
-   "not comparable: encoding rle_tga not handled by the comparer"
+   "alpha not compared: the file declares no alpha (descriptor alpha bits 0, extension attributes type 0) and Pillow reports 255; R, G, B equal Pillow's"
   ],
   "pillow_pixels_sha256": "fb6b49c2139a430f4476ed05df7eb28c47ac99fd6be4434e7578edb8e3f1f886"
  },
@@ -2411,7 +2425,7 @@
   "file": "pillow_rgba16.tga",
   "format": "TGA",
   "scope": "in",
-  "scope_reason": "uncompressed TGA (image type 2)",
+  "scope_reason": "TGA image type 2",
   "invalid_by_construction": false,
   "our_status": "RESOLVED",
   "stage": "probe",
@@ -2449,7 +2463,7 @@
   "file": "pillow_tga_id_field.tga",
   "format": "TGA",
   "scope": "in",
-  "scope_reason": "uncompressed TGA (image type 2)",
+  "scope_reason": "TGA image type 2",
   "invalid_by_construction": false,
   "our_status": "RESOLVED",
   "stage": "probe",
@@ -2487,7 +2501,7 @@
   "file": "pillow_tiff_adobe_deflate.tif",
   "format": "TIFF",
   "scope": "out",
-  "scope_reason": "compression Adobe Deflate",
+  "scope_reason": "predictor 2",
   "invalid_by_construction": false,
   "our_status": "FAILED",
   "stage": null,
@@ -2510,7 +2524,7 @@
   "file": "pillow_tiff_strip_planar_raw.tif",
   "format": "TIFF",
   "scope": "out",
-  "scope_reason": "39 strips, planar configuration 2",
+  "scope_reason": "planar configuration 2",
   "invalid_by_construction": false,
   "our_status": "FAILED",
   "stage": null,
@@ -2532,11 +2546,11 @@
  {
   "file": "pillow_tiff_strip_raw.tif",
   "format": "TIFF",
-  "scope": "out",
-  "scope_reason": "3 strips",
+  "scope": "in",
+  "scope_reason": "compression none (1), 3 strips",
   "invalid_by_construction": false,
   "our_status": "RESOLVED",
-  "stage": null,
+  "stage": "probe",
   "termination": null,
   "checks": 1,
   "candidates": [
@@ -2553,7 +2567,7 @@
     "data_end": 311924
    }
   ],
-  "expected_status": "FAILED",
+  "expected_status": "RESOLVED",
   "note": "",
   "pillow_error": null,
   "pillow_decodes": true,
@@ -2562,14 +2576,16 @@
    278,
    374
   ],
-  "pixel_verdicts": [],
-  "pillow_pixels_sha256": null
+  "pixel_verdicts": [
+   "match"
+  ],
+  "pillow_pixels_sha256": "1d4460fa59aa117b8266e2e050bdf5e9ba1319f159f791926b97d91ae5631187"
  },
  {
   "file": "pillow_tiff_tiled_raw.tif",
   "format": "TIFF",
-  "scope": "out",
-  "scope_reason": "tiled",
+  "scope": "in",
+  "scope_reason": "compression none (1), 9 tiles",
   "invalid_by_construction": false,
   "our_status": "RESOLVED",
   "stage": "probe",
@@ -2589,7 +2605,7 @@
     "data_end": 442376
    }
   ],
-  "expected_status": "FAILED",
+  "expected_status": "RESOLVED",
   "note": "",
   "pillow_error": null,
   "pillow_decodes": true,
@@ -2606,8 +2622,8 @@
  {
   "file": "sdlimage_sample.pcx",
   "format": "PCX",
-  "scope": "out",
-  "scope_reason": "3 planes",
+  "scope": "in",
+  "scope_reason": "PCX encoding 1, 3 planes",
   "invalid_by_construction": false,
   "our_status": "RESOLVED",
   "stage": "revision",
@@ -2629,7 +2645,7 @@
     "data_end": 3278
    }
   ],
-  "expected_status": "FAILED",
+  "expected_status": "RESOLVED",
   "note": "",
   "pillow_error": null,
   "pillow_decodes": true,
@@ -2639,15 +2655,15 @@
    42
   ],
   "pixel_verdicts": [
-   "not comparable: PCX bit depth 24 not handled by the comparer"
+   "match"
   ],
   "pillow_pixels_sha256": "cc52c11a41aa260d6735b1526550049ffd88ea1c0c35256375fa400d64bcbb7d"
  },
  {
   "file": "sdlimage_sample.pnm",
   "format": "PNM",
-  "scope": "out",
-  "scope_reason": "P6 (only binary PBM, P4, has a probe)",
+  "scope": "in",
+  "scope_reason": "magic P6 followed by whitespace",
   "invalid_by_construction": false,
   "our_status": "RESOLVED",
   "stage": "probe",
@@ -2667,7 +2683,7 @@
     "data_end": 2957
    }
   ],
-  "expected_status": "FAILED",
+  "expected_status": "RESOLVED",
   "note": "",
   "pillow_error": null,
   "pillow_decodes": true,
@@ -2684,8 +2700,8 @@
  {
   "file": "sdlimage_sample.tga",
   "format": "TGA",
-  "scope": "out",
-  "scope_reason": "RLE TGA (image type 10)",
+  "scope": "in",
+  "scope_reason": "TGA image type 10",
   "invalid_by_construction": false,
   "our_status": "RESOLVED",
   "stage": "probe",
@@ -2705,7 +2721,7 @@
     "data_end": 2957
    }
   ],
-  "expected_status": "FAILED",
+  "expected_status": "RESOLVED",
   "note": "",
   "pillow_error": null,
   "pillow_decodes": true,
@@ -2715,7 +2731,7 @@
    42
   ],
   "pixel_verdicts": [
-   "not comparable: encoding rle_tga not handled by the comparer"
+   "match"
   ],
   "pillow_pixels_sha256": "cc52c11a41aa260d6735b1526550049ffd88ea1c0c35256375fa400d64bcbb7d"
  },
@@ -2723,7 +2739,7 @@
   "file": "sdlimage_sample.tif",
   "format": "TIFF",
   "scope": "in",
-  "scope_reason": "single-strip uncompressed TIFF",
+  "scope_reason": "compression none (1), 1 strip",
   "invalid_by_construction": false,
   "our_status": "RESOLVED",
   "stage": "probe",

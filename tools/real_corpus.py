@@ -31,8 +31,8 @@ INVALID_BY_CONSTRUCTION = (
 )
 
 
-# In scope, valid, FAILED; rows left as measured. pillow_cross_scan_line.tga: format-coverage Task 12 (Requirement 5.9).
-OPEN_IN_SCOPE_FAILURES = ("pillow_cross_scan_line.tga",)
+# In scope, valid, FAILED; rows left as measured. pillow_cross_scan_line.tga: format-coverage Task 12 (Requirement 5.9).\n# libtiff_deflate-last-strip-extra-data.tiff: format-coverage Task 39 (Requirement 19.4, Principle call 2).
+OPEN_IN_SCOPE_FAILURES = ("libtiff_deflate-last-strip-extra-data.tiff", "pillow_cross_scan_line.tga")
 NOTES = {
     "pillow_ossfuzz-4836216264589312.pcx": (
         "Invalid by construction, and RESOLVED by design. The PCX probe recognised the signature and declined "
@@ -52,6 +52,16 @@ NOTES["pillow_cross_scan_line.tga"] = (
     "a raw packet of 3 pixels, then a raw packet header that needs 1 more pixel byte, and that byte would be byte 23, "
     "the first byte of the footer (decoder_underrun). Read to the end of the file, 25 bytes are left over "
     "(decoder_unconsumed). Both readings fail, so FAILED is correct under the spec.")
+NOTES["libtiff_deflate-last-strip-extra-data.tiff"] = (
+    "its last strip carries more data than the strip holds; the engine refuses it and Pillow's libtiff does not. "
+    "The image is 500 x 500 with RowsPerStrip 16, so the last of 32 strips is 4 rows = 2000 bytes, and the file's "
+    "last strip inflates past 2000 bytes (decoder_overrun, range 31 [12508, 12789)). The first 31 strips inflate to "
+    "exactly 8000 bytes. Closure fails on that strip, so FAILED is correct under the spec (Principle call 2).")
+NOTES["goimage_invalid-palette-ref.tiff"] = (
+    "Invalid by construction, and RESOLVED. The Deflate decoder decodes the same region as "
+    "goimage_video-001-paletted.tiff (format-coverage design.md row 25). Pillow refuses the file "
+    "(UnidentifiedImageError) for palette indices the engine does not read, so there is no pixel comparison. "
+    "The expected status stays FAILED: this is an unexpected RESOLVED, reported under Requirement 19.5.")
 
 
 def expectation(file: str, scope: str, invalid: bool) -> str:
