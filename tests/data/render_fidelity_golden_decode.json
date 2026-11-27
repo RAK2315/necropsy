@@ -1,0 +1,7878 @@
+[
+{
+"data": "16473976474b101f4576e5d3682f3c0aceae6569a9c8ba7e6b6fd51e1a5cb644684bc00f2ce06f6addbc63a970f61586ac96abcaf6a16d309c5a972f58620ebf30cc919c643ae867aae3ce183c89323d6366ab534df31d",
+"w": 0,
+"h": 3,
+"depth": 36,
+"stride": 4,
+"probe": "tiff",
+"kw": {
+"photometric": 1,
+"bottom_left": false,
+"channel_order": "rgb",
+"byte_order": "II",
+"maxval": 65535
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "fe0c82faf0b2790531c090e45a17433f196962985ee8cd7463ec9defa644be3fb16295c255153cd96a487dc29d68d99d7c891310f18c8467deba6bcd11e3c4657a6da4b098bc396e217ff5ffe78e5cd51122f74e98f202008dc28b91997d9dce777a48a33160",
+"w": 0,
+"h": 3,
+"depth": 1,
+"stride": 4,
+"probe": "pbm",
+"kw": {
+"photometric": 1,
+"bottom_left": false,
+"channel_order": "rgb",
+"byte_order": null,
+"maxval": 255
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "c6cb6d71d2187c7a18d2a58b371fa77ffbda48189ea016d173e148270bfcf2e18bf5f401ad78562deeb71dc8a4c767d6701de413d3e6cd45a3db7a832ee81c469d6440c3ef758caeaed7a08be1d7af235f7385563b379e88e6dd642830aaf8f4b449dff64f",
+"w": 4,
+"h": 2,
+"depth": 36,
+"stride": 9,
+"probe": "bmp",
+"kw": {
+"photometric": 1,
+"bottom_left": false,
+"channel_order": "rgb",
+"byte_order": null,
+"maxval": 255
+},
+"result": [
+"F",
+"no renderer for 36-bit pixels"
+]
+},
+{
+"data": "745b87479bc7e1a28426564c49f248dae85c58eb44b6c7f966f6ac06ffbe6045f79d526a30ecfeb1442494562132091ab25c7925bdd3d4981a98cc322131ce53965212b02649ca9333a67d7ff1b7d3da5486077b6d094c358f60fb73b0e95293efbb778eb688eeaf",
+"w": 2,
+"h": 0,
+"depth": 1,
+"stride": 19,
+"probe": "pbm",
+"kw": {
+"photometric": "undeclared",
+"bottom_left": true,
+"channel_order": "rgb",
+"byte_order": "MM",
+"maxval": 65535
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "f1d728edfb0e007a19c990cb8e2ce77d51e47dc85ffc75418caf12858c340dcacc15ee30e43befc49a5724",
+"w": 0,
+"h": 3,
+"depth": 1,
+"stride": 17,
+"probe": "pbm",
+"kw": {
+"photometric": 1,
+"bottom_left": false,
+"channel_order": "rgb",
+"byte_order": "II",
+"maxval": 255
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "23226ef9179be16f81341ac31d1610654e833ce4292c202644a5c093a63ebd1954ddfe72f0740c1cb37f714b1ce84a39c8be2a81f6af95cab431c4194db8004d7f3bff4466b660af",
+"w": 0,
+"h": 1,
+"depth": 8,
+"stride": 8,
+"probe": "pcx",
+"kw": {
+"photometric": 1,
+"bottom_left": false,
+"channel_order": "rgb",
+"byte_order": null,
+"maxval": 255
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "a2642fd8a282487aed201399b6ac8083b5de046ce1a2259da7bece04c910002b9d6fd0d9f2dea45b361a742b62c42ddef88d57307adbb7d61f8f815f08a732adcd4cb965910ad955e1559267ed27ec13ecad9d5d82d23542a50d60f40218bffc0f9a92f747bb33767d0bc2f27c89af8ac0",
+"w": 5,
+"h": 2,
+"depth": 48,
+"stride": 6,
+"probe": "pcx",
+"kw": {
+"photometric": 1,
+"bottom_left": true,
+"channel_order": "bgr",
+"byte_order": null,
+"maxval": 255
+},
+"result": [
+"F",
+"no renderer for 48-bit pixels"
+]
+},
+{
+"data": "929182811a8c8b74225f69b6fa18e61c386a05b6df1bc6c05af1ea8597fab7474e9645437aeb05c7c0892eb319fbef26b39be98f427db3d004911ac918b6665d72d75ee27cef72761632d3795d30c4f244f65f9c820a8bb1681fc7",
+"w": 1,
+"h": 1,
+"depth": 36,
+"stride": 11,
+"probe": "pbm",
+"kw": {
+"photometric": null,
+"bottom_left": false,
+"channel_order": "rgb",
+"byte_order": "MM",
+"maxval": 255
+},
+"result": [
+"F",
+"no renderer for 36-bit pixels"
+]
+},
+{
+"data": "42a15918c6e1254969c429",
+"w": 5,
+"h": 4,
+"depth": 36,
+"stride": 5,
+"probe": "pcx",
+"kw": {
+"photometric": 0,
+"bottom_left": true,
+"channel_order": "bgr",
+"byte_order": "MM",
+"maxval": 255
+},
+"result": [
+"F",
+"no renderer for 36-bit pixels"
+]
+},
+{
+"data": "2fb33de257ff0e64c446e581d011140bebb2b3801bd12896035e89de0c1eaed793bf45a8a68b03d50098dce6f5c2387a7c3f766bc7b02eedea114aa6e8ec89bb4dd8694d",
+"w": 5,
+"h": 4,
+"depth": 24,
+"stride": 2,
+"probe": "tiff",
+"kw": {
+"photometric": 1,
+"bottom_left": false,
+"channel_order": "rgb",
+"byte_order": null,
+"maxval": 65535
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "f1e3479d7b263d69360db3fc",
+"w": 2,
+"h": 0,
+"depth": 3,
+"stride": 10,
+"probe": "tiff",
+"kw": {
+"photometric": null,
+"bottom_left": true,
+"channel_order": "bgr",
+"byte_order": "II",
+"maxval": 255
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "0e5d01d14f014251bc5f6dabe8a9ccdb5ddd9fb128ecca0d0b6bbbfdf6834417b40a7ba1be6147c70785f6dba382a92005284506ef78335cdb9d407a54ffd277a9a7611b9ae21fc80e9948664d64070990",
+"w": 5,
+"h": 3,
+"depth": 32,
+"stride": 3,
+"probe": "tiff",
+"kw": {
+"photometric": 0,
+"bottom_left": true,
+"channel_order": "bgr",
+"byte_order": "MM",
+"maxval": null
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "d53a4264b514090af4bdf3079e7144243a0382df1d5646d9f760d9aaa1a7fd44ddeef1d85c4a49d1b97cd79c2a173b52f38e3882fdd8c7ae985f71cc",
+"w": 0,
+"h": 1,
+"depth": 32,
+"stride": 5,
+"probe": "pnm",
+"kw": {
+"photometric": 1,
+"bottom_left": true,
+"channel_order": "bgr",
+"byte_order": "MM",
+"maxval": 255
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "63da38e1f904071ae7f0ce9bfe2a3b23f740",
+"w": 1,
+"h": 2,
+"depth": 24,
+"stride": 17,
+"probe": "tga",
+"kw": {
+"photometric": 0,
+"bottom_left": false,
+"channel_order": "rgb",
+"byte_order": null,
+"maxval": null
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "e4f50c3f0c1025a151ea29f1d4200fac8d8b58aab1",
+"w": 5,
+"h": 1,
+"depth": 3,
+"stride": 17,
+"probe": "bmp",
+"kw": {
+"photometric": null,
+"bottom_left": true,
+"channel_order": "bgr",
+"byte_order": "II",
+"maxval": null
+},
+"result": [
+"F",
+"no renderer for 3-bit pixels"
+]
+},
+{
+"data": "ce97a079cb6c01674b49dd2ad97907bb83edc34faa87dab102178992e15e2c75dac160d469ef4ddc5d60b4fc25b0c20f3e48f38f6f6294bd95a1d4fb5f68ad248ac1f63b1e98",
+"w": 4,
+"h": 5,
+"depth": 4,
+"stride": 20,
+"probe": "generic",
+"kw": {
+"photometric": 0,
+"bottom_left": false,
+"channel_order": "rgb",
+"byte_order": null,
+"maxval": 255
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "aac4db0bea2692c9ec92d4c1178ee61743f4ae920815085a1912722317c4105e827e9a5e1e779130ce737fa8b2a9e5",
+"w": 2,
+"h": 2,
+"depth": 12,
+"stride": 2,
+"probe": "pbm",
+"kw": {
+"photometric": "undeclared",
+"bottom_left": true,
+"channel_order": "bgr",
+"byte_order": "II",
+"maxval": 65535
+},
+"result": [
+"F",
+"no renderer for 12-bit pixels"
+]
+},
+{
+"data": "e871269c71eda25087951da3e67b2febeb0589165e",
+"w": 5,
+"h": 2,
+"depth": 24,
+"stride": 7,
+"probe": "pcx",
+"kw": {
+"photometric": null,
+"bottom_left": false,
+"channel_order": "rgb",
+"byte_order": null,
+"maxval": 255
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "40d5e481dc764f00dc249c1e043a9a1444402eef978bc4c585fb7322d48643bb197f9e",
+"w": 1,
+"h": 4,
+"depth": 3,
+"stride": 12,
+"probe": "pnm",
+"kw": {
+"photometric": 1,
+"bottom_left": false,
+"channel_order": "bgr",
+"byte_order": "II",
+"maxval": 255
+},
+"result": [
+"F",
+"no renderer for 3-bit pixels"
+]
+},
+{
+"data": "3a0741a1654d45f1a273f3f4f0d7aeb568d9aab22e942c5e7a506becbee434ff2547248b4934536ceb30d37c0a0023b07ea40538b3eb95790e738b148afd",
+"w": 5,
+"h": 1,
+"depth": 3,
+"stride": 1,
+"probe": "generic",
+"kw": {
+"photometric": 1,
+"bottom_left": true,
+"channel_order": "bgr",
+"byte_order": "MM",
+"maxval": null
+},
+"result": [
+"F",
+"no renderer for 3-bit pixels"
+]
+},
+{
+"data": "b19b39accbd6cb2d9a0bb651822a3972b42267fc8ad9b4ee1b68a8430e828d4c54d2ba3415a6878b87611f485b231dc543032bb3c878b23efd14f55164afba20ad61cd21afeee5283aa575df6623cbfc71c91a3c6f",
+"w": 5,
+"h": 0,
+"depth": 8,
+"stride": 19,
+"probe": "pcx",
+"kw": {
+"photometric": "undeclared",
+"bottom_left": false,
+"channel_order": "bgr",
+"byte_order": "MM",
+"maxval": null
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "32641056f00fcb967ea772c91a9df707f940f77cc12296d87545f99e28",
+"w": 3,
+"h": 1,
+"depth": 4,
+"stride": 4,
+"probe": "tga",
+"kw": {
+"photometric": 1,
+"bottom_left": true,
+"channel_order": "bgr",
+"byte_order": "MM",
+"maxval": 255
+},
+"result": [
+"P",
+3,
+1,
+"grey8",
+"332266",
+"4-bit \u00b7 BlackIsZero (photometric 1) \u00b7 rows flipped: file declares bottom-left origin"
+]
+},
+{
+"data": "",
+"w": 3,
+"h": 2,
+"depth": 1,
+"stride": 18,
+"probe": "pcx",
+"kw": {
+"photometric": null,
+"bottom_left": false,
+"channel_order": "rgb",
+"byte_order": "MM",
+"maxval": 255
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "",
+"w": 2,
+"h": 5,
+"depth": 8,
+"stride": 11,
+"probe": "pbm",
+"kw": {
+"photometric": 0,
+"bottom_left": true,
+"channel_order": "rgb",
+"byte_order": "II",
+"maxval": 255
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "9b99e1d455a5b4ec7de834518ef988fc4d9940e42f66b90dbbdb9629933015b2047af6165abf2b1d0fab05d2d7327ecedd03a9ee52",
+"w": 1,
+"h": 1,
+"depth": 16,
+"stride": 9,
+"probe": "pcx",
+"kw": {
+"photometric": 1,
+"bottom_left": false,
+"channel_order": "bgr",
+"byte_order": null,
+"maxval": 65535
+},
+"result": [
+"F",
+"no renderer for 16-bit pixels"
+]
+},
+{
+"data": "5d732ba00f4525bf5b533eadef87c772cb66a5e19d",
+"w": 1,
+"h": 5,
+"depth": 48,
+"stride": 4,
+"probe": "pcx",
+"kw": {
+"photometric": 1,
+"bottom_left": true,
+"channel_order": "rgb",
+"byte_order": "II",
+"maxval": 65535
+},
+"result": [
+"F",
+"no renderer for 48-bit pixels"
+]
+},
+{
+"data": "02634d9f5b2fa050f7556644d80b8ee87072218bbb1a8294853fe459d9ac61e8d33ca2b6dc560b38d08e2902e9062879fa927d36c5f599a0bdc69bb93efe50cab7e0e859844dcd9116ab4eba80cc1fa0bfdd233b3bb3743ad16ae58962ab29ebf921bf",
+"w": 2,
+"h": 5,
+"depth": 48,
+"stride": 4,
+"probe": "tga",
+"kw": {
+"photometric": 1,
+"bottom_left": false,
+"channel_order": "rgb",
+"byte_order": "II",
+"maxval": null
+},
+"result": [
+"F",
+"no renderer for 48-bit pixels"
+]
+},
+{
+"data": "826f0110a1c408d81ba4a79f6a3be12d1a6a9bddf37cb03a24021f4990f5b8931f8e0d45992db9ae9de75c23259e2c7cfe",
+"w": 5,
+"h": 1,
+"depth": 16,
+"stride": 9,
+"probe": "pnm",
+"kw": {
+"photometric": 1,
+"bottom_left": false,
+"channel_order": "bgr",
+"byte_order": "II",
+"maxval": null
+},
+"result": [
+"F",
+"no renderer for 16-bit pixels"
+]
+},
+{
+"data": "e17be3ae57f8567905ab17aa5be096035d144c76cf69b1a4e07ffaaa7fe1a725c3832a471e1561e1754038d5e33a1e987dac425ff27c9288f8b7e78cd6276335f27f69363167c52f9025ce5da6e688a365e1be7e4a46711e62",
+"w": 2,
+"h": 2,
+"depth": 16,
+"stride": 3,
+"probe": "tiff",
+"kw": {
+"photometric": "undeclared",
+"bottom_left": false,
+"channel_order": "bgr",
+"byte_order": "II",
+"maxval": 65535
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "d670c9fa96ef409d388d0d6feb730228345cfa2d819af4b51af6ac909582505535328e721658ef78e94669c435efd5daa16326bd84b1418ea813eb03fa4621b331a69f1671350a59",
+"w": 5,
+"h": 5,
+"depth": 3,
+"stride": 20,
+"probe": "bmp",
+"kw": {
+"photometric": "undeclared",
+"bottom_left": false,
+"channel_order": "rgb",
+"byte_order": null,
+"maxval": 65535
+},
+"result": [
+"F",
+"no renderer for 3-bit pixels"
+]
+},
+{
+"data": "ecea214f984c8d56a5b91f8ed982152ea22ebaf520c5e8c1e8011794f2be931a1165a07de9da781d255f59035a75a3ffc22058e227a7deff6190110d49c43fb35387914e31feb6d2d8f0368a845d8b789024ff66c7b82336b4d6c7b9f9dec0451ac3c4e988be5ec0fe7d",
+"w": 4,
+"h": 4,
+"depth": 48,
+"stride": 9,
+"probe": "bmp",
+"kw": {
+"photometric": 1,
+"bottom_left": false,
+"channel_order": "rgb",
+"byte_order": "II",
+"maxval": 65535
+},
+"result": [
+"F",
+"no renderer for 48-bit pixels"
+]
+},
+{
+"data": "df8adf967b5f1dd216d2cf9fca2cf7dbf336fdf10a4f2bc0966e6505fa3b79aadeb1516c0d90042f6e3dc9978ca17101f411e601edf0488520ef2ff647bf6d1de582ab00853bae5d87510861466b174260a78301c5cf13b53c6d5fee03608284b0f6c16696beefc7328c0ea234d6b0b96aceb8bf",
+"w": 5,
+"h": 3,
+"depth": 3,
+"stride": 2,
+"probe": "generic",
+"kw": {
+"photometric": null,
+"bottom_left": true,
+"channel_order": "rgb",
+"byte_order": null,
+"maxval": null
+},
+"result": [
+"F",
+"no renderer for 3-bit pixels"
+]
+},
+{
+"data": "ff0b24993f2ea0cef223a4e8e9c1185d62cfc5f648557b3755b16e94ec8da52b2edcb2fde0b55dbddd632f6966b66399b3d32d159dfa64adaa8f0b08e97472a5cff301c9b7657df24c2b5f2466384302e8",
+"w": 2,
+"h": 1,
+"depth": 1,
+"stride": 15,
+"probe": "generic",
+"kw": {
+"photometric": 1,
+"bottom_left": false,
+"channel_order": "bgr",
+"byte_order": null,
+"maxval": 65535
+},
+"result": [
+"P",
+2,
+1,
+"grey8",
+"ffff",
+"1-bit \u00b7 BlackIsZero (photometric 1) \u00b7 rows shown in stored order"
+]
+},
+{
+"data": "1f40f068bcf2a6fde3f614a6ca1b7666e368f53dba5b91a1ab27169dc17c530c2ffdba86c0d58d8c22d84b5c1e0674cd365675f160e4581c5793d700cca87a9b324c365cacb0cf99316da03dcdb228a1c74c983c85c0ea8d91a1188e7165cde3f44a0b3f24221b7802944d36072d67831ef3d1",
+"w": 2,
+"h": 5,
+"depth": 16,
+"stride": 14,
+"probe": "tiff",
+"kw": {
+"photometric": 1,
+"bottom_left": true,
+"channel_order": "bgr",
+"byte_order": "II",
+"maxval": 255
+},
+"result": [
+"P",
+2,
+5,
+"grey8",
+"3f6866687c0c5b069200",
+"TIFF grey \u00b7 16-bit little-endian (II) samples \u00b7 v\u00d7255//65535 \u00b7 BlackIsZero (photometric 1) \u00b7 rows shown in stored order"
+]
+},
+{
+"data": "02c4e3c6009f5c85dd081d7f631904a6cec94636f5aebf9aa89609db7ec560719eb3ba9e20d37cf5707f79c4749cf151fb6c9b75db7401c186de56d7c173c07e534f6ff482c56dd29fddf527a99de1be071545d5",
+"w": 0,
+"h": 4,
+"depth": 36,
+"stride": 1,
+"probe": "tiff",
+"kw": {
+"photometric": null,
+"bottom_left": true,
+"channel_order": "rgb",
+"byte_order": "MM",
+"maxval": 255
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "7cab79062be8dbcb3512c37e3ca7d6bf09ec8204e868",
+"w": 0,
+"h": 2,
+"depth": 12,
+"stride": 13,
+"probe": "pbm",
+"kw": {
+"photometric": 1,
+"bottom_left": false,
+"channel_order": "rgb",
+"byte_order": "MM",
+"maxval": null
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "8f6283e1bc2e0e2bf41c239a761d24b50bc2f64c65d826de1df6a2aa8a7116fdfc9512945cb120b208f6d0982a5875afd073dd699559880cb02bf68bfaa867e7d64f02e0be96e9ea6d9e9aec518adc24e2482a542ef6368d3dfa8dee136be2296fc14dbed243031a37ff61dd86addc7c8f25e728e8b8",
+"w": 0,
+"h": 2,
+"depth": 3,
+"stride": 8,
+"probe": "pbm",
+"kw": {
+"photometric": null,
+"bottom_left": false,
+"channel_order": "bgr",
+"byte_order": "II",
+"maxval": 255
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "3b8d8453e6df032c7e2ef50d9f",
+"w": 2,
+"h": 3,
+"depth": 36,
+"stride": 2,
+"probe": "bmp",
+"kw": {
+"photometric": "undeclared",
+"bottom_left": false,
+"channel_order": "bgr",
+"byte_order": "II",
+"maxval": 65535
+},
+"result": [
+"F",
+"no renderer for 36-bit pixels"
+]
+},
+{
+"data": "c2aebde204563476edf21417ee8c16fcbb9e4be6e9a5a4f1d5a1029206af7eceeb15f2da763ba6931958fe079ee10413e7a90c99",
+"w": 1,
+"h": 2,
+"depth": 36,
+"stride": 13,
+"probe": "pcx",
+"kw": {
+"photometric": 1,
+"bottom_left": false,
+"channel_order": "bgr",
+"byte_order": null,
+"maxval": null
+},
+"result": [
+"F",
+"no renderer for 36-bit pixels"
+]
+},
+{
+"data": "73edde93d916777c0582b827fc76f1a130c58a2fcd637a634dbb49d2deb1751cbaa1626b94ec63867353b246f056040fa4ff5f07b2f721ed1699c56395f647a4c959224f2e66403fcd3a6b73c03e997e",
+"w": 2,
+"h": 5,
+"depth": 24,
+"stride": 4,
+"probe": "tga",
+"kw": {
+"photometric": 0,
+"bottom_left": true,
+"channel_order": "bgr",
+"byte_order": "MM",
+"maxval": 255
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "f0ddc6a3dde1d33c16e9",
+"w": 2,
+"h": 2,
+"depth": 3,
+"stride": 18,
+"probe": "pnm",
+"kw": {
+"photometric": 0,
+"bottom_left": true,
+"channel_order": "bgr",
+"byte_order": null,
+"maxval": null
+},
+"result": [
+"F",
+"no renderer for 3-bit pixels"
+]
+},
+{
+"data": "c72448a568f6f9b2787df1de4396",
+"w": 1,
+"h": 4,
+"depth": 16,
+"stride": 17,
+"probe": "generic",
+"kw": {
+"photometric": 0,
+"bottom_left": false,
+"channel_order": "bgr",
+"byte_order": null,
+"maxval": 65535
+},
+"result": [
+"F",
+"no renderer for 16-bit pixels"
+]
+},
+{
+"data": "a5f13c8fa6b3f4711e24447ceecff9e5a476d6ccdb7ac6cdf114dcf481d246ba6d6c9d7e741323b56cc4a120c6b9d699aec20b17edb7690c84e493a2082ab7e818169ba4b2c17917b591135654a26d294ae57336ccf64dbcf0d2e20940",
+"w": 5,
+"h": 2,
+"depth": 36,
+"stride": 12,
+"probe": "tga",
+"kw": {
+"photometric": 0,
+"bottom_left": true,
+"channel_order": "rgb",
+"byte_order": "II",
+"maxval": 255
+},
+"result": [
+"F",
+"no renderer for 36-bit pixels"
+]
+},
+{
+"data": "3d89873eeca109d610d9194da19fbd4dd9d35db330ac742c46eae205dd215530bc06f3762efc02954bf2ba4f3157",
+"w": 4,
+"h": 4,
+"depth": 8,
+"stride": 12,
+"probe": "tga",
+"kw": {
+"photometric": "undeclared",
+"bottom_left": false,
+"channel_order": "rgb",
+"byte_order": null,
+"maxval": 65535
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "b5f73f6cbb544b96916c91d2d5eed0464451d6fa9caa130812afed3b316050823440355cae",
+"w": 2,
+"h": 0,
+"depth": 24,
+"stride": 7,
+"probe": "tiff",
+"kw": {
+"photometric": 0,
+"bottom_left": true,
+"channel_order": "rgb",
+"byte_order": "MM",
+"maxval": null
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "a917ca",
+"w": 0,
+"h": 5,
+"depth": 16,
+"stride": 7,
+"probe": "tiff",
+"kw": {
+"photometric": 0,
+"bottom_left": false,
+"channel_order": "rgb",
+"byte_order": null,
+"maxval": null
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "1822ce67cf5192d5cb3f8610fc2f1f3640ad6a1285a19962629fbadf18536a078a1416bee1e7847a48be2e7829923ab990a037d5db96cc38a8a1e4aaa9aeac429c9b219567f5860080937d531cae4801dfeb1771bfa3009ef2467e90133b8553aaf606a1efeea3022023",
+"w": 3,
+"h": 1,
+"depth": 32,
+"stride": 12,
+"probe": "pcx",
+"kw": {
+"photometric": "undeclared",
+"bottom_left": true,
+"channel_order": "bgr",
+"byte_order": "MM",
+"maxval": 65535
+},
+"result": [
+"P",
+3,
+1,
+"rgb8",
+"ce22189251cf863fcb",
+"32-bit \u00b7 BGR\u2192RGB; fourth byte ignored \u00b7 rows flipped: file declares bottom-left origin"
+]
+},
+{
+"data": "caf1f13561115a47f8125ed47ce2ccade46172288d1d5acae09a3a0ff27ea11894e8fe4d7c5deb856110d72d3e69231e5cdf3cebb343a983a9eb",
+"w": 5,
+"h": 0,
+"depth": 16,
+"stride": 10,
+"probe": "pbm",
+"kw": {
+"photometric": "undeclared",
+"bottom_left": true,
+"channel_order": "rgb",
+"byte_order": "MM",
+"maxval": 255
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "b20523f20c1c9e300e593f56b429d78660a762b5dc2f5eb0b7a24801dd5fa53054ed1dc94c9ff1e3aba5dcc78a9d80aa620e6dfac52dad5391f7f38e12161cbe43779acac6f14dd9952ea8abbb21c3574cfcf6",
+"w": 2,
+"h": 5,
+"depth": 36,
+"stride": 9,
+"probe": "bmp",
+"kw": {
+"photometric": null,
+"bottom_left": true,
+"channel_order": "bgr",
+"byte_order": "MM",
+"maxval": 65535
+},
+"result": [
+"F",
+"no renderer for 36-bit pixels"
+]
+},
+{
+"data": "05f9362a64d604c6fef7b81451808d9298ae89518fc9aac09144a634cb56d4c809dc7d8e19000678a0baf07d5febe7be6ec05a1fdb1bffd152a89a8847832ca097cf1d1a2723f92cc5a47a00ebf53daeea26478174f1b79e724539a13c1c0ee9576c47a817c265185ed1e40600",
+"w": 2,
+"h": 5,
+"depth": 1,
+"stride": 7,
+"probe": "tiff",
+"kw": {
+"photometric": null,
+"bottom_left": true,
+"channel_order": "rgb",
+"byte_order": null,
+"maxval": 65535
+},
+"result": [
+"P",
+2,
+5,
+"grey8",
+"ffffffffff00ffff0000",
+"1-bit \u00b7 grey, 1 = white \u00b7 rows flipped: file declares bottom-left origin"
+]
+},
+{
+"data": "fbe1c618c3e6dc71e5059698be216f13cffe25274ef37d7f82c89cb924d37d92",
+"w": 5,
+"h": 4,
+"depth": 1,
+"stride": 19,
+"probe": "tga",
+"kw": {
+"photometric": null,
+"bottom_left": true,
+"channel_order": "bgr",
+"byte_order": null,
+"maxval": 65535
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "97edfa149c27ec410c230a5799b3553fca0658666e84fad2885d73f220010c2f2ba4ef48a36b3702c465ba056387770548a29afa7ee0caf16f2781a68744609a518853484dbe58dbfb9e6e7e535474bdb1bf6734a3d0b78e03b07088afb6373743e29e83b9d7450053",
+"w": 5,
+"h": 4,
+"depth": 3,
+"stride": 14,
+"probe": "tiff",
+"kw": {
+"photometric": null,
+"bottom_left": true,
+"channel_order": "bgr",
+"byte_order": "MM",
+"maxval": null
+},
+"result": [
+"F",
+"no renderer for 3-bit pixels"
+]
+},
+{
+"data": "8e4c4e374d7a231fcd37354be3579a",
+"w": 3,
+"h": 4,
+"depth": 48,
+"stride": 1,
+"probe": "pnm",
+"kw": {
+"photometric": null,
+"bottom_left": true,
+"channel_order": "rgb",
+"byte_order": "MM",
+"maxval": 255
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "c3bae9d21e8e4c71f42aeda2b06b7a90b3fdbc137492a04bf5fbf8e25425526f4a45f48b9e7a2e3ef8b72e545564bd14157e7785bc4f027ebafd4647",
+"w": 5,
+"h": 2,
+"depth": 0,
+"stride": 7,
+"probe": "pcx",
+"kw": {
+"photometric": 0,
+"bottom_left": true,
+"channel_order": "bgr",
+"byte_order": "MM",
+"maxval": null
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "0ee54a554315c25d48b7207dad6cb534af66d899485b704e1ea904bec09650b16b22834c8657ea1939f3b4b32d7c",
+"w": 0,
+"h": 2,
+"depth": 24,
+"stride": 7,
+"probe": "pcx",
+"kw": {
+"photometric": 1,
+"bottom_left": true,
+"channel_order": "bgr",
+"byte_order": null,
+"maxval": null
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "0471f560e89e06f3228246f6e238434ff19b1065f2e41d942e48833fac95e7dc395c76ccc7bcec30faf3d6aec763ea370b39615c30c96bf22440fc634aef756adbe4899c96a9f99ccb8e6581e29284d299eee5fafc743b4f89ebd4c2fce28e765ecd8e1b9e927c77fbee9d2089a6e49b48a1168fe4",
+"w": 5,
+"h": 3,
+"depth": 4,
+"stride": 17,
+"probe": "generic",
+"kw": {
+"photometric": "undeclared",
+"bottom_left": false,
+"channel_order": "rgb",
+"byte_order": null,
+"maxval": 255
+},
+"result": [
+"P",
+5,
+3,
+"grey8",
+"00447711ff99bb1100667766cccccc",
+"4-bit \u00b7 no photometric interpretation declared; shown as BlackIsZero (0 = black) \u00b7 rows shown in stored order"
+]
+},
+{
+"data": "5a4b5aff151f98bc548b1ee8f4973060bc05957f5b19ead2af",
+"w": 3,
+"h": 1,
+"depth": 24,
+"stride": 16,
+"probe": "pbm",
+"kw": {
+"photometric": 0,
+"bottom_left": true,
+"channel_order": "rgb",
+"byte_order": "II",
+"maxval": null
+},
+"result": [
+"P",
+3,
+1,
+"rgb8",
+"5a4b5aff151f98bc54",
+"24-bit \u00b7 RGB as stored \u00b7 rows flipped: file declares bottom-left origin"
+]
+},
+{
+"data": "0a49c46bae870d766c0ea4ec8d350521b1",
+"w": 3,
+"h": 5,
+"depth": 48,
+"stride": 16,
+"probe": "pbm",
+"kw": {
+"photometric": "undeclared",
+"bottom_left": true,
+"channel_order": "bgr",
+"byte_order": "II",
+"maxval": 65535
+},
+"result": [
+"F",
+"no renderer for 48-bit pixels"
+]
+},
+{
+"data": "e491f7f76ed7ffd641f879ecd069a7394eac0504e911a8328c188389bdc8462e45594a85f9c169e5694e7b60bf310dc593d0b20e74a6d02126f030dd19ec645ddc306525e46e1e",
+"w": 5,
+"h": 1,
+"depth": 16,
+"stride": 7,
+"probe": "pnm",
+"kw": {
+"photometric": null,
+"bottom_left": false,
+"channel_order": "rgb",
+"byte_order": "II",
+"maxval": 255
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "88a1e427e2c663d234852362270510e7ccee73167d5a3537a12744f0cb82b5a0e09afb6241d693002f79ed38cf9f695292",
+"w": 3,
+"h": 0,
+"depth": 0,
+"stride": 7,
+"probe": "pcx",
+"kw": {
+"photometric": "undeclared",
+"bottom_left": false,
+"channel_order": "rgb",
+"byte_order": "II",
+"maxval": 255
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "d3f5fd13e9bcf4f4690d0c065e9c97301cfb0cfccd1b88d37fc5177ef999d2623b36683677f524988ee98724a5b63bb5f40c04621e6aaf461b",
+"w": 1,
+"h": 1,
+"depth": 1,
+"stride": 8,
+"probe": "tiff",
+"kw": {
+"photometric": null,
+"bottom_left": true,
+"channel_order": "rgb",
+"byte_order": "II",
+"maxval": 255
+},
+"result": [
+"P",
+1,
+1,
+"grey8",
+"ff",
+"1-bit \u00b7 grey, 1 = white \u00b7 rows flipped: file declares bottom-left origin"
+]
+},
+{
+"data": "79f988d4a9053b76fe74bf4e9f5be1adb5528485f92645dae9b404854a15783fcd7400c65a51596e157ad3b0b9a6b35a4388f11f3fb364dd7aac1aa13adf53b0b397c188e47198392f741c603b2472a0aac8718844480ed9dd6e2b6c5fd7ca366a191f27582423dd",
+"w": 4,
+"h": 3,
+"depth": 1,
+"stride": 19,
+"probe": "bmp",
+"kw": {
+"photometric": 0,
+"bottom_left": true,
+"channel_order": "bgr",
+"byte_order": "MM",
+"maxval": null
+},
+"result": [
+"P",
+4,
+3,
+"grey8",
+"ff00ff0000ffffffff000000",
+"1-bit \u00b7 WhiteIsZero (photometric 0) \u00b7 rows flipped: file declares bottom-left origin"
+]
+},
+{
+"data": "9df107d6487cd0685a45148c15e106fe8817b8629aba34d4b562edad1bde",
+"w": 2,
+"h": 4,
+"depth": 48,
+"stride": 6,
+"probe": "tga",
+"kw": {
+"photometric": null,
+"bottom_left": true,
+"channel_order": "bgr",
+"byte_order": "MM",
+"maxval": 255
+},
+"result": [
+"F",
+"no renderer for 48-bit pixels"
+]
+},
+{
+"data": "bcf8c9f453073ce46ff025163b6ef2c8f8835d3eb88858c206ca89b3eafbc1405218a8ceda4eef1ae1abd904adbbd8e798468a493559306755991822046be640d972c7d9f06df8c813cb739357175649baf1174a2d132e451619188bb9aed81cb7fcbae7a4697d5684",
+"w": 2,
+"h": 0,
+"depth": 12,
+"stride": 6,
+"probe": "tiff",
+"kw": {
+"photometric": null,
+"bottom_left": false,
+"channel_order": "bgr",
+"byte_order": "II",
+"maxval": null
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "2e7a72c4eb4b7dad82b8068348b1987b3ffb201f9a342a7bd648b3b0fb62ed3b53ddbb33e338",
+"w": 1,
+"h": 1,
+"depth": 3,
+"stride": 16,
+"probe": "tiff",
+"kw": {
+"photometric": 1,
+"bottom_left": true,
+"channel_order": "bgr",
+"byte_order": null,
+"maxval": null
+},
+"result": [
+"F",
+"no renderer for 3-bit pixels"
+]
+},
+{
+"data": "a37cf99515a932018bdd54845cf4ec488898",
+"w": 3,
+"h": 5,
+"depth": 32,
+"stride": 13,
+"probe": "pnm",
+"kw": {
+"photometric": 1,
+"bottom_left": true,
+"channel_order": "rgb",
+"byte_order": null,
+"maxval": null
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "1e99d6063ae0d10cb32ed0077b4af1ef531720f9e44664b558c6bc052efded62",
+"w": 1,
+"h": 2,
+"depth": 48,
+"stride": 7,
+"probe": "tiff",
+"kw": {
+"photometric": 1,
+"bottom_left": false,
+"channel_order": "bgr",
+"byte_order": "II",
+"maxval": null
+},
+"result": [
+"F",
+"no renderer for 16-bit RGB TIFF (48-bit pixels)"
+]
+},
+{
+"data": "6ee95ad411bdab1a633dfd32ced2d2861f89559b7212e876c15155c4dd92f20a83bdfb437617bc93372ea12531b4d8b609d9ca56377488c74e143b2cd349ebe6ee76d329cf7ece0315e9830b3361b39acaa929d9d774",
+"w": 1,
+"h": 5,
+"depth": 32,
+"stride": 0,
+"probe": "pbm",
+"kw": {
+"photometric": null,
+"bottom_left": true,
+"channel_order": "rgb",
+"byte_order": "II",
+"maxval": null
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "c329a9c69064a01edf29604486aa64a2ef1175407e94567ab5ab6e1c55c9ff7d85f9756c1ed562a61f32cfaf4ce15df3f636cf57ad79125397d238f8d9fdab5ffd3a3c84525d423e0bdaaa",
+"w": 2,
+"h": 3,
+"depth": 8,
+"stride": 19,
+"probe": "pnm",
+"kw": {
+"photometric": 1,
+"bottom_left": true,
+"channel_order": "bgr",
+"byte_order": "II",
+"maxval": 65535
+},
+"result": [
+"P",
+2,
+3,
+"grey8",
+"000000000000",
+"PNM grey \u00b7 8-bit samples \u00b7 v\u00d7255//65535 \u00b7 rows shown in stored order"
+]
+},
+{
+"data": "78",
+"w": 0,
+"h": 1,
+"depth": 3,
+"stride": 13,
+"probe": "pbm",
+"kw": {
+"photometric": 1,
+"bottom_left": true,
+"channel_order": "rgb",
+"byte_order": null,
+"maxval": 65535
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "598fd2c5f9684125c4ba80a08a0d57a4c0722c1e95983a41e2",
+"w": 1,
+"h": 0,
+"depth": 36,
+"stride": 0,
+"probe": "tiff",
+"kw": {
+"photometric": 0,
+"bottom_left": false,
+"channel_order": "rgb",
+"byte_order": null,
+"maxval": 65535
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "1132a3da0445f5edbcf9086b39058e68f3342fbd69efe4c1a79a33625148d5ad71a1c374e141635013e931870c0bbe575a7be3b58f20bdb666c6b3a9aa350c",
+"w": 4,
+"h": 0,
+"depth": 8,
+"stride": 1,
+"probe": "generic",
+"kw": {
+"photometric": "undeclared",
+"bottom_left": false,
+"channel_order": "rgb",
+"byte_order": "II",
+"maxval": 65535
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "2e766de0b128141bdf0c0ac67dc002d6d6f2b8bf4c696a4f052688fa1cac675e14523a6823477046ee2ab9dbbb00987be23a369ffec9c6a5607364c954cbb5",
+"w": 5,
+"h": 2,
+"depth": 36,
+"stride": 14,
+"probe": "bmp",
+"kw": {
+"photometric": 0,
+"bottom_left": true,
+"channel_order": "bgr",
+"byte_order": "MM",
+"maxval": 65535
+},
+"result": [
+"F",
+"no renderer for 36-bit pixels"
+]
+},
+{
+"data": "4ef425f91eb51c39bac8bb9a216135368f",
+"w": 2,
+"h": 4,
+"depth": 24,
+"stride": 16,
+"probe": "pnm",
+"kw": {
+"photometric": "undeclared",
+"bottom_left": true,
+"channel_order": "rgb",
+"byte_order": null,
+"maxval": 65535
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "cf8b77479c2392f42e101cc6a53bba7f30b13fdec49fcf5f7252c4761388de5de34e1f2599b131072284afae1d1c4a009cc516",
+"w": 3,
+"h": 3,
+"depth": 36,
+"stride": 10,
+"probe": "bmp",
+"kw": {
+"photometric": null,
+"bottom_left": false,
+"channel_order": "bgr",
+"byte_order": null,
+"maxval": 255
+},
+"result": [
+"F",
+"no renderer for 36-bit pixels"
+]
+},
+{
+"data": "b788",
+"w": 5,
+"h": 0,
+"depth": 32,
+"stride": 4,
+"probe": "tiff",
+"kw": {
+"photometric": null,
+"bottom_left": false,
+"channel_order": "bgr",
+"byte_order": "II",
+"maxval": 255
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "e8d68c4e279bcaf89305d6ac134083415b772392f429b804",
+"w": 2,
+"h": 5,
+"depth": 12,
+"stride": 6,
+"probe": "tga",
+"kw": {
+"photometric": 1,
+"bottom_left": true,
+"channel_order": "rgb",
+"byte_order": "MM",
+"maxval": null
+},
+"result": [
+"F",
+"no renderer for 12-bit pixels"
+]
+},
+{
+"data": "d4e64f4635fa",
+"w": 1,
+"h": 3,
+"depth": 24,
+"stride": 15,
+"probe": "pcx",
+"kw": {
+"photometric": null,
+"bottom_left": true,
+"channel_order": "rgb",
+"byte_order": null,
+"maxval": null
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "bd80fa0b3acaa5726b37c6adec41c57ca980ede499d51845e292511e4753250d45",
+"w": 2,
+"h": 5,
+"depth": 36,
+"stride": 17,
+"probe": "bmp",
+"kw": {
+"photometric": 0,
+"bottom_left": false,
+"channel_order": "rgb",
+"byte_order": "MM",
+"maxval": 255
+},
+"result": [
+"F",
+"no renderer for 36-bit pixels"
+]
+},
+{
+"data": "8b20228777779c1357a05a3ed253e9fb845c74ba064a01c47e5c2edd93ed8d06b375b139fd3c6c7ec0d7",
+"w": 0,
+"h": 2,
+"depth": 4,
+"stride": 3,
+"probe": "pcx",
+"kw": {
+"photometric": "undeclared",
+"bottom_left": true,
+"channel_order": "bgr",
+"byte_order": null,
+"maxval": 65535
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "e62d078fed146ea67c08d0d9f61d699e612631adbcea2e984db707d2e3c24e58491f80fab7dc8fc7a3d98b11c64a4b2b",
+"w": 5,
+"h": 0,
+"depth": 36,
+"stride": 12,
+"probe": "generic",
+"kw": {
+"photometric": null,
+"bottom_left": true,
+"channel_order": "bgr",
+"byte_order": "II",
+"maxval": null
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "3590193126de0d9a7a75151aa132e39482bf8a790dff9128772d315daff56e348c1c72cafc3b613fa292ee1c2c1a5d04b228a43499c89349e4a5c6edb469f010f4e725efe4e5d72452e2e672cd87d28221a1da33fc8662d17a51a40afc924ff2272b0a50b56b8a4937050064bdd82c01a2",
+"w": 0,
+"h": 1,
+"depth": 48,
+"stride": 9,
+"probe": "pnm",
+"kw": {
+"photometric": null,
+"bottom_left": true,
+"channel_order": "rgb",
+"byte_order": "II",
+"maxval": 65535
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "4ffe76318e9b61a0d234e856b3da919837dd07f56d12925d60edead6c52c84cf674b050d7681f4fdd5bae2c03f66a33a32bfcf3d5431d84459c78513eddee4aabc133f9b3666dd57",
+"w": 1,
+"h": 2,
+"depth": 12,
+"stride": 0,
+"probe": "pcx",
+"kw": {
+"photometric": 0,
+"bottom_left": true,
+"channel_order": "rgb",
+"byte_order": null,
+"maxval": 255
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "f0a1ab01d20219e453489770791cc470934a4aef1e7b98711f583d055d3e02e7de4a8bddd1c82c0e5ff48c2c28",
+"w": 0,
+"h": 4,
+"depth": 12,
+"stride": 0,
+"probe": "bmp",
+"kw": {
+"photometric": "undeclared",
+"bottom_left": false,
+"channel_order": "rgb",
+"byte_order": null,
+"maxval": 65535
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "967ffe71b8b27b",
+"w": 4,
+"h": 3,
+"depth": 3,
+"stride": 12,
+"probe": "pbm",
+"kw": {
+"photometric": "undeclared",
+"bottom_left": true,
+"channel_order": "bgr",
+"byte_order": "II",
+"maxval": 255
+},
+"result": [
+"F",
+"no renderer for 3-bit pixels"
+]
+},
+{
+"data": "f66e948a396b7f97cc2c5760d4c387d0accabc81826eafe35e93cea36c1f113acc8bd303fc280913fdfc1d00e8be30064716787f9890",
+"w": 1,
+"h": 1,
+"depth": 0,
+"stride": 16,
+"probe": "pcx",
+"kw": {
+"photometric": "undeclared",
+"bottom_left": true,
+"channel_order": "bgr",
+"byte_order": null,
+"maxval": null
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "ccabd9c44fb8655d560e78692949bae3cd927d81cef075db0d25412b43a47ee9a5720884d9a25b13736728255bbd1c312c5a6166bf3a49c3ea154d9a70ef0bed0d412fcfeb329afdd97f39f7c782b82e0b1730baf1",
+"w": 2,
+"h": 0,
+"depth": 1,
+"stride": 1,
+"probe": "tiff",
+"kw": {
+"photometric": 0,
+"bottom_left": true,
+"channel_order": "rgb",
+"byte_order": "MM",
+"maxval": null
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "27c649c883756edf67d36dacdefce6f2c035ab39719eefcb24a0e0d4943aeead8c1f205af8c51131efb4eba24160fc4df91ef393bdeb89e1d6d7ffedb0c27958efc94910658b611e214a1c1219b26966cf6afd20856d5fa98af6a4c8ce358415c5daa7",
+"w": 4,
+"h": 4,
+"depth": 32,
+"stride": 8,
+"probe": "pcx",
+"kw": {
+"photometric": 0,
+"bottom_left": true,
+"channel_order": "rgb",
+"byte_order": null,
+"maxval": 65535
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "ff803dde3a62a077c1b80c266f7343cb861038533224eaa5158e8cd7f94f2cc38af046c45a313df70aa9925002dcb67b62291d5630ca6518db975f267847b2c59e4e6228eebf369a0dfa3e3b37e669af6280",
+"w": 4,
+"h": 4,
+"depth": 12,
+"stride": 1,
+"probe": "tiff",
+"kw": {
+"photometric": 0,
+"bottom_left": true,
+"channel_order": "rgb",
+"byte_order": "II",
+"maxval": 255
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "8c40576b33a26ab0c39b2c678acc1e9b41a3c4e6251e0dffcec315b9851a08bead187e817397f8267ffa16af6a4e7eeafc3bc4e5dd8754e797f908e554d473ab7a4e6054dca5f541eb784e49c1f4aad673a434715c5198fbc3775d3ec7648af78bee8fb98522b9d93132ba20643d401d6d2eedbcdd45",
+"w": 4,
+"h": 5,
+"depth": 24,
+"stride": 20,
+"probe": "pcx",
+"kw": {
+"photometric": "undeclared",
+"bottom_left": false,
+"channel_order": "rgb",
+"byte_order": null,
+"maxval": 255
+},
+"result": [
+"P",
+4,
+5,
+"rgb8",
+"8c40576b33a26ab0c39b2c67251e0dffcec315b9851a08be7ffa16af6a4e7eeafc3bc4e554d473ab7a4e6054dca5f54173a434715c5198fbc3775d3e",
+"24-bit \u00b7 RGB as stored \u00b7 rows shown in stored order"
+]
+},
+{
+"data": "f50b4ec8e3eec05da66a31e4a7f5fadf4bfd74ec9fe5f6a2618b163fa21f20351dca2114f4858bb29029cc0abd46e2ef686b132270a977ec6db0c74c4588e447ed7a1112099cd8d6a1c619fcdf692fa082e1902eb936b7f717706e3bd0c291aaa1e2a22b0ee1350d6050afe476d96ebb1c",
+"w": 0,
+"h": 1,
+"depth": 24,
+"stride": 18,
+"probe": "generic",
+"kw": {
+"photometric": null,
+"bottom_left": false,
+"channel_order": "bgr",
+"byte_order": "II",
+"maxval": null
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "385e487c6a64918b1e809b67650d301e6e5fd5fd892cb47e91bd804c386f46d0b6e93e9453c3a1a670ee341b182bcd2ae84bfdad191fd1df8f5434731371744dff5c5b72ddce20b616113d3263df8499319d22e4",
+"w": 4,
+"h": 2,
+"depth": 8,
+"stride": 15,
+"probe": "bmp",
+"kw": {
+"photometric": 0,
+"bottom_left": true,
+"channel_order": "rgb",
+"byte_order": "MM",
+"maxval": null
+},
+"result": [
+"P",
+4,
+2,
+"grey8",
+"e191a02ac7a1b783",
+"8-bit \u00b7 WhiteIsZero (photometric 0) \u00b7 rows flipped: file declares bottom-left origin"
+]
+},
+{
+"data": "685e9ed1c5f81e28ea1453f99990a59151",
+"w": 3,
+"h": 1,
+"depth": 4,
+"stride": 2,
+"probe": "pnm",
+"kw": {
+"photometric": "undeclared",
+"bottom_left": true,
+"channel_order": "bgr",
+"byte_order": null,
+"maxval": null
+},
+"result": [
+"P",
+3,
+1,
+"grey8",
+"668855",
+"4-bit \u00b7 no photometric interpretation declared; shown as BlackIsZero (0 = black) \u00b7 rows flipped: file declares bottom-left origin"
+]
+},
+{
+"data": "1f76794b59f077e45c2b0be9f3f1d1a3375d62d2dd9c59601dff2441155316e3ca7ceef10044d9a80c5366b7c8e2209626ab802566f74e9565ea87d692ddbbb104431951e01474fd72b6d59d16efbdcae70eaf2a1cdf60c086b4aa",
+"w": 5,
+"h": 5,
+"depth": 16,
+"stride": 16,
+"probe": "pcx",
+"kw": {
+"photometric": "undeclared",
+"bottom_left": true,
+"channel_order": "rgb",
+"byte_order": "MM",
+"maxval": null
+},
+"result": [
+"F",
+"no renderer for 16-bit pixels"
+]
+},
+{
+"data": "aada03224158c682189707b0333d47f189609494e553fb8582d576dd9c635821a1bab04b0d7b8158b2cedda73200ff33a534b6ae66c9196b106a",
+"w": 3,
+"h": 4,
+"depth": 24,
+"stride": 4,
+"probe": "bmp",
+"kw": {
+"photometric": "undeclared",
+"bottom_left": true,
+"channel_order": "rgb",
+"byte_order": null,
+"maxval": null
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "31f3a3617b5d6b5d3b619c632859c7d202a5f24c22aa04cbbae0dd60704be13724feac298d06c7e0d63cf2c955",
+"w": 0,
+"h": 1,
+"depth": 16,
+"stride": 13,
+"probe": "tiff",
+"kw": {
+"photometric": 1,
+"bottom_left": true,
+"channel_order": "rgb",
+"byte_order": "II",
+"maxval": 65535
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "4ba8d3c67305932a13141033e8283278c35eaa039b6ee210d308c8bf42acb4292b5328471cf72d18832a6dbe128a5fe79de922e7f92f",
+"w": 1,
+"h": 4,
+"depth": 36,
+"stride": 14,
+"probe": "tiff",
+"kw": {
+"photometric": 1,
+"bottom_left": false,
+"channel_order": "rgb",
+"byte_order": null,
+"maxval": 255
+},
+"result": [
+"F",
+"no renderer for 12-bit RGB TIFF (36-bit pixels)"
+]
+},
+{
+"data": "0e46ed46e0d04d89d662b14a8483a8dd0abead8373d19f",
+"w": 3,
+"h": 1,
+"depth": 32,
+"stride": 6,
+"probe": "pnm",
+"kw": {
+"photometric": 1,
+"bottom_left": false,
+"channel_order": "bgr",
+"byte_order": null,
+"maxval": 255
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "35b20c8e00dd85a2b4c7c65412578ce810bb7c91e9bdf2c185a481f598177196a5afd5976a1a8d7de56e5704c3031c624b5726ff1ddebfa669e3dac203269ba899eb16b88baefeb93e8a805f03e72e7e71efd0b43bf5c852168776eebbbe6fb875931332c04a7f9f3d74e54d0a7a4e81db50",
+"w": 3,
+"h": 2,
+"depth": 32,
+"stride": 2,
+"probe": "tga",
+"kw": {
+"photometric": 0,
+"bottom_left": false,
+"channel_order": "bgr",
+"byte_order": "MM",
+"maxval": 255
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "3fa3090c5177d096214f0ddcd48d4684ab3a877ea55546759adc136d63ecb0d0bc09f74a649692f9e88d489a7077642bd03be23f4aa9a092441d424795d5f3a8c2a38b16f3ac825841304b1e46bcf304b3bdb74e1e5c38d04c66ac74ead0",
+"w": 0,
+"h": 1,
+"depth": 3,
+"stride": 11,
+"probe": "generic",
+"kw": {
+"photometric": 1,
+"bottom_left": false,
+"channel_order": "bgr",
+"byte_order": "MM",
+"maxval": 65535
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "c9a16c5c92d8cf8bcc6a5399fb2c653eba0fb5d3768e8f9dc2523e2b01b5a87f83ff9c7fed07e0a50e4f2196a344b82b8c4d55803ed08b63f8a69b4e1e8f49c8bc5cebb72cd18e5dd33e53",
+"w": 2,
+"h": 1,
+"depth": 1,
+"stride": 16,
+"probe": "bmp",
+"kw": {
+"photometric": null,
+"bottom_left": true,
+"channel_order": "bgr",
+"byte_order": "MM",
+"maxval": 65535
+},
+"result": [
+"P",
+2,
+1,
+"grey8",
+"ffff",
+"1-bit \u00b7 grey, 1 = white \u00b7 rows flipped: file declares bottom-left origin"
+]
+},
+{
+"data": "9d09325cf2cff68501de0c89d4087da1573032c047d3336539f3a4d86ad5256f2371349d8bf0bded64d629ce8a9d16a1e4",
+"w": 0,
+"h": 1,
+"depth": 32,
+"stride": 16,
+"probe": "pcx",
+"kw": {
+"photometric": 1,
+"bottom_left": true,
+"channel_order": "bgr",
+"byte_order": null,
+"maxval": 255
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "ba26d743f0941e3769b53dd7ca1818ee34407a66f0f70396b1a43d692d7a059aa361b25922fc9f2d47404cf22e75c10b81938294f2cca1900bd69f4db8fedf425f54c8f377b9e1317f80147d86ac1d5fe1df9c5137f39d8f",
+"w": 2,
+"h": 5,
+"depth": 3,
+"stride": 11,
+"probe": "tiff",
+"kw": {
+"photometric": null,
+"bottom_left": false,
+"channel_order": "bgr",
+"byte_order": null,
+"maxval": null
+},
+"result": [
+"F",
+"no renderer for 3-bit pixels"
+]
+},
+{
+"data": "5f0245af27cc89fa3f4a7bf6f6f10018d9ac86ccce508d4beda13896569803cc0da2bd66ebad53a8b3d15f8291ddfc65c653b0795cfe33d2228942dfed66af1685da0e72a458c81f42553d8db2ae6c4b313e809d73294bcb91d36728e367f305423abb2416d45479885f9e2bef69627e4200b6a5c542fee7",
+"w": 4,
+"h": 1,
+"depth": 24,
+"stride": 4,
+"probe": "tiff",
+"kw": {
+"photometric": null,
+"bottom_left": false,
+"channel_order": "bgr",
+"byte_order": "II",
+"maxval": null
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "2d5a3dc77d9ae334bc58d04e15",
+"w": 5,
+"h": 3,
+"depth": 3,
+"stride": 19,
+"probe": "pnm",
+"kw": {
+"photometric": 1,
+"bottom_left": true,
+"channel_order": "bgr",
+"byte_order": "MM",
+"maxval": 255
+},
+"result": [
+"F",
+"no renderer for 3-bit pixels"
+]
+},
+{
+"data": "25778b77a873ca636732b30b367c96",
+"w": 3,
+"h": 4,
+"depth": 24,
+"stride": 0,
+"probe": "generic",
+"kw": {
+"photometric": 0,
+"bottom_left": true,
+"channel_order": "bgr",
+"byte_order": "II",
+"maxval": 255
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "2cee890fc628e2fd6ab65de7d96323d5d895adf30eedbdfeddd157d0",
+"w": 2,
+"h": 0,
+"depth": 36,
+"stride": 10,
+"probe": "bmp",
+"kw": {
+"photometric": null,
+"bottom_left": true,
+"channel_order": "bgr",
+"byte_order": null,
+"maxval": 65535
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "2c021384b7073d87736705eae107d8736fb1c79a394fd4e4bafbe7c4a758866f8028ece88df422cc769e2d3a8c7dcf7b22ed7efde1fdcb9887a2cfbbb01cfc0f9b1eb9dc6001a7e5296eb8388aba3f9623bfcc",
+"w": 0,
+"h": 0,
+"depth": 16,
+"stride": 4,
+"probe": "tga",
+"kw": {
+"photometric": 1,
+"bottom_left": true,
+"channel_order": "rgb",
+"byte_order": null,
+"maxval": 65535
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "408c50dee639487222c3e651786ec8f6f006bc14f15e80f91fe46512d9fae90af96eeddd5568606a52b3e8a527b1f020e51c8e6b1a830feb34d12ac6ac2101afbbf17f26e06c4312de169916f4e94cd5bd8fe04ea39361c67a584fb1f8225c4f1b623f249fee19b76da0a19a6926bb",
+"w": 0,
+"h": 3,
+"depth": 12,
+"stride": 18,
+"probe": "tiff",
+"kw": {
+"photometric": "undeclared",
+"bottom_left": true,
+"channel_order": "rgb",
+"byte_order": "II",
+"maxval": 255
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "df0189ef811f42ba3bc42c29ecf2e26ebba0e67e66ab19bc53b260e1f3ef387d12aad3ae64dc7ea6de37e0ae1873a523c344098990c9b9047513734fc624d004e10dba6fb0885fc60647829866e2e87c42be4bd2101567b1d66f83d72a9d3a87cb64609636b67ff834160e35b12e76d7",
+"w": 5,
+"h": 3,
+"depth": 0,
+"stride": 2,
+"probe": "tiff",
+"kw": {
+"photometric": 0,
+"bottom_left": false,
+"channel_order": "bgr",
+"byte_order": "MM",
+"maxval": 65535
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "46eb8b51fff1eee6e7dc15890152ff6d41d3d626f9505307d85288f8f4e99730610f52ab86ad876d97098edd0b37a1c8039859c261e984f7090686891751dc249a5558c4e9df042944e869e40cbae1b6143c18620b770ae81022a7db04101bae762961cf2bdfc9703ae8dcc54557",
+"w": 4,
+"h": 3,
+"depth": 0,
+"stride": 6,
+"probe": "pnm",
+"kw": {
+"photometric": 1,
+"bottom_left": false,
+"channel_order": "bgr",
+"byte_order": "II",
+"maxval": null
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "cef5c77faa6f580e89ebe4c62b40c578c6751cc73c9b226032cc2ddd299cb8",
+"w": 5,
+"h": 1,
+"depth": 48,
+"stride": 13,
+"probe": "tga",
+"kw": {
+"photometric": 1,
+"bottom_left": false,
+"channel_order": "bgr",
+"byte_order": null,
+"maxval": 255
+},
+"result": [
+"F",
+"no renderer for 48-bit pixels"
+]
+},
+{
+"data": "466fa3a3b936a5843fed563258e6eb5abdbde2d6e4052f983da0b845fbcc5613a8701eaee940c49eeafb9f8eca3d437f7f5c50f701fa37e206dbb7f3db2b",
+"w": 4,
+"h": 5,
+"depth": 36,
+"stride": 7,
+"probe": "bmp",
+"kw": {
+"photometric": null,
+"bottom_left": false,
+"channel_order": "rgb",
+"byte_order": "MM",
+"maxval": 65535
+},
+"result": [
+"F",
+"no renderer for 36-bit pixels"
+]
+},
+{
+"data": "17c1f6",
+"w": 5,
+"h": 3,
+"depth": 1,
+"stride": 10,
+"probe": "pnm",
+"kw": {
+"photometric": "undeclared",
+"bottom_left": true,
+"channel_order": "rgb",
+"byte_order": null,
+"maxval": null
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "6014948c3a57a575f8395f56af99bb655d97f794fe51b70a15a78d8b3b431700d38b4e649367de6a70902df65a",
+"w": 3,
+"h": 2,
+"depth": 4,
+"stride": 18,
+"probe": "generic",
+"kw": {
+"photometric": null,
+"bottom_left": true,
+"channel_order": "bgr",
+"byte_order": null,
+"maxval": 65535
+},
+"result": [
+"P",
+3,
+2,
+"grey8",
+"ff7799660011",
+"4-bit \u00b7 grey \u00b7 rows flipped: file declares bottom-left origin"
+]
+},
+{
+"data": "57c2d903ba58507ab8f047528761b10c918844a99981f02a889fe2327434918dbebafbb0a14df53297ca523ff15b3a7fb0be7a1d368297bf8ac15b03b45cb4bd1ef6b0df",
+"w": 2,
+"h": 4,
+"depth": 48,
+"stride": 11,
+"probe": "generic",
+"kw": {
+"photometric": 0,
+"bottom_left": false,
+"channel_order": "rgb",
+"byte_order": null,
+"maxval": 255
+},
+"result": [
+"F",
+"no renderer for 48-bit pixels"
+]
+},
+{
+"data": "dd",
+"w": 0,
+"h": 0,
+"depth": 12,
+"stride": 18,
+"probe": "pcx",
+"kw": {
+"photometric": null,
+"bottom_left": true,
+"channel_order": "bgr",
+"byte_order": "MM",
+"maxval": null
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "3f1a09c4338f2890488d85f62a6ed0c20a8607697a2e7545a98e42fc173fe82a4ae586d942442e5ea70dd27714f360996ce1fc9ca65119df3730dedd443558c23a458efd6ed988",
+"w": 1,
+"h": 5,
+"depth": 1,
+"stride": 2,
+"probe": "pcx",
+"kw": {
+"photometric": 0,
+"bottom_left": false,
+"channel_order": "rgb",
+"byte_order": "MM",
+"maxval": 255
+},
+"result": [
+"P",
+1,
+5,
+"grey8",
+"ffffffffff",
+"1-bit \u00b7 WhiteIsZero (photometric 0) \u00b7 rows shown in stored order"
+]
+},
+{
+"data": "5bfb00668e0c3b853a37272a5503f0f6f1f910c1607b2f65f12846c408b2b573a72b18c05b8e88b6e9bbb53235b13f052d82d02b7c82cf2a5097",
+"w": 4,
+"h": 4,
+"depth": 12,
+"stride": 7,
+"probe": "bmp",
+"kw": {
+"photometric": "undeclared",
+"bottom_left": false,
+"channel_order": "rgb",
+"byte_order": null,
+"maxval": null
+},
+"result": [
+"F",
+"no renderer for 12-bit pixels"
+]
+},
+{
+"data": "13f48364b21ac67219cdf952f9613c0a72ab251e6e8d4c6cd0fbda159014281193ed408a3385af8c77458f2a9863951400ec996b650ed1ecd38f85d4",
+"w": 5,
+"h": 2,
+"depth": 3,
+"stride": 18,
+"probe": "pbm",
+"kw": {
+"photometric": null,
+"bottom_left": true,
+"channel_order": "bgr",
+"byte_order": null,
+"maxval": 255
+},
+"result": [
+"F",
+"no renderer for 3-bit pixels"
+]
+},
+{
+"data": "46f7695c044b240806e28e140893cc139611a2d5851d85907bc66445cdff40c10552c6c2eb7da87b49bfe47d385348b1a999a9d237a2e68849085964de0bd95ab5029e1fa683b35104efd99320cecdee0442d95253f171baa4bcdf16ea6e140745c11bcc4ce422f9aeca5f0f4b643e",
+"w": 5,
+"h": 5,
+"depth": 4,
+"stride": 12,
+"probe": "bmp",
+"kw": {
+"photometric": 1,
+"bottom_left": true,
+"channel_order": "rgb",
+"byte_order": "II",
+"maxval": null
+},
+"result": [
+"P",
+5,
+5,
+"grey8",
+"aa999999aaeebb77ddaa77bbcc666600889933cc4466ff7766",
+"4-bit \u00b7 BlackIsZero (photometric 1) \u00b7 rows flipped: file declares bottom-left origin"
+]
+},
+{
+"data": "2fb03187aabbf0928c674d494f69c657ed59",
+"w": 5,
+"h": 0,
+"depth": 4,
+"stride": 20,
+"probe": "tiff",
+"kw": {
+"photometric": "undeclared",
+"bottom_left": true,
+"channel_order": "bgr",
+"byte_order": null,
+"maxval": null
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "46ad07b44855bcfd1b35fa",
+"w": 1,
+"h": 4,
+"depth": 0,
+"stride": 16,
+"probe": "pcx",
+"kw": {
+"photometric": 1,
+"bottom_left": true,
+"channel_order": "rgb",
+"byte_order": "MM",
+"maxval": null
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "a6eb5fe91c06d1c20fab1d97085279ad53deb5b1d2526d000a01a08d1228ceb9681fb86b4cf2d1",
+"w": 1,
+"h": 5,
+"depth": 48,
+"stride": 12,
+"probe": "tiff",
+"kw": {
+"photometric": 0,
+"bottom_left": true,
+"channel_order": "rgb",
+"byte_order": "II",
+"maxval": 255
+},
+"result": [
+"F",
+"no renderer for 16-bit RGB TIFF (48-bit pixels)"
+]
+},
+{
+"data": "15334f55d9c360e633fc58bfcaf978c93604b065ba2a8d5309e86ce9f11d8e388868f802bb630f8356e9e5fe68f0274cfa39ed06a5e10b6e2a5d75eb8a09b486b6fb40e7863175305c57937dd4cd5889",
+"w": 5,
+"h": 3,
+"depth": 3,
+"stride": 7,
+"probe": "bmp",
+"kw": {
+"photometric": 1,
+"bottom_left": true,
+"channel_order": "rgb",
+"byte_order": "MM",
+"maxval": 255
+},
+"result": [
+"F",
+"no renderer for 3-bit pixels"
+]
+},
+{
+"data": "9927a85816dc4c432621069d27cebd5ea01b131087683e0cc5d1f8763f6dd5b4a21e63d49a981843ed3d65be247a3ea0b7578d59c6dad41c62eef603d196400b7ccbc771e50b914aec0c3ef5c9db1ebdc9",
+"w": 3,
+"h": 0,
+"depth": 24,
+"stride": 1,
+"probe": "tiff",
+"kw": {
+"photometric": "undeclared",
+"bottom_left": false,
+"channel_order": "bgr",
+"byte_order": "MM",
+"maxval": 65535
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "b54a594027ee64e6cee7f41c70cd6acc358a67f369cf0303f3a83451d0cfc59548c3c0a438b236ec5a606e943ccc48bbaab4aad29411d8e3b04915b35ea4c3b3f0ca112d7dbd722c1d482008e23cab2de260ba466910314e9d38c7b205ba6bd4972547345e4b4d25e3febdcda01b9941b4da",
+"w": 1,
+"h": 2,
+"depth": 3,
+"stride": 11,
+"probe": "tiff",
+"kw": {
+"photometric": "undeclared",
+"bottom_left": false,
+"channel_order": "bgr",
+"byte_order": null,
+"maxval": null
+},
+"result": [
+"F",
+"no renderer for 3-bit pixels"
+]
+},
+{
+"data": "",
+"w": 0,
+"h": 5,
+"depth": 1,
+"stride": 14,
+"probe": "generic",
+"kw": {
+"photometric": null,
+"bottom_left": false,
+"channel_order": "bgr",
+"byte_order": "MM",
+"maxval": 255
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "",
+"w": 1,
+"h": 4,
+"depth": 24,
+"stride": 7,
+"probe": "pbm",
+"kw": {
+"photometric": null,
+"bottom_left": true,
+"channel_order": "rgb",
+"byte_order": "II",
+"maxval": 255
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "e6c2fd8a1312d33c",
+"w": 3,
+"h": 3,
+"depth": 32,
+"stride": 20,
+"probe": "pcx",
+"kw": {
+"photometric": 1,
+"bottom_left": false,
+"channel_order": "rgb",
+"byte_order": null,
+"maxval": 255
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "79b1b71e10c122bbaddb9442acf9de12d2bbb06fc7c08d6d01ac58a91fc8c3a77b1dabba91f58da06ce4f3971bc42a0b2e3856147ef95650584b218e0d33fe5c8d31d193eab650e4a4052073c9",
+"w": 3,
+"h": 5,
+"depth": 8,
+"stride": 12,
+"probe": "pbm",
+"kw": {
+"photometric": null,
+"bottom_left": false,
+"channel_order": "bgr",
+"byte_order": "II",
+"maxval": 255
+},
+"result": [
+"P",
+3,
+5,
+"grey8",
+"79b1b7acf9de01ac5891f58d2e3856",
+"8-bit \u00b7 greyscale; no palette \u00b7 rows shown in stored order"
+]
+},
+{
+"data": "ca54291513a2c57cb01e7bab23",
+"w": 1,
+"h": 0,
+"depth": 48,
+"stride": 9,
+"probe": "pcx",
+"kw": {
+"photometric": 1,
+"bottom_left": false,
+"channel_order": "rgb",
+"byte_order": "II",
+"maxval": null
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "87811aab4b03531f1d67297aca4b252bc7ea1f8fa6d7b6ac7f517c6f2be4b070d24cb85a4263ee95b5b9f54f95d1d7285d5853e0aaf658933dfe554db4d1b24cba67aae2",
+"w": 2,
+"h": 2,
+"depth": 1,
+"stride": 12,
+"probe": "generic",
+"kw": {
+"photometric": "undeclared",
+"bottom_left": false,
+"channel_order": "bgr",
+"byte_order": "II",
+"maxval": 255
+},
+"result": [
+"P",
+2,
+2,
+"grey8",
+"ff00ffff",
+"1-bit \u00b7 no photometric interpretation declared; shown as BlackIsZero (0 = black) \u00b7 rows shown in stored order"
+]
+},
+{
+"data": "c2c04755059b183576dcb1e7762c29ec9cb9eaac3cb78724b4f20e56337b9c6c3798c0f67ae2c4ceb6f9b46d156c6140961e9241419d3ca96c7adf966dc7f3219c6f8f988437608cf62c8d589417c939e59c126464f2201d4db4470997230b15260382",
+"w": 1,
+"h": 2,
+"depth": 24,
+"stride": 13,
+"probe": "bmp",
+"kw": {
+"photometric": "undeclared",
+"bottom_left": true,
+"channel_order": "bgr",
+"byte_order": null,
+"maxval": null
+},
+"result": [
+"P",
+1,
+2,
+"rgb8",
+"ec292c47c0c2",
+"24-bit \u00b7 BGR\u2192RGB \u00b7 rows flipped: file declares bottom-left origin"
+]
+},
+{
+"data": "019793f08655f0a883bab62b9fc2",
+"w": 0,
+"h": 3,
+"depth": 8,
+"stride": 20,
+"probe": "tga",
+"kw": {
+"photometric": 1,
+"bottom_left": false,
+"channel_order": "bgr",
+"byte_order": "II",
+"maxval": 255
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "399b74fd254a31d0809e5d648ae51bf72efbe2f2e40460e8963164a64887996e8d675dbdff7605f844d79eff0697c0de3318cebc3a82facbb76d2b9eb6f1742d1196b1299b638af1bf6f3fa6e455ea24ce3715d0ed5bd3eb6fc66093fa16d31297d7ada1ba7fba5ffe97a3187081e0753c12cd66",
+"w": 4,
+"h": 5,
+"depth": 12,
+"stride": 5,
+"probe": "tiff",
+"kw": {
+"photometric": "undeclared",
+"bottom_left": false,
+"channel_order": "rgb",
+"byte_order": "II",
+"maxval": null
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "a018fbe5a618c6e06020b9ea11e62231f708c07a64bf8e28d0730134aa1fbe7a360c1910342a08ed1394946bca1d3f65326f3a0075c12a9bdee84a78b329",
+"w": 0,
+"h": 4,
+"depth": 32,
+"stride": 10,
+"probe": "bmp",
+"kw": {
+"photometric": 1,
+"bottom_left": false,
+"channel_order": "bgr",
+"byte_order": "II",
+"maxval": null
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "284135d2420e80ee119ebbbaf98719e1760609e4c4e631a02f52cfe9b45497a9d5db2d1a771afd7045cab4069436295212fa1839608aa6ac4934194b75e1c052fd1ff4a20414d35328e50b93ab17",
+"w": 3,
+"h": 0,
+"depth": 36,
+"stride": 5,
+"probe": "tiff",
+"kw": {
+"photometric": 0,
+"bottom_left": false,
+"channel_order": "bgr",
+"byte_order": "II",
+"maxval": null
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "7693ad1a023c664818dbe4547b410660513e0aec0e18c8b58e7f70063b5631f25b0e2db901cb30960425202868b38fe8f8ad0b9634d2d2f3a032672191",
+"w": 4,
+"h": 2,
+"depth": 32,
+"stride": 0,
+"probe": "pbm",
+"kw": {
+"photometric": "undeclared",
+"bottom_left": false,
+"channel_order": "bgr",
+"byte_order": null,
+"maxval": 255
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "05b5d29c9c49b7939956def1edda6ac289840eeb",
+"w": 2,
+"h": 0,
+"depth": 1,
+"stride": 12,
+"probe": "pcx",
+"kw": {
+"photometric": 1,
+"bottom_left": true,
+"channel_order": "rgb",
+"byte_order": null,
+"maxval": 65535
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "f4e85f69c2d9e8ce66a090e702a70c0b1122937a21abf23cf12b7e6853e1b9228ad0de24ed852ef498b2a86e3f3929be290993dc37740f46b39214e9d0ea4996b6617addfcac2b0447e8543ed821bf0f49d2562d2928752aa20940372a3e94d02f37f051023b8df4296481d408",
+"w": 5,
+"h": 5,
+"depth": 16,
+"stride": 1,
+"probe": "pbm",
+"kw": {
+"photometric": "undeclared",
+"bottom_left": false,
+"channel_order": "rgb",
+"byte_order": "II",
+"maxval": 255
+},
+"result": [
+"F",
+"no renderer for 16-bit pixels"
+]
+},
+{
+"data": "004825d4bbb22da3adee60ac185fbe0dadd37630749f4a9e7ffeece3f08180f0aa7c5a324bf91825a71f9593db396fefb320dcdecf26148c2ba977ccf4d8fbd4ed6918897d865f9f7db767c4455a7b642fe2643a7f59e09fa763eeb3aed4bd90fc91e7",
+"w": 3,
+"h": 4,
+"depth": 16,
+"stride": 3,
+"probe": "pcx",
+"kw": {
+"photometric": null,
+"bottom_left": false,
+"channel_order": "rgb",
+"byte_order": "MM",
+"maxval": 255
+},
+"result": [
+"F",
+"no renderer for 16-bit pixels"
+]
+},
+{
+"data": "cd637246f7f4ee4d81e0fb80ee515646653fed7e9bcf0374c38a4cfb46cfa9c3c633a2c63bb17fb976c4088bb1d1bc2b8994daf3db49559172f021d238de3baa501be1490c0b6a25c7e0914e20",
+"w": 1,
+"h": 2,
+"depth": 3,
+"stride": 1,
+"probe": "pcx",
+"kw": {
+"photometric": "undeclared",
+"bottom_left": true,
+"channel_order": "bgr",
+"byte_order": null,
+"maxval": null
+},
+"result": [
+"F",
+"no renderer for 3-bit pixels"
+]
+},
+{
+"data": "9baf61275826afb5b2d8989f42792507",
+"w": 0,
+"h": 1,
+"depth": 4,
+"stride": 4,
+"probe": "bmp",
+"kw": {
+"photometric": 1,
+"bottom_left": false,
+"channel_order": "rgb",
+"byte_order": null,
+"maxval": null
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "f7d9ee1d2ad3efa26d5182fc1c0c9f9b73885a0c226fdbe1f7259201ba169d7182b390fed488a24e7e8a881cb2ed7595200aa23dcf9fac0fc3ee6ee20d05466bebd6c1a50f3ac0a464e5f6873b8928718bc13e983c1e314ca0b1e9871b00714f5b4ece50acb1785e8013ea",
+"w": 4,
+"h": 5,
+"depth": 12,
+"stride": 8,
+"probe": "pbm",
+"kw": {
+"photometric": 1,
+"bottom_left": false,
+"channel_order": "bgr",
+"byte_order": "II",
+"maxval": 65535
+},
+"result": [
+"F",
+"no renderer for 12-bit pixels"
+]
+},
+{
+"data": "583d0114e3cca91beca66e83099ad4c417c76631f654cb44ac714fe76443140664b3b654ad3bddd5c7779b8b754da4408b7ea62afdad634299776ae1631f45",
+"w": 5,
+"h": 3,
+"depth": 16,
+"stride": 7,
+"probe": "pnm",
+"kw": {
+"photometric": 0,
+"bottom_left": true,
+"channel_order": "bgr",
+"byte_order": null,
+"maxval": 255
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "c8c24d8be4b06d78baa99f7767fa8db534170922f94ec5e6f0b86cb8d66f03fc902a782fb70fc78f49eaea000716b7c239",
+"w": 4,
+"h": 5,
+"depth": 4,
+"stride": 4,
+"probe": "pcx",
+"kw": {
+"photometric": null,
+"bottom_left": true,
+"channel_order": "bgr",
+"byte_order": "MM",
+"maxval": 65535
+},
+"result": [
+"P",
+4,
+5,
+"grey8",
+"334411776677ffaabbaaaa99ee44bb00cc88cc22",
+"4-bit \u00b7 grey \u00b7 rows flipped: file declares bottom-left origin"
+]
+},
+{
+"data": "ca7a6f237e40326b6a43e356254ed2a83467452a10bd4f944f62e78e79709501ba5c00eb23f2b234c7c5aa95f8c62d0700a998a71b58a838",
+"w": 3,
+"h": 4,
+"depth": 16,
+"stride": 1,
+"probe": "pbm",
+"kw": {
+"photometric": null,
+"bottom_left": true,
+"channel_order": "rgb",
+"byte_order": "II",
+"maxval": 255
+},
+"result": [
+"F",
+"no renderer for 16-bit pixels"
+]
+},
+{
+"data": "055fbe79aa60ef1271f5b694e4e200c019825ef66d53cb2ee944f738e7a61c52b2f8fe31be5501833a9e71a4cdfc045672c290978c0dc6aa485d4b8574e473dbc1e35e2008e6cd18dcc0fc4a37de3e9c5eef5e1f359bad70db43e509c3bcf235d8c1c9520e",
+"w": 0,
+"h": 5,
+"depth": 3,
+"stride": 1,
+"probe": "tga",
+"kw": {
+"photometric": null,
+"bottom_left": true,
+"channel_order": "rgb",
+"byte_order": "MM",
+"maxval": 255
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "b80456a43f113d4dc324a91c5cf91298b8858360b5b99bed5f06693745d7d2a8994b40620aea7a87bb62e98873f86477b8622ce5",
+"w": 5,
+"h": 4,
+"depth": 8,
+"stride": 13,
+"probe": "tiff",
+"kw": {
+"photometric": "undeclared",
+"bottom_left": false,
+"channel_order": "rgb",
+"byte_order": null,
+"maxval": 255
+},
+"result": [
+"P",
+5,
+4,
+"grey8",
+"b80456a43ff91298b885693745d7d287bb62e988",
+"8-bit \u00b7 no photometric interpretation declared; shown as BlackIsZero (0 = black) \u00b7 rows shown in stored order"
+]
+},
+{
+"data": "d91a6ab2ea7f69a8e689f4406aa3889d162bbc5588ac488508ca349f74216f2b50e2b54b2275cf5cfe8df7a6d654ca75e99ab235bdca6f213b87cb23a70c2080f539288f857cda2c9e9344cefa75af4d6d678877fc44be28794a1a43887cb99981d82dbb7c849135f7d1e67129c82c",
+"w": 4,
+"h": 2,
+"depth": 4,
+"stride": 5,
+"probe": "bmp",
+"kw": {
+"photometric": 0,
+"bottom_left": false,
+"channel_order": "rgb",
+"byte_order": null,
+"maxval": null
+},
+"result": [
+"P",
+4,
+2,
+"grey8",
+"2266ee5588009966",
+"4-bit \u00b7 WhiteIsZero (photometric 0) \u00b7 rows shown in stored order"
+]
+},
+{
+"data": "85982daee80361f9c8b55863854d52b01dea2dd438553866720bf642dd893631526cf2312a9640399a588cf40205a893a3c8221a7dc9a014c319f1dcddff2f7a6e027f837d5160207ce118d30caad4f7073c6402b2c0a0297a4436f41440d141fea89676744904f06a9a1a9118",
+"w": 1,
+"h": 2,
+"depth": 48,
+"stride": 15,
+"probe": "pcx",
+"kw": {
+"photometric": null,
+"bottom_left": true,
+"channel_order": "bgr",
+"byte_order": "MM",
+"maxval": 255
+},
+"result": [
+"F",
+"no renderer for 48-bit pixels"
+]
+},
+{
+"data": "d6b0d88c0db31aeefb59ba0d18e89fabf48fb8b2abbc049755755260717cce6790833eefbaebefbef3b9606c85bfe0cdee48e65b87d1cdd371ed366f5cb95aea",
+"w": 0,
+"h": 1,
+"depth": 3,
+"stride": 7,
+"probe": "generic",
+"kw": {
+"photometric": 1,
+"bottom_left": true,
+"channel_order": "bgr",
+"byte_order": null,
+"maxval": null
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "ed3dff0c35f55c3f7d3848d0dad080d42127a2bdc827954bd481bc90b69ddb8b9d6195569d1c6b9aae585478dd8c6b67378729043342d828fb9308",
+"w": 1,
+"h": 0,
+"depth": 32,
+"stride": 8,
+"probe": "pnm",
+"kw": {
+"photometric": null,
+"bottom_left": false,
+"channel_order": "bgr",
+"byte_order": "II",
+"maxval": null
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "002b9b1f2c6731a3fbda7555fde73269ca98871b1715cedf22a154536d93057f3fdd7f1f5c161ff67a115d51f6600c6284f569eb2839a6b42d173fd7d0f6c1cbe452532e83fe",
+"w": 3,
+"h": 1,
+"depth": 3,
+"stride": 14,
+"probe": "pnm",
+"kw": {
+"photometric": 0,
+"bottom_left": false,
+"channel_order": "rgb",
+"byte_order": "II",
+"maxval": 65535
+},
+"result": [
+"F",
+"no renderer for 3-bit pixels"
+]
+},
+{
+"data": "ed30980193eaa0fe336b690419f74e7591478d222c1a65b6a119",
+"w": 0,
+"h": 0,
+"depth": 4,
+"stride": 12,
+"probe": "pbm",
+"kw": {
+"photometric": 1,
+"bottom_left": false,
+"channel_order": "rgb",
+"byte_order": null,
+"maxval": null
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "702ee7a765007256c7d985f8",
+"w": 0,
+"h": 1,
+"depth": 3,
+"stride": 20,
+"probe": "tga",
+"kw": {
+"photometric": null,
+"bottom_left": true,
+"channel_order": "rgb",
+"byte_order": "II",
+"maxval": 255
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "8d8e35bbef241360f5c099a74682527736ba6572d40ff6fd58dcf00cd7e58c31a99e8e6617dee57e4c5aa25ca6261fe36a2435849b5d54d370d8e89eb39ab132be945daf66471a73219a6fcd23",
+"w": 2,
+"h": 1,
+"depth": 8,
+"stride": 2,
+"probe": "pcx",
+"kw": {
+"photometric": 0,
+"bottom_left": false,
+"channel_order": "bgr",
+"byte_order": null,
+"maxval": 65535
+},
+"result": [
+"P",
+2,
+1,
+"grey8",
+"7271",
+"8-bit \u00b7 WhiteIsZero (photometric 0) \u00b7 rows shown in stored order"
+]
+},
+{
+"data": "85fe1bccc76eb644ad1441daf3cccbaae8172c5bd41e20418695ebb88209b46f3d9097e1afb9c29587faa3fcaf96072d18983ffb920ec0ae0d5f75b872dd26a7f772d7bf8f09aec66125db104ad84e",
+"w": 2,
+"h": 5,
+"depth": 24,
+"stride": 4,
+"probe": "pbm",
+"kw": {
+"photometric": 0,
+"bottom_left": false,
+"channel_order": "rgb",
+"byte_order": null,
+"maxval": 65535
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "01026d60ba96b6ea327273abc8",
+"w": 1,
+"h": 3,
+"depth": 3,
+"stride": 20,
+"probe": "generic",
+"kw": {
+"photometric": null,
+"bottom_left": false,
+"channel_order": "bgr",
+"byte_order": null,
+"maxval": null
+},
+"result": [
+"F",
+"no renderer for 3-bit pixels"
+]
+},
+{
+"data": "97d3af705529fd5584a8d93e2e1ea5cf65d6b2732fe60781b03e01d49c59b9943807374cb1fdf0c6600278934a398f9ac1eed2e40e65d628253343a7ac195bbaf31efa54868f4a310b3f13c7262fad83d7d586aa33ab2db75e0903f70ef06b663ceb12c41c96bbd55573fb78a8d5c9",
+"w": 3,
+"h": 5,
+"depth": 1,
+"stride": 0,
+"probe": "pcx",
+"kw": {
+"photometric": 1,
+"bottom_left": false,
+"channel_order": "rgb",
+"byte_order": "MM",
+"maxval": 255
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "e20867a2cf265aacd677e759430f8beec2c523b2867c78",
+"w": 3,
+"h": 3,
+"depth": 1,
+"stride": 10,
+"probe": "generic",
+"kw": {
+"photometric": 1,
+"bottom_left": true,
+"channel_order": "rgb",
+"byte_order": null,
+"maxval": 255
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "",
+"w": 5,
+"h": 5,
+"depth": 1,
+"stride": 4,
+"probe": "tiff",
+"kw": {
+"photometric": 0,
+"bottom_left": false,
+"channel_order": "rgb",
+"byte_order": null,
+"maxval": 255
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "",
+"w": 4,
+"h": 5,
+"depth": 16,
+"stride": 14,
+"probe": "pcx",
+"kw": {
+"photometric": "undeclared",
+"bottom_left": true,
+"channel_order": "rgb",
+"byte_order": null,
+"maxval": 255
+},
+"result": [
+"F",
+"no renderer for 16-bit pixels"
+]
+},
+{
+"data": "2e54c9e34fe5eec95ec04a993c21e3901a9c7c6bc193744f6503b530ed04947120bd43f91795681fd17207c87d4e483d4912987269c62cbfe5923273ba7765a866070db7",
+"w": 5,
+"h": 3,
+"depth": 32,
+"stride": 18,
+"probe": "pnm",
+"kw": {
+"photometric": 0,
+"bottom_left": true,
+"channel_order": "rgb",
+"byte_order": null,
+"maxval": 255
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "c7dda716af3fdb48f172b1fd9b15fbd290293428d556524f28c85353e480",
+"w": 0,
+"h": 4,
+"depth": 12,
+"stride": 3,
+"probe": "pcx",
+"kw": {
+"photometric": 0,
+"bottom_left": false,
+"channel_order": "bgr",
+"byte_order": null,
+"maxval": 65535
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "f16b88986843e562ed6fd0f4ab74ff89767b2418de14c2181ee3e6d81fe3edee30cdaef0b18dfd78dc0d81637fdd",
+"w": 2,
+"h": 4,
+"depth": 8,
+"stride": 19,
+"probe": "bmp",
+"kw": {
+"photometric": 1,
+"bottom_left": true,
+"channel_order": "bgr",
+"byte_order": null,
+"maxval": null
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "0e0850424a4c8b66d5f996445b921b39dd2d5ea0797c11472359852b1821ab2925fab9232bd737f03a411d7da89e86863062ec734ca2a06913cf406c96df15d7ae1b8ec8bb768d9d9e3a5bb05d16",
+"w": 3,
+"h": 2,
+"depth": 32,
+"stride": 12,
+"probe": "tga",
+"kw": {
+"photometric": null,
+"bottom_left": true,
+"channel_order": "rgb",
+"byte_order": "MM",
+"maxval": 65535
+},
+"result": [
+"P",
+3,
+2,
+"rgb8",
+"5b921bdd2d5e797c110e08504a4c8bd5f996",
+"32-bit \u00b7 RGB as stored; fourth byte ignored \u00b7 rows flipped: file declares bottom-left origin"
+]
+},
+{
+"data": "d16be6f1f2e7404c15e08806f0a8b819526ca22f83dec6867b85f1e1ed2f2513cb2dc45678ff4112c46e70bef693f5abc2bcd6b528",
+"w": 5,
+"h": 0,
+"depth": 16,
+"stride": 18,
+"probe": "pcx",
+"kw": {
+"photometric": null,
+"bottom_left": false,
+"channel_order": "bgr",
+"byte_order": "II",
+"maxval": 65535
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "7577af0082d1797a57fefdfad92c6d",
+"w": 2,
+"h": 2,
+"depth": 24,
+"stride": 4,
+"probe": "bmp",
+"kw": {
+"photometric": "undeclared",
+"bottom_left": false,
+"channel_order": "rgb",
+"byte_order": "MM",
+"maxval": 65535
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "6b21e82ddbf24957b6ea10b282ea36356e650e51feb4888ad0876e96623498b0f2d58540235eb15cc7c7b39c09d9fcc7ab51ff3c0b975379898dc3",
+"w": 3,
+"h": 1,
+"depth": 4,
+"stride": 18,
+"probe": "pnm",
+"kw": {
+"photometric": "undeclared",
+"bottom_left": false,
+"channel_order": "rgb",
+"byte_order": null,
+"maxval": null
+},
+"result": [
+"P",
+3,
+1,
+"grey8",
+"66bb22",
+"4-bit \u00b7 no photometric interpretation declared; shown as BlackIsZero (0 = black) \u00b7 rows shown in stored order"
+]
+},
+{
+"data": "9abfe0109538936df43490d6c94803dfb06ffd5b4ca5eea1c547b34d09a33a08d8868d497ecff2b1",
+"w": 3,
+"h": 1,
+"depth": 36,
+"stride": 10,
+"probe": "generic",
+"kw": {
+"photometric": 1,
+"bottom_left": true,
+"channel_order": "rgb",
+"byte_order": "II",
+"maxval": null
+},
+"result": [
+"F",
+"no renderer for 36-bit pixels"
+]
+},
+{
+"data": "52b52ace20be27affa8762b98a9e731fa1272f1f1de547ce45a08b30f813e2d18c756595139673daf05c14a03a8682815336c5f3ed1c",
+"w": 5,
+"h": 3,
+"depth": 12,
+"stride": 12,
+"probe": "tga",
+"kw": {
+"photometric": 0,
+"bottom_left": true,
+"channel_order": "bgr",
+"byte_order": "II",
+"maxval": 65535
+},
+"result": [
+"F",
+"no renderer for 12-bit pixels"
+]
+},
+{
+"data": "8e0656291ee333bcf0c9470a94efc139163172a0b1d5a758f1a75bf97613530441c50196f81e256799bc7947123eba80e8d6198fe10ed61cc31820d09a0b28d333b4f5c8f38b9d8c21646f5cf165fc441132030c",
+"w": 1,
+"h": 1,
+"depth": 8,
+"stride": 13,
+"probe": "tga",
+"kw": {
+"photometric": 1,
+"bottom_left": false,
+"channel_order": "rgb",
+"byte_order": "II",
+"maxval": 65535
+},
+"result": [
+"P",
+1,
+1,
+"grey8",
+"8e",
+"8-bit \u00b7 BlackIsZero (photometric 1) \u00b7 rows shown in stored order"
+]
+},
+{
+"data": "64473c06f8bb8298d6859b4869ec85657df3b4c71fc68f9bec4da4e21d526ee7a8b643e53ece68df34973d861b164c8fb37c1164d4b2898cc0986560e91207d4906569b6d520f447953907d83673391b14ed8e14d2",
+"w": 4,
+"h": 3,
+"depth": 1,
+"stride": 17,
+"probe": "pcx",
+"kw": {
+"photometric": null,
+"bottom_left": false,
+"channel_order": "rgb",
+"byte_order": "II",
+"maxval": 65535
+},
+"result": [
+"P",
+4,
+3,
+"grey8",
+"00ffff00ffffffff00ff0000",
+"1-bit \u00b7 grey, 1 = white \u00b7 rows shown in stored order"
+]
+},
+{
+"data": "021460f099c792653e0471db09be8f1aabb1771de7b149c940c9791b2a4c658bb17f8b66c99de69db24af292dfc4",
+"w": 2,
+"h": 1,
+"depth": 0,
+"stride": 7,
+"probe": "pnm",
+"kw": {
+"photometric": 0,
+"bottom_left": false,
+"channel_order": "bgr",
+"byte_order": "II",
+"maxval": null
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "1c4069c0f2655343adaf545be65f88fb969697396aeef99d976d43119dad028c2c32ef26664bd8045497e1b806488aae8c71e7e0a2f18e338d59820209f5e4191a7cad9ea85fe8daf6e96f69c62f9da1e9abb3d8beec08263f19da4d3e65b86730855726f06b0f04e525bdf0e6e61c375181",
+"w": 4,
+"h": 0,
+"depth": 16,
+"stride": 13,
+"probe": "tiff",
+"kw": {
+"photometric": null,
+"bottom_left": false,
+"channel_order": "rgb",
+"byte_order": "MM",
+"maxval": 65535
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "e119d1cefca3e067cbfc72b7d6017b0f3bb106945ce4f51e7a5328b314ef736908d907e3ffb89c9a600f539e4982d6110a49af8e5360fd1799868d37716dfe48b2c04587ed5f1a60",
+"w": 4,
+"h": 2,
+"depth": 16,
+"stride": 20,
+"probe": "tga",
+"kw": {
+"photometric": "undeclared",
+"bottom_left": true,
+"channel_order": "rgb",
+"byte_order": "II",
+"maxval": 65535
+},
+"result": [
+"F",
+"no renderer for 16-bit pixels"
+]
+},
+{
+"data": "87f1c9ce7107631dd5a0b9b7745e40fa2b664924fd7078c079ade9b7ab6741b3577d082b68b2a48200dc00289a8346b12fb5961b56",
+"w": 0,
+"h": 0,
+"depth": 48,
+"stride": 9,
+"probe": "tiff",
+"kw": {
+"photometric": 0,
+"bottom_left": true,
+"channel_order": "rgb",
+"byte_order": null,
+"maxval": 255
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "aef78c0825b76e720d88398b4a1b70ea64860ef8ade3cb492b24b82daf",
+"w": 3,
+"h": 4,
+"depth": 8,
+"stride": 20,
+"probe": "generic",
+"kw": {
+"photometric": 0,
+"bottom_left": true,
+"channel_order": "bgr",
+"byte_order": "II",
+"maxval": 255
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "8f1d4250356151e8725b5bbaff8e14f3a893a44860c54a0befa2948b15fb5d339beb06fbd7f29dae923b1c34915d30e2a78b56cc11d5e5e19887796b171f55160fc4bb063d4c42f7078a5566cf4343272afd3400d1d2d88101cc1332e4625c36c059637056",
+"w": 2,
+"h": 0,
+"depth": 16,
+"stride": 3,
+"probe": "tiff",
+"kw": {
+"photometric": "undeclared",
+"bottom_left": true,
+"channel_order": "rgb",
+"byte_order": "II",
+"maxval": 255
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "bb5cec0c2137d9",
+"w": 1,
+"h": 5,
+"depth": 8,
+"stride": 15,
+"probe": "tiff",
+"kw": {
+"photometric": null,
+"bottom_left": true,
+"channel_order": "bgr",
+"byte_order": null,
+"maxval": 65535
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "875f9e3e423534b94ea23f3e93c69752ffa441428303190417ec97f36f1da61bd4a6478f1e70c80e6c452205558d80f20296b597a6f3d756e031d656dff44363942d9e910e71f1ed50214778f6fecd013eade845c451f5ff577d3c8eecdf6d09d80583f223",
+"w": 1,
+"h": 1,
+"depth": 16,
+"stride": 13,
+"probe": "pcx",
+"kw": {
+"photometric": 0,
+"bottom_left": true,
+"channel_order": "bgr",
+"byte_order": "II",
+"maxval": null
+},
+"result": [
+"F",
+"no renderer for 16-bit pixels"
+]
+},
+{
+"data": "af13dd76d1cdd713cc744c52e439190f4b84074e896b9943474649adcc5d7e5397d7924cf623831c6f3c2c7f708aac2c8a2800aaf6033faa0a6a5438aefc37605b9e9adfafc49cc0345b925cc1adc4744c735031812cf4462a72477f8e",
+"w": 4,
+"h": 5,
+"depth": 8,
+"stride": 14,
+"probe": "generic",
+"kw": {
+"photometric": "undeclared",
+"bottom_left": false,
+"channel_order": "rgb",
+"byte_order": null,
+"maxval": 255
+},
+"result": [
+"P",
+4,
+5,
+"grey8",
+"af13dd76190f4b84cc5d7e532c7f708a0a6a5438",
+"8-bit \u00b7 no photometric interpretation declared; shown as BlackIsZero (0 = black) \u00b7 rows shown in stored order"
+]
+},
+{
+"data": "4a71ba4deb5e91a0034a38a17c98b45fda22",
+"w": 1,
+"h": 2,
+"depth": 4,
+"stride": 14,
+"probe": "tga",
+"kw": {
+"photometric": null,
+"bottom_left": false,
+"channel_order": "bgr",
+"byte_order": "MM",
+"maxval": null
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "15c233f60b0dc570a0cbaa02df363b884b803c398b3ee8fb04fa5503b7f414cef9007c9071ad9c418a21af6c82d57cb01748819d5e5b6bd1954d999c7e34272098df2ff268a7547fc8d24c887254e54f417f1d855acdd37a8730b8ed7a902a04c7afa1fcc006451df630b2e1",
+"w": 1,
+"h": 2,
+"depth": 0,
+"stride": 12,
+"probe": "pcx",
+"kw": {
+"photometric": null,
+"bottom_left": true,
+"channel_order": "rgb",
+"byte_order": null,
+"maxval": 65535
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "03b0fe78483cd80371ab951d087df179d24e643bfd8c88a89645302a9d199d173c03df1f0faf2ba994123902e3dfd142d950334627d75e90fde4f808b3526ecba0afb99a",
+"w": 1,
+"h": 1,
+"depth": 16,
+"stride": 15,
+"probe": "generic",
+"kw": {
+"photometric": 1,
+"bottom_left": true,
+"channel_order": "bgr",
+"byte_order": "II",
+"maxval": 255
+},
+"result": [
+"F",
+"no renderer for 16-bit pixels"
+]
+},
+{
+"data": "d1d61f84f7d0b4b11b268662ee0c48796b9118b9ea85b226b96817135d3a607dbb4590de016310dbbabda138a77507e40cd3c433514619c74e14089d28f88c5bf66e53966ccd2693400dd4880c0b21afeb3104f24200f05a37ba67848b6d653922816545404da5b1c875",
+"w": 3,
+"h": 0,
+"depth": 0,
+"stride": 2,
+"probe": "generic",
+"kw": {
+"photometric": 1,
+"bottom_left": false,
+"channel_order": "bgr",
+"byte_order": "MM",
+"maxval": 65535
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "a4be033fc457fa4282f09047b1115b1e513687901976d2c41f4a59fb3705e8202f734712b2b0f36d0c501e48614bf614b55c73ceb0ace8cc4cce3f135e443a2ec8f58d0804",
+"w": 5,
+"h": 4,
+"depth": 48,
+"stride": 5,
+"probe": "generic",
+"kw": {
+"photometric": 1,
+"bottom_left": true,
+"channel_order": "rgb",
+"byte_order": "II",
+"maxval": 255
+},
+"result": [
+"F",
+"no renderer for 48-bit pixels"
+]
+},
+{
+"data": "ef61bd1da87347b7cb2d9aee6f67e6bc4e428825b740bb2670358d0f91bd5d7e858bcf99ff",
+"w": 3,
+"h": 5,
+"depth": 0,
+"stride": 2,
+"probe": "tga",
+"kw": {
+"photometric": 0,
+"bottom_left": false,
+"channel_order": "rgb",
+"byte_order": "MM",
+"maxval": 255
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "945c944198c41287bc56e86c659f1e258a83e3981bac63d224ca2ee2f877282de5d6a144e9c0a2ee9f6e05b0ece0b45496a60a5a0c8e",
+"w": 4,
+"h": 0,
+"depth": 12,
+"stride": 8,
+"probe": "tiff",
+"kw": {
+"photometric": null,
+"bottom_left": false,
+"channel_order": "bgr",
+"byte_order": "II",
+"maxval": 65535
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "67b8463ed404db566265c29aca4b6f80f6a24d6e634f232de4f5ad055825595af734a6a850bf",
+"w": 3,
+"h": 5,
+"depth": 36,
+"stride": 10,
+"probe": "pnm",
+"kw": {
+"photometric": null,
+"bottom_left": false,
+"channel_order": "rgb",
+"byte_order": "MM",
+"maxval": 65535
+},
+"result": [
+"F",
+"no renderer for 36-bit pixels"
+]
+},
+{
+"data": "dc83725a199d584c",
+"w": 0,
+"h": 5,
+"depth": 16,
+"stride": 0,
+"probe": "pcx",
+"kw": {
+"photometric": null,
+"bottom_left": false,
+"channel_order": "rgb",
+"byte_order": null,
+"maxval": null
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "0cfa317f87b5f8451e9c17fcf6ab6a5f8525a84a94a0c805f481e483c38ff4f4904f344bdf4a69aa1f99ec764264a23742bb3aeb4fcf6385ca66b960e8dc6c58742c9463583dd7c3682bbfa14f9900d660f37bb3c99979e68c1785f42cb1ee24914b6a5a26c32d006152a672ac98ccb2b8587ebfd5a9e1",
+"w": 5,
+"h": 2,
+"depth": 0,
+"stride": 19,
+"probe": "tga",
+"kw": {
+"photometric": "undeclared",
+"bottom_left": false,
+"channel_order": "bgr",
+"byte_order": "MM",
+"maxval": 255
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "4d5662767d90cdce20db8a8fee4af63cbde350f9d3deafa2912ab6",
+"w": 1,
+"h": 0,
+"depth": 32,
+"stride": 5,
+"probe": "tga",
+"kw": {
+"photometric": null,
+"bottom_left": false,
+"channel_order": "rgb",
+"byte_order": "II",
+"maxval": 255
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "87b7a75407668f6007f77ac1059e4b310d9dbcad3a56803cecce549f1860c92f6d85ead2062e58b3e16480a1abbfbe158597e604be88d19425ffd39710d500da2d299a575dc265a6545a",
+"w": 2,
+"h": 4,
+"depth": 36,
+"stride": 10,
+"probe": "pcx",
+"kw": {
+"photometric": "undeclared",
+"bottom_left": false,
+"channel_order": "bgr",
+"byte_order": "MM",
+"maxval": 65535
+},
+"result": [
+"F",
+"no renderer for 36-bit pixels"
+]
+},
+{
+"data": "cb3a96b173ebe560753a708ac562e38184f2c58561e7f1750580bc64a1c4ee8bc1ddaa38e6d3b63e18acf4e8",
+"w": 3,
+"h": 4,
+"depth": 16,
+"stride": 14,
+"probe": "tiff",
+"kw": {
+"photometric": 1,
+"bottom_left": true,
+"channel_order": "rgb",
+"byte_order": "MM",
+"maxval": null
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "88bd6a4c344462b8de143a3a090658b953a0bcd995d8b683da85992b966f5d7d0818c417ad1ac35deabed4a596ed2761f066f0c0f7b3012ae1dc8b91b5f367128a1346e09e42f33552cb512d404d",
+"w": 4,
+"h": 4,
+"depth": 16,
+"stride": 3,
+"probe": "pbm",
+"kw": {
+"photometric": null,
+"bottom_left": false,
+"channel_order": "bgr",
+"byte_order": null,
+"maxval": 65535
+},
+"result": [
+"F",
+"no renderer for 16-bit pixels"
+]
+},
+{
+"data": "04fa80080b6609a50df7723054242721cee9d9a3856fc2419a5c305dfb9e2e5d2a89e7ec4f4e1a9528e3c239f8caf711f4e7af7be951abdaf3256ac537410b",
+"w": 1,
+"h": 5,
+"depth": 16,
+"stride": 12,
+"probe": "pbm",
+"kw": {
+"photometric": null,
+"bottom_left": true,
+"channel_order": "bgr",
+"byte_order": "MM",
+"maxval": 65535
+},
+"result": [
+"F",
+"no renderer for 16-bit pixels"
+]
+},
+{
+"data": "015c9e0012a0e411a7d50e054c74a4c7702de264f89a9767bc44c8eb9a3020a543389aef699b7f641a4626cd7e3c3381bd4ceed024c6d81ded8057ee756722bef8bd6a91eed04ec11c1658a282a361077616",
+"w": 0,
+"h": 3,
+"depth": 16,
+"stride": 4,
+"probe": "bmp",
+"kw": {
+"photometric": 0,
+"bottom_left": true,
+"channel_order": "bgr",
+"byte_order": "II",
+"maxval": 65535
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "e55b5601dc1fe57eb518b2b4a742663c2a99360b31eb493eb1c05d884569a614",
+"w": 1,
+"h": 3,
+"depth": 12,
+"stride": 3,
+"probe": "pcx",
+"kw": {
+"photometric": "undeclared",
+"bottom_left": true,
+"channel_order": "rgb",
+"byte_order": "MM",
+"maxval": 65535
+},
+"result": [
+"F",
+"no renderer for 12-bit pixels"
+]
+},
+{
+"data": "c81dd0b1b4059c4f3a6d4741a7ffe6f698f929a4cca3bf67fd98b21f02a5ea648e7f940cecba2fb909b2d76b2739b6073df4f2780032e00198af9cb175a95a4c2e192c2039b32f57ef06267dc70cab2fc3",
+"w": 4,
+"h": 5,
+"depth": 0,
+"stride": 16,
+"probe": "pbm",
+"kw": {
+"photometric": null,
+"bottom_left": true,
+"channel_order": "bgr",
+"byte_order": "MM",
+"maxval": null
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "ad649ddb0e78dfe4046fca10e0ebaddfd6d5b0d17dc06470a218b901b26f7960433152d13c30c027c200b21c7b189c0a76a83ca23a0a95cdf575f6f06a37",
+"w": 5,
+"h": 0,
+"depth": 3,
+"stride": 1,
+"probe": "pcx",
+"kw": {
+"photometric": 1,
+"bottom_left": true,
+"channel_order": "bgr",
+"byte_order": "II",
+"maxval": 255
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "c14143d3045ab6605287fbfcd94da85e22be1e567f72f5f2c40fdb86e816f85faec33cd68f44740b4cc5100aabce30300913ecf71e5c1e85db312f906437bb2bdf6211dae4b608f9f111429ac3ef3db65ff76b4187f3b70d72beeffab1f1ec9e",
+"w": 1,
+"h": 1,
+"depth": 48,
+"stride": 7,
+"probe": "pbm",
+"kw": {
+"photometric": "undeclared",
+"bottom_left": true,
+"channel_order": "bgr",
+"byte_order": null,
+"maxval": 65535
+},
+"result": [
+"F",
+"no renderer for 48-bit pixels"
+]
+},
+{
+"data": "8c36489d6450d621e1b09bb43d5a106c86c51e460b10a8c60271fc3f82864b64ba600dbd0ffc62acabecd82746009137a5bdfe1a527f930a06776519f45f9e3b2c736f29773e4bc68d9c43c099c2a0d5612b9d9a1de47b2b57b70f4148d74321894f8370c19f88478f3e4a55ae6a7baf0ada3322",
+"w": 0,
+"h": 0,
+"depth": 1,
+"stride": 7,
+"probe": "generic",
+"kw": {
+"photometric": "undeclared",
+"bottom_left": false,
+"channel_order": "bgr",
+"byte_order": "MM",
+"maxval": 255
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "4d8f7f5080a25294427114f76c110ea8bf5eb2823c8d6c325185bb6c15105adb0dc638930ab6e5aa8ab00af3765ae7b07a074e9c26b64bba6c5746160160c82ac3300f2fd6186c86345fa9668f108a2a7ea4fd01be51849fd89d",
+"w": 2,
+"h": 3,
+"depth": 12,
+"stride": 15,
+"probe": "pbm",
+"kw": {
+"photometric": null,
+"bottom_left": true,
+"channel_order": "bgr",
+"byte_order": "II",
+"maxval": 65535
+},
+"result": [
+"F",
+"no renderer for 12-bit pixels"
+]
+},
+{
+"data": "5c5689ed8507f84214e461839da4fd54a2d0907fbc761dac8ca8ac809284b1eb2fc4f4631ea11dc502be70923aaa4487672eccd9bfcc4907e08c9a517adf3e455742d58a644425e4dd5687dbcce63a90cf622ff14ebbcb0d7e0f51ee22d05aa52d817af34bab",
+"w": 2,
+"h": 0,
+"depth": 16,
+"stride": 1,
+"probe": "tga",
+"kw": {
+"photometric": 0,
+"bottom_left": true,
+"channel_order": "bgr",
+"byte_order": "MM",
+"maxval": null
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "",
+"w": 1,
+"h": 2,
+"depth": 0,
+"stride": 6,
+"probe": "bmp",
+"kw": {
+"photometric": "undeclared",
+"bottom_left": true,
+"channel_order": "rgb",
+"byte_order": "MM",
+"maxval": null
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "c8e825ff06a7c4d7df412362c022ca0a3467ad0095361db4d875d8a59a807d518f6f0c95a5596120e5aeef",
+"w": 1,
+"h": 5,
+"depth": 8,
+"stride": 10,
+"probe": "pnm",
+"kw": {
+"photometric": null,
+"bottom_left": true,
+"channel_order": "bgr",
+"byte_order": null,
+"maxval": null
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "11ad39b15790fae79890c54ca104",
+"w": 3,
+"h": 5,
+"depth": 16,
+"stride": 20,
+"probe": "tga",
+"kw": {
+"photometric": 1,
+"bottom_left": false,
+"channel_order": "bgr",
+"byte_order": "MM",
+"maxval": 65535
+},
+"result": [
+"F",
+"no renderer for 16-bit pixels"
+]
+},
+{
+"data": "b4128f16e5fa76",
+"w": 5,
+"h": 4,
+"depth": 4,
+"stride": 16,
+"probe": "pnm",
+"kw": {
+"photometric": null,
+"bottom_left": false,
+"channel_order": "rgb",
+"byte_order": "II",
+"maxval": 255
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "e5c74b767255154fcfe7568368961134a9f845cdcc26d03c4c7bef9ee7c02b8a43af1340d4d8aaa95be75c7053853000d760c6a2365400839db17ddadcf88a7ebdda9af6cb3a2568a8495b9471aa27f6d6e34cbc749b34e3cf811af6",
+"w": 0,
+"h": 1,
+"depth": 1,
+"stride": 11,
+"probe": "pbm",
+"kw": {
+"photometric": null,
+"bottom_left": false,
+"channel_order": "rgb",
+"byte_order": "II",
+"maxval": 255
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "1d44414709e7efc70d374dec6a381eceecfb22e4be5bbed9749285598b65600cebd1372fa439e58cb8af417e6027ae6385b8f899e5a19afb155189e16bb949dcc62fff236ff855643ee55b922603874706a70bca28134814c325bed55bf5f00f391b5ddb80c241160eb6a4d2bfbe6c",
+"w": 0,
+"h": 1,
+"depth": 8,
+"stride": 7,
+"probe": "bmp",
+"kw": {
+"photometric": 0,
+"bottom_left": false,
+"channel_order": "rgb",
+"byte_order": "MM",
+"maxval": null
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "e80f824224503297b76cf12cdf5f9b8852a28357b4ca9cb4cc11d3d19e473ce70aa60fdbe2fa9dc92a0fc1eed7caf3408a51dcd476c85be081d14a2511c7416e5abc0a90012b68c02dcd13706371174e431f43ed60890c296ca31e4516a75692fec17d18bc283ebc5f45",
+"w": 2,
+"h": 4,
+"depth": 12,
+"stride": 2,
+"probe": "pcx",
+"kw": {
+"photometric": "undeclared",
+"bottom_left": false,
+"channel_order": "bgr",
+"byte_order": "II",
+"maxval": 255
+},
+"result": [
+"F",
+"no renderer for 12-bit pixels"
+]
+},
+{
+"data": "6a820ef223d03f0781755f9c22d4771c70cef0ef109cf849e18e122064ca3064d5a46922a491fa8c08fa0cde246a9ecceb61cf2cb657",
+"w": 5,
+"h": 3,
+"depth": 24,
+"stride": 13,
+"probe": "bmp",
+"kw": {
+"photometric": 0,
+"bottom_left": true,
+"channel_order": "bgr",
+"byte_order": "II",
+"maxval": 65535
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "fe357dcb5cf352c42de32fb8297dc821188c7b94802de1fbe08626",
+"w": 3,
+"h": 1,
+"depth": 24,
+"stride": 15,
+"probe": "pbm",
+"kw": {
+"photometric": 0,
+"bottom_left": true,
+"channel_order": "rgb",
+"byte_order": "II",
+"maxval": 65535
+},
+"result": [
+"P",
+3,
+1,
+"rgb8",
+"fe357dcb5cf352c42d",
+"24-bit \u00b7 RGB as stored \u00b7 rows flipped: file declares bottom-left origin"
+]
+},
+{
+"data": "d014f91b8c95056889a82841a772f125dfdc1bfe20f386a4b6e256f86fc77981f00c74febc730107c1f411d1df25446b62c87e25ada997bf14ecbdbd391c076d2d14e4caff",
+"w": 0,
+"h": 0,
+"depth": 32,
+"stride": 9,
+"probe": "bmp",
+"kw": {
+"photometric": "undeclared",
+"bottom_left": true,
+"channel_order": "bgr",
+"byte_order": null,
+"maxval": 65535
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "8f8a09",
+"w": 4,
+"h": 3,
+"depth": 32,
+"stride": 19,
+"probe": "bmp",
+"kw": {
+"photometric": 0,
+"bottom_left": true,
+"channel_order": "bgr",
+"byte_order": "MM",
+"maxval": 65535
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "6d1394fc45fe4912c4246e504a99a72022aef47c1529c7c5962b6f56b5b624a599ab5f316d1794eca714f8ec771a235ed7f038bf2a3eab422de23b593a331f72ac9c8ed269788a043a1c1bdeab538a3dccf3506a02a33266655ad77cd7b15fde7a641b808c158bba9f9a6d7a6da6198e9907cb",
+"w": 4,
+"h": 2,
+"depth": 48,
+"stride": 12,
+"probe": "bmp",
+"kw": {
+"photometric": 0,
+"bottom_left": false,
+"channel_order": "rgb",
+"byte_order": "MM",
+"maxval": 255
+},
+"result": [
+"F",
+"no renderer for 48-bit pixels"
+]
+},
+{
+"data": "0008e604573b6577f7f0318aac6ad0a9a209f364c0f51ad38a2d5725bf69986c001892a8e85850fd300a45532fad281b815bdac58cdb63cb4c45c620077f8f10b993ff4a3612cd9b78302e",
+"w": 5,
+"h": 4,
+"depth": 32,
+"stride": 14,
+"probe": "generic",
+"kw": {
+"photometric": "undeclared",
+"bottom_left": false,
+"channel_order": "bgr",
+"byte_order": "II",
+"maxval": 255
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "cde169817f3204bd9a1bcec12c747ae7d09fe03c441bbcec886f2251beae",
+"w": 4,
+"h": 2,
+"depth": 1,
+"stride": 2,
+"probe": "pcx",
+"kw": {
+"photometric": 0,
+"bottom_left": false,
+"channel_order": "bgr",
+"byte_order": "MM",
+"maxval": null
+},
+"result": [
+"P",
+4,
+2,
+"grey8",
+"0000ffffff0000ff",
+"1-bit \u00b7 WhiteIsZero (photometric 0) \u00b7 rows shown in stored order"
+]
+},
+{
+"data": "b2142e",
+"w": 0,
+"h": 1,
+"depth": 4,
+"stride": 4,
+"probe": "tga",
+"kw": {
+"photometric": 0,
+"bottom_left": false,
+"channel_order": "rgb",
+"byte_order": "II",
+"maxval": 255
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "cee63f3d7140da376529d7989affbb442e1791f7fd725365e526cf7af75d65af6823beeb69a10c5bb5d220d33e3ae54b799b976dad6e5613d51465790a625c7b99ff8e531ebd0cdd281a69",
+"w": 4,
+"h": 5,
+"depth": 1,
+"stride": 12,
+"probe": "pcx",
+"kw": {
+"photometric": "undeclared",
+"bottom_left": false,
+"channel_order": "rgb",
+"byte_order": null,
+"maxval": 65535
+},
+"result": [
+"P",
+4,
+5,
+"grey8",
+"ffff0000ff0000ffffffff0000ffff0000ffffff",
+"1-bit \u00b7 no photometric interpretation declared; shown as BlackIsZero (0 = black) \u00b7 rows shown in stored order"
+]
+},
+{
+"data": "329ea7e3f18d182b9a94f790a77deeb818df54610979249f0b5f3b5e",
+"w": 1,
+"h": 1,
+"depth": 16,
+"stride": 1,
+"probe": "bmp",
+"kw": {
+"photometric": 0,
+"bottom_left": false,
+"channel_order": "rgb",
+"byte_order": null,
+"maxval": 255
+},
+"result": [
+"F",
+"no renderer for 16-bit pixels"
+]
+},
+{
+"data": "114566b19be0c7618d4d396f97dcea2ba0d5ed90fe2b8997a8a12763986fe2d310cd5c81c20bc653b8fb2d",
+"w": 3,
+"h": 2,
+"depth": 16,
+"stride": 3,
+"probe": "pbm",
+"kw": {
+"photometric": "undeclared",
+"bottom_left": false,
+"channel_order": "rgb",
+"byte_order": "II",
+"maxval": 65535
+},
+"result": [
+"F",
+"no renderer for 16-bit pixels"
+]
+},
+{
+"data": "26b9e89721d08dffdd06aed6e2f884e3fc406541515e7734aa287295240fbdeaccd1f3d082ab22bf81067183b4dc09b7252d4157ce83",
+"w": 0,
+"h": 4,
+"depth": 32,
+"stride": 11,
+"probe": "bmp",
+"kw": {
+"photometric": null,
+"bottom_left": false,
+"channel_order": "bgr",
+"byte_order": null,
+"maxval": 255
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "69bf1b8d743658da32282abcbfc15386a76b5d0b12a4961e3f04",
+"w": 3,
+"h": 3,
+"depth": 1,
+"stride": 0,
+"probe": "generic",
+"kw": {
+"photometric": 1,
+"bottom_left": false,
+"channel_order": "bgr",
+"byte_order": "II",
+"maxval": 65535
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "b405bb843f8d1fce1dc4fe17dd77e5aa8eb0e936425ad9ed9e2ead08eccf7bffac4324008d9163013f00701d102683feb7a04a4c89467665b5566dc8815aca76bacf1f05c663db27042d1f1369418aca7e0a7d9f7b8eccf80cfcbbc6d41ecf37ca30fa7606f0a4",
+"w": 1,
+"h": 4,
+"depth": 24,
+"stride": 9,
+"probe": "bmp",
+"kw": {
+"photometric": 1,
+"bottom_left": true,
+"channel_order": "bgr",
+"byte_order": "MM",
+"maxval": null
+},
+"result": [
+"P",
+1,
+4,
+"rgb8",
+"cfec084236e917fec4bb05b4",
+"24-bit \u00b7 BGR\u2192RGB \u00b7 rows flipped: file declares bottom-left origin"
+]
+},
+{
+"data": "c7da825217124d1750a3d449ccbe089df49c0e7e04b7e1a21e4debb1b3297652",
+"w": 2,
+"h": 0,
+"depth": 32,
+"stride": 19,
+"probe": "bmp",
+"kw": {
+"photometric": null,
+"bottom_left": true,
+"channel_order": "rgb",
+"byte_order": "MM",
+"maxval": 255
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "e76b146563903dbef4e8429e8001557d0cbfc2a589c66cda3a0b00485a15003037c4abb43457af630b14d8067acdb7959e31e38a9607684eb5e350",
+"w": 2,
+"h": 2,
+"depth": 4,
+"stride": 9,
+"probe": "bmp",
+"kw": {
+"photometric": 0,
+"bottom_left": false,
+"channel_order": "bgr",
+"byte_order": "II",
+"maxval": 65535
+},
+"result": [
+"P",
+2,
+2,
+"grey8",
+"11881177",
+"4-bit \u00b7 WhiteIsZero (photometric 0) \u00b7 rows shown in stored order"
+]
+},
+{
+"data": "2b4cfa2a98f462b6abd5f923ff44b21472b47f803da3cf3a0769e3f07b0a99e97e00a9a1ac91a060b27e8551d1b356f0661dc3377304d173fecc68c7ba8a42b4f829700a53e55425a48e00fae4419ff687294067970e2c9223c61318c8009740b8894d4a2610ed12a7f86682ceae1013",
+"w": 0,
+"h": 2,
+"depth": 32,
+"stride": 20,
+"probe": "tga",
+"kw": {
+"photometric": null,
+"bottom_left": false,
+"channel_order": "bgr",
+"byte_order": null,
+"maxval": 255
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "0524edc9cbaf68e090d9a9ed97206dce6e4c8d036363391553ccf77df7bb20feb7957d2524164151a68758f4bdc31e1ca4f33d7f9e45c1e255fa9c1dd2763b7fe5edc1c64ef9b71e5eb191fdfa92cee688f5fec2d870dba595e26d07bd1d6ac2f3e05cbfea847fac1f8ad39a0fe2a3c691",
+"w": 4,
+"h": 2,
+"depth": 24,
+"stride": 1,
+"probe": "tiff",
+"kw": {
+"photometric": null,
+"bottom_left": true,
+"channel_order": "bgr",
+"byte_order": "MM",
+"maxval": null
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "722f02f9714d2ca1900e12f1923a206fcd90e80cb19b141b35c860f1e2",
+"w": 0,
+"h": 1,
+"depth": 8,
+"stride": 11,
+"probe": "bmp",
+"kw": {
+"photometric": 1,
+"bottom_left": true,
+"channel_order": "rgb",
+"byte_order": null,
+"maxval": 65535
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "a4f6243bbff73a46c0d328a60a4b3ee6b4507c61e321363583d13fbb9ede005572c09f2841856d41fa359443cb390b75c96bc6de5f31674e3a0cdc9d161a03ad4dca",
+"w": 2,
+"h": 0,
+"depth": 12,
+"stride": 11,
+"probe": "pbm",
+"kw": {
+"photometric": 0,
+"bottom_left": true,
+"channel_order": "rgb",
+"byte_order": "MM",
+"maxval": null
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "32abe14888ba4339",
+"w": 4,
+"h": 2,
+"depth": 48,
+"stride": 2,
+"probe": "generic",
+"kw": {
+"photometric": "undeclared",
+"bottom_left": false,
+"channel_order": "bgr",
+"byte_order": "MM",
+"maxval": 255
+},
+"result": [
+"F",
+"no renderer for 48-bit pixels"
+]
+},
+{
+"data": "feb2542f2680d541874882d8140fbac78dec3c",
+"w": 2,
+"h": 1,
+"depth": 16,
+"stride": 20,
+"probe": "pcx",
+"kw": {
+"photometric": "undeclared",
+"bottom_left": true,
+"channel_order": "bgr",
+"byte_order": "MM",
+"maxval": 65535
+},
+"result": [
+"F",
+"no renderer for 16-bit pixels"
+]
+},
+{
+"data": "dfc3fd28abb713dbee4f5a744656f45294c6c359d20ea855a10769f1b7d464128e26120cdc7043919df136715199758c77910c09f848be6a89294631e3499254ecb875de0ea60d5693c8743adf3d4638a0dd810b6ac145f9a4b162d91ec54397c80545886c30f2abd0",
+"w": 2,
+"h": 1,
+"depth": 12,
+"stride": 20,
+"probe": "tiff",
+"kw": {
+"photometric": null,
+"bottom_left": false,
+"channel_order": "bgr",
+"byte_order": null,
+"maxval": null
+},
+"result": [
+"P",
+2,
+1,
+"grey8",
+"de3f",
+"TIFF grey \u00b7 12-bit samples packed most significant bit first \u00b7 v\u00d7255//4095 \u00b7 grey \u00b7 rows shown in stored order"
+]
+},
+{
+"data": "12b835ac635c83b5",
+"w": 5,
+"h": 3,
+"depth": 36,
+"stride": 14,
+"probe": "pnm",
+"kw": {
+"photometric": 0,
+"bottom_left": false,
+"channel_order": "rgb",
+"byte_order": "MM",
+"maxval": 65535
+},
+"result": [
+"F",
+"no renderer for 36-bit pixels"
+]
+},
+{
+"data": "d60dd6f41a594197b3eea13e4934ce2a0b9b5a8ef521aa0c1e8e38a1323e3ddbf03ae759dcc37a1fb5b92f4a556b0e50c1412210e1f182c28598fc7b3a773f836847cf643e5021f0dc87662f471263d274272d942d9898eb6d4918aa",
+"w": 3,
+"h": 1,
+"depth": 3,
+"stride": 2,
+"probe": "bmp",
+"kw": {
+"photometric": null,
+"bottom_left": true,
+"channel_order": "bgr",
+"byte_order": null,
+"maxval": 65535
+},
+"result": [
+"F",
+"no renderer for 3-bit pixels"
+]
+},
+{
+"data": "f248658c0bdb4011c88de0b6b70b8bd459bc4e1b630075ce3f7d70d7209066d6b0651469c777400880b94f7fd4acc2840ddb8c1919a1cd3daeb523102e5c6af33c66445e9211a7a98650e4d03927ac1e8e53358d3419fd63c29503933796d53c7f711db117ef556f7c8fdede413cb0",
+"w": 0,
+"h": 1,
+"depth": 24,
+"stride": 8,
+"probe": "pbm",
+"kw": {
+"photometric": null,
+"bottom_left": false,
+"channel_order": "bgr",
+"byte_order": "MM",
+"maxval": 65535
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "b1935880b8712eadbab44c200dedc7552fd67ee9f89b04742e19b99f12c2d3d9ffb5a81e603834666bdecfba7f5c513d8300832fba5d0dbb8b5ee6e5afd3c1b768dc0c22cb07b69da0de4ab4f7a080d9d419abf131a90c02ca55ea5c7958d8fa",
+"w": 2,
+"h": 1,
+"depth": 8,
+"stride": 5,
+"probe": "pcx",
+"kw": {
+"photometric": 0,
+"bottom_left": true,
+"channel_order": "bgr",
+"byte_order": "MM",
+"maxval": null
+},
+"result": [
+"P",
+2,
+1,
+"grey8",
+"4e6c",
+"8-bit \u00b7 WhiteIsZero (photometric 0) \u00b7 rows flipped: file declares bottom-left origin"
+]
+},
+{
+"data": "8579",
+"w": 4,
+"h": 3,
+"depth": 4,
+"stride": 4,
+"probe": "generic",
+"kw": {
+"photometric": "undeclared",
+"bottom_left": false,
+"channel_order": "bgr",
+"byte_order": null,
+"maxval": 255
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "5849db705472d68c30858729b3a9f0e6057e9c482f31b4340dcca50c2831bba5b761a81f730e79d7bee4523a963256fe6d748048945db35a4c22cc8363e3c733d3f1a884ca653b8c8f5d941047c889bc40944687f3",
+"w": 2,
+"h": 5,
+"depth": 0,
+"stride": 16,
+"probe": "tiff",
+"kw": {
+"photometric": 1,
+"bottom_left": true,
+"channel_order": "bgr",
+"byte_order": "MM",
+"maxval": 255
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "d53a33b5886ccfef5d3c510189280d6139e81fbccec02140e7cf3c7c99848c9ee41d20197b5bd56cfa3f16cef195d593604ce5816f9bf684b10c",
+"w": 5,
+"h": 1,
+"depth": 24,
+"stride": 10,
+"probe": "tiff",
+"kw": {
+"photometric": null,
+"bottom_left": false,
+"channel_order": "bgr",
+"byte_order": null,
+"maxval": 255
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "3fed204a193f8845e81c29f7729c93f6815094",
+"w": 4,
+"h": 1,
+"depth": 1,
+"stride": 8,
+"probe": "bmp",
+"kw": {
+"photometric": 0,
+"bottom_left": false,
+"channel_order": "rgb",
+"byte_order": "MM",
+"maxval": null
+},
+"result": [
+"P",
+4,
+1,
+"grey8",
+"ffff0000",
+"1-bit \u00b7 WhiteIsZero (photometric 0) \u00b7 rows shown in stored order"
+]
+},
+{
+"data": "512df4cbe0843b818da58f94f6808bddcd81b324911c190dac27cbea69105132f992c98be897b4e09fbdc87980e5506e2b3d0cab9c832e37dae2932b56e6c56366395c29f1d152c29ec79381",
+"w": 3,
+"h": 1,
+"depth": 16,
+"stride": 20,
+"probe": "pnm",
+"kw": {
+"photometric": null,
+"bottom_left": true,
+"channel_order": "bgr",
+"byte_order": null,
+"maxval": 65535
+},
+"result": [
+"P",
+3,
+1,
+"grey8",
+"50f3df",
+"PNM grey \u00b7 16-bit big-endian samples \u00b7 v\u00d7255//65535 \u00b7 rows shown in stored order"
+]
+},
+{
+"data": "5277ad54cc7a0dbc6ad28a2e704461a7",
+"w": 4,
+"h": 1,
+"depth": 0,
+"stride": 14,
+"probe": "pcx",
+"kw": {
+"photometric": 0,
+"bottom_left": false,
+"channel_order": "rgb",
+"byte_order": "II",
+"maxval": 65535
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "acafbc0efe1f1449f6ca8a2e",
+"w": 5,
+"h": 2,
+"depth": 16,
+"stride": 14,
+"probe": "pbm",
+"kw": {
+"photometric": null,
+"bottom_left": false,
+"channel_order": "rgb",
+"byte_order": "II",
+"maxval": 255
+},
+"result": [
+"F",
+"no renderer for 16-bit pixels"
+]
+},
+{
+"data": "42f69cda04a5ce570b573ee0501cc17dd6b09a676ae32c69765619e1bcafb066a12ecd433d7680c1e76c66de3a118c4c7d75ecd083b3a0f5ebb55bf0e87b2a53dced4cccb684a6b195e3a673880053abed",
+"w": 4,
+"h": 0,
+"depth": 4,
+"stride": 10,
+"probe": "pcx",
+"kw": {
+"photometric": 0,
+"bottom_left": true,
+"channel_order": "bgr",
+"byte_order": "II",
+"maxval": null
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "49c1f4895b282201",
+"w": 4,
+"h": 4,
+"depth": 8,
+"stride": 15,
+"probe": "pbm",
+"kw": {
+"photometric": 1,
+"bottom_left": true,
+"channel_order": "bgr",
+"byte_order": "MM",
+"maxval": 65535
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "a2abae1029acd01a881cdd6cfec84278cc6ee7f52528991196f509272074034fbad6754fe2216727b882a3258ff365a7702203051d77b1",
+"w": 2,
+"h": 4,
+"depth": 3,
+"stride": 18,
+"probe": "pnm",
+"kw": {
+"photometric": 1,
+"bottom_left": true,
+"channel_order": "bgr",
+"byte_order": "MM",
+"maxval": 255
+},
+"result": [
+"F",
+"no renderer for 3-bit pixels"
+]
+},
+{
+"data": "0034385a47a3198cbd4beec20ea61b6fafb827f5c2bb23dfefd7982f3a3b",
+"w": 2,
+"h": 1,
+"depth": 24,
+"stride": 10,
+"probe": "tga",
+"kw": {
+"photometric": 1,
+"bottom_left": false,
+"channel_order": "bgr",
+"byte_order": "II",
+"maxval": null
+},
+"result": [
+"P",
+2,
+1,
+"rgb8",
+"383400a3475a",
+"24-bit \u00b7 BGR\u2192RGB \u00b7 rows shown in stored order"
+]
+},
+{
+"data": "8c39428f0a79c592078f6859154bc563c7c65c0f65b2a09fb91ccbc2fb2f9079b3c1ba6fa03434b25095c9109402e0d0365dbff36fb860b6863fea4b71e840f56e73b2da513e2a4d15c871775ef0f7e236f361f86475dd048c11a91ea278de824a025b9679a984391f4a180e662acf9e04",
+"w": 1,
+"h": 0,
+"depth": 0,
+"stride": 8,
+"probe": "pcx",
+"kw": {
+"photometric": "undeclared",
+"bottom_left": true,
+"channel_order": "bgr",
+"byte_order": null,
+"maxval": null
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "e41f2573a94963e8e4a42ca27df17aaec599ba5d6c067e9c07d711c9848ca7cdba3346c7da012acca1bf",
+"w": 3,
+"h": 5,
+"depth": 3,
+"stride": 7,
+"probe": "pbm",
+"kw": {
+"photometric": null,
+"bottom_left": false,
+"channel_order": "bgr",
+"byte_order": "II",
+"maxval": 255
+},
+"result": [
+"F",
+"no renderer for 3-bit pixels"
+]
+},
+{
+"data": "de29b7d43603d288e9939f1db1fa916b02d886bd130101c6479602a5d5bd2f8e36548f29efbd2e7aa40e5d401c39d6e06a5ca626b2e349b73f26449fda0f8edfe09348",
+"w": 2,
+"h": 5,
+"depth": 24,
+"stride": 4,
+"probe": "bmp",
+"kw": {
+"photometric": null,
+"bottom_left": false,
+"channel_order": "rgb",
+"byte_order": null,
+"maxval": 65535
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "d49830cab2c7d12bef0ec023bfd8295af8518f80f212e11509332b128249043d555a8bf1da3a2315d3af494fe0222a322a1c2159cb01730b85cf46234341dc3f22965f7772fd90146a7e8ff84538a34b9b12f70ea3f3b7b5a6e596dae97b8f2e773094e0f74261dcd18b0d116c81405d4d05c8",
+"w": 3,
+"h": 0,
+"depth": 36,
+"stride": 7,
+"probe": "pbm",
+"kw": {
+"photometric": "undeclared",
+"bottom_left": true,
+"channel_order": "bgr",
+"byte_order": "II",
+"maxval": null
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "24c07e57f52a82635b42e8d0d313cc",
+"w": 3,
+"h": 0,
+"depth": 24,
+"stride": 11,
+"probe": "pcx",
+"kw": {
+"photometric": "undeclared",
+"bottom_left": false,
+"channel_order": "bgr",
+"byte_order": "II",
+"maxval": null
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "b0f69dca40cfeece4b56c9338d471e544203564731d82f6f7b6173b37e9f9583938fd4b8e347ba386ad84af3dd91e826c2132bd159f175c1bbab080bd79da9d094b67b67317bd1daba699540b613b4f52bb0516c0517b6cf403a91c50324367f6d024548d51c3699",
+"w": 4,
+"h": 4,
+"depth": 0,
+"stride": 9,
+"probe": "pcx",
+"kw": {
+"photometric": "undeclared",
+"bottom_left": true,
+"channel_order": "rgb",
+"byte_order": null,
+"maxval": 65535
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "32448b84d383f89d1facce5aa00c3004f83ab69caf779d4e246ed426ae7e4ee0ee6939658db45c5cd7777adc6c4bfcef6b97a346",
+"w": 1,
+"h": 1,
+"depth": 4,
+"stride": 5,
+"probe": "generic",
+"kw": {
+"photometric": 1,
+"bottom_left": false,
+"channel_order": "rgb",
+"byte_order": "MM",
+"maxval": null
+},
+"result": [
+"P",
+1,
+1,
+"grey8",
+"33",
+"4-bit \u00b7 BlackIsZero (photometric 1) \u00b7 rows shown in stored order"
+]
+},
+{
+"data": "f40b47d701b914922cf6",
+"w": 5,
+"h": 3,
+"depth": 12,
+"stride": 7,
+"probe": "pcx",
+"kw": {
+"photometric": 0,
+"bottom_left": true,
+"channel_order": "rgb",
+"byte_order": "II",
+"maxval": null
+},
+"result": [
+"F",
+"no renderer for 12-bit pixels"
+]
+},
+{
+"data": "a10f7799bdaf7f73d1d89e8e7bf5b2fa17fbcf41f1ed435bf27300ba325e7e434fb0c704b446fef7dcb54561a27378882d66e5d0fe3943aa96c7ca57b3beeb83317f9f2ea4f4ffd59129d95ff74ff88a2a63c6ad96c04bf670b34306140d4ee081a6c4f7d0682d0e5d",
+"w": 1,
+"h": 3,
+"depth": 48,
+"stride": 15,
+"probe": "generic",
+"kw": {
+"photometric": 0,
+"bottom_left": true,
+"channel_order": "bgr",
+"byte_order": "II",
+"maxval": 255
+},
+"result": [
+"F",
+"no renderer for 48-bit pixels"
+]
+},
+{
+"data": "9d483e2fb3c76bf9a0b8134ae756aed2b555efd3183536e4483c3b5885d127ea6a0062500d212a8f6025043d4a950c3bf5f4ec72571e3ea8065be0613752bc2d79c08d04634d12d326cf",
+"w": 0,
+"h": 0,
+"depth": 24,
+"stride": 0,
+"probe": "pcx",
+"kw": {
+"photometric": "undeclared",
+"bottom_left": true,
+"channel_order": "bgr",
+"byte_order": "II",
+"maxval": 255
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "9f58d7952087fb162e123b536f227e8624251be34c",
+"w": 4,
+"h": 2,
+"depth": 48,
+"stride": 0,
+"probe": "pbm",
+"kw": {
+"photometric": 0,
+"bottom_left": false,
+"channel_order": "bgr",
+"byte_order": "II",
+"maxval": null
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "aa2334b7b6",
+"w": 2,
+"h": 2,
+"depth": 1,
+"stride": 7,
+"probe": "pbm",
+"kw": {
+"photometric": 0,
+"bottom_left": true,
+"channel_order": "bgr",
+"byte_order": null,
+"maxval": 65535
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "ecdc930f5396021b91572b39bf8944ee69f1b4cf19aabf3372465bccfe4faf62cf42f6a933b3969ccce06cddfe68e5461aa338bc8ec1b312a451d1c5688f2d6838967fe03238eada646705c3a9f9dd5d0d7ae0693c89b286347cdb",
+"w": 3,
+"h": 1,
+"depth": 24,
+"stride": 10,
+"probe": "tga",
+"kw": {
+"photometric": null,
+"bottom_left": true,
+"channel_order": "rgb",
+"byte_order": "MM",
+"maxval": null
+},
+"result": [
+"P",
+3,
+1,
+"rgb8",
+"ecdc930f5396021b91",
+"24-bit \u00b7 RGB as stored \u00b7 rows flipped: file declares bottom-left origin"
+]
+},
+{
+"data": "845864731770b17469b08fb49a98fb7477fd971e2fd5939e263fa9e6d6bb9c466b64876c62ce68c7fc02620d",
+"w": 1,
+"h": 1,
+"depth": 24,
+"stride": 5,
+"probe": "generic",
+"kw": {
+"photometric": "undeclared",
+"bottom_left": false,
+"channel_order": "bgr",
+"byte_order": null,
+"maxval": null
+},
+"result": [
+"P",
+1,
+1,
+"rgb8",
+"645884",
+"24-bit \u00b7 BGR\u2192RGB \u00b7 rows shown in stored order"
+]
+},
+{
+"data": "cae5d4",
+"w": 2,
+"h": 1,
+"depth": 16,
+"stride": 13,
+"probe": "pbm",
+"kw": {
+"photometric": null,
+"bottom_left": true,
+"channel_order": "rgb",
+"byte_order": "II",
+"maxval": null
+},
+"result": [
+"F",
+"no renderer for 16-bit pixels"
+]
+},
+{
+"data": "eb1cdbb8008975f73595e20b8be567ec8e9de129ebd6eeae5a11ade917",
+"w": 5,
+"h": 3,
+"depth": 36,
+"stride": 2,
+"probe": "bmp",
+"kw": {
+"photometric": null,
+"bottom_left": false,
+"channel_order": "rgb",
+"byte_order": "II",
+"maxval": 255
+},
+"result": [
+"F",
+"no renderer for 36-bit pixels"
+]
+},
+{
+"data": "eb7487b469bed4265bcb01267b506e681589fea14ca7ea61080041bdb94265d4391c1f36f5c131399ab978f6e04459a296457eb7e8d07f16159416c836dc770a20bc682a86",
+"w": 1,
+"h": 5,
+"depth": 48,
+"stride": 13,
+"probe": "pcx",
+"kw": {
+"photometric": 0,
+"bottom_left": false,
+"channel_order": "bgr",
+"byte_order": null,
+"maxval": 65535
+},
+"result": [
+"F",
+"no renderer for 48-bit pixels"
+]
+},
+{
+"data": "952c967e20ef4399a0a795b367ca3a184d40fb2eb2e851b689682725adcb21c7ced3ccddc32b1f0d8112bf1e687f3f299414",
+"w": 0,
+"h": 4,
+"depth": 8,
+"stride": 4,
+"probe": "tga",
+"kw": {
+"photometric": null,
+"bottom_left": true,
+"channel_order": "bgr",
+"byte_order": null,
+"maxval": 65535
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "494a4aaf91ddb302fb5a580730cd6b286c6302d6d10677857d0457d9dd0df40fc266dea50becffffcc5f8e1a6387cd8ee7388e35",
+"w": 5,
+"h": 4,
+"depth": 24,
+"stride": 13,
+"probe": "generic",
+"kw": {
+"photometric": null,
+"bottom_left": true,
+"channel_order": "bgr",
+"byte_order": "MM",
+"maxval": null
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "8de4ac490c76eb2a55adc382eb960cf10f6d2b2f49f87543d80fae97ac8647365f32",
+"w": 1,
+"h": 0,
+"depth": 48,
+"stride": 9,
+"probe": "pnm",
+"kw": {
+"photometric": "undeclared",
+"bottom_left": false,
+"channel_order": "rgb",
+"byte_order": "MM",
+"maxval": null
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "9259cec47060edc9ef414bc02c0a497ed5014dc3467f740e2e91aee45eb6367009160a5d7282cccba848bea887e2804f6351e66dc44c1068d2575a6e818e72c964e0cd917234c304c38c9673206565c081e50aa5",
+"w": 5,
+"h": 0,
+"depth": 48,
+"stride": 15,
+"probe": "tiff",
+"kw": {
+"photometric": 0,
+"bottom_left": false,
+"channel_order": "bgr",
+"byte_order": null,
+"maxval": null
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "6faf3fb4b917a5f7e901cc7b7cc50ac89b19dd22da420e918c1687ed383b750b6173f820556d3ed7fdb64e6d9ec38e55296afe23341a504b5a00336b97cb00e08aba469d15532ad1d5694aa09850ea96753c524ad07641b9cc45d2e83bb51e4e51ebf435b4a5eb8519362bd84df1fb83ef735bdee4",
+"w": 1,
+"h": 5,
+"depth": 1,
+"stride": 8,
+"probe": "generic",
+"kw": {
+"photometric": 0,
+"bottom_left": true,
+"channel_order": "rgb",
+"byte_order": "MM",
+"maxval": 255
+},
+"result": [
+"P",
+1,
+5,
+"grey8",
+"ff000000ff",
+"1-bit \u00b7 WhiteIsZero (photometric 0) \u00b7 rows flipped: file declares bottom-left origin"
+]
+},
+{
+"data": "5f5070d8eb74fee281d2bba0c30dceb2eb883f33850bfd16c73659777811ae9eb56d56a584bb3daf13a306d98ece10",
+"w": 5,
+"h": 2,
+"depth": 1,
+"stride": 14,
+"probe": "tga",
+"kw": {
+"photometric": "undeclared",
+"bottom_left": false,
+"channel_order": "bgr",
+"byte_order": "MM",
+"maxval": null
+},
+"result": [
+"P",
+5,
+2,
+"grey8",
+"00ff00ffffffff0000ff",
+"1-bit \u00b7 no photometric interpretation declared; shown as BlackIsZero (0 = black) \u00b7 rows shown in stored order"
+]
+},
+{
+"data": "185cd9888c11d5bb240d92b7d9ae",
+"w": 1,
+"h": 2,
+"depth": 12,
+"stride": 4,
+"probe": "generic",
+"kw": {
+"photometric": "undeclared",
+"bottom_left": true,
+"channel_order": "rgb",
+"byte_order": "II",
+"maxval": null
+},
+"result": [
+"F",
+"no renderer for 12-bit pixels"
+]
+},
+{
+"data": "0c2c8f3475d7bdc78374cf4d58b7c268015f9313cd1d083991bec7",
+"w": 2,
+"h": 1,
+"depth": 36,
+"stride": 11,
+"probe": "bmp",
+"kw": {
+"photometric": 1,
+"bottom_left": false,
+"channel_order": "rgb",
+"byte_order": "MM",
+"maxval": 255
+},
+"result": [
+"F",
+"no renderer for 36-bit pixels"
+]
+},
+{
+"data": "e2c209c47aa9ab3b17044bd08f81a909634077aad0eba9822a2e5b39863555faaa032bd9775c42f44ebbcb0852cdd6e68cddb0ecad7033ac4d35118f16705b240b71",
+"w": 4,
+"h": 0,
+"depth": 4,
+"stride": 13,
+"probe": "bmp",
+"kw": {
+"photometric": 0,
+"bottom_left": true,
+"channel_order": "rgb",
+"byte_order": null,
+"maxval": 65535
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "d5b51422ad2491a26370f9cda397ed29960d060a655112a9e11871967ea8cf56ab9b3a463d53bdb5789c0196d39f661ed2f9fd95cc529060757c2a83b3535e1d78f26b41d33bf02dda065adbf8603120c2b33dfec90a9722ead36c3791ac93f521",
+"w": 1,
+"h": 1,
+"depth": 4,
+"stride": 15,
+"probe": "pbm",
+"kw": {
+"photometric": "undeclared",
+"bottom_left": true,
+"channel_order": "rgb",
+"byte_order": null,
+"maxval": 255
+},
+"result": [
+"P",
+1,
+1,
+"grey8",
+"dd",
+"4-bit \u00b7 no photometric interpretation declared; shown as BlackIsZero (0 = black) \u00b7 rows flipped: file declares bottom-left origin"
+]
+},
+{
+"data": "93a5b52f921699e27fb81b1aaf6983762fa659d841c280cece9762577901fca781819b0634fd989a081ab60ce120d25d81a1b67a27501dedf9ea6ba025715f97b6aea3c6e98b756c63e962a14d4641be75e1367b414e382b582d27ab7f2d2a3f8ede43385a8458449a7f0e",
+"w": 5,
+"h": 3,
+"depth": 24,
+"stride": 20,
+"probe": "tga",
+"kw": {
+"photometric": 0,
+"bottom_left": true,
+"channel_order": "bgr",
+"byte_order": "MM",
+"maxval": 65535
+},
+"result": [
+"P",
+5,
+3,
+"rgb8",
+"b61a0820e10c815dd27ab6a11d502780c24197cece795762a7fc019b8181b5a59316922f7fe2991a1bb88369af",
+"24-bit \u00b7 BGR\u2192RGB \u00b7 rows flipped: file declares bottom-left origin"
+]
+},
+{
+"data": "d0a65f2caeba2efd24857a6dca2b29ec04d3f936b42391166b5cf5d8c3067fa4018e561bf4e5f55db3d6407f1bd827495f457c34501db683eed5f89b3084fc7774446e3d5c9dd0d71d4f816632b94316918d3937b6ef5dbecdb632",
+"w": 4,
+"h": 1,
+"depth": 0,
+"stride": 20,
+"probe": "bmp",
+"kw": {
+"photometric": 0,
+"bottom_left": true,
+"channel_order": "rgb",
+"byte_order": "MM",
+"maxval": null
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "43b0bd2219c1ac3f990893f1f2ed383f60dea313ad8f776b6ecf720626bb1a3fa86946d52c71dcec64aacfb6629d3d46d8617840b74848714f18c73c6ed4ca",
+"w": 4,
+"h": 0,
+"depth": 0,
+"stride": 18,
+"probe": "bmp",
+"kw": {
+"photometric": null,
+"bottom_left": true,
+"channel_order": "bgr",
+"byte_order": null,
+"maxval": 65535
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "b4",
+"w": 5,
+"h": 3,
+"depth": 12,
+"stride": 9,
+"probe": "tga",
+"kw": {
+"photometric": 0,
+"bottom_left": true,
+"channel_order": "bgr",
+"byte_order": null,
+"maxval": 65535
+},
+"result": [
+"F",
+"no renderer for 12-bit pixels"
+]
+},
+{
+"data": "1fa2b3f0c19004e3817b2aed911d12e6aa3802b2da6dfc1aebbcc4d3f54088719be2c253d68c",
+"w": 1,
+"h": 4,
+"depth": 4,
+"stride": 20,
+"probe": "pcx",
+"kw": {
+"photometric": null,
+"bottom_left": true,
+"channel_order": "rgb",
+"byte_order": "MM",
+"maxval": null
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "",
+"w": 1,
+"h": 1,
+"depth": 4,
+"stride": 17,
+"probe": "bmp",
+"kw": {
+"photometric": "undeclared",
+"bottom_left": true,
+"channel_order": "bgr",
+"byte_order": null,
+"maxval": 255
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "43f6648db930df6fad51103a1b2d476eb3f4fdd4c2b37f433ee37fae1223b2b3035f603c05b29e12eb7f9d2c646a9f53ef52daf68cbf7bb7aaa21f49356d023602a558c620dfbd62388fa9e2861261b22e93f7bf477de4e6c602",
+"w": 2,
+"h": 3,
+"depth": 36,
+"stride": 7,
+"probe": "tiff",
+"kw": {
+"photometric": "undeclared",
+"bottom_left": true,
+"channel_order": "rgb",
+"byte_order": null,
+"maxval": 255
+},
+"result": [
+"F",
+"no renderer for 12-bit RGB TIFF (36-bit pixels)"
+]
+},
+{
+"data": "c08fbaf4f4f3f797efad165bc7af57b96120a3",
+"w": 1,
+"h": 3,
+"depth": 3,
+"stride": 7,
+"probe": "generic",
+"kw": {
+"photometric": 1,
+"bottom_left": false,
+"channel_order": "rgb",
+"byte_order": "II",
+"maxval": null
+},
+"result": [
+"F",
+"no renderer for 3-bit pixels"
+]
+},
+{
+"data": "3e59c4dba477cc196a3c78449a56f3fd99c6c216091b5a",
+"w": 2,
+"h": 5,
+"depth": 24,
+"stride": 16,
+"probe": "generic",
+"kw": {
+"photometric": "undeclared",
+"bottom_left": false,
+"channel_order": "rgb",
+"byte_order": "II",
+"maxval": null
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "80476210904fe3780ea7a8311cc442c51284634822deee697fd156bdb8c14df8c889e2572558cf551e",
+"w": 3,
+"h": 4,
+"depth": 48,
+"stride": 5,
+"probe": "tiff",
+"kw": {
+"photometric": 0,
+"bottom_left": true,
+"channel_order": "rgb",
+"byte_order": null,
+"maxval": null
+},
+"result": [
+"F",
+"no renderer for 16-bit RGB TIFF (48-bit pixels)"
+]
+},
+{
+"data": "c5",
+"w": 1,
+"h": 5,
+"depth": 12,
+"stride": 13,
+"probe": "bmp",
+"kw": {
+"photometric": 0,
+"bottom_left": false,
+"channel_order": "rgb",
+"byte_order": "II",
+"maxval": 255
+},
+"result": [
+"F",
+"no renderer for 12-bit pixels"
+]
+},
+{
+"data": "488ea4066945f23a730bf761ae9d2569f4ae354cbb1d1d683430a81edb58ee369b24204c96acabb49bc96a214f1453be0c4cdd699320bd982104da570190d14c57a1569c2904159131b3d701bedc261682a04133091686f815efc049fba9",
+"w": 5,
+"h": 3,
+"depth": 36,
+"stride": 2,
+"probe": "tga",
+"kw": {
+"photometric": null,
+"bottom_left": false,
+"channel_order": "rgb",
+"byte_order": null,
+"maxval": 255
+},
+"result": [
+"F",
+"no renderer for 36-bit pixels"
+]
+},
+{
+"data": "8281a567",
+"w": 0,
+"h": 5,
+"depth": 24,
+"stride": 12,
+"probe": "tiff",
+"kw": {
+"photometric": "undeclared",
+"bottom_left": false,
+"channel_order": "bgr",
+"byte_order": "MM",
+"maxval": 65535
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "9a2a2b3663001d1d03ea03623a7c97242d918b829627c50446e9cbcefd7a5d0edd4599225699874c17d35839b4",
+"w": 1,
+"h": 5,
+"depth": 24,
+"stride": 2,
+"probe": "generic",
+"kw": {
+"photometric": null,
+"bottom_left": true,
+"channel_order": "bgr",
+"byte_order": null,
+"maxval": 255
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "3f0e917ec4e6d828832cd3f293cd3889eff8d32867165134e263c72ea034094f5774766fecca6ffcba8f764a3229c971197b40d86587e9c70ed7457e04c43331e1806247129c35bf61b4c8a2f35549cff1f567eb93b58544",
+"w": 5,
+"h": 3,
+"depth": 3,
+"stride": 11,
+"probe": "pcx",
+"kw": {
+"photometric": "undeclared",
+"bottom_left": false,
+"channel_order": "rgb",
+"byte_order": null,
+"maxval": 255
+},
+"result": [
+"F",
+"no renderer for 3-bit pixels"
+]
+},
+{
+"data": "df949ec93a9d646f4a862231fe3f23ac62beac8644f817",
+"w": 1,
+"h": 2,
+"depth": 1,
+"stride": 6,
+"probe": "bmp",
+"kw": {
+"photometric": null,
+"bottom_left": true,
+"channel_order": "rgb",
+"byte_order": null,
+"maxval": 65535
+},
+"result": [
+"P",
+1,
+2,
+"grey8",
+"00ff",
+"1-bit \u00b7 grey, 1 = white \u00b7 rows flipped: file declares bottom-left origin"
+]
+},
+{
+"data": "bbb4810d2469123391004a429c37ce165ab1097bea6f0e1c4d776204ebd82954a46c0d09a44ea566a013002cd489865f83ccdb3bc6e3d4e8c6f142",
+"w": 3,
+"h": 3,
+"depth": 0,
+"stride": 10,
+"probe": "pbm",
+"kw": {
+"photometric": null,
+"bottom_left": true,
+"channel_order": "bgr",
+"byte_order": "MM",
+"maxval": 255
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "3b84ae81f3c82b7ff3e771d1daae7dcd216df19d40e929c8993d0740a84cc1d5d1d76ac7f304fa4261b05885c812a0b0de91f4c16530cb4f008129c542e653865722d2d9b6c007aa48b8d66090e5432108f754f4cd3187358977c57400c770e7a911e51b39a9",
+"w": 5,
+"h": 0,
+"depth": 8,
+"stride": 12,
+"probe": "pnm",
+"kw": {
+"photometric": 1,
+"bottom_left": true,
+"channel_order": "bgr",
+"byte_order": null,
+"maxval": null
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "b6aac9b03301328cf596c61dfe9eadd7a0728dab",
+"w": 0,
+"h": 5,
+"depth": 3,
+"stride": 19,
+"probe": "generic",
+"kw": {
+"photometric": "undeclared",
+"bottom_left": false,
+"channel_order": "bgr",
+"byte_order": "II",
+"maxval": null
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "9305f45e038ca69138d8fa494f829173e47673e6c67d604900514d4199a178dbc724f76627461343bc3b8094e268b3a23f8aa919302f492c4407b933f97e82",
+"w": 2,
+"h": 3,
+"depth": 16,
+"stride": 14,
+"probe": "pcx",
+"kw": {
+"photometric": 0,
+"bottom_left": true,
+"channel_order": "rgb",
+"byte_order": "II",
+"maxval": 255
+},
+"result": [
+"F",
+"no renderer for 16-bit pixels"
+]
+},
+{
+"data": "c47fbe2b25f77e03f8887dfedda0288937eed1c3ac57686616aec7aa273541c8968a4444574b2f9986e894f8a9b6e8e5d65d6b95ddc1d3732aaa8ccd9dfbc8c49cc1ef17b7e857a698e9198c30ac2eddb8",
+"w": 0,
+"h": 3,
+"depth": 8,
+"stride": 12,
+"probe": "tga",
+"kw": {
+"photometric": "undeclared",
+"bottom_left": false,
+"channel_order": "rgb",
+"byte_order": "MM",
+"maxval": 65535
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "aadc4dbd37e70283749932ac0f0c61c568",
+"w": 5,
+"h": 4,
+"depth": 1,
+"stride": 0,
+"probe": "pcx",
+"kw": {
+"photometric": 0,
+"bottom_left": false,
+"channel_order": "bgr",
+"byte_order": "II",
+"maxval": 65535
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "3cc6d42e90af6a9b38f9017834ca131b9d5c13efceec3caf30515528ae57f3ed7ea46aade4b69f3acdc6bb1d341d5f263012fb0c21e768b3339706b82b6e",
+"w": 4,
+"h": 2,
+"depth": 8,
+"stride": 2,
+"probe": "generic",
+"kw": {
+"photometric": 0,
+"bottom_left": false,
+"channel_order": "rgb",
+"byte_order": "II",
+"maxval": 65535
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "1be8d847b7306304be128ecdd8eaf94c7f0d458f9b22a047ee49e25cf354fe028f651ca8405d8575877926c7da838829726ef9bed8dcb164b0820dfa9dbc5d4d3328b7e643df2f450a416c798136d8",
+"w": 2,
+"h": 2,
+"depth": 48,
+"stride": 17,
+"probe": "tiff",
+"kw": {
+"photometric": 1,
+"bottom_left": false,
+"channel_order": "rgb",
+"byte_order": "II",
+"maxval": null
+},
+"result": [
+"F",
+"no renderer for 16-bit RGB TIFF (48-bit pixels)"
+]
+},
+{
+"data": "7e1c958b7df1b18a52b8a029961d257d771d5762aa5c3e834e590a5b36fb923a5911e1f02a829ed85a8ea1ed8c9660e17cac4da2e25aed7b8026fea465cfa983852fc426c46ace2359d8",
+"w": 2,
+"h": 2,
+"depth": 1,
+"stride": 17,
+"probe": "generic",
+"kw": {
+"photometric": 0,
+"bottom_left": false,
+"channel_order": "bgr",
+"byte_order": "II",
+"maxval": 65535
+},
+"result": [
+"P",
+2,
+2,
+"grey8",
+"ff00ffff",
+"1-bit \u00b7 WhiteIsZero (photometric 0) \u00b7 rows shown in stored order"
+]
+},
+{
+"data": "feb93d5ede5421174971ae4c132993912f77037611e65f456d171eb450",
+"w": 2,
+"h": 4,
+"depth": 16,
+"stride": 4,
+"probe": "bmp",
+"kw": {
+"photometric": null,
+"bottom_left": false,
+"channel_order": "rgb",
+"byte_order": null,
+"maxval": 65535
+},
+"result": [
+"F",
+"no renderer for 16-bit pixels"
+]
+},
+{
+"data": "7693cfbd8195afc09679",
+"w": 0,
+"h": 5,
+"depth": 0,
+"stride": 17,
+"probe": "pcx",
+"kw": {
+"photometric": null,
+"bottom_left": false,
+"channel_order": "rgb",
+"byte_order": "MM",
+"maxval": null
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "d32f101d26ed4926033bfeee8165db38e6eddd6a8703d4362f7d185116253825ceca288e4d59a563d41d47b66a62137809433c7eef122d63cd93585114ea5312bc3e6cb7a3fffbe21d",
+"w": 4,
+"h": 1,
+"depth": 8,
+"stride": 5,
+"probe": "pnm",
+"kw": {
+"photometric": null,
+"bottom_left": true,
+"channel_order": "bgr",
+"byte_order": null,
+"maxval": 65535
+},
+"result": [
+"P",
+4,
+1,
+"grey8",
+"00000000",
+"PNM grey \u00b7 8-bit samples \u00b7 v\u00d7255//65535 \u00b7 rows shown in stored order"
+]
+},
+{
+"data": "739e62260e3031e6f1e0bcb44f7d42f59998820559f47ead5be09257e5bf14cd3f042c0b0dbdb21f1afa0ccb14840194af29e995f74f350226e15b6501ef9c3bb396b6d8f0ed139b80a10b8fc007e98736540d69f07b3197f6ae3f13bcc8607783288dde910f7d21344c46ae49ad8b8836c57659812b2992",
+"w": 0,
+"h": 4,
+"depth": 8,
+"stride": 12,
+"probe": "pnm",
+"kw": {
+"photometric": 0,
+"bottom_left": false,
+"channel_order": "rgb",
+"byte_order": "II",
+"maxval": 255
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "5099ff96eb632a1e90a5e824a5fcaf928d741ebd087cf32a431abd2c9aa2fe8eab485012f896bedf3c71520fbca99b51f7a7181c33533f6d26f6d02f61febb322d55fb87330c9059a3423ee41590324643257a91ba8ae35debc57eab21dc37e369d8c4849a089d1f36e05788",
+"w": 2,
+"h": 4,
+"depth": 3,
+"stride": 16,
+"probe": "pcx",
+"kw": {
+"photometric": 0,
+"bottom_left": true,
+"channel_order": "rgb",
+"byte_order": "II",
+"maxval": null
+},
+"result": [
+"F",
+"no renderer for 3-bit pixels"
+]
+},
+{
+"data": "83a3d57399759869ebee0c0a0325f563547f88a71fc578a6dcfd708bc5a61ff86df1e34e5f3c5712bcdf1e4becf970078f57869cbc12df5c32dec8d8c1a0e8a176a97d",
+"w": 1,
+"h": 3,
+"depth": 32,
+"stride": 19,
+"probe": "pbm",
+"kw": {
+"photometric": 0,
+"bottom_left": true,
+"channel_order": "rgb",
+"byte_order": "II",
+"maxval": 65535
+},
+"result": [
+"P",
+1,
+3,
+"rgb8",
+"5712bca71fc583a3d5",
+"32-bit \u00b7 RGB as stored; fourth byte ignored \u00b7 rows flipped: file declares bottom-left origin"
+]
+},
+{
+"data": "205dff0fb2ab05c2042d42aa3a8852deb58f6b84951882b996bae423dcf0a6c1295d3c0ecfa6c77d9d9651762f9181f418332f9d5b4b0c9661855e67308a8349ff13ef7f04aee40f012aa079848bce00d7c628934f",
+"w": 3,
+"h": 0,
+"depth": 8,
+"stride": 19,
+"probe": "generic",
+"kw": {
+"photometric": 0,
+"bottom_left": false,
+"channel_order": "bgr",
+"byte_order": "MM",
+"maxval": 65535
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "3c004438cc1b33b0a9",
+"w": 5,
+"h": 5,
+"depth": 32,
+"stride": 14,
+"probe": "pbm",
+"kw": {
+"photometric": "undeclared",
+"bottom_left": false,
+"channel_order": "bgr",
+"byte_order": null,
+"maxval": null
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "ee160ebdc19c434586f4a5c1cabd9cf2735cfbf5a796f74761f93f0993",
+"w": 2,
+"h": 2,
+"depth": 4,
+"stride": 14,
+"probe": "pbm",
+"kw": {
+"photometric": 1,
+"bottom_left": false,
+"channel_order": "rgb",
+"byte_order": null,
+"maxval": null
+},
+"result": [
+"P",
+2,
+2,
+"grey8",
+"eeee99cc",
+"4-bit \u00b7 BlackIsZero (photometric 1) \u00b7 rows shown in stored order"
+]
+},
+{
+"data": "096c2c80b64ee24072586cdc58155cce86cf347ac14d3c0a74f8be6004348279bd03209453cd92a5b907c70224d568dfeb",
+"w": 4,
+"h": 1,
+"depth": 8,
+"stride": 14,
+"probe": "bmp",
+"kw": {
+"photometric": "undeclared",
+"bottom_left": true,
+"channel_order": "rgb",
+"byte_order": "II",
+"maxval": 255
+},
+"result": [
+"P",
+4,
+1,
+"grey8",
+"096c2c80",
+"8-bit \u00b7 no photometric interpretation declared; shown as BlackIsZero (0 = black) \u00b7 rows flipped: file declares bottom-left origin"
+]
+},
+{
+"data": "43311ee9415f7abe369645f868f0a343889c197fcae41f1f8980f427b3dc23a4a760758f3642269f1419e6b4c6e2504dd7d371527bcf7a857e415bac3e8bb7d7e2352243ee559d56f62eed0c2a0d6666863135ffa2e555c94fdab1cabf2714ac28dc",
+"w": 3,
+"h": 5,
+"depth": 0,
+"stride": 9,
+"probe": "tiff",
+"kw": {
+"photometric": 0,
+"bottom_left": false,
+"channel_order": "rgb",
+"byte_order": null,
+"maxval": null
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "642e5776ddd728579d71c859bf13ec9e4f2a32762decf4f2494cd8fa3a684c4b20e2885c47ff4677d5f5d71e4f52fef5fd2dd656dad474a0d4f1d59dec64e7674186a45709598d0115c5dbbc03",
+"w": 2,
+"h": 0,
+"depth": 48,
+"stride": 0,
+"probe": "generic",
+"kw": {
+"photometric": null,
+"bottom_left": false,
+"channel_order": "bgr",
+"byte_order": "II",
+"maxval": 255
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "cd337140f7b141db8692524001ffcccf27b4b2c5f1087a7ff371f7130b42ea059b86048c7d7f37797189b8755dd2fcce71e7732ceed9b5d8632a6f2e7fb252bc62494012937568b97f62159d4c647a79f6d8db27ca1e7540b1be8dfc895e80866ef46b7c",
+"w": 2,
+"h": 2,
+"depth": 24,
+"stride": 11,
+"probe": "pcx",
+"kw": {
+"photometric": "undeclared",
+"bottom_left": false,
+"channel_order": "rgb",
+"byte_order": null,
+"maxval": 255
+},
+"result": [
+"P",
+2,
+2,
+"rgb8",
+"cd337140f7b14001ffcccf27",
+"24-bit \u00b7 RGB as stored \u00b7 rows shown in stored order"
+]
+},
+{
+"data": "f1589cc094a512677b130a7dafd92292936346dfe6bf98e85bfb9ec1d8770788367acfa6d3d8d469fe374f1b699555f26c785ea1e98ead6351fd93adf14d2dd7b8141d47652d3df268cac039f1c859f2",
+"w": 2,
+"h": 0,
+"depth": 4,
+"stride": 1,
+"probe": "tiff",
+"kw": {
+"photometric": 1,
+"bottom_left": false,
+"channel_order": "rgb",
+"byte_order": null,
+"maxval": null
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "986bd91042b30805fbfaca62c147f960b07700f87c864b092e5e4f9e6cf812f4c3e838ffd1db78bfbe286bc061a0f622515097bdee61b3452ba7a5a4e58fbe8f2e7557a2aa86a63e814f4f7f39607a7cd3314fd9a9847927f21fff73b2069c064a2b10c342090296d887856a522cfa273a366d29c5",
+"w": 5,
+"h": 3,
+"depth": 4,
+"stride": 18,
+"probe": "pbm",
+"kw": {
+"photometric": 1,
+"bottom_left": false,
+"channel_order": "rgb",
+"byte_order": "MM",
+"maxval": 255
+},
+"result": [
+"P",
+5,
+3,
+"grey8",
+"998866bbdd0000ff8877dd11ddbb77",
+"4-bit \u00b7 BlackIsZero (photometric 1) \u00b7 rows shown in stored order"
+]
+},
+{
+"data": "bac538400fb965f3f64f4181a05df78061f9c5fb30c91ea513f96614b3913e3ae89376369db2827adaacdecd0196db1f4e6e3a9c9bcf04f71bd98b8879a8",
+"w": 1,
+"h": 3,
+"depth": 3,
+"stride": 7,
+"probe": "bmp",
+"kw": {
+"photometric": null,
+"bottom_left": true,
+"channel_order": "bgr",
+"byte_order": null,
+"maxval": 65535
+},
+"result": [
+"F",
+"no renderer for 3-bit pixels"
+]
+},
+{
+"data": "7649295f48837a8f72f4815ed439248bc298bee1fdac41d0e001d663d9f93ff293a0b7deb95ebf7011d3d47695a482d62d6c078100ba6c88c18523f72b4bab0f",
+"w": 4,
+"h": 4,
+"depth": 8,
+"stride": 9,
+"probe": "bmp",
+"kw": {
+"photometric": 0,
+"bottom_left": true,
+"channel_order": "rgb",
+"byte_order": null,
+"maxval": 255
+},
+"result": [
+"P",
+4,
+4,
+"grey8",
+"9c2606c0411e02530b7ea12b89b6d6a0",
+"8-bit \u00b7 WhiteIsZero (photometric 0) \u00b7 rows flipped: file declares bottom-left origin"
+]
+},
+{
+"data": "370f12e03e38a435d2668ad4fdda600fa0048afba5576693c0d96af02e26bd8f6598ca8f6f2a167a864d613cd887af868f224b482683b939a906295b9f221881d395b1162ba2673fb5c5243915c34f14e315f03a72d1ea334eb21e3c5b8b759999",
+"w": 0,
+"h": 5,
+"depth": 0,
+"stride": 17,
+"probe": "bmp",
+"kw": {
+"photometric": null,
+"bottom_left": true,
+"channel_order": "rgb",
+"byte_order": null,
+"maxval": 255
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "89",
+"w": 3,
+"h": 5,
+"depth": 1,
+"stride": 12,
+"probe": "tga",
+"kw": {
+"photometric": null,
+"bottom_left": true,
+"channel_order": "bgr",
+"byte_order": "MM",
+"maxval": 255
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "391fb523951bd99bdc861746ad587f69cf092ccd48656f4358fb9d234b9383aeed2e7f7faf2c2a3466f3185e42297b9f763110fbe50cb62ece3914418d95cf753f47c314e8c32fc5f943cc28e467c87a74c9de5529eeab9379e26f5a5a36be7a70acd3883f652d76c93b8bf9ef",
+"w": 0,
+"h": 3,
+"depth": 12,
+"stride": 2,
+"probe": "tiff",
+"kw": {
+"photometric": null,
+"bottom_left": false,
+"channel_order": "rgb",
+"byte_order": "II",
+"maxval": null
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "b23e9bb118ccea13f4e8d74c3aa81f5583f83f187f3a9f2a02e70c848ce8db9f909fab52ca478e02b9f8a6a26bdae80bd84e76f1b44c5dcbd28289eaae77d139d794a2011df7375e84ac583800e62ccff0e2720ace",
+"w": 1,
+"h": 4,
+"depth": 1,
+"stride": 12,
+"probe": "generic",
+"kw": {
+"photometric": null,
+"bottom_left": true,
+"channel_order": "rgb",
+"byte_order": "II",
+"maxval": 255
+},
+"result": [
+"P",
+1,
+4,
+"grey8",
+"ff0000ff",
+"1-bit \u00b7 grey, 1 = white \u00b7 rows flipped: file declares bottom-left origin"
+]
+},
+{
+"data": "3e1ad240373e3ea319d7d61d3fd899d17f2ba47ded7c4984950661520886b603bb9f6cb88bfbdcba919ef8cb736380db50ad7a44ba6d584578efc83e9c247fa98bc29c70ce8daa39838ef5163e4ff69630f44b682ca9c2e54901ec7d6651f1fd2cc35a2c333a4f1171ee6bff5852399e28af73e28bfe",
+"w": 3,
+"h": 2,
+"depth": 32,
+"stride": 4,
+"probe": "generic",
+"kw": {
+"photometric": 1,
+"bottom_left": true,
+"channel_order": "rgb",
+"byte_order": null,
+"maxval": 65535
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "442caffb625486",
+"w": 0,
+"h": 0,
+"depth": 32,
+"stride": 13,
+"probe": "pcx",
+"kw": {
+"photometric": 1,
+"bottom_left": true,
+"channel_order": "rgb",
+"byte_order": "II",
+"maxval": 255
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "442770281356be07d78203a2da6129fd2d36bad943f4d0c0ae696d26e88681b341e67dbd2450d46e78cdbf4a410721c70ffb1694e7e835e2d959ad5bcf7e3de4976f57e008b1330b96b2083b29a005b37184",
+"w": 5,
+"h": 4,
+"depth": 48,
+"stride": 18,
+"probe": "bmp",
+"kw": {
+"photometric": 1,
+"bottom_left": true,
+"channel_order": "bgr",
+"byte_order": null,
+"maxval": 65535
+},
+"result": [
+"F",
+"no renderer for 48-bit pixels"
+]
+},
+{
+"data": "0870dfd1",
+"w": 2,
+"h": 0,
+"depth": 1,
+"stride": 6,
+"probe": "bmp",
+"kw": {
+"photometric": 1,
+"bottom_left": false,
+"channel_order": "bgr",
+"byte_order": null,
+"maxval": null
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "9f365778f26535f63dedbdf7f27cb95e022e6693a36518ea03fa727405456d0ba103bf9a19a762ba5c6ce9e48de4763b4631ee76eca462e3",
+"w": 0,
+"h": 5,
+"depth": 12,
+"stride": 2,
+"probe": "pnm",
+"kw": {
+"photometric": null,
+"bottom_left": true,
+"channel_order": "bgr",
+"byte_order": "MM",
+"maxval": 65535
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "8a101f12c49a13",
+"w": 4,
+"h": 2,
+"depth": 1,
+"stride": 3,
+"probe": "pnm",
+"kw": {
+"photometric": 0,
+"bottom_left": true,
+"channel_order": "bgr",
+"byte_order": "II",
+"maxval": 65535
+},
+"result": [
+"P",
+4,
+2,
+"grey8",
+"000000ffff000000",
+"1-bit \u00b7 WhiteIsZero (photometric 0) \u00b7 rows flipped: file declares bottom-left origin"
+]
+},
+{
+"data": "c79ab8fc5232801571c81dfba805dc03a4d2e1171d0f44585ea82862d9cd7cfbf805e20371d928a1d85de422263e1bd02a23f945920a501972adce061d24342d89fb4c0c9e005d1266e45318e635cda5ebe56721497473cf3ca24791379883a9d28d4f",
+"w": 5,
+"h": 3,
+"depth": 1,
+"stride": 6,
+"probe": "pcx",
+"kw": {
+"photometric": "undeclared",
+"bottom_left": true,
+"channel_order": "rgb",
+"byte_order": null,
+"maxval": 65535
+},
+"result": [
+"P",
+5,
+3,
+"grey8",
+"ff00ff00ffff00000000ffff000000",
+"1-bit \u00b7 no photometric interpretation declared; shown as BlackIsZero (0 = black) \u00b7 rows flipped: file declares bottom-left origin"
+]
+},
+{
+"data": "dc298d234b1e9c97c2055136284486718af67bb93537a3399751057b",
+"w": 2,
+"h": 4,
+"depth": 12,
+"stride": 1,
+"probe": "pbm",
+"kw": {
+"photometric": "undeclared",
+"bottom_left": true,
+"channel_order": "rgb",
+"byte_order": "II",
+"maxval": null
+},
+"result": [
+"F",
+"no renderer for 12-bit pixels"
+]
+},
+{
+"data": "fb7bc1fa662af2498a62a9e3664bda4cc6fbed8fadea015847b7aefd37",
+"w": 0,
+"h": 0,
+"depth": 12,
+"stride": 19,
+"probe": "generic",
+"kw": {
+"photometric": null,
+"bottom_left": false,
+"channel_order": "rgb",
+"byte_order": "MM",
+"maxval": 65535
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "b486aea9fbacb6aba94b4fdc665208655b7254a6b89d14a916386ed7ae0eebc5e9dfa7c5abc2503a13e5147e07d0d92e3c375a08c708fc776525",
+"w": 1,
+"h": 1,
+"depth": 8,
+"stride": 6,
+"probe": "pcx",
+"kw": {
+"photometric": 0,
+"bottom_left": true,
+"channel_order": "rgb",
+"byte_order": "MM",
+"maxval": 255
+},
+"result": [
+"P",
+1,
+1,
+"grey8",
+"4b",
+"8-bit \u00b7 WhiteIsZero (photometric 0) \u00b7 rows flipped: file declares bottom-left origin"
+]
+},
+{
+"data": "c39a73bb61e719bbe23ce817c53255cd563e9da10bc0e8167a8c93f6cdc36552a3836b721d17e6cf",
+"w": 0,
+"h": 4,
+"depth": 4,
+"stride": 6,
+"probe": "pnm",
+"kw": {
+"photometric": null,
+"bottom_left": false,
+"channel_order": "bgr",
+"byte_order": "II",
+"maxval": 65535
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "0182f2c292013efe3f4181fd108db477c62330fdda1be70ef1c27a502e6b10d416cc708ea08509ae75241a91f4448f4c8a632c6eff59681e28d6e2fb15d5dc95e10eeb",
+"w": 4,
+"h": 5,
+"depth": 1,
+"stride": 7,
+"probe": "pcx",
+"kw": {
+"photometric": "undeclared",
+"bottom_left": false,
+"channel_order": "bgr",
+"byte_order": "II",
+"maxval": 65535
+},
+"result": [
+"P",
+4,
+5,
+"grey8",
+"00000000ffffffffff00ffff000000ff0000ff00",
+"1-bit \u00b7 no photometric interpretation declared; shown as BlackIsZero (0 = black) \u00b7 rows shown in stored order"
+]
+},
+{
+"data": "6c3d1be7236ea6f0db927a1f4cf0453cddae8090568587b856bd228224fc32a833a8a76260b6e39cdb4af5fff9f9a5627da7152a1cd72f3019fa0bf43b0158699c76267fe74be580d33e87f25fbadf60dca2adf71369d0c7d79083962ea3dd41f10c9bc63a1f957c3636cda8b42083ccc4266997e0bb468d",
+"w": 2,
+"h": 0,
+"depth": 16,
+"stride": 0,
+"probe": "bmp",
+"kw": {
+"photometric": "undeclared",
+"bottom_left": true,
+"channel_order": "bgr",
+"byte_order": "MM",
+"maxval": 65535
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "a98cf547a9866a930c0178a681",
+"w": 5,
+"h": 0,
+"depth": 36,
+"stride": 7,
+"probe": "bmp",
+"kw": {
+"photometric": 1,
+"bottom_left": true,
+"channel_order": "rgb",
+"byte_order": null,
+"maxval": 65535
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "08b5e8b999bcdda40bb25f42",
+"w": 1,
+"h": 2,
+"depth": 12,
+"stride": 3,
+"probe": "pcx",
+"kw": {
+"photometric": "undeclared",
+"bottom_left": true,
+"channel_order": "bgr",
+"byte_order": "II",
+"maxval": null
+},
+"result": [
+"F",
+"no renderer for 12-bit pixels"
+]
+},
+{
+"data": "f7a825caaae269198ec99c92803a8e830587358e76b51f6b35f7657cfe11dcf75d8e2be7786278a67c9d2d667cfc3307f321e72abab69e",
+"w": 0,
+"h": 2,
+"depth": 3,
+"stride": 14,
+"probe": "pcx",
+"kw": {
+"photometric": null,
+"bottom_left": true,
+"channel_order": "rgb",
+"byte_order": null,
+"maxval": 65535
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "b47630c73ab6023dd695f58ca3dcee154a5365bde8ce1bdb0d2cdeea72bc449feb3e512b29e505daa10687bdb507823fa2c7607c9dd72c79da354ebe5434680abbf4384f",
+"w": 4,
+"h": 0,
+"depth": 3,
+"stride": 4,
+"probe": "pcx",
+"kw": {
+"photometric": 1,
+"bottom_left": true,
+"channel_order": "bgr",
+"byte_order": null,
+"maxval": 65535
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "63ee34e1aea1452f57c0aa4d6817a7c29cb10e39e4beb0bc",
+"w": 1,
+"h": 5,
+"depth": 1,
+"stride": 20,
+"probe": "pbm",
+"kw": {
+"photometric": null,
+"bottom_left": false,
+"channel_order": "rgb",
+"byte_order": "II",
+"maxval": 65535
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "d73ffcd1a63a30604b6fcd5d1615de3d6b38f84865cc50a44fab47f16cecf4166c08c3e213701662c287633a1a1d5ea4ab96e062c1a5ae7fe4075530283149d9cfe3c468b2db26987f44fe293cb1709e48e01fad",
+"w": 5,
+"h": 2,
+"depth": 1,
+"stride": 12,
+"probe": "generic",
+"kw": {
+"photometric": "undeclared",
+"bottom_left": false,
+"channel_order": "bgr",
+"byte_order": "II",
+"maxval": null
+},
+"result": [
+"P",
+5,
+2,
+"grey8",
+"ffff00ff00000000ff00",
+"1-bit \u00b7 no photometric interpretation declared; shown as BlackIsZero (0 = black) \u00b7 rows shown in stored order"
+]
+},
+{
+"data": "18b32954454cb788c21404ca47787555a653881da6c546adea7ee13f7f52409556d09658687f84af22908ae0a160",
+"w": 0,
+"h": 0,
+"depth": 1,
+"stride": 1,
+"probe": "pbm",
+"kw": {
+"photometric": null,
+"bottom_left": false,
+"channel_order": "bgr",
+"byte_order": "MM",
+"maxval": 65535
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "6041cbd8f4457ea8d3325670989180bfba7d99afb4efab59b2974f5c486b060e9aaa0747d7f367afa1eea646ae96c4e2330451df178950dc43ce0ca179b8534e2909b9b5825511947c3be84f480bbd0aa73e25f8af166f424deecd4fc3fc5a78aa2de59ffcde66e17128006e1f73227d",
+"w": 1,
+"h": 1,
+"depth": 36,
+"stride": 14,
+"probe": "tga",
+"kw": {
+"photometric": 0,
+"bottom_left": true,
+"channel_order": "rgb",
+"byte_order": "II",
+"maxval": null
+},
+"result": [
+"F",
+"no renderer for 36-bit pixels"
+]
+},
+{
+"data": "e4dfb97d80e7b549ac09ca98cffe0187ea9a83cb",
+"w": 5,
+"h": 4,
+"depth": 36,
+"stride": 19,
+"probe": "generic",
+"kw": {
+"photometric": 1,
+"bottom_left": false,
+"channel_order": "bgr",
+"byte_order": "MM",
+"maxval": 65535
+},
+"result": [
+"F",
+"no renderer for 36-bit pixels"
+]
+},
+{
+"data": "af1af25f8fd57ad07fcaf82e29cadb4d3e4690cc831777a5cb312330a8308e62a82332552363f64a10729496e339c0d5e1d21e3a3b32c1d37c6cee5a453cf5fd686ff8e3006353afa7147227b244",
+"w": 3,
+"h": 2,
+"depth": 1,
+"stride": 14,
+"probe": "generic",
+"kw": {
+"photometric": 0,
+"bottom_left": true,
+"channel_order": "rgb",
+"byte_order": "MM",
+"maxval": 255
+},
+"result": [
+"P",
+3,
+2,
+"grey8",
+"0000ff00ff00",
+"1-bit \u00b7 WhiteIsZero (photometric 0) \u00b7 rows flipped: file declares bottom-left origin"
+]
+},
+{
+"data": "566e1899a61efad10538c7a54b9fe57f47bd63fba09e0cc1f2",
+"w": 5,
+"h": 5,
+"depth": 0,
+"stride": 18,
+"probe": "pnm",
+"kw": {
+"photometric": "undeclared",
+"bottom_left": true,
+"channel_order": "rgb",
+"byte_order": "II",
+"maxval": 255
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "8e0da66b8e65c5c9fa5435080d00ac39adb88d7d5a23f81abbc9e040cb49cad749a6b89c0f392819a48bd23d335b96696ec05faf583b850c9f0fb0a9276e5021e7e23e73352c98",
+"w": 4,
+"h": 2,
+"depth": 8,
+"stride": 9,
+"probe": "tiff",
+"kw": {
+"photometric": "undeclared",
+"bottom_left": false,
+"channel_order": "rgb",
+"byte_order": "II",
+"maxval": null
+},
+"result": [
+"P",
+4,
+2,
+"grey8",
+"8e0da66b5435080d",
+"8-bit \u00b7 no photometric interpretation declared; shown as BlackIsZero (0 = black) \u00b7 rows shown in stored order"
+]
+},
+{
+"data": "ab15cab3431503243fe8157a25884ba47443370d60985e2fd7eb8d56aa78e6e2f2eb9a562181eb24f618c1ac06831a8c137f08b75eb0c0304e8aad9ce5f4a9ced543274e38e94971e3a9dd7977ae231c9249e7fc7f72eadf39f51876e31464500aab96f212ed1433255515edc4f90b",
+"w": 5,
+"h": 0,
+"depth": 1,
+"stride": 5,
+"probe": "pcx",
+"kw": {
+"photometric": 1,
+"bottom_left": false,
+"channel_order": "bgr",
+"byte_order": "MM",
+"maxval": 255
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "0e0027cccd3697fcf43f9637c1d511ff80d1a192a26822856d1a985e9a24dbbbfb2d1393d92c2621ea7fb4e957a95aed018c46cedc46b90126ca7b3d3ff505dfdb865bd77927c13e57a519e833a3a11c641ff7d0ff35ac6dc031493f3e37a6217dc486591470",
+"w": 1,
+"h": 2,
+"depth": 32,
+"stride": 5,
+"probe": "pcx",
+"kw": {
+"photometric": null,
+"bottom_left": true,
+"channel_order": "rgb",
+"byte_order": "MM",
+"maxval": 255
+},
+"result": [
+"P",
+1,
+2,
+"rgb8",
+"3697fc0e0027",
+"32-bit \u00b7 RGB as stored; fourth byte ignored \u00b7 rows flipped: file declares bottom-left origin"
+]
+},
+{
+"data": "0bbb9f32a792ab8b7f1743edb5740a1f4211ed918742d54b51b2a159b1ef515d0b9a500720430bb3c859b8a6743737bd5eec3c46c30736fe2937812a3eb479c2d040228359d2a19a15650bc29105f93d3391eecc4413307ba77bfc65e99a",
+"w": 3,
+"h": 4,
+"depth": 1,
+"stride": 9,
+"probe": "pbm",
+"kw": {
+"photometric": 1,
+"bottom_left": true,
+"channel_order": "bgr",
+"byte_order": "MM",
+"maxval": null
+},
+"result": [
+"P",
+3,
+4,
+"grey8",
+"ff00ff000000ffffffffffff",
+"1-bit \u00b7 BlackIsZero (photometric 1) \u00b7 rows flipped: file declares bottom-left origin"
+]
+},
+{
+"data": "f3497a6f388a077cd9d0b6dd4b57ac39a6ea26fa35efcfedc3084b31170de134f1f25c071c7d212400589518a8c2cf451ad91b0e0fa4f6d8ed42a4198b33fa80274476c1",
+"w": 5,
+"h": 5,
+"depth": 32,
+"stride": 0,
+"probe": "tga",
+"kw": {
+"photometric": 0,
+"bottom_left": true,
+"channel_order": "bgr",
+"byte_order": "II",
+"maxval": 255
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "46092d38fcb499ed0c",
+"w": 0,
+"h": 1,
+"depth": 48,
+"stride": 8,
+"probe": "pnm",
+"kw": {
+"photometric": 0,
+"bottom_left": false,
+"channel_order": "bgr",
+"byte_order": "II",
+"maxval": 65535
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "2b6b835d0b18a025db598c73b91f633fabf42aefda",
+"w": 3,
+"h": 3,
+"depth": 3,
+"stride": 4,
+"probe": "pbm",
+"kw": {
+"photometric": null,
+"bottom_left": true,
+"channel_order": "bgr",
+"byte_order": "II",
+"maxval": 255
+},
+"result": [
+"F",
+"no renderer for 3-bit pixels"
+]
+},
+{
+"data": "260a0abeee8a9913aa011a3c8667a74992b956d8ec53c39b33963e46f4280f16e1dabc9b6ea81d8f41c5f0a5c28b023477fe51",
+"w": 2,
+"h": 4,
+"depth": 8,
+"stride": 10,
+"probe": "tiff",
+"kw": {
+"photometric": 1,
+"bottom_left": true,
+"channel_order": "rgb",
+"byte_order": "II",
+"maxval": 255
+},
+"result": [
+"P",
+2,
+4,
+"grey8",
+"0f16ec531a3c260a",
+"8-bit \u00b7 BlackIsZero (photometric 1) \u00b7 rows flipped: file declares bottom-left origin"
+]
+},
+{
+"data": "3ab1c1fdb3ac16a43f4262d114998283b63381660b99ce46cdd2edee0c8b568a56f6b10b729f",
+"w": 3,
+"h": 4,
+"depth": 12,
+"stride": 17,
+"probe": "pnm",
+"kw": {
+"photometric": null,
+"bottom_left": false,
+"channel_order": "bgr",
+"byte_order": "II",
+"maxval": 65535
+},
+"result": [
+"F",
+"no renderer for 12-bit pixels"
+]
+},
+{
+"data": "a958f8",
+"w": 3,
+"h": 3,
+"depth": 12,
+"stride": 6,
+"probe": "generic",
+"kw": {
+"photometric": null,
+"bottom_left": false,
+"channel_order": "bgr",
+"byte_order": "II",
+"maxval": null
+},
+"result": [
+"F",
+"no renderer for 12-bit pixels"
+]
+},
+{
+"data": "f3ba56ac0b0def533b19818fcacab6357605c2a3546a759ae60ee1656d1dfa03ed0dfaaf1ec8dd0aff3aee4ee7c0be77ad635544ac1f34ab4075a7b4f5d839b3cdf04a351e814ff76c40564c719c610c25c1927dfe25e45004a75515b4b4da0824194f1420969c40",
+"w": 1,
+"h": 2,
+"depth": 4,
+"stride": 0,
+"probe": "pnm",
+"kw": {
+"photometric": 0,
+"bottom_left": true,
+"channel_order": "rgb",
+"byte_order": "MM",
+"maxval": 65535
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "572ca4d7fcbacd09c60cdebba0c2c44f2425785e12cd4ea525789a8566caac4af957a210f42b009932267485dae3",
+"w": 0,
+"h": 0,
+"depth": 0,
+"stride": 20,
+"probe": "tga",
+"kw": {
+"photometric": "undeclared",
+"bottom_left": true,
+"channel_order": "bgr",
+"byte_order": null,
+"maxval": 255
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "cb0db7a024fd4322e735afe52cb20cec532e8e05f7f8c11315acc92ec40d3c86af684f07",
+"w": 3,
+"h": 0,
+"depth": 24,
+"stride": 9,
+"probe": "pbm",
+"kw": {
+"photometric": "undeclared",
+"bottom_left": true,
+"channel_order": "rgb",
+"byte_order": null,
+"maxval": 255
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "011a20159c37b16c95",
+"w": 5,
+"h": 2,
+"depth": 48,
+"stride": 20,
+"probe": "bmp",
+"kw": {
+"photometric": 1,
+"bottom_left": false,
+"channel_order": "rgb",
+"byte_order": "MM",
+"maxval": 255
+},
+"result": [
+"F",
+"no renderer for 48-bit pixels"
+]
+},
+{
+"data": "3e62815dfa407a9dfa42a719437bba6b8929d68e484583d488b8a874dca5860d1b7520ca78d8368afd3fe69885ea98c168853cbacb1f3369b511c15bb3ff1391fcdae5e9467d08970777679506bc26a20555eee69369c3bd280442fc5b",
+"w": 5,
+"h": 0,
+"depth": 0,
+"stride": 18,
+"probe": "pcx",
+"kw": {
+"photometric": 1,
+"bottom_left": false,
+"channel_order": "bgr",
+"byte_order": "II",
+"maxval": null
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "a86cba865c9bc82bf5b6bd77e047fd8dabf137f0b50bc4550f6357425ec6c3add0051965e91af2c6dc770a951c14d60600ee08fb6bac66c18f04c118a4935f6311b1b9bcfbe597ffac9bcbc82ddfe973e449c48b7dbeea",
+"w": 0,
+"h": 2,
+"depth": 48,
+"stride": 4,
+"probe": "pcx",
+"kw": {
+"photometric": 0,
+"bottom_left": false,
+"channel_order": "bgr",
+"byte_order": null,
+"maxval": null
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "ba7f11e01637f485c06755fd777223332517aa3f5275c34c7bb210e63f4e77b27742d7f3ca39d2765f775c9a3dc7721f5b97f82fce62410daf",
+"w": 3,
+"h": 5,
+"depth": 12,
+"stride": 15,
+"probe": "pnm",
+"kw": {
+"photometric": 1,
+"bottom_left": false,
+"channel_order": "bgr",
+"byte_order": "II",
+"maxval": 65535
+},
+"result": [
+"F",
+"no renderer for 12-bit pixels"
+]
+},
+{
+"data": "94692337d4803afd449153d8a1c529805ae09484be797d85e5efb7080e999e3637cc66e1bf8a3d39c0ff5bc7eea182bc5f2983260fdc7cdc0e4664e65c3eda95e35638ee0e50cf6137db442ec3",
+"w": 3,
+"h": 5,
+"depth": 3,
+"stride": 7,
+"probe": "pcx",
+"kw": {
+"photometric": 0,
+"bottom_left": true,
+"channel_order": "bgr",
+"byte_order": "MM",
+"maxval": 65535
+},
+"result": [
+"F",
+"no renderer for 3-bit pixels"
+]
+},
+{
+"data": "36b29755dc4788fc561b8d82",
+"w": 1,
+"h": 2,
+"depth": 16,
+"stride": 11,
+"probe": "pnm",
+"kw": {
+"photometric": "undeclared",
+"bottom_left": false,
+"channel_order": "bgr",
+"byte_order": "II",
+"maxval": 65535
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "fa054f90b5e1a981dee53172bcf6f57a11b037bfb790c2dd8c192d0620ec432ac9f7fc73835c767cc82a566477c983bd",
+"w": 2,
+"h": 3,
+"depth": 32,
+"stride": 13,
+"probe": "generic",
+"kw": {
+"photometric": 0,
+"bottom_left": true,
+"channel_order": "bgr",
+"byte_order": "II",
+"maxval": 255
+},
+"result": [
+"P",
+2,
+3,
+"rgb8",
+"20062dc92a437af5f6bf37b04f05faa9e1b5",
+"32-bit \u00b7 BGR\u2192RGB; fourth byte ignored \u00b7 rows flipped: file declares bottom-left origin"
+]
+},
+{
+"data": "ec5bfa3929177c2cea135f06dea182203a4d8fc2c551f3a797cabea614ec58b4e4a874d19e2ebf4b6c9593217ab1ab910d45b2a571",
+"w": 0,
+"h": 0,
+"depth": 8,
+"stride": 18,
+"probe": "pbm",
+"kw": {
+"photometric": 0,
+"bottom_left": true,
+"channel_order": "bgr",
+"byte_order": "MM",
+"maxval": null
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "f595c3219ebc8c880d4b10a829d4e3ed923a40c074006a99076a0c",
+"w": 3,
+"h": 5,
+"depth": 3,
+"stride": 8,
+"probe": "pnm",
+"kw": {
+"photometric": null,
+"bottom_left": false,
+"channel_order": "bgr",
+"byte_order": "MM",
+"maxval": 65535
+},
+"result": [
+"F",
+"no renderer for 3-bit pixels"
+]
+},
+{
+"data": "e28820a597aeac903aea989650de98f92c175308f98c45148aeb76f032f14b46da7985d5c6b349d621212b479447262cc133049714b90531296e1f7ea753fbcec76440b027cc3e691a1f70e24700627abb688bf5252fc5e4b0df4f8bd6b6ad61c6cce0052e1a10f3238e341f06c778",
+"w": 2,
+"h": 3,
+"depth": 3,
+"stride": 16,
+"probe": "pbm",
+"kw": {
+"photometric": 0,
+"bottom_left": false,
+"channel_order": "rgb",
+"byte_order": "MM",
+"maxval": null
+},
+"result": [
+"F",
+"no renderer for 3-bit pixels"
+]
+},
+{
+"data": "6bab438ed5b9472a2a4c29acc4496387211ce3cdf2a231b6abb288b39406fe0a5395ba02a41a2f6134fb4c39c6bcdc136a3a",
+"w": 5,
+"h": 1,
+"depth": 0,
+"stride": 1,
+"probe": "bmp",
+"kw": {
+"photometric": 1,
+"bottom_left": true,
+"channel_order": "rgb",
+"byte_order": "II",
+"maxval": null
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "237d51a00ccf005b20a13cd6df7d8be9703ecf0499de3a4364f703b612dcaaf23a8b225c9c92160d394dd4be2c9c2c2f1728a8661809022f880e9fa7c85892e985c64557b16736798a9aa1a6cbdc6e77441b317e16f3bd",
+"w": 0,
+"h": 0,
+"depth": 36,
+"stride": 20,
+"probe": "bmp",
+"kw": {
+"photometric": 1,
+"bottom_left": true,
+"channel_order": "bgr",
+"byte_order": null,
+"maxval": 255
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "aeb4195bf8afbc2918fe94ca01f8fac12c69878f7f2629ba71db0f6e0d99",
+"w": 0,
+"h": 2,
+"depth": 4,
+"stride": 5,
+"probe": "pbm",
+"kw": {
+"photometric": 1,
+"bottom_left": false,
+"channel_order": "bgr",
+"byte_order": null,
+"maxval": null
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "f3d321e9b4ddf2ebaa48",
+"w": 3,
+"h": 3,
+"depth": 8,
+"stride": 20,
+"probe": "pcx",
+"kw": {
+"photometric": 1,
+"bottom_left": false,
+"channel_order": "rgb",
+"byte_order": null,
+"maxval": 255
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "9ece96d71330c8d2533face598176c298f8c5c22320eaf09157b5c",
+"w": 3,
+"h": 0,
+"depth": 8,
+"stride": 20,
+"probe": "pbm",
+"kw": {
+"photometric": 1,
+"bottom_left": true,
+"channel_order": "bgr",
+"byte_order": "II",
+"maxval": 255
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "e44c29f0faea0e4bde5c2aa2f19172f1e872d3391918b67372353afa449b0766b7bbd773fb77e42edcfa0ac395fc47cdba4f11",
+"w": 4,
+"h": 4,
+"depth": 36,
+"stride": 14,
+"probe": "generic",
+"kw": {
+"photometric": null,
+"bottom_left": true,
+"channel_order": "rgb",
+"byte_order": null,
+"maxval": null
+},
+"result": [
+"F",
+"no renderer for 36-bit pixels"
+]
+},
+{
+"data": "65564207478cdbb61fcc468478d014978bfec8f6fa",
+"w": 5,
+"h": 2,
+"depth": 4,
+"stride": 20,
+"probe": "pnm",
+"kw": {
+"photometric": null,
+"bottom_left": true,
+"channel_order": "bgr",
+"byte_order": null,
+"maxval": 65535
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "7479cd53cafb0e68495400039d066ff45c7bc80087fe2d2329bfeac7c475452b224a1698a8bb472301ccba7dd66d8c7be52f6792fc08a203c920d977a6d9e1a67fe4b5411479f2dc06f113cc3c0a284d079e909dbb88b9aa6bf7639888",
+"w": 4,
+"h": 1,
+"depth": 48,
+"stride": 19,
+"probe": "pnm",
+"kw": {
+"photometric": 0,
+"bottom_left": false,
+"channel_order": "bgr",
+"byte_order": "II",
+"maxval": null
+},
+"result": [
+"F",
+"no renderer for 48-bit pixels"
+]
+},
+{
+"data": "31a4f09d8746fdab54a6ffac8d1ccdc4dc5da7718f5456fcfaf66cae86850bf4bddfed91f6d5ff115d932df854c12a8b6f02847a740d",
+"w": 3,
+"h": 3,
+"depth": 0,
+"stride": 10,
+"probe": "pnm",
+"kw": {
+"photometric": 0,
+"bottom_left": false,
+"channel_order": "bgr",
+"byte_order": null,
+"maxval": null
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "87226d014f401e5ad19cd9201999760c626ca540c35087ad936c11024145ced56bdf10ebccf330d7b0c506f8a182640c73633e6ebc2bb140432c79c9e60d6773756a1504681d6a3e8fdc0f6f1cab6eb6da28e97bf9d6e7b4592c30937bd28393604e54edcbd528f134",
+"w": 2,
+"h": 5,
+"depth": 3,
+"stride": 14,
+"probe": "generic",
+"kw": {
+"photometric": 1,
+"bottom_left": true,
+"channel_order": "rgb",
+"byte_order": "MM",
+"maxval": 255
+},
+"result": [
+"F",
+"no renderer for 3-bit pixels"
+]
+},
+{
+"data": "a2e01492d96df6ed10ad3d0ff0b5a9c7b49939ffd09f49f83e4ec571a9517432c0f746998780d49d249b2f6e6e41a5836e7b65eda43b342c113b9fe915e944ff54f79b483ee397635a6f75a6f91b6b9a362ab79ec4cc850aa27709af9225f999fbbb978c3342a84a721ba0d1f00b846f4a6ed1d196",
+"w": 5,
+"h": 2,
+"depth": 1,
+"stride": 5,
+"probe": "pcx",
+"kw": {
+"photometric": null,
+"bottom_left": false,
+"channel_order": "bgr",
+"byte_order": "II",
+"maxval": 255
+},
+"result": [
+"P",
+5,
+2,
+"grey8",
+"ff00ff000000ffff00ff",
+"1-bit \u00b7 grey, 1 = white \u00b7 rows shown in stored order"
+]
+},
+{
+"data": "ecc068eef48dc891a83846ddb51374d4f7ca206151357e7a3088baf3cda6b5c1fda95815a2",
+"w": 5,
+"h": 3,
+"depth": 36,
+"stride": 12,
+"probe": "tiff",
+"kw": {
+"photometric": 0,
+"bottom_left": false,
+"channel_order": "rgb",
+"byte_order": "II",
+"maxval": 255
+},
+"result": [
+"F",
+"no renderer for 12-bit RGB TIFF (36-bit pixels)"
+]
+},
+{
+"data": "b8f45592447c1c0fd77ba44fa8b3be3c8c201b0f115c83811cb53dcd91d930a5259a5c455be63ec5b28d183f4fb81950b1967ed918ab4bf31cc51aa3ff565a003a1a61a30d841ef3aa92be80d4df1b27b62d9780e930529b3ac959e69f1e3701cdb93a60830108e49499881e306a31",
+"w": 5,
+"h": 3,
+"depth": 3,
+"stride": 20,
+"probe": "tga",
+"kw": {
+"photometric": null,
+"bottom_left": true,
+"channel_order": "bgr",
+"byte_order": "MM",
+"maxval": 255
+},
+"result": [
+"F",
+"no renderer for 3-bit pixels"
+]
+},
+{
+"data": "d268d920b0b8ce4b4825b6f0074b23ed37eaa8d5ebac91d0cc30d86fe643e17661ffa726beca85403caefc003e23001e2f2c6b9b30c76ab651444d8c344025b12f684a764a2666dc8b32bb02c0bf16c0a89e",
+"w": 1,
+"h": 4,
+"depth": 16,
+"stride": 3,
+"probe": "pbm",
+"kw": {
+"photometric": null,
+"bottom_left": false,
+"channel_order": "bgr",
+"byte_order": "II",
+"maxval": 255
+},
+"result": [
+"F",
+"no renderer for 16-bit pixels"
+]
+},
+{
+"data": "1c2cc6d78417",
+"w": 3,
+"h": 3,
+"depth": 4,
+"stride": 12,
+"probe": "pcx",
+"kw": {
+"photometric": "undeclared",
+"bottom_left": false,
+"channel_order": "rgb",
+"byte_order": "MM",
+"maxval": 255
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "b06a287259714609d0f871e97b807fc9b9ca5b03df563e9485f3d98a51a912357f147c9249fadb00514adfea61190c",
+"w": 2,
+"h": 2,
+"depth": 3,
+"stride": 2,
+"probe": "pcx",
+"kw": {
+"photometric": 0,
+"bottom_left": true,
+"channel_order": "bgr",
+"byte_order": "MM",
+"maxval": 255
+},
+"result": [
+"F",
+"no renderer for 3-bit pixels"
+]
+},
+{
+"data": "20a676d7a526da1af9fb1fc8ab822d60b6234464ceeeacbc68981cd93e51ce8c30b018752f318b021764b074ef99e3fbb61b18611bb81fed58e50370efbe0ba938d6fd1e7f58b58c03c5cead6ff4d93058869af87e84f9c992fe3d1d1ad4874a99e56970da07d0eed7a1ec10d94c465fed2d029931c36563",
+"w": 2,
+"h": 2,
+"depth": 32,
+"stride": 0,
+"probe": "bmp",
+"kw": {
+"photometric": null,
+"bottom_left": false,
+"channel_order": "bgr",
+"byte_order": "II",
+"maxval": null
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "fc4d35584ac3a88df6b17e2505576cc2db55a81ad195ef1e82072088143a11144fa2296884e86f94e9e31d2e631cdcd240028e01447c97717e66127e700add729ba67ca5673c91e3ba5eae1acca8fe80f2a6a94ce99c3b0c46c60b53a1ae26cc856bf57dae0c34139e62ec",
+"w": 4,
+"h": 0,
+"depth": 32,
+"stride": 20,
+"probe": "pcx",
+"kw": {
+"photometric": 1,
+"bottom_left": true,
+"channel_order": "bgr",
+"byte_order": "MM",
+"maxval": 65535
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "c97883d9",
+"w": 3,
+"h": 0,
+"depth": 32,
+"stride": 10,
+"probe": "bmp",
+"kw": {
+"photometric": null,
+"bottom_left": false,
+"channel_order": "rgb",
+"byte_order": "II",
+"maxval": 65535
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "e2979d618f2704566db41815355d",
+"w": 0,
+"h": 1,
+"depth": 0,
+"stride": 9,
+"probe": "tiff",
+"kw": {
+"photometric": 1,
+"bottom_left": false,
+"channel_order": "bgr",
+"byte_order": null,
+"maxval": null
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "7b37be0680d696496dc115f501886aeea1516aecde4cf2d35ad5598aece7db44cb287741a721af50b63676a29f3eb754921aa16f16600c75ef6923e138d3a02e3b01e516550a9ba9abd2014211389aac7ca5c42cf7ccfc83d866c0fe5be3f1fc",
+"w": 5,
+"h": 0,
+"depth": 3,
+"stride": 8,
+"probe": "pnm",
+"kw": {
+"photometric": 0,
+"bottom_left": false,
+"channel_order": "bgr",
+"byte_order": "MM",
+"maxval": 65535
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "2a94c54bcbd1b35677f0dc1b7142b63ccd32c72664d2f11d38b9d8caf05a9d3ef6fa4cb0887a663a209d955a2cfce1a905bf50b0aab56f50a166d8c5918a",
+"w": 0,
+"h": 0,
+"depth": 16,
+"stride": 17,
+"probe": "bmp",
+"kw": {
+"photometric": 0,
+"bottom_left": true,
+"channel_order": "bgr",
+"byte_order": null,
+"maxval": 255
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "2ecb56d18694cd28c0e98880b61fa423f13495298ec19d5c81c94a31bd26ba34cd2c478e44784989efe318b2b581db12da8dcff93f54dc91bceb458be21d76001e308fbd1b1b713cd196f1d6855153ac144ee83d28464db929cead3ea679",
+"w": 5,
+"h": 3,
+"depth": 16,
+"stride": 15,
+"probe": "generic",
+"kw": {
+"photometric": null,
+"bottom_left": false,
+"channel_order": "bgr",
+"byte_order": null,
+"maxval": 255
+},
+"result": [
+"F",
+"no renderer for 16-bit pixels"
+]
+},
+{
+"data": "2d3d69a4a7979f53ac398fffd148df775c8f57675e3e01f940ba74ca4f8322b86c58ceabe47bd4ee",
+"w": 5,
+"h": 3,
+"depth": 4,
+"stride": 0,
+"probe": "pnm",
+"kw": {
+"photometric": "undeclared",
+"bottom_left": true,
+"channel_order": "bgr",
+"byte_order": "II",
+"maxval": 65535
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "a9120bac145a22b5781708f6e2fd5f7278d636d6ae892038ac925f63b8ee5ba894f287f027eba5c3718b77b35379744621",
+"w": 3,
+"h": 3,
+"depth": 48,
+"stride": 11,
+"probe": "generic",
+"kw": {
+"photometric": null,
+"bottom_left": false,
+"channel_order": "bgr",
+"byte_order": "MM",
+"maxval": null
+},
+"result": [
+"F",
+"no renderer for 48-bit pixels"
+]
+},
+{
+"data": "073203a9276d9ca684271aef4ea7fad46eff",
+"w": 0,
+"h": 1,
+"depth": 24,
+"stride": 16,
+"probe": "tiff",
+"kw": {
+"photometric": "undeclared",
+"bottom_left": false,
+"channel_order": "rgb",
+"byte_order": null,
+"maxval": 65535
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+},
+{
+"data": "f95c2fae0014973915bfc385f0e1ec0b494aa77c136cb954f56e355e",
+"w": 3,
+"h": 1,
+"depth": 24,
+"stride": 18,
+"probe": "generic",
+"kw": {
+"photometric": null,
+"bottom_left": false,
+"channel_order": "rgb",
+"byte_order": "II",
+"maxval": 255
+},
+"result": [
+"P",
+3,
+1,
+"rgb8",
+"f95c2fae0014973915",
+"24-bit \u00b7 RGB as stored \u00b7 rows shown in stored order"
+]
+},
+{
+"data": "06dc31",
+"w": 1,
+"h": 1,
+"depth": 24,
+"stride": 0,
+"probe": "pnm",
+"kw": {
+"photometric": 0,
+"bottom_left": true,
+"channel_order": "rgb",
+"byte_order": "II",
+"maxval": 255
+},
+"result": [
+"F",
+"inconsistent geometry"
+]
+}
+]

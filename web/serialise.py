@@ -188,7 +188,9 @@ def _candidate(c, data, budget: dict) -> dict:
         out = decode(c.decoded, h.width, h.height, h.bit_depth, c.row_stride, h.probe_name,
                      pal, bottom_left_for(c), channel_order=channel_order_for(c), photometric=photometric_for(c),
                      palette_name=name, no_palette_why=tga_why, maxval=h.maxval,
-                     planes=h.planes, header_palette=header_palette_for(c, data), byte_order=byte_order_for(c))
+                     planes=h.planes, header_palette=header_palette_for(c, data), byte_order=byte_order_for(c),
+                     bits_per_sample=_int_field(c, "bits_per_sample"),
+                     samples_per_pixel=_int_field(c, "samples_per_pixel"))
         if isinstance(out, PixelBuffer):
             budget["spent"] += pixels
             render = {"width": out.width, "height": out.height, "channels": out.channels,

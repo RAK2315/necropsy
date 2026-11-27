@@ -15,6 +15,7 @@ NO_PHOTOMETRIC = "no photometric interpretation declared; shown as BlackIsZero (
 CHANNEL_NOTES = {"bgr": "BGR→RGB", "rgb": "RGB as stored",
                  "bgr-convention": "BGR→RGB (a convention: the file declares no channel order)"}
 _INVERT = bytes(255 - i for i in range(256))
+SUBBYTE_REASON = "no renderer for TIFF with {spp} samples per pixel of {bps} bits each"
 
 
 @dataclass(frozen=True)
@@ -54,7 +55,9 @@ def _interleave(r: bytes, g: bytes, b: bytes) -> bytes:
 def decode(decoded, width, height, bit_depth, row_stride, probe_name,
            palette=None, bottom_left=False, channel_order="bgr", photometric=None,
            palette_name=PALETTE_NAME, no_palette_why=None, maxval=None, planes=1, header_palette=None,
-           byte_order=None):
+           byte_order=None,
+           color_map=None, bits_per_sample=None, samples_per_pixel=None,
+           photometric_interpretation=None, image_type=None, image_descriptor=None):
     """Return a PixelBuffer, or a RenderFailure with a reason. Never raises.
 
     byte_order: b"II" or b"MM", the TIFF header's two bytes; it orders the words of 16-bit TIFF grey.
@@ -71,7 +74,9 @@ def decode(decoded, width, height, bit_depth, row_stride, probe_name,
     """
     try:
         return _decode(decoded, width, height, bit_depth, row_stride, probe_name, palette, bottom_left,
-                       channel_order, photometric, palette_name, no_palette_why, maxval, planes, header_palette, byte_order)
+                       channel_order, photometric, palette_name, no_palette_why, maxval, planes, header_palette, byte_order,
+                       color_map, bits_per_sample, samples_per_pixel, photometric_interpretation,
+                       image_type, image_descriptor)
     except Exception as exc:  # last line of defence; the checks below bound every read
         return RenderFailure(f"internal error: {type(exc).__name__}")
 
@@ -194,7 +199,12 @@ def _grey(data, photometric):
 
 def _decode(decoded, width, height, bit_depth, row_stride, probe_name, palette, bottom_left,
             channel_order, photometric, palette_name, no_palette_why, maxval=None, planes=1, header_palette=None,
-            byte_order=None):
+            byte_order=None, color_map=None, bits_per_sample=None, samples_per_pixel=None,
+            photometric_interpretation=None, image_type=None, image_descriptor=None):
+    # Requirement 6.1, 6.2: sub-byte samples with several channels have no renderer; checked before any depth path
+    if (probe_name == "tiff" and _is_int(bits_per_sample) and _is_int(samples_per_pixel)
+            and 1 <= bits_per_sample <= 7 and samples_per_pixel > 1):
+        return RenderFailure(SUBBYTE_REASON.format(spp=samples_per_pixel, bps=bits_per_sample))
     if not isinstance(decoded, (bytes, bytearray)):
         return RenderFailure("inconsistent geometry")
     if not all(_is_int(v) and v > 0 for v in (width, height, bit_depth, row_stride)):
