@@ -1,7 +1,7 @@
 """Outcome strip (Requirement 16): the three tiles show the engine's real output, and follow the response.
 
 UI clarity pass, task 24 (Claude Code): the first tile examines mystery_i, not external_a; since UI task 38 it examines
-imagemagick_input.tga, a real photograph; its pixels are compared
+pillow_odd_stride.pcx (since UI task 52; imagemagick_input.tga before), a real picture; its pixels are compared
 with the service's own render (web/pixels.py), so a tile that paints a stored copy or anything else still fails.
 
 Run in a real browser against the real app. The second test rewrites every /api/analyze response in the browser,
@@ -68,9 +68,9 @@ REWRITE = r"""
 
 
 def _ppm_rgb():
-    """The service's render of imagemagick_input.tga, the first tile since UI task 38: (w, h), rgb bytes."""
+    """The service's render of pillow_odd_stride.pcx, the first tile since UI task 52: (w, h), rgb bytes."""
     import app as service
-    c = service._analyse((REAL / "imagemagick_input.tga").read_bytes())["candidates"][0]["render"]
+    c = service._analyse((REAL / "pillow_odd_stride.pcx").read_bytes())["candidates"][0]["render"]
     px = base64.b64decode(c["data_b64"])
     if c["channels"] == "grey8":
         px = bytes(v for g in px for v in (g, g, g))
@@ -84,11 +84,11 @@ def _rejection_line(r):
 def test_tiles_show_the_engines_real_output(base_url):
     got = run_in_browser(base_url, READ_TILES)
     assert got["statuses"] == ["RESOLVED", "UNRESOLVED_AMBIGUITY", "FAILED"]
-    assert got["inputs"] == ["imagemagick_input.tga", "mystery_d", "mystery_b, first 300 bytes"]
+    assert got["inputs"] == ["pillow_odd_stride.pcx", "mystery_d", "mystery_b, first 300 bytes"]
 
     (w, h), rgb = _ppm_rgb()
     assert (got["resolved"]["w"], got["resolved"]["h"]) == (w, h)
-    assert base64.b64decode(got["resolved"]["rgb_b64"]) == rgb, "RESOLVED tile pixels differ from the service's render of imagemagick_input.tga"
+    assert base64.b64decode(got["resolved"]["rgb_b64"]) == rgb, "RESOLVED tile pixels differ from the service's render of pillow_odd_stride.pcx"
 
     n = len(Engine().run(corpus_bytes("mystery_d")).candidates)
     assert got["thumbs"] == got["thumbCanvases"] == n

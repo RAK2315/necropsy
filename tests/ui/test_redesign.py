@@ -75,3 +75,12 @@ def test_ghost_lines_end_with_what_to_do_and_never_diagnose():
     css = (ROOT / "public" / "app.css").read_text(encoding="utf-8")
     ghost_rules = "\n".join(l for l in css.splitlines() if ".ghost" in l)
     assert "--accent" not in ghost_rules
+
+
+def test_clickables_lift_on_hover_and_stay_still_with_reduced_motion():
+    # UI task 52 (Rehaan): everything clickable grows a little on hover; with reduced motion nothing moves
+    css = (ROOT / "public" / "app.css").read_text(encoding="utf-8")
+    for sel in ("button.primary:hover", '.strip-tile[role="button"]:hover', ".samples li:hover", ".drop:hover"):
+        assert re.search(re.escape(sel) + r"[^{]*\{[^}]*transform: scale\(1\.0\d+\)", css), sel
+    reduced = css[css.rindex("@media (prefers-reduced-motion: reduce)"):]
+    assert "transform: none" in reduced and "transition: none" in reduced

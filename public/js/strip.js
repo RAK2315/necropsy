@@ -12,8 +12,9 @@ function el(tag, cls, text) {
 
 // What each tile examines. Bytes come from the served samples, so the tile shows what any visitor would get.
 const INPUTS = [
-  // a real photograph since UI task 38 (Rehaan): the corpus's 8 × 8 mystery_i read as a test pattern, not a picture
-  { label: 'imagemagick_input.tga', name: 'imagemagick_input.tga', bytes: async () => fetchSample('imagemagick_input.tga') },
+  // a real picture since UI task 38; since UI task 52 (Rehaan) one whose search has several steps, so opening it
+  // replays real working: Pillow's odd_stride.pcx, 8 checks, one correction (inclusive bounds), 371 × 150
+  { label: 'pillow_odd_stride.pcx', name: 'pillow_odd_stride.pcx', bytes: async () => fetchSample('pillow_odd_stride.pcx') },
   { label: 'mystery_d', name: 'mystery_d', bytes: async () => fetchSample('mystery_d') },
   { label: 'mystery_b, first 300 bytes', name: 'mystery_b_first300', bytes: async () => (await fetchSample('mystery_b')).slice(0, 300) },
 ];
@@ -48,7 +49,7 @@ function resolvedBody(p) {
   const c = p.candidates[0];
   const well = el('div', 'well strip-well');
   // UI task 51: Exhibit A is the large tile, so its picture fills the width, still at whole-pixel scale only when it fits
-  if (c.render && c.render.data_b64) well.append(paint(c.render, 360, 300, { fill: true, bitDepth: c.bit_depth }).canvas);
+  if (c.render && c.render.data_b64) well.append(paint(c.render, 680, 280, { fill: true, bitDepth: c.bit_depth }).canvas);
   return [well, el('p', 'strip-dims', `${c.width} × ${c.height}, ${c.bit_depth}-bit. ${sourceText(c.probe_name)}`)];
 }
 

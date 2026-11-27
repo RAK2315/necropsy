@@ -337,3 +337,19 @@ and encoding. Screenshots of the start, examining, several-readings and no-readi
 by eye.
 
 **Breaks.** `docs/ui-clarity-breaks/p7.json`, output beside it: the ghost on a recovered picture, a ghost line that diagnoses, row padding dropped from the tried-layout line, three exhibits of equal width, and sample buttons without their Examine label. 5 breaks, all caught, each restore byte-identical. The full UI suite, rerun on the final stylesheet, caught two things on the way: the word "wrong" in a ghost line (the plain-words test forbids it; now "the reason each was set aside"), and the closure line pushed past the 900 px fold by the larger verdict heading (heading and spacing tightened).
+
+## Task 52: a balanced exhibits block, an Exhibit A with real working, and a lift on hover
+
+Rehaan, 27 Nov, after seeing task 51 live: the exhibits block looked uneven (one box on the left, two of different
+heights on the right), Exhibit A's file finished in one step, so opening it showed no working, and nothing grew on
+hover to say it could be clicked.
+- Exhibit A runs across the top of the block; B and C sit beneath it, side by side and of equal height.
+- Exhibit A is now `pillow_odd_stride.pcx` (Pillow's test suite, 371 × 150 tram sprites): 8 checks and one correction
+  (inclusive bounds), so opening it replays real working. It was `imagemagick_input.tga`, which fits at the first check.
+- Everything clickable grows slightly on hover (buttons 4%, tiles and sample rows 2%, small controls 6%) with a
+  160 ms ease-out, and presses in slightly when clicked; with reduced motion nothing moves.
+
+**Verification.** `test_landing`, `test_strip`, `test_a11y` and `test_errors` name the new first tile. `test_landing`
+now counts only the fetches the primary button makes, since Exhibit A fetches the same file as the page loads.
+`test_redesign` checks the hover rules and their reduced-motion override. The landing, strip, accessibility, error,
+redesign and visual-rule tests pass (53).

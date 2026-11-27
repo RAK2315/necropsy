@@ -541,3 +541,27 @@ figcaption.ghost-line { display: block; margin: 6px 0 0; padding: 9px 13px; bord
   .strip-tile[data-slot="0"] { grid-row: auto; }
   .how ol { flex-direction: column; gap: 20px; }
 }
+
+/* UI task 52 (Rehaan): a balanced exhibits block (A across the top, B and C side by side and of equal height beneath it)
+   and a small lift on everything that can be clicked, so a pointer finds the affordance. Reduced motion: no movement. */
+.strip-row { grid-template-columns: 1fr 1fr; grid-template-rows: auto; align-items: stretch; }
+.strip-tile[data-slot="0"] { grid-column: 1 / -1; grid-row: auto; align-self: stretch; }
+.strip-tile[data-slot="0"] .strip-well { width: 100%; }
+.strip-tile[data-slot="0"] .strip-well canvas { width: 100%; height: auto; }
+.strip-tile[data-slot="1"], .strip-tile[data-slot="2"] { min-height: 300px; }
+.hero { align-items: start; }
+
+button.primary, button.again, .drop, .strip-tile[role="button"], .samples li, .amb-tile, .card, .dl-btn, .vtab, button.quiet, .rp-btn {
+  transition: transform .16s cubic-bezier(.22, 1, .36, 1), border-color .15s ease-out, background-color .15s ease-out, color .15s ease-out; }
+button.primary:hover, button.again:hover { transform: scale(1.04); }
+.drop:hover, .drop.over { transform: scale(1.015); }
+.strip-tile[role="button"]:hover, .samples li:hover, .card:hover { transform: scale(1.02); }
+.amb-tile:hover, .dl-btn:hover:not(:disabled), button.quiet:hover, .rp-btn:hover:not(:disabled) { transform: scale(1.06); }
+button.primary:active, button.again:active, .strip-tile[role="button"]:active, .samples li:active { transform: scale(.99); }
+@media (prefers-reduced-motion: reduce) {
+  button.primary, button.again, .drop, .strip-tile[role="button"], .samples li, .amb-tile, .card, .dl-btn, .vtab, button.quiet, .rp-btn { transition: none; }
+  button.primary:hover, button.again:hover, .drop:hover, .drop.over, .strip-tile[role="button"]:hover, .samples li:hover, .card:hover,
+  .amb-tile:hover, .dl-btn:hover, button.quiet:hover, .rp-btn:hover, button.primary:active, button.again:active,
+  .strip-tile[role="button"]:active, .samples li:active { transform: none; }
+}
+@media (max-width: 900px) { .strip-row { grid-template-columns: 1fr; } }

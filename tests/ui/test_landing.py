@@ -36,11 +36,14 @@ LANDING = r"""
     licText,
     aboveFold: ['[data-cap=primary]', '[data-cap=drop]'].map(s => document.querySelector(s).getBoundingClientRect().bottom <= 720),
   };
+  // UI task 52: Exhibit A examines the same file as the page loads, so count only the fetches the click makes
+  const odd = () => performance.getEntriesByType('resource').filter(e => e.name.includes('/samples/pillow_odd_stride.pcx')).length;
+  const before = odd();
   primary[0].click();
   await __until(() => document.querySelector('.exam-right:not(.pending) figcaption .dims'), 'result');
   out.result = { dims: document.querySelector('.exam-right figcaption .dims').textContent,
                  status: document.querySelector('[data-cap=chip] .tech').textContent };
-  out.analyzed = performance.getEntriesByType('resource').filter(e => e.name.includes('/samples/pillow_odd_stride.pcx')).length;
+  out.analyzed = odd() - before;
   return JSON.stringify(out);
 })()
 """
@@ -55,7 +58,7 @@ def test_landing_page(base_url):
     assert got["primaryText"] == "See it recover a real file"
     assert all(got["aboveFold"]), "the primary action and the drop zone must be visible at 1280x720 without scrolling"
 
-    assert [t["input"] for t in got["tiles"]] == ["imagemagick_input.tga", "mystery_d", "mystery_b, first 300 bytes"]
+    assert [t["input"] for t in got["tiles"]] == ["pillow_odd_stride.pcx", "mystery_d", "mystery_b, first 300 bytes"]
     assert [t["cap"] for t in got["tiles"]] == ["tile-0", "tile-1", "tile-2"]
     assert all(t["open"].startswith("Open") and t["role"] == "button" for t in got["tiles"])
     assert got["steps"] == 3
