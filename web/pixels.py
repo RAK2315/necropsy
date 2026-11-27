@@ -186,6 +186,64 @@ def _decode_tiff_grey(decoded, width, height, bit_depth, row_stride, byte_order,
     return PixelBuffer(width, height, "grey8", data, f"TIFF grey · {word} · v×255//{top} · {pi or 'grey'} · {STORED_NOTE}")
 
 
+PALETTE_MAP_COUNT = 768                  # 3 * 2^8
+PALETTE_MAP_SIZE = 256                   # Map_Size at BitsPerSample 8
+PALETTE_NOTE = "8-bit · palette: TIFF ColorMap (tag 320), 768 values, 16-bit to 8-bit by v >> 8"
+
+
+def _palette_index_failure(idx, map_size):
+    """None when every byte of `idx` is below `map_size`; otherwise the RenderFailure naming the first byte
+    value at or above `map_size` in raster order and `map_size` (Requirement 3.3). Never raises."""
+    try:
+        for v in bytes(idx):
+            if v >= map_size:
+                return RenderFailure(f"palette TIFF: pixel index {v} is at or above the ColorMap size {map_size}")
+        return None
+    except Exception as exc:
+        return RenderFailure(f"internal error: {type(exc).__name__}")
+
+
+def _decode_tiff_palette(decoded, width, height, bit_depth, row_stride, bottom_left,
+                         color_map, bits_per_sample, samples_per_pixel):
+    """Palette TIFF drawn through its ColorMap (Requirements 2.1 to 2.4, 3.1 to 3.5, 3.8, 3.10, 3.11, 3.13).
+    Checks run in the order 3.4, 3.10, 3.13, 3.1, 3.2, 3.11, geometry, 3.3. Never returns grey8."""
+    if not _is_int(bits_per_sample):
+        return RenderFailure("no renderer for palette TIFF: BitsPerSample not recorded")
+    if bits_per_sample != 8:
+        return RenderFailure(f"no renderer for palette TIFF: BitsPerSample {bits_per_sample}")
+    if _is_int(samples_per_pixel) and samples_per_pixel > 1:
+        return RenderFailure(f"no renderer for palette TIFF with SamplesPerPixel {samples_per_pixel}")
+    if not _is_int(samples_per_pixel):
+        return RenderFailure(f"no renderer for palette TIFF: bit depth {bit_depth}, SamplesPerPixel not recorded")
+    if bit_depth != 8 * samples_per_pixel:
+        return RenderFailure(
+            f"no renderer for palette TIFF: bit depth {bit_depth} is not 8 × SamplesPerPixel {samples_per_pixel}")
+    if not isinstance(color_map, (tuple, list)):
+        return RenderFailure("palette TIFF: no ColorMap (tag 320) was read")
+    if len(color_map) != PALETTE_MAP_COUNT:
+        return RenderFailure(
+            f"palette TIFF: ColorMap (tag 320) holds {len(color_map)} values, 768 required (3 × 2^8)")
+    for p, v in enumerate(color_map):
+        if not _is_int(v) or not 0 <= v <= 65535:
+            return RenderFailure(f"palette TIFF: ColorMap (tag 320) entry {p} is {v!r}, outside 0 to 65535")
+    if row_stride < width or len(decoded) < row_stride * height:
+        return RenderFailure("inconsistent geometry")
+    d = bytes(decoded)
+    rows = [d[r * row_stride: r * row_stride + width] for r in range(height)]
+    if bottom_left:
+        rows.reverse()
+    idx = b"".join(rows)
+    failure = _palette_index_failure(idx, PALETTE_MAP_SIZE)
+    if failure is not None:
+        return failure
+    r = bytes(v >> 8 for v in color_map[0:256])
+    g = bytes(v >> 8 for v in color_map[256:512])
+    b = bytes(v >> 8 for v in color_map[512:768])
+    data = _interleave(idx.translate(r), idx.translate(g), idx.translate(b))
+    return PixelBuffer(width, height, "rgb8", data,
+                       f"{PALETTE_NOTE} · {FLIP_NOTE if bottom_left else STORED_NOTE}")
+
+
 def _grey(data, photometric):
     """Apply the declared photometric interpretation to grey levels; returns (data, note fragment)."""
     if photometric == 0:
@@ -209,6 +267,9 @@ def _decode(decoded, width, height, bit_depth, row_stride, probe_name, palette, 
         return RenderFailure("inconsistent geometry")
     if not all(_is_int(v) and v > 0 for v in (width, height, bit_depth, row_stride)):
         return RenderFailure("inconsistent geometry")
+    if probe_name == "tiff" and _is_int(photometric_interpretation) and photometric_interpretation == 3:
+        return _decode_tiff_palette(decoded, width, height, bit_depth, row_stride, bottom_left,
+                                    color_map, bits_per_sample, samples_per_pixel)
     if probe_name == "pcx" and _is_int(planes) and planes > 1:
         return _decode_pcx_planar(decoded, width, height, bit_depth, row_stride, planes, header_palette)
     if probe_name == "pnm" and bit_depth in PNM_DEPTHS and _is_int(maxval):

@@ -149,3 +149,156 @@ def test_no_sample_or_corpus_file_gets_the_subbyte_refusal():
         for c in payload.get("candidates", []):
             reason = c["render"].get("failure", "")
             assert not reason.startswith("no renderer for TIFF with"), name
+
+
+# ---- task 4.1: palette branch of decode (Requirements 2.1 to 2.4, 2.6, 3.1 to 3.5, 3.7, 3.8, 3.10 to 3.13) ----
+from web.pixels import _palette_index_failure  # noqa: E402
+
+PAL_NOTE = "8-bit · palette: TIFF ColorMap (tag 320), 768 values, 16-bit to 8-bit by v >> 8"
+STORED = "rows shown in stored order"
+
+
+def _pal(decoded, w, h, stride, cmap, **kw):
+    args = dict(color_map=cmap, bits_per_sample=8, samples_per_pixel=1, photometric_interpretation=3)
+    args.update(kw)
+    return decode(decoded, w, h, 8, stride, "tiff", **args)
+
+
+def _map(seed=1):
+    """768 words: reds i*257 % 65536 style spread, built so every channel and index differs."""
+    return tuple((i * 257 * seed + i) % 65536 for i in range(768))
+
+
+def test_palette_exact_pixels_example():
+    cmap = _map()
+    # 3 x 2 raster, row stride 5 (2 padding bytes per row); indices by row: [0, 1, 255], [7, 7, 128]
+    raw = bytes([0, 1, 255, 9, 9, 7, 7, 128, 9, 9])
+    r = _pal(raw, 3, 2, 5, cmap)
+    assert isinstance(r, PixelBuffer) and r.channels == "rgb8" and (r.width, r.height) == (3, 2)
+    expect = b"".join(bytes((cmap[i] >> 8, cmap[256 + i] >> 8, cmap[512 + i] >> 8))
+                      for i in (0, 1, 255, 7, 7, 128))
+    assert r.data == expect
+    assert r.note == PAL_NOTE + " · " + STORED
+
+
+def test_palette_bottom_left_flips_rows():
+    cmap = _map()
+    r = _pal(bytes([0, 1, 2, 3]), 2, 2, 2, cmap, bottom_left=True)
+    expect = b"".join(bytes((cmap[i] >> 8, cmap[256 + i] >> 8, cmap[512 + i] >> 8)) for i in (2, 3, 0, 1))
+    assert r.data == expect
+    assert r.note.endswith("rows flipped: file declares bottom-left origin")
+
+
+@settings(max_examples=200, deadline=None)
+@given(cmap=st.lists(st.integers(0, 65535), min_size=768, max_size=768),
+       w=st.integers(1, 64), pad=st.integers(0, 3), data=st.data())
+def test_palette_exact_pixels_property(cmap, w, pad, data):
+    """Property 3 (Requirement 2.6)."""
+    h = data.draw(st.integers(1, max(1, 4096 // w)))
+    stride = w + pad
+    idx = data.draw(st.lists(st.integers(0, 255), min_size=w * h, max_size=w * h))
+    raw = b"".join(bytes(idx[y * w:(y + 1) * w]) + bytes(pad) for y in range(h))
+    r = _pal(raw, w, h, stride, tuple(cmap))
+    assert isinstance(r, PixelBuffer) and r.channels == "rgb8"
+    assert len(r.data) == 3 * w * h
+    expect = b"".join(bytes((cmap[i] >> 8, cmap[256 + i] >> 8, cmap[512 + i] >> 8)) for i in idx)
+    assert r.data == expect
+
+
+def test_palette_pinned_failure_strings():
+    cmap = _map()
+    raw = bytes(4)
+    assert _pal(raw, 2, 2, 2, cmap, bits_per_sample=None) == RenderFailure(
+        "no renderer for palette TIFF: BitsPerSample not recorded")
+    for bps in (1, 2, 4, 16):
+        assert _pal(raw, 2, 2, 2, cmap, bits_per_sample=bps) == RenderFailure(
+            f"no renderer for palette TIFF: BitsPerSample {bps}")
+    assert _pal(raw, 2, 2, 2, cmap, samples_per_pixel=3) == RenderFailure(
+        "no renderer for palette TIFF with SamplesPerPixel 3")
+    assert _pal(raw, 2, 2, 2, None) == RenderFailure("palette TIFF: no ColorMap (tag 320) was read")
+    assert _pal(raw, 2, 2, 2, cmap[:195]) == RenderFailure(
+        "palette TIFF: ColorMap (tag 320) holds 195 values, 768 required (3 × 2^8)")
+    bad = list(cmap)
+    bad[300] = 65536
+    assert _pal(raw, 2, 2, 2, tuple(bad)) == RenderFailure(
+        "palette TIFF: ColorMap (tag 320) entry 300 is 65536, outside 0 to 65535")
+    bad[300], bad[5] = 7, -1
+    assert _pal(raw, 2, 2, 2, tuple(bad)) == RenderFailure(
+        "palette TIFF: ColorMap (tag 320) entry 5 is -1, outside 0 to 65535")
+    bad[5] = True
+    assert isinstance(_pal(raw, 2, 2, 2, tuple(bad)), RenderFailure)
+    assert _pal(bytes(3), 2, 2, 2, cmap) == RenderFailure("inconsistent geometry")
+
+
+def test_palette_bit_depth_must_equal_8_times_samples_per_pixel():
+    """Requirement 3.13 (fixture built in code, decode called directly)."""
+    cmap = _map()
+    raw = bytes(8)
+    r = decode(raw, 2, 2, 16, 4, "tiff", color_map=cmap, bits_per_sample=8, samples_per_pixel=1,
+               photometric_interpretation=3)
+    assert r == RenderFailure("no renderer for palette TIFF: bit depth 16 is not 8 × SamplesPerPixel 1")
+    r = decode(raw, 2, 2, 8, 2, "tiff", color_map=cmap, bits_per_sample=8, samples_per_pixel=None,
+               photometric_interpretation=3)
+    assert r == RenderFailure("no renderer for palette TIFF: bit depth 8, SamplesPerPixel not recorded")
+    for spp in (0, -1):
+        r = decode(raw, 2, 2, 8, 2, "tiff", color_map=cmap, bits_per_sample=8, samples_per_pixel=spp,
+                   photometric_interpretation=3)
+        assert r == RenderFailure(
+            f"no renderer for palette TIFF: bit depth 8 is not 8 × SamplesPerPixel {spp}")
+    ok = decode(raw, 2, 2, 8, 2, "tiff", color_map=cmap, bits_per_sample=8, samples_per_pixel=1,
+                photometric_interpretation=3)
+    assert isinstance(ok, PixelBuffer)
+
+
+def test_palette_failure_order():
+    """Requirement 3.8: 4, 10, 13, 1, 2, 11, 3."""
+    short = (70000,) * 10          # wrong count and out-of-range
+    call = lambda **kw: decode(bytes(4), 2, 2, kw.pop("depth", 8), 2, "tiff", photometric_interpretation=3, **kw)
+    # BitsPerSample 16 (not 1 to 7, so Requirement 6.1 does not apply first)
+    assert "BitsPerSample 16" in call(color_map=short, bits_per_sample=16, samples_per_pixel=3, depth=99).reason
+    assert "SamplesPerPixel 3" in call(color_map=short, bits_per_sample=8, samples_per_pixel=3, depth=99).reason
+    assert "not 8 × SamplesPerPixel 1" in call(color_map=None, bits_per_sample=8, samples_per_pixel=1, depth=99).reason
+    assert "no ColorMap" in call(color_map=None, bits_per_sample=8, samples_per_pixel=1).reason
+    assert "holds 10 values" in call(color_map=short, bits_per_sample=8, samples_per_pixel=1).reason
+    out_of_range = (70000,) + (0,) * 767
+    assert "entry 0 is 70000" in call(color_map=out_of_range, bits_per_sample=8, samples_per_pixel=1).reason
+
+
+def test_palette_index_failure_helper_with_small_map():
+    """Requirement 3.3 through the helper (Decision 18)."""
+    assert _palette_index_failure(bytes([0, 1, 2, 3]), 4) is None
+    assert _palette_index_failure(b"", 4) is None
+    assert _palette_index_failure(bytes([0, 9, 5, 4]), 4) == RenderFailure(
+        "palette TIFF: pixel index 9 is at or above the ColorMap size 4")
+    assert _palette_index_failure(bytes([1, 4, 200]), 4).reason.startswith("palette TIFF: pixel index 4 ")
+
+
+@settings(max_examples=200, deadline=None)
+@given(idx=st.binary(max_size=64), size=st.integers(1, 256))
+def test_palette_index_failure_first_index_rule(idx, size):
+    r = _palette_index_failure(idx, size)
+    bad = [v for v in idx if v >= size]
+    if not bad:
+        assert r is None
+    else:
+        assert r == RenderFailure(f"palette TIFF: pixel index {bad[0]} is at or above the ColorMap size {size}")
+
+
+@settings(max_examples=300, deadline=None)
+@given(decoded=st.one_of(st.binary(max_size=300), st.none()),
+       width=st.integers(-2, 20), height=st.integers(-2, 20), depth=st.integers(-2, 70),
+       stride=st.integers(-2, 40),
+       cmap=st.one_of(st.none(), st.lists(st.integers(-5, 70000), max_size=1024),
+                      st.lists(st.integers(0, 65535), min_size=768, max_size=768)),
+       bps=st.one_of(st.none(), st.integers(0, 65535)),
+       spp=st.one_of(st.none(), st.integers(-3, 10)),
+       bl=st.booleans())
+def test_palette_never_raises_and_never_grey(decoded, width, height, depth, stride, cmap, bps, spp, bl):
+    """Property 4 / Requirement 3.5, 3.7."""
+    r = decode(decoded, width, height, depth, stride, "tiff", bottom_left=bl, color_map=cmap,
+               bits_per_sample=bps, samples_per_pixel=spp, photometric_interpretation=3)
+    assert isinstance(r, (PixelBuffer, RenderFailure))
+    if isinstance(r, PixelBuffer):
+        assert r.channels == "rgb8"
+    else:
+        assert not r.reason.startswith("internal error")
