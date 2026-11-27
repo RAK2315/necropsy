@@ -203,7 +203,9 @@ def _candidate(c, data, budget: dict) -> dict:
                      color_map=color_map_for(c),
                      bits_per_sample=_int_field(c, "bits_per_sample"),
                      samples_per_pixel=_int_field(c, "samples_per_pixel"),
-                     photometric_interpretation=_int_field(c, "photometric_interpretation"))
+                     photometric_interpretation=_int_field(c, "photometric_interpretation"),
+                     image_type=_int_field(c, "image_type"),
+                     image_descriptor=_int_field(c, "image_descriptor"))
         if isinstance(out, PixelBuffer):
             budget["spent"] += pixels
             render = {"width": out.width, "height": out.height, "channels": out.channels,

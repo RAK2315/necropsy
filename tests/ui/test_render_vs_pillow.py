@@ -37,10 +37,9 @@ EXCEPTIONS = {
     "libtiff_rgb-3c-16b.ppm": ("pnm16_pillow_rounds", "Pillow rounds to nearest; Requirement 16.1 requires v * 255 // maxval"),
     "pillow_hopper_16bit.pgm": ("pnm16_pillow_clips", "Pillow's mode I clips to 255 on convert('RGB'); Requirement 16.1 requires "
                                                        "v * 255 // maxval"),
-    "pillow_200x32_la_bl_raw.tga": ("no_renderer", "16-bit pixels have no renderer (Requirement 3.9)"),
-    "pillow_la.tga": ("no_renderer", "RLE TGA, resolved since format-coverage Requirement 5.9; its 16-bit pixels have no "
-                                    "renderer (Requirement 3.9)"),
-    "pillow_rgba16.tga": ("no_renderer", "16-bit pixels have no renderer (Requirement 3.9)"),
+    # render-fidelity 5.2 (Requirements 4.7, 4.10, 5.5, 5.7, 9.2): pillow_200x32_la_bl_raw.tga, pillow_la.tga and
+    # pillow_rgba16.tga are drawn through their 16-bit TGA branches (image_type and image_descriptor now reach decode), so
+    # they are no longer exceptions: all three are compared with Pillow byte for byte.
     # format-coverage Task 18 (Requirement 8): these two TIFFs now resolve through the strip-array probe. Their renders are
     # pending: 12-bit grey belongs to Task 19 (Requirement 16.1 to 16.5); the TIFF palette is drawn since render-fidelity 5.1.
     # Task 19: rendered. Requirement 16.1 shows a 12-bit TIFF sample v as v * 255 // 4095; Pillow loads it as mode I;16 and
@@ -165,6 +164,28 @@ def test_invalid_palette_ref_render_is_a_failure_stating_195_and_768():
     assert "data_b64" not in render
     assert "195" in render["failure"] and "768" in render["failure"], render
     assert render["failure"] == "palette TIFF: ColorMap (tag 320) holds 195 values, 768 required (3 × 2^8)"
+
+
+def _tga16_render(name):
+    path = next(p for p in RESOLVED if p.name == name)
+    data = path.read_bytes()
+    return Engine().run(data).candidate, _render(data), data
+
+
+def test_16bit_tga_renders_come_from_the_candidate_fields():
+    # render-fidelity 5.2 (Requirements 4.7, 4.10, 5.5, 5.7): kind, size and pixels of the three files.
+    cand, r, _ = _tga16_render("pillow_200x32_la_bl_raw.tga")
+    assert (r["channels"], r["width"], r["height"]) == ("grey8", 200, 32) and "rows flipped" in r["note"]
+    cand, r, _ = _tga16_render("pillow_la.tga")
+    assert (r["channels"], r["width"], r["height"]) == ("grey8", 64, 64) and "stored order" in r["note"]
+    cand, r, data = _tga16_render("pillow_rgba16.tga")
+    assert (r["channels"], r["width"], r["height"]) == ("rgb8", 2, 1)
+    assert _rgb(r) == bytes([172, 0, 255, 0, 255, 82])
+    assert r["note"].split("\u00b7")[-2].strip() == ("alpha not drawn: descriptor declares 8 alpha bits, which the 16-bit "
+                                                      "pixel cannot hold; bit 15 is not interpreted")
+    # image_type and image_descriptor are the candidate's FieldRecords (header bytes 2 and 17), not re-read from the file.
+    fields = {f.name: f.value for f in cand.hypothesis.fields}
+    assert fields["image_type"] == (data[2],) and fields["image_descriptor"] == (data[17],) and data[17] == 0x08
 
 
 def _tga_16bit_map() -> bytes:
