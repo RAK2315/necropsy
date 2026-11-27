@@ -906,6 +906,15 @@ def _coherence_line(cand) -> str:
     return "coherence: %s %s" % (_COHERENCE_LABEL, cand.coherence_status)
 
 
+DESCRIBED_FIELDS = frozenset({"color_map"})    # declared; described by one line, never printed value by value
+
+
+def _described(f) -> str:
+    """The one-line description of a field of DESCRIBED_FIELDS. Names tag, type, count, offset; no values."""
+    return ("tag 320, SHORT (3), count %d, offset 0x%04X; 3 \u00d7 2^BitsPerSample values, not listed"
+            % (len(f.value), f.offset))
+
+
 def _structure_table(cand) -> str:
     h = cand.hypothesis
     dims = _table(("property", "value"), [
@@ -917,7 +926,8 @@ def _structure_table(cand) -> str:
     if not h.fields:
         return dims
     fields = _table(("offset", "field", "struct format", "value"), [
-        ("0x%04X" % f.offset, f.name, f.fmt, ", ".join(str(v) for v in f.value))
+        ("0x%04X" % f.offset, f.name, f.fmt,
+         _described(f) if f.name in DESCRIBED_FIELDS else ", ".join(str(v) for v in f.value))
         for f in h.fields
     ])
     return dims + "\n\n" + fields
@@ -1226,7 +1236,10 @@ def _render_tests(layout: dict, result, data) -> str:
     fields, seen = [], set()
     for c in cands:
         for f in c.hypothesis.fields:
-            rec = (f.name, f.offset, f.fmt, tuple(f.value))
+            if f.name in DESCRIBED_FIELDS:
+                rec = "# %s: %s" % (f.name, _described(f))
+            else:
+                rec = (f.name, f.offset, f.fmt, tuple(f.value))
             if rec not in seen:
                 seen.add(rec)
                 fields.append(rec)
@@ -1255,7 +1268,7 @@ def _render_tests(layout: dict, result, data) -> str:
         head.append("EXPECTED = %s" % repr(summary(cands[0])))
     head.append("FIELDS = [")
     for rec in fields:
-        head.append("    %s," % repr(rec))
+        head.append("    %s" % rec if isinstance(rec, str) else "    %s," % repr(rec))
     head.append("]")
     body = _TESTS_AMBIGUOUS if ambiguous else _TESTS_SINGLE
     if _is_planar(layout):

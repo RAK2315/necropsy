@@ -367,7 +367,9 @@ def _assemble_ranges(data, rg, img, enc, width, height, depth, stride, fields):
     for (s1, e1), (s2, e2) in zip(live, live[1:]):
         if s2 < e1:
             raise _Err("ranges overlap")
-    marks = sorted((f[1], f[1] + struct.calcsize(f[2])) for f in fields)
+    # `color_map` is declared and reported only; the engine's Requirement 12 check ignores it
+    # (render-fidelity Requirement 1.6), so the reader does too.
+    marks = sorted((f[1], f[1] + struct.calcsize(f[2])) for f in fields if f[0] != "color_map")
     j = 0
     top = -1
     for s, e in live:

@@ -364,6 +364,29 @@ TIFF_ARRAY_NAMES = {
     324: "tile_offset", 325: "tile_byte_count",
 }
 TIFF_TILE_ARRAY_TAGS = (TIFF_TILE_OFFSET_TAG, TIFF_TILE_BYTE_COUNT_TAG)
+TIFF_COLOR_MAP_TAG = 320        # SHORT (3), count 3 * 2^BitsPerSample
+TIFF_COLOR_MAP_MAX = 768        # 3 * 2^8, the largest map the renderer can use
+TIFF_COLOR_MAP_NAME = "color_map"
+
+
+def _read_color_map(data, order, entry, type_id, n) -> FieldRecord | None:
+    """Tag 320 of the IFD entry at `entry`. One FieldRecord or None. Never raises, never rejects.
+
+    Value field at entry + 8 (TIFF_ENTRY_VALUE_OFFSET); when n * 2 > 4 it holds an `order + "I"`
+    pointer to the values. The values are read with `order + f"{n}H"`.
+    """
+    try:
+        if type_id != 3 or not (1 <= n <= TIFF_COLOR_MAP_MAX):
+            return None
+        start = entry + TIFF_ENTRY_VALUE_OFFSET
+        if n * TIFF_TYPE_SIZES[3] > TIFF_VALUE_FIELD_SIZE:
+            pointer = read(data, "color_map_offset", start, order + "I")
+            if pointer is None:
+                return None
+            start = pointer.value[0]
+        return read(data, TIFF_COLOR_MAP_NAME, start, order + f"{n}H")
+    except Exception:
+        return None
 
 
 def _read_range_array(
@@ -456,6 +479,7 @@ def _probe_tiff(data: bytes) -> ProbeOutcome | None:
     values: dict[int, int] = {}
     out_of_bounds = ""
     bps_seen = False
+    color_map_seen = False
     bps_problems: list[str] = []
     bps_unestablished = False
     arrays: dict[int, list[FieldRecord]] = {}   # tags 273 / 279 with count != 1
@@ -491,6 +515,13 @@ def _probe_tiff(data: bytes) -> ProbeOutcome | None:
                     f"{count.value[0]}; it is not established, so it is not implemented"
                     "; the data is not decoded as if it were 1"
                 )
+                continue
+            if tag_id == TIFF_COLOR_MAP_TAG:
+                if not color_map_seen:   # the first entry in directory order only
+                    color_map_seen = True
+                    cm = _read_color_map(data, order, entry, type_id, count.value[0])
+                    if cm is not None:
+                        records.append(cm)
                 continue
             if (tag_id in TIFF_ARRAY_NAMES
                     and (count.value[0] != 1 or tag_id in TIFF_TILE_ARRAY_TAGS)

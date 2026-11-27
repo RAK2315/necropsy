@@ -101,6 +101,14 @@ def _accept(decoded: bytes, start: int, end: int, trailer: Optional[str]) -> Clo
     return ClosureVerdict(True, "", None, decoded, start, end, trailer)
 
 
+REPORT_ONLY_FIELDS = frozenset({"color_map"})   # declared and reported; never part of the structure arithmetic
+
+
+def structural_fields(h):
+    """The header fields the Requirement 12 check compares with the data region."""
+    return tuple(f for f in h.fields if f.name not in REPORT_ONLY_FIELDS)
+
+
 def readings(h, data: bytes) -> tuple:
     """Readings of a hypothesis: the trailer reading first, then the end-of-file reading.
 
@@ -182,7 +190,7 @@ def _check_ranges(h, data: bytes) -> ClosureVerdict:
     for i, (start, end) in enumerate(ranges):
         if end <= start:
             continue
-        for fr in h.fields:
+        for fr in structural_fields(h):
             try:
                 f_end = fr.offset + struct.calcsize(fr.fmt)
             except Exception:
@@ -328,7 +336,7 @@ def check_closure(h, data: bytes) -> ClosureVerdict:
         # Requirement 12: header fields and the data region are disjoint
         # (half-open ranges). A malformed fmt cannot raise out of here.
         if end > h.header_size:
-            for fr in h.fields:
+            for fr in structural_fields(h):
                 try:
                     f_end = fr.offset + struct.calcsize(fr.fmt)
                 except Exception:
