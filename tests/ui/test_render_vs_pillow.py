@@ -42,8 +42,7 @@ EXCEPTIONS = {
                                     "renderer (Requirement 3.9)"),
     "pillow_rgba16.tga": ("no_renderer", "16-bit pixels have no renderer (Requirement 3.9)"),
     # format-coverage Task 18 (Requirement 8): these two TIFFs now resolve through the strip-array probe. Their renders are
-    # pending: 12-bit grey belongs to Task 19 (Requirement 16.1 to 16.5); the TIFF palette (ColorMap, tag 320) is unread
-    # by the probe, so the render is grey where Pillow's is coloured.
+    # pending: 12-bit grey belongs to Task 19 (Requirement 16.1 to 16.5); the TIFF palette is drawn since render-fidelity 5.1.
     # Task 19: rendered. Requirement 16.1 shows a 12-bit TIFF sample v as v * 255 // 4095; Pillow loads it as mode I;16 and
     # convert("RGB") clips to 255. The file's samples are all 30 or less, so ours is near black and Pillow's is v itself.
     "pillow_12bit.cropped.tif": ("tiff12_pillow_clips", "Pillow's I;16 clips to 255 on convert('RGB'); Requirement 16.1 "
@@ -52,16 +51,14 @@ EXCEPTIONS = {
     # 500,000 pixel budget (Requirement 2.9), so the service sends no image. The engine's decoded bytes were compared with
     # Pillow's offline (26 Nov 2026: all 24,335,990 pixels equal).
     "libtiff_lzw-single-strip.tiff": ("payload_limit", "24.3 million pixels exceed the render's pixel budget (Requirement 2.9)"),
-    # format-coverage Task 25 (Requirement 13.1, design.md row 25): Deflate TIFFs now resolve. goimage_video-001-paletted.tiff
-    # is a palette TIFF, so its render is grey while Pillow's is coloured (ColorMap, tag 320, unread). The decoded indices
-    # equal Pillow's (committed row: "match"). goimage_invalid-palette-ref.tiff decodes the same region; Pillow refuses it
-    # (UnidentifiedImageError, an OSError). goimage_bw-deflate.tiff needs no exception: web/pixels.py honours photometric 0
+    # format-coverage Task 25 (Requirement 13.1, design.md row 25): Deflate TIFFs now resolve. goimage_invalid-palette-ref.tiff
+    # decodes the same region as the paletted file; Pillow refuses it (UnidentifiedImageError, an OSError), and its render is
+    # a RenderFailure stating 195 and 768 (render-fidelity Requirements 3.6 and 9.2, test below).
+    # render-fidelity 5.1 (Requirements 2.5, 2.7, 9.2): goimage_video-001-paletted.tiff and libtiff_palette-1c-8b.tiff are
+    # drawn through their ColorMap (tag 320), so they are no longer exceptions: both are compared with Pillow byte for byte.
+    # goimage_bw-deflate.tiff needs no exception: web/pixels.py honours photometric 0
     # for 1-bit TIFF (_grey inverts WhiteIsZero), so its render equals Pillow's.
-    "goimage_video-001-paletted.tiff": ("render_pending", "palette TIFF: ColorMap (tag 320) is not read, so the render is "
-                                                         "grey where Pillow's is coloured"),
     "goimage_invalid-palette-ref.tiff": ("pillow_fails", "Pillow refuses the file (UnidentifiedImageError); design.md row 25"),
-    "libtiff_palette-1c-8b.tiff": ("render_pending", "palette TIFF: ColorMap (tag 320) is not read, so the render is grey "
-                                                      "where Pillow's is coloured"),
 }
 
 
@@ -159,6 +156,15 @@ def test_render_matches_pillow(path):
         theirs = ref.tobytes()
         n = sum(1 for i in range(0, len(ours), 3) if ours[i:i + 3] != theirs[i:i + 3])
         pytest.fail(f"{path.name}: {n} of {len(ours) // 3} pixels differ from Pillow; note {render['note']!r}")
+
+
+def test_invalid_palette_ref_render_is_a_failure_stating_195_and_768():
+    # render-fidelity Requirements 3.6 and 9.2: the file declares 195 ColorMap values where 768 are required.
+    path = next(p for p in RESOLVED if p.name == "goimage_invalid-palette-ref.tiff")
+    render = _render(path.read_bytes())
+    assert "data_b64" not in render
+    assert "195" in render["failure"] and "768" in render["failure"], render
+    assert render["failure"] == "palette TIFF: ColorMap (tag 320) holds 195 values, 768 required (3 × 2^8)"
 
 
 def _tga_16bit_map() -> bytes:

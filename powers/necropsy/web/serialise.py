@@ -52,6 +52,17 @@ def _int_field(cand, name):
     return None
 
 
+def color_map_for(cand):
+    """The `color_map` value tuple (integers only) of the candidate's FieldRecord, or None (Requirement 2.5)."""
+    for f in cand.hypothesis.fields:
+        if f.name == "color_map":
+            v = f.value
+            if isinstance(v, tuple) and all(isinstance(x, int) and not isinstance(x, bool) for x in v):
+                return v
+            return None
+    return None
+
+
 def byte_order_for(cand):
     """b"II" or b"MM" from the TIFF `byte_order` field (bytes 0x00 to 0x01), else None."""
     for f in cand.hypothesis.fields:
@@ -189,8 +200,10 @@ def _candidate(c, data, budget: dict) -> dict:
                      pal, bottom_left_for(c), channel_order=channel_order_for(c), photometric=photometric_for(c),
                      palette_name=name, no_palette_why=tga_why, maxval=h.maxval,
                      planes=h.planes, header_palette=header_palette_for(c, data), byte_order=byte_order_for(c),
+                     color_map=color_map_for(c),
                      bits_per_sample=_int_field(c, "bits_per_sample"),
-                     samples_per_pixel=_int_field(c, "samples_per_pixel"))
+                     samples_per_pixel=_int_field(c, "samples_per_pixel"),
+                     photometric_interpretation=_int_field(c, "photometric_interpretation"))
         if isinstance(out, PixelBuffer):
             budget["spent"] += pixels
             render = {"width": out.width, "height": out.height, "channels": out.channels,

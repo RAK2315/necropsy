@@ -439,3 +439,61 @@ def test_tga16_decode_never_raises(decoded, width, height, stride, it, idesc, bl
     assert isinstance(r, (PixelBuffer, RenderFailure))
     if isinstance(r, RenderFailure):
         assert not r.reason.startswith("internal error")
+
+
+# ---- task 5.1: the Serialiser passes color_map and photometric_interpretation (Requirements 2.5, 2.7, 3.6, 3.9, 7.1) ----
+from types import SimpleNamespace  # noqa: E402
+
+from necropsy.engine.types import FieldRecord  # noqa: E402
+from web.serialise import _int_field, color_map_for  # noqa: E402
+
+
+def _cand(fields):
+    return SimpleNamespace(hypothesis=SimpleNamespace(fields=tuple(fields)))
+
+
+_values = st.one_of(st.none(), st.booleans(), st.integers(), st.text(max_size=4), st.binary(max_size=4),
+                    st.tuples(st.integers(), st.integers()), st.tuples(st.booleans()), st.tuples(st.text(max_size=2)),
+                    st.lists(st.integers(0, 65535), max_size=8).map(tuple))
+
+
+@settings(max_examples=200, deadline=None)
+@given(value=_values, name=st.sampled_from(["color_map", "photometric_interpretation", "other"]))
+def test_color_map_for_and_int_field_are_total_and_integers_only(value, name):
+    """Property 9 (Requirement 2.5): total, integers only (a bool is not an integer), else None."""
+    c = _cand([FieldRecord(name, 0, "<H", value)])
+    cm = color_map_for(c)
+    assert cm is None or (isinstance(cm, tuple) and all(type(x) is int for x in cm))
+    n = _int_field(c, name)
+    assert n is None or type(n) is int
+    if name == "color_map" and isinstance(value, tuple) and all(type(x) is int for x in value):
+        assert cm == value
+    elif name == "color_map":
+        assert cm is None
+    assert color_map_for(_cand([])) is None
+
+
+def test_color_map_in_payload_once_and_two_palette_files_draw_rgb8():
+    """Requirements 2.5, 2.7: one color_map field entry; the render is rgb8 with the pinned note."""
+    for name, size in (("libtiff_palette-1c-8b.tiff", (157, 151)), ("goimage_video-001-paletted.tiff", (150, 103))):
+        data = (fc_diff.REAL / name).read_bytes()
+        result = Engine().run(data)
+        p = to_payload(result, data, 0.0)
+        c = p["candidates"][0]
+        assert [f["name"] for f in c["fields"]].count("color_map") == 1
+        r = c["render"]
+        assert (r["channels"], r["width"], r["height"]) == ("rgb8", *size)
+        assert r["note"].startswith(PAL_NOTE)
+        # one pixel's colour from the candidate's own ColorMap, computed here and not by decode
+        cm = color_map_for(result.candidate)
+        import base64
+        raw = base64.b64decode(r["data_b64"])
+        idx = result.candidate.decoded[0]
+        assert tuple(raw[:3]) == (cm[idx] >> 8, cm[256 + idx] >> 8, cm[512 + idx] >> 8)
+
+
+def test_invalid_palette_ref_is_a_render_failure_with_195_and_768():
+    """Requirements 3.6, 3.9: no picture, the reason stated, no data_b64."""
+    data = (fc_diff.REAL / "goimage_invalid-palette-ref.tiff").read_bytes()
+    r = to_payload(Engine().run(data), data, 0.0)["candidates"][0]["render"]
+    assert r == {"failure": "palette TIFF: ColorMap (tag 320) holds 195 values, 768 required (3 × 2^8)"}
