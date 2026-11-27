@@ -227,6 +227,8 @@ The `format-coverage` work (PNM P1 to P6, TGA run-length, multi-plane PCX, multi
 
 **On files Pillow cannot open, NECROPSY recovered pictures:** two multi-plane PCX files that Pillow refuses render identically to sibling files that Pillow does read. **Where it did not recover a valid file, it refused rather than guessed:** the four are a TGA 2.0 extension-area size rule that rejects two TGA files (one written by Autodesk 3ds Max), a binary PBM whose magic is followed by a space instead of a newline, and a PackBits strip that ends inside a packet. Each is one specific rule, now on the list. The third, a 4-bit RGBA TIFF, resolves but is drawn wrongly, as grey. Every file, cause and caveat is in [`spike/samples/heldout/RESULTS.md`](spike/samples/heldout/RESULTS.md). The numbers above are the single run, as it came out.
 
+**The sealed evaluation set.** The case of sub-byte samples with several channels in a TIFF was found on the sealed evaluation set. The sealed evaluation set was not used for development or measurement. It is fixed anyway, because showing a wrong picture is the one thing NECROPSY must never do.
+
 ### Tests
 
 At commit `66e85d3`, run locally (Windows, Python 3.10.11):
