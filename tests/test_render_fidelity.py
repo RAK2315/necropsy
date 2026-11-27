@@ -302,3 +302,140 @@ def test_palette_never_raises_and_never_grey(decoded, width, height, depth, stri
         assert r.channels == "rgb8"
     else:
         assert not r.reason.startswith("internal error")
+
+
+# ---- task 4.2: 16-bit TGA branches of decode (Requirements 4.1 to 4.6, 4.8, 4.9, 5.1 to 5.4, 5.6) ----
+import struct  # noqa: E402
+
+COLOUR_PREFIX = ("16-bit colour TGA · five-five-five, R bits 10-14, G bits 5-9, B bits 0-4 · v×255//31"
+                 " · alpha not drawn: ")
+GREY_NOTE = "16-bit grey TGA · grey = low byte of each word · the 8 declared alpha bits are not drawn"
+STORED = "rows shown in stored order"
+FLIPPED = "rows flipped: file declares bottom-left origin"
+
+
+def _tga(raw, w, h, stride, it, desc, bl=False):
+    return decode(raw, w, h, 16, stride, "tga", bottom_left=bl, image_type=it, image_descriptor=desc)
+
+
+def _words(ws, pad=0):
+    return b"".join(struct.pack("<H", w) for w in ws) + bytes(pad)
+
+
+def _e5(v):
+    return v * 255 // 31
+
+
+def _colour_model(rows_of_words, flip):
+    """Per-pixel definition of Requirement 4.1, computed from the words (not from decode)."""
+    rows = rows_of_words[::-1] if flip else rows_of_words
+    out = bytearray()
+    for row in rows:
+        for w in row:
+            out += bytes((_e5((w >> 10) & 31), _e5((w >> 5) & 31), _e5(w & 31)))
+    return bytes(out)
+
+
+def test_tga16_colour_pillow_rgba16_pixels():
+    """Decision 4 values: (21, 0, 31) -> (172, 0, 255); (0, 31, 10) -> (0, 255, 82); descriptor 0x08."""
+    w1 = (21 << 10) | (0 << 5) | 31
+    w2 = (0 << 10) | (31 << 5) | 10
+    r = _tga(_words([w1, w2]), 2, 1, 4, 2, 0x08)
+    assert isinstance(r, PixelBuffer) and r.channels == "rgb8"
+    assert r.data == bytes((172, 0, 255, 0, 255, 82))
+    assert r.note == (COLOUR_PREFIX + "descriptor declares 8 alpha bits, which the 16-bit pixel cannot hold;"
+                      " bit 15 is not interpreted · " + FLIPPED)
+
+
+def test_tga16_colour_alpha_notes():
+    raw = _words([0x1234])
+    cases = {0: "descriptor declares no alpha bits", 1: "descriptor declares bit 15 as alpha",
+             2: "descriptor declares 2 alpha bits, which the 16-bit pixel cannot hold; bit 15 is not interpreted",
+             15: "descriptor declares 15 alpha bits, which the 16-bit pixel cannot hold; bit 15 is not interpreted"}
+    for a, text in cases.items():
+        r = _tga(raw, 1, 1, 2, 2, 0x20 | a)
+        assert isinstance(r, PixelBuffer), a
+        assert r.note == COLOUR_PREFIX + text + " · " + STORED
+    r = _tga(raw, 1, 1, 2, 10, None, bl=True)       # no descriptor: origin from `bottom_left`
+    assert isinstance(r, PixelBuffer)
+    assert r.note == COLOUR_PREFIX + "image descriptor not recorded · " + FLIPPED
+
+
+@settings(max_examples=200, deadline=None)
+@given(alpha=st.integers(0, 15), bit5=st.integers(0, 1), it=st.sampled_from([2, 10]),
+       w=st.integers(1, 64), pad=st.integers(0, 3), data=st.data())
+def test_tga16_colour_exact_pixels_property(alpha, bit5, it, w, pad, data):
+    """Property 5 (Requirements 4.1, 4.2, 4.6, 4.8): any Alpha_Bits, either origin, bit 15 either value."""
+    h = data.draw(st.integers(1, max(1, 4096 // w)))
+    rows = [data.draw(st.lists(st.integers(0, 65535), min_size=w, max_size=w)) for _ in range(min(h, 8))]
+    h = len(rows)
+    raw = b"".join(_words(r, pad) for r in rows)
+    r = _tga(raw, w, h, 2 * w + pad, it, (bit5 << 5) | alpha)
+    assert isinstance(r, PixelBuffer) and r.channels == "rgb8"
+    assert (r.width, r.height) == (w, h)
+    assert r.data == _colour_model(rows, flip=(bit5 == 0))
+    assert len(r.data) == 3 * w * h
+    assert (FLIPPED if bit5 == 0 else STORED) in r.note
+    assert "alpha not drawn" in r.note
+
+
+def test_tga16_grey_low_byte_and_origin():
+    rows = [[0x0102, 0xFF03], [0x0004, 0x80FF], [0xAB10, 0x0020]]
+    raw = b"".join(_words(r, 2) for r in rows)
+    r = _tga(raw, 2, 3, 6, 3, 0x08)                         # bit 5 = 0: bottom-left
+    assert isinstance(r, PixelBuffer) and r.channels == "grey8"
+    assert r.data == bytes(w & 0xFF for row in rows[::-1] for w in row)
+    assert r.note == GREY_NOTE + " · " + FLIPPED
+    r = _tga(raw, 2, 3, 6, 11, 0x28)                        # bit 5 = 1: stored order
+    assert r.data == bytes(w & 0xFF for row in rows for w in row)
+    assert r.note == GREY_NOTE + " · " + STORED
+
+
+@settings(max_examples=200, deadline=None)
+@given(bit5=st.integers(0, 1), it=st.sampled_from([3, 11]), w=st.integers(1, 32), pad=st.integers(0, 3),
+       rows=st.lists(st.lists(st.integers(0, 65535), min_size=32, max_size=32), min_size=1, max_size=8))
+def test_tga16_grey_exact_pixels_property(bit5, it, w, pad, rows):
+    """Property 6, drawn case (Requirements 5.1, 5.4, 5.6)."""
+    rows = [r[:w] for r in rows]
+    raw = b"".join(_words(r, pad) for r in rows)
+    r = _tga(raw, w, len(rows), 2 * w + pad, it, (bit5 << 5) | 8)
+    assert isinstance(r, PixelBuffer) and r.channels == "grey8"
+    order = rows[::-1] if bit5 == 0 else rows
+    assert r.data == bytes(x & 0xFF for row in order for x in row)
+
+
+def test_tga16_grey_refused_unless_alpha_bits_8():
+    """Property 6, refusal (Requirement 5.3)."""
+    for a in [*range(0, 8), *range(9, 16)]:
+        r = _tga(_words([1, 2]), 2, 1, 4, 3, 0x20 | a)
+        assert r == RenderFailure(
+            f"no renderer for 16-bit grey TGA: the descriptor declares {a} alpha bits, 8 are required")
+    assert _tga(_words([1, 2]), 2, 1, 4, 11, None) == RenderFailure(
+        "no renderer for 16-bit grey TGA: image descriptor not recorded")
+
+
+def test_tga16_short_data_failures():
+    assert _tga(bytes(7), 2, 2, 4, 2, 0x20) == RenderFailure("16-bit colour TGA: pixel data holds 7 bytes, 8 required")
+    assert _tga(bytes(7), 2, 2, 4, 10, 0x20) == RenderFailure("16-bit colour TGA: pixel data holds 7 bytes, 8 required")
+    assert _tga(bytes(7), 2, 2, 4, 3, 0x28) == RenderFailure("16-bit grey TGA: pixel data holds 7 bytes, 8 required")
+    assert _tga(bytes(8), 3, 1, 2, 2, 0x20) == RenderFailure("inconsistent geometry")
+
+
+def test_tga16_not_taken_for_other_inputs():
+    """No image_type (not yet wired) and other types keep the old answer."""
+    assert decode(bytes(8), 2, 2, 16, 4, "tga") == RenderFailure("no renderer for 16-bit pixels")
+    assert decode(bytes(8), 2, 2, 16, 4, "tga", image_type=1, image_descriptor=0x20) == \
+        RenderFailure("no renderer for 16-bit pixels")
+    assert decode(bytes(8), 2, 2, 16, 4, "pcx", image_type=2, image_descriptor=0x20) == \
+        RenderFailure("no renderer for 16-bit pixels")
+
+
+@settings(max_examples=300, deadline=None)
+@given(decoded=st.binary(max_size=200), width=st.integers(-2, 12), height=st.integers(-2, 12),
+       stride=st.integers(-2, 40), it=st.one_of(st.none(), st.integers(0, 12)),
+       idesc=st.one_of(st.none(), st.integers(-3, 300)), bl=st.booleans())
+def test_tga16_decode_never_raises(decoded, width, height, stride, it, idesc, bl):
+    r = decode(decoded, width, height, 16, stride, "tga", bottom_left=bl, image_type=it, image_descriptor=idesc)
+    assert isinstance(r, (PixelBuffer, RenderFailure))
+    if isinstance(r, RenderFailure):
+        assert not r.reason.startswith("internal error")

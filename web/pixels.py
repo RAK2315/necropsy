@@ -244,6 +244,62 @@ def _decode_tiff_palette(decoded, width, height, bit_depth, row_stride, bottom_l
                        f"{PALETTE_NOTE} · {FLIP_NOTE if bottom_left else STORED_NOTE}")
 
 
+_EXPAND5 = bytes(v * 255 // 31 for v in range(32))
+GREY16_NOTE = "16-bit grey TGA · grey = low byte of each word · the 8 declared alpha bits are not drawn"
+COLOUR16_NOTE = ("16-bit colour TGA · five-five-five, R bits 10-14, G bits 5-9, B bits 0-4 · v×255//31"
+                 " · alpha not drawn: {alpha}")
+
+
+def _alpha_phrase(alpha_bits):
+    if alpha_bits is None:
+        return "image descriptor not recorded"
+    if alpha_bits == 0:
+        return "descriptor declares no alpha bits"
+    if alpha_bits == 1:
+        return "descriptor declares bit 15 as alpha"
+    return (f"descriptor declares {alpha_bits} alpha bits, which the 16-bit pixel cannot hold;"
+            " bit 15 is not interpreted")
+
+
+def _decode_tga16(decoded, width, height, row_stride, bottom_left, image_type, image_descriptor):
+    """16-bit TGA (Requirements 4.1 to 4.6, 4.9, 5.1 to 5.4). A word is `<H` (byte 0 low). Colour (types 2, 10):
+    bits 14-10 R, 9-5 G, 4-0 B, each v * 255 // 31, bit 15 not drawn. Grey (types 3, 11), only when Alpha_Bits
+    is 8: grey = w & 0xFF. Row origin from bit 5 of image_descriptor when passed, else `bottom_left`."""
+    used = 2 * width
+    if row_stride < used:
+        return RenderFailure("inconsistent geometry")
+    have, need = len(decoded), row_stride * height
+    descriptor_ok = _is_int(image_descriptor)
+    alpha_bits = (image_descriptor & 0x0F) if descriptor_ok else None
+    flip = (((image_descriptor >> 5) & 1) == 0) if descriptor_ok else bool(bottom_left)
+    orientation = FLIP_NOTE if flip else STORED_NOTE
+    grey = image_type in (3, 11)
+    if grey:
+        if not descriptor_ok:
+            return RenderFailure("no renderer for 16-bit grey TGA: image descriptor not recorded")
+        if alpha_bits != 8:
+            return RenderFailure(
+                f"no renderer for 16-bit grey TGA: the descriptor declares {alpha_bits} alpha bits, 8 are required")
+        if have < need:
+            return RenderFailure(f"16-bit grey TGA: pixel data holds {have} bytes, {need} required")
+    elif have < need:
+        return RenderFailure(f"16-bit colour TGA: pixel data holds {have} bytes, {need} required")
+    d = bytes(decoded)
+    rows = [d[y * row_stride: y * row_stride + used] for y in range(height)]
+    if flip:
+        rows.reverse()
+    raw = b"".join(rows)
+    lo, hi = raw[0::2], raw[1::2]
+    if grey:
+        return PixelBuffer(width, height, "grey8", lo, f"{GREY16_NOTE} · {orientation}")
+    # w = lo | hi << 8: R = (w >> 10) & 31 = (hi >> 2) & 31, G = (w >> 5) & 31, B = w & 31
+    r = bytes(_EXPAND5[(h >> 2) & 31] for h in hi)
+    g = bytes(_EXPAND5[((h & 3) << 3) | (l >> 5)] for l, h in zip(lo, hi))
+    b = bytes(_EXPAND5[l & 31] for l in lo)
+    note = COLOUR16_NOTE.format(alpha=_alpha_phrase(alpha_bits))
+    return PixelBuffer(width, height, "rgb8", _interleave(r, g, b), f"{note} · {orientation}")
+
+
 def _grey(data, photometric):
     """Apply the declared photometric interpretation to grey levels; returns (data, note fragment)."""
     if photometric == 0:
@@ -278,6 +334,8 @@ def _decode(decoded, width, height, bit_depth, row_stride, probe_name, palette, 
         return _decode_tiff_grey(decoded, width, height, bit_depth, row_stride, byte_order, photometric)
     if probe_name == "tiff" and bit_depth in TIFF_RGB_NO_RENDERER:
         return RenderFailure(f"no renderer for {TIFF_RGB_NO_RENDERER[bit_depth]} ({bit_depth}-bit pixels)")
+    if probe_name == "tga" and bit_depth == 16 and _is_int(image_type) and image_type in (2, 10, 3, 11):
+        return _decode_tga16(decoded, width, height, row_stride, bottom_left, image_type, image_descriptor)
     if bit_depth not in SUPPORTED_DEPTHS:
         return RenderFailure(f"no renderer for {bit_depth}-bit pixels")
     used = -(-(width * bit_depth) // 8)               # bytes of pixel data in one row
